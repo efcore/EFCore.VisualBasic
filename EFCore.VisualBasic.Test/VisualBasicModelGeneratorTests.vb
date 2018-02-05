@@ -1,4 +1,5 @@
-﻿Imports Microsoft.EntityFrameworkCore
+﻿Imports System.IO
+Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Xunit
 
@@ -18,11 +19,12 @@ Public Class VisualBasicModelGeneratorTests
         Dim result = generator.GenerateModel(
             model,
             "MyNamespace",
+            "ContextDir",
             "MyDbContext",
             "",
             True)
 
-        Assert.Equal("MyDbContext.vb", result.ContextFile.Path)
+        Assert.Equal(Path.Combine("ContextDir", "MyDbContext.vb"), result.ContextFile.Path)
         Assert.NotEmpty(result.ContextFile.Code)
         Assert.Equal(0, result.AdditionalFiles.Count)
     End Sub

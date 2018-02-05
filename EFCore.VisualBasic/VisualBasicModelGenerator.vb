@@ -1,4 +1,5 @@
-﻿Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports System.IO
+Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 
@@ -18,13 +19,16 @@ Public Class VisualBasicModelGenerator
     Public Overrides Function GenerateModel(
         model As IModel,
         [namespace] As String,
+        contextDir As String,
         contextName As String,
         connectionString As String,
         dataAnnotations As Boolean) As ScaffoldedModel
 
         Dim files As New ScaffoldedModel
         files.ContextFile = New ScaffoldedFile
-        files.ContextFile.Path = contextName + ".vb"
+        files.ContextFile.Path = Path.Combine(
+            contextDir,
+            contextName + ".vb")
         files.ContextFile.Code = "' TODO: Generate DbContext"
 
         For Each entityType In model.GetEntityTypes()

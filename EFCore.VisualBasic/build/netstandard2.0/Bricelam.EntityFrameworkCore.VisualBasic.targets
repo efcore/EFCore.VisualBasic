@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup Condition="'$(Language)' == 'VB'">
+    <Compile Include="$(MSBuildThisFileDirectory)EFCoreVisualBasic.vb">
+      <Visible>False</Visible>
+    </Compile>
+  </ItemGroup>
+</Project>

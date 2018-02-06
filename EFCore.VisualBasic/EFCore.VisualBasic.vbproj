@@ -11,7 +11,7 @@
     <PackageTags>EFCore</PackageTags>
     <RepositoryUrl>https://github.com/bricelam/EFCore.VisualBasic.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Copyright>© 2017 Brice Lambson. All rights reserved.</Copyright>
+    <Copyright>Â© 2018 Brice Lambson. All rights reserved.</Copyright>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <LangVersion>latest</LangVersion>
@@ -30,7 +30,7 @@
       <PackagePath>build</PackagePath>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="build\**\*.vb" />
   </ItemGroup>
@@ -38,7 +38,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.0-preview1-*" />
   </ItemGroup>
-  
+
   <Target Name="SignOutput" AfterTargets="Build" Condition="'$(SignOutput)' == 'True'">
     <Exec Command="$(SignToolCommand) &quot;$(TargetPath)&quot;" />
   </Target>

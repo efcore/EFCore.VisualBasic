@@ -1,4 +1,4 @@
-Imports Microsoft.EntityFrameworkCore
+﻿Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 Imports Xunit

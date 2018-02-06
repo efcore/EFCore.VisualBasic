@@ -1,4 +1,4 @@
-Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 

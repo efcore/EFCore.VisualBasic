@@ -1,10 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic", "EFCore.VisualBasic\EFCore.VisualBasic.vbproj", "{E0800FF3-BC02-4425-A7EE-6D00015095FC}"
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic.Test", "EFCore.VisualBasic.Test\EFCore.VisualBasic.Test.vbproj", "{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F2DFBC0-2466-48B2-9F04-FAF61C2B0698}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

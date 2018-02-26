@@ -24,8 +24,4 @@
     <ProjectReference Include="..\EFCore.VisualBasic\EFCore.VisualBasic.vbproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\Design\" />
-  </ItemGroup>
-
 </Project>

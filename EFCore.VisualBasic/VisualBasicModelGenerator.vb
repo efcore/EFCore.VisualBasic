@@ -23,18 +23,23 @@ Public Class VisualBasicModelGenerator
         contextName As String,
         connectionString As String,
         dataAnnotations As Boolean) As ScaffoldedModel
-
-        Dim files As New ScaffoldedModel
-        files.ContextFile = New ScaffoldedFile
-        files.ContextFile.Path = Path.Combine(
-            contextDir,
-            contextName + ".vb")
-        files.ContextFile.Code = "' TODO: Generate DbContext"
+        Dim files As New ScaffoldedModel With
+        {
+            .ContextFile = New ScaffoldedFile With
+            {
+                .Path = Path.Combine(
+                contextDir,
+                contextName + ".vb"),
+                .Code = "' TODO: Generate DbContext"
+            }
+        }
 
         For Each entityType In model.GetEntityTypes()
-            Dim file As New ScaffoldedFile
-            file.Path = entityType.DisplayName() + ".vb"
-            file.Code = "' TODO: Generate " + entityType.DisplayName()
+            Dim file As New ScaffoldedFile With
+            {
+                .Path = entityType.DisplayName() + ".vb",
+                .Code = "' TODO: Generate " + entityType.DisplayName()
+            }
             files.AdditionalFiles.Add(file)
         Next
 

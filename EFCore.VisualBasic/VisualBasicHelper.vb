@@ -661,7 +661,6 @@ Public Class VisualBasicHelper
     End Function
 
     Private Shared Function IsIdentifierPartCharacter(ch As Char) As Boolean
-
         If ch < "a" Then
             If ch < "A" Then
                 Return ch >= "0" AndAlso ch <= "9"
@@ -708,5 +707,4 @@ Public Class VisualBasicHelper
 
         Return False
     End Function
-
 End Class

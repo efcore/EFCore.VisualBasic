@@ -73,9 +73,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddColumnOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddColumnOperation() With
             {
                 .Name = "Id",
@@ -100,10 +97,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddColumnOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddColumnOperation() With
             {
                 .Name = "Id",
@@ -149,10 +142,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddColumnOperation_DefaultValueSql()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddColumnOperation() With
             {
                 .Name = "Id",
@@ -180,10 +169,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddColumnOperation_ComputedExpression()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddColumnOperation() With
             {
                 .Name = "Id",
@@ -212,10 +197,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddForeignKeyOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddForeignKeyOperation() With
             {
                 .Table = "Post",
@@ -246,9 +227,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddForeignKeyOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddForeignKeyOperation() With
             {
                 .Schema = "dbo",
@@ -290,10 +268,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddForeignKeyOperation_composite()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddForeignKeyOperation() With
             {
 .Name = "FK_Post_Blog_BlogId1_BlogId2",
@@ -324,9 +298,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AddPrimaryKey_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddPrimaryKeyOperation() With
             {
                 .Name = "PK_Post",
@@ -347,15 +318,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"Id"}, o.Columns)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub AddPrimaryKey_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddPrimaryKeyOperation() With
             {
                 .Name = "PK_Post",
@@ -379,14 +345,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"Id"}, o.Columns)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub AddPrimaryKey_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddPrimaryKeyOperation() With
             {
                 .Name = "PK_Post",
@@ -407,7 +369,6 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"Id1", "Id2"}, o.Columns)
              End Sub)
-
     End Sub
 
     <Fact>
@@ -435,15 +396,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"AltId"}, o.Columns)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub AddUniqueConstraint_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddUniqueConstraintOperation() With
             {
                 .Name = "AK_Post_AltId",
@@ -467,14 +423,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"AltId"}, o.Columns)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub AddUniqueConstraint_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AddUniqueConstraintOperation() With
             {
                 .Name = "AK_Post_AltId1_AltId2",
@@ -495,15 +447,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"AltId1", "AltId2"}, o.Columns)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub AlterColumnOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterColumnOperation() With
             {
                 .Name = "Id",
@@ -543,15 +490,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Null(o.OldColumn.DefaultValueSql)
                  Assert.Null(o.OldColumn.ComputedColumnSql)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub AlterColumnOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterColumnOperation() With
             {
                 .Name = "Id",
@@ -630,10 +572,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AlterColumnOperation_DefaultValueSql()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterColumnOperation() With
             {
                 .Name = "Id",
@@ -679,9 +617,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AlterColumnOperation_computedColumnSql()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterColumnOperation() With
             {
                 .Name = "Id",
@@ -727,9 +662,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AlterDatabaseOperation()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterDatabaseOperation()
         operation("foo") = "bar"
         operation.OldDatabase("bar") = "foo"
@@ -749,10 +681,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AlterSequenceOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterSequenceOperation() With
             {
             .Name = "EntityFrameworkHiLoSequence"
@@ -780,9 +708,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AlterSequenceOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterSequenceOperation() With
             {
  .Name = "EntityFrameworkHiLoSequence",
@@ -831,9 +756,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub AlterTableOperation()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New AlterTableOperation() With
         {
             .Name = "Customer",
@@ -855,9 +777,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateIndexOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateIndexOperation() With
         {
                 .Name = "IX_Post_Title",
@@ -882,10 +801,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateIndexOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateIndexOperation() With
         {
                 .Name = "IX_Post_Title",
@@ -918,9 +833,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateIndexOperation_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateIndexOperation() With
         {
                 .Name = "IX_Post_Title_Subtitle",
@@ -945,9 +857,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateSchemaOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New EnsureSchemaOperation() With {.Name = "my"}
 
         Dim expectedCode =
@@ -963,10 +872,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateSequenceOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -988,10 +893,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateSequenceOperation_required_args_not_long()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -1012,9 +913,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateSequenceOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -1053,9 +951,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateSequenceOperation_all_args_not_long()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -1094,10 +989,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_Columns_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.Add(
             New AddColumnOperation() With
@@ -1131,10 +1022,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_Columns_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With
         {
             .Name = "Post",
@@ -1188,10 +1075,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_Columns_DefaultValueSql()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.Add(
             New AddColumnOperation() With
@@ -1222,14 +1105,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal(GetType(Integer), o.Columns(0).ClrType)
                  Assert.Equal("1", o.Columns(0).DefaultValueSql)
              End Sub)
-
     End Sub
 
     <Fact>
     Public Sub CreateTableOperation_Columns_computedColumnSql()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.Add(
             New AddColumnOperation() With
@@ -1264,9 +1143,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_ForeignKeys_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.Add(
             New AddColumnOperation() With
@@ -1314,9 +1190,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_ForeignKeys_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With
         {
             .Name = "Post",
@@ -1381,9 +1254,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_ForeignKeys_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.AddRange(
             {
@@ -1439,10 +1309,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_PrimaryKey_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.Add(
             New AddColumnOperation() With
@@ -1481,9 +1347,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_PrimaryKey_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With
         {
             .Name = "Post",
@@ -1529,9 +1392,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_PrimaryKey_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.AddRange(
             {
@@ -1578,9 +1438,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_UniqueConstraints_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With {.Name = "Post"}
         operation.Columns.Add(
             New AddColumnOperation() With
@@ -1620,10 +1477,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_UniqueConstraints_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With
         {
             .Name = "Post",
@@ -1670,10 +1523,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub CreateTableOperation_UniqueConstraints_composite()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New CreateTableOperation() With
         {
             .Name = "Post"
@@ -1725,10 +1574,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropColumnOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropColumnOperation() With
         {
             .Name = "Id",
@@ -1750,10 +1595,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropColumnOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropColumnOperation() With
         {
             .Name = "Id",
@@ -1778,10 +1619,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropForeignKeyOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropForeignKeyOperation() With
         {
             .Name = "FK_Post_BlogId",
@@ -1803,10 +1640,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropForeignKeyOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropForeignKeyOperation() With
         {
             .Name = "FK_Post_BlogId",
@@ -1831,9 +1664,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropIndexOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropIndexOperation() With
         {
             .Name = "IX_Post_Title",
@@ -1855,10 +1685,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropIndexOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropIndexOperation() With
         {
             .Name = "IX_Post_Title",
@@ -1883,10 +1709,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropPrimaryKeyOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropPrimaryKeyOperation() With
         {
             .Name = "PK_Post",
@@ -1908,10 +1730,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropPrimaryKeyOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropPrimaryKeyOperation() With
         {
             .Name = "PK_Post",
@@ -1936,10 +1754,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropSchemaOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropSchemaOperation() With {.Name = "my"}
 
         Dim expectedCode =
@@ -1955,10 +1769,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropSequenceOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropSequenceOperation() With {.Name = "EntityFrameworkHiLoSequence"}
 
         Dim expectedCode =
@@ -1974,9 +1784,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropSequenceOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -1998,9 +1805,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropTableOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropTableOperation() With {.Name = "Post"}
 
         Dim expectedCode =
@@ -2016,9 +1820,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropTableOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropTableOperation() With
         {
             .Name = "Post",
@@ -2040,9 +1841,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropUniqueConstraintOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropUniqueConstraintOperation() With
         {
             .Name = "AK_Post_AltId",
@@ -2064,9 +1862,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DropUniqueConstraintOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DropUniqueConstraintOperation() With
         {
             .Name = "AK_Post_AltId",
@@ -2091,9 +1886,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameColumnOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameColumnOperation() With
         {
             .Name = "Id",
@@ -2118,9 +1910,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameColumnOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameColumnOperation() With
         {
             .Name = "Id",
@@ -2148,9 +1937,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameIndexOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameIndexOperation() With
         {
             .Name = "IX_Post_Title",
@@ -2175,9 +1961,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameIndexOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameIndexOperation() With
         {
             .Name = "IX_dbo.Post_Title",
@@ -2205,9 +1988,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameSequenceOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameSequenceOperation() With {.Name = "EntityFrameworkHiLoSequence"}
 
         Dim expectedCode =
@@ -2223,10 +2003,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameSequenceOperation_all_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -2254,10 +2030,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameTableOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameTableOperation() With {.Name = "Post"}
 
         Dim expectedCode =
@@ -2273,9 +2045,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RenameTableOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RenameSequenceOperation() With
         {
             .Name = "Post",
@@ -2303,9 +2072,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RestartSequenceOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RestartSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -2327,9 +2093,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub RestartSequenceOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New RestartSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
@@ -2354,9 +2117,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub SqlOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New SqlOperation() With {.Sql = "-- I <3 DDL"}
 
         Dim expectedCode = "mb.Sql(""-- I <3 DDL"")"
@@ -2370,9 +2130,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub InsertDataOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New InsertDataOperation() With
         {
             .Schema = "dbo",
@@ -2414,10 +2171,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub InsertDataOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New InsertDataOperation() With
         {
             .Table = "People",
@@ -2446,9 +2199,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub InsertDataOperation_required_args_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New InsertDataOperation() With
         {
             .Table = "People",
@@ -2477,9 +2227,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub InsertDataOperation_required_args_multiple_rows()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New InsertDataOperation() With
         {
             .Table = "People",
@@ -2512,9 +2259,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DeleteDataOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DeleteDataOperation() With
         {
             .Schema = "dbo",
@@ -2556,10 +2300,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DeleteDataOperation_all_args_composite()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DeleteDataOperation() With
         {
             .Table = "People",
@@ -2598,9 +2338,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DeleteDataOperation_required_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DeleteDataOperation() With
         {
             .Table = "People",
@@ -2629,10 +2366,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub DeleteDataOperation_required_args_composite()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New DeleteDataOperation() With
         {
             .Table = "People",
@@ -2661,9 +2394,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_all_args()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Schema = "dbo",
@@ -2713,9 +2443,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_all_args_composite()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -2762,10 +2489,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_all_args_composite_multi()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -2812,22 +2535,19 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_all_args_multi()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
-        Dim operation = New UpdateDataOperation  With
+        Dim operation = New UpdateDataOperation With
         {
             .Schema = "dbo",
             .Table = "People",
-            .KeyColumns = { "Full Name" },
-            .KeyValues = 
+            .KeyColumns = {"Full Name"},
+            .KeyValues =
             {
-                { "Daenerys Targaryen" }
+                {"Daenerys Targaryen"}
             },
-            .Columns = { "Birthplace", "House Allegiance", "Culture" },
-            .Values = 
+            .Columns = {"Birthplace", "House Allegiance", "Culture"},
+            .Values =
             {
-                { "Dragonstone", "Targaryen", "Valyrian" }
+                {"Dragonstone", "Targaryen", "Valyrian"}
             }
         }
 
@@ -2858,10 +2578,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_required_args()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -2900,9 +2616,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_required_args_multiple_rows()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -2949,10 +2662,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_required_args_composite()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -2991,9 +2700,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_required_args_composite_multi()
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -3032,10 +2738,6 @@ mb.Sql(""-- close to me"")"
 
     <Fact>
     Public Sub UpdateDataOperation_required_args_multi()
-
-        Dim generator = CreateGenerator()
-        Dim builder = New IndentedStringBuilder()
-
         Dim operation = New UpdateDataOperation() With
         {
             .Table = "People",
@@ -3071,5 +2773,4 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Targaryen", o.Values(0, 1))
              End Sub)
     End Sub
-
 End Class

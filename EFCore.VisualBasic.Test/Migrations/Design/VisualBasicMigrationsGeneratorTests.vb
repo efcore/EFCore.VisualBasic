@@ -39,7 +39,6 @@ Public Class VisualBasicMigrationsGeneratorTests
 
     <Fact>
     Public Sub Test_new_annotations_handled_for_entity_types()
-
         Dim model = InMemoryTestHelpers.Instance.CreateConventionBuilder()
         Dim entityType = model.Entity(Of WithAnnotations).Metadata
 
@@ -235,7 +234,6 @@ Public Class VisualBasicMigrationsGeneratorTests
 
         Public Sub New(dependencies As VisualBasicSnapshotGeneratorDependencies)
             MyBase.New(dependencies)
-
         End Sub
 
         Public Overridable Sub TestGenerateEntityTypeAnnotations(builderName As String, entityType As IEntityType, stringBuilder As IndentedStringBuilder)
@@ -287,7 +285,6 @@ Public Class VisualBasicMigrationsGeneratorTests
     End Sub
 
     Private Shared Sub AssertConverter(valueConverter As ValueConverter, expected As String)
-
         Dim modelBuilder = InMemoryTestHelpers.Instance.CreateConventionBuilder()
         Dim prop = modelBuilder.Entity(Of WithAnnotations).Property(Function(e) e.Id).Metadata
         prop.SetMaxLength(1000)
@@ -313,7 +310,6 @@ Public Class VisualBasicMigrationsGeneratorTests
 
     <Fact>
     Public Sub Snapshots_compile()
-
         Dim codeHelper = New VisualBasicHelper()
         Dim generator = New VisualBasicMigrationsGenerator(
                 New MigrationsCodeGeneratorDependencies(),
@@ -385,7 +381,6 @@ End Namespace
 
     <Fact>
     Public Sub Migrations_compile()
-
         Dim codeHelper = New VisualBasicHelper()
         Dim generator = New VisualBasicMigrationsGenerator(
                     New MigrationsCodeGeneratorDependencies(),

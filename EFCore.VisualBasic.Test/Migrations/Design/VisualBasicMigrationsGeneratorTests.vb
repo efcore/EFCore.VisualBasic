@@ -366,10 +366,10 @@ Namespace MyNamespace
                 .HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
             modelBuilder.Entity(""Cheese"", Sub(b)
 
-                    b.Property(Of System.String)(""Ham"") _
+                    b.Property(Of String)(""Ham"") _
                         .HasConversion(New ValueConverter(Of String, String)(Function(v) CType(Nothing, String), Function(v) CType(Nothing, String), New ConverterMappingHints(size:= 10)))
 
-                    b.Property(Of System.String)(""Pickle"") _
+                    b.Property(Of String)(""Pickle"") _
                         .HasConversion(New ValueConverter(Of String, String)(Function(v) CType(Nothing, String), Function(v) CType(Nothing, String), New ConverterMappingHints(size:= 10)))
 
                     b.ToTable(""Cheese"")

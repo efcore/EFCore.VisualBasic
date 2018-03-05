@@ -2,20 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
     <IsPackable>false</IsPackable>
     <RootNamespace>Bricelam.EntityFrameworkCore.VisualBasic</RootNamespace>
     <AssemblyName>Bricelam.EntityFrameworkCore.VisualBasic.Test</AssemblyName>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="TestUtilities\BuildFileResult.vb" />
-    <Compile Remove="TestUtilities\BuildReference.vb" />
-    <Compile Remove="TestUtilities\BuildSource.vb" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>NETCOREAPP2_0</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.0-*" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="2.6.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.1.0-preview2-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="2.1.0-preview2-*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview1-26216-03" />
+    <!--<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.0-preview1-final" />-->
+    <!--<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0-preview-20180221-13" />-->
+    <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
   </ItemGroup>

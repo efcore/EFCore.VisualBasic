@@ -1,8 +1,5 @@
 ﻿Imports Bricelam.EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities.Xunit
-Imports Microsoft.EntityFrameworkCore.Design.Internal
-Imports Microsoft.EntityFrameworkCore.Internal
 Imports Xunit
-Imports Xunit.Sdk
 
 Public Class VisualBasicHelperTests
 
@@ -232,47 +229,33 @@ string with """"""")
     Private Class NestedGeneric(Of T)
     End Class
 
-    '        Private Enum SomeEnum
-    '        {
-    '            Default
-    '        }
+    <Theory>
+    <InlineData("dash-er", "dasher")>
+    <InlineData("ParamArray", "[ParamArray]")>
+    <InlineData("True", "[True]")>
+    <InlineData("spac ed", "spaced")>
+    <InlineData("1nders", "_1nders")>
+    <InlineData("Name.space", "[Namespace]")>
+    <InlineData("$", "_")>
+    Public Sub Identifier_works( input As String,  expected As String)
+                Assert.Equal(expected, New VisualBasicHelper().Identifier(input))
+            End Sub
 
-    '        [Theory]
-    '        [InlineData("dash-er", "dasher")]
-    '        [InlineData("params", "@params")]
-    '        [InlineData("true", "@true")]
-    '        [InlineData("yield", "yield")]
-    '        [InlineData("spac ed", "spaced")]
-    '        [InlineData("1nders", "_1nders")]
-    '        [InlineData("name.space", "@namespace")]
-    '        [InlineData("$", "_")]
-    '        Public void Identifier_works(String input, String expected)
-    '        {
-    '            Assert.Equal(expected, New CSharpHelper().Identifier(input));
-    '        }
-
-    '        [Theory]
-    '        [InlineData(New[] { "WebApplication1", "Migration" }, "WebApplication1.Migration")]
-    '        [InlineData(New[] { "WebApplication1.Migration" }, "WebApplication1.Migration")]
-    '        [InlineData(New[] { "ef-xplat.namespace" }, "efxplat.@namespace")]
-    '        [InlineData(New[] { "#", "$" }, "_._")]
-    '        [InlineData(New[] { "" }, "_")]
-    '        [InlineData(New string[] { }, "_")]
-    '        [InlineData(New string[] { null }, "_")]
-    '        Public void Namespace_works(String[] input, String excepted)
-    '        {
-    '            Assert.Equal(excepted, New CSharpHelper().Namespace(input));
-    '        }
-    '    }
-
-
-
+    <Theory>
+    <InlineData({"WebApplication1", "Migration"}, "WebApplication1.Migration")>
+    <InlineData({"WebApplication1.Migration"}, "WebApplication1.Migration")>
+    <InlineData({"ef-xplat.Namespace"}, "efxplat.[Namespace]")>
+    <InlineData({"#", "$"}, "_._")>
+    <InlineData({""}, "_")>
+    <InlineData(CType({}, String()), "_")>
+    <InlineData({Nothing}, "_")>
+    Public Sub Namespace_works(input As String(), excepted As String)
+        Assert.Equal(excepted, New VisualBasicHelper().Namespace(input))
+    End Sub
 
     Private Enum SomeEnum
         DefaultValue
     End Enum
-
-
 
 End Class
 

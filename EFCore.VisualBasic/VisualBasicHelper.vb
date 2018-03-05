@@ -268,10 +268,16 @@ Public Class VisualBasicHelper
         If (type.IsNested) Then
             Debug.Assert(Not type.DeclaringType Is Nothing)
             builder.Append(Reference(type.DeclaringType)) _
-                    .Append(".")
+                   .Append(".")
         End If
 
-        builder.Append(type.ShortDisplayName())
+        Dim typeName = type.ShortDisplayName()
+
+        If _keywords.Contains(typeName, StringComparer.OrdinalIgnoreCase) Then
+            builder.Append($"[{typeName}]")
+        Else
+            builder.Append(typeName)
+        End If
 
         Return builder.ToString()
     End Function
@@ -316,7 +322,7 @@ Public Class VisualBasicHelper
         End If
 
         If (_keywords.Contains(baseIdentifier)) Then
-            Return "@" + baseIdentifier     ' TODO : Check
+            Return "[" + baseIdentifier + "]"
         End If
 
         Return baseIdentifier
@@ -376,7 +382,7 @@ Public Class VisualBasicHelper
     '''     directly from your code. This API may change Or be removed in future releases.
     ''' </summary>
     Public Overridable Function Literal(value As Char) As String Implements IVisualBasicHelper.Literal
-        Return """" + If(value = """", """""", value.ToString()) + " """
+        Return """" + If(value = """", """""", value.ToString()) + """c"
     End Function
 
     ''' <summary>
@@ -628,7 +634,6 @@ Public Class VisualBasicHelper
         End If
 
         If (TypeOf value Is [Enum]) Then
-
             Return Literal(CType(value, [Enum]))
         End If
 

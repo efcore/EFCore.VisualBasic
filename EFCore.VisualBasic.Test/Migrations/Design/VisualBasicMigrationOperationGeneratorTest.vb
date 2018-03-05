@@ -1,6 +1,4 @@
 ﻿Imports System.Reflection
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities
-Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
@@ -34,48 +32,44 @@ mb.Sql(""-- close to me"")"
         Assert.Equal(expectedCode, builder.ToString())
     End Sub
 
+    Private Sub Test(Of T As MigrationOperation)(operation As T, expectedCode As String, assertAction As Action(Of T))
+        Dim generator = New VisualBasicMigrationOperationGenerator(
+            New VisualBasicMigrationOperationGeneratorDependencies(New VisualBasicHelper()))
 
-    'Private Sub Test(Of T As MigrationOperation)(operation As T, expectedCode As String, assertAction As Action(Of T))
-    '    Dim generator = New VisualBasicMigrationOperationGenerator(
-    '        New VisualBasicMigrationOperationGeneratorDependencies(New VisualBasicHelper()))
+        Dim builder = New IndentedStringBuilder()
+        generator.Generate("mb", {operation}, builder)
+        Dim code = builder.ToString()
 
-    '    Dim builder = New IndentedStringBuilder()
-    '    generator.Generate("mb", {operation}, builder)
-    '    Dim code = builder.ToString()
+        Assert.Equal(expectedCode, code)
 
-    '    Assert.Equal(expectedCode, code)
+        Dim build = New BuildSource() With
+        {
+            .Sources =
+            {
+                "
+                Imports Microsoft.EntityFrameworkCore.Migrations
 
-    '    Dim build = New BuildSource() With
-    '    {
-    '        .References =
-    '        {
-    '            BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational")
-    '        },
-    '        .Sources =
-    '        {
-    '            "
-    '            Imports Microsoft.EntityFrameworkCore.Migrations
+                 Public Class OperationsFactory
 
-    '             Public Module OperationsFactory
+                    Public Shared Sub Create(mb As MigrationBuilder)
+                        " + code + "
+                    End Sub
 
-    '                Public Shared Sub Create(mb as MigrationBuilder)
-    '                    " + code + "
-    '                End Sub
+                 End Class
+            "
+            }
+        }
+        build.References.Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
 
-    '             End Class
-    '        "
-    '        }
-    '    }
+        Dim assembly = build.BuildInMemory()
+        Dim factoryType = assembly.GetType("OperationsFactory")
+        Dim createMethod = factoryType.GetTypeInfo().GetDeclaredMethod("Create")
+        Dim mb = New MigrationBuilder(activeProvider:=Nothing)
+        createMethod.Invoke(Nothing, {mb})
+        Dim result = mb.Operations.Cast(Of T)().Single()
 
-    '    Dim assembly = build.BuildInMemory()
-    '    Dim factoryType = assembly.GetType("OperationsFactory")
-    '    Dim createMethod = factoryType.GetTypeInfo().GetDeclaredMethod("Create")
-    '    Dim mb = New MigrationBuilder(activeProvider:=Nothing)
-    '    createMethod.Invoke(Nothing, {mb})
-    '    Dim result = mb.Operations.Cast(Of T)().Single()
-
-    '    assertAction(result)
-    'End Sub
+        assertAction(result)
+    End Sub
 
     <Fact>
     Public Sub AddColumnOperation_required_args()
@@ -95,9 +89,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     nullable:= False)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+             End Sub)
     End Sub
 
     <Fact>
@@ -117,7 +115,8 @@ mb.Sql(""-- close to me"")"
                 .MaxLength = 30,
                 .IsRowVersion = True,
                 .IsNullable = True,
-                .DefaultValue = 1
+                .DefaultValue = 1,
+                .IsFixedLength = True
             }
 
         Dim expectedCode =
@@ -127,14 +126,25 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     type:= ""Integer"",
     unicode:= False,
+    fixedLength:= True,
     maxLength:= 30,
     rowVersion:= True,
     nullable:= True,
     defaultValue:= 1)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Equal("Integer", o.ColumnType)
+                 Assert.True(o.IsNullable)
+                 Assert.Equal(1, o.DefaultValue)
+                 Assert.False(o.IsUnicode)
+                 Assert.True(o.IsFixedLength)
+             End Sub)
     End Sub
 
     <Fact>
@@ -158,9 +168,14 @@ mb.Sql(""-- close to me"")"
     nullable:= False,
     defaultValueSql:= ""1"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Equal("1", o.DefaultValueSql)
+             End Sub)
     End Sub
 
     <Fact>
@@ -184,15 +199,19 @@ mb.Sql(""-- close to me"")"
     nullable:= False,
     computedColumnSql:= ""1"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Equal("1", o.ComputedColumnSql)
+             End Sub)
 
     End Sub
 
     <Fact>
     Public Sub AddForeignKeyOperation_required_args()
-
 
         Dim generator = CreateGenerator()
         Dim builder = New IndentedStringBuilder()
@@ -214,9 +233,14 @@ mb.Sql(""-- close to me"")"
     principalTable:= ""Blog"",
     principalColumn:= ""Id"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("FK_Post_Blog_BlogId", o.Name)
+                 Assert.Equal({"BlogId"}, o.Columns)
+                 Assert.Equal("Blog", o.PrincipalTable)
+             End Sub)
 
     End Sub
 
@@ -250,9 +274,18 @@ mb.Sql(""-- close to me"")"
     onUpdate:= ReferentialAction.Restrict,
     onDelete:= ReferentialAction.Cascade)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("FK_Post_Blog_BlogId", o.Name)
+                 Assert.Equal({"BlogId"}, o.Columns)
+                 Assert.Equal("Blog", o.PrincipalTable)
+                 Assert.Equal("my", o.PrincipalSchema)
+                 Assert.Equal({"Id"}, o.PrincipalColumns)
+                 Assert.Equal(ReferentialAction.Cascade, o.OnDelete)
+             End Sub)
     End Sub
 
     <Fact>
@@ -278,9 +311,15 @@ mb.Sql(""-- close to me"")"
     principalTable:= ""Blog"",
     principalColumns:= {""Id1"", ""Id2""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("FK_Post_Blog_BlogId1_BlogId2", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"BlogId1", "BlogId2"}, o.Columns)
+                 Assert.Equal("Blog", o.PrincipalTable)
+                 Assert.Equal({"Id1", "Id2"}, o.PrincipalColumns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -301,9 +340,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     column:= ""Id"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("PK_Post", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"Id"}, o.Columns)
+             End Sub)
 
     End Sub
 
@@ -328,9 +371,14 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     column:= ""Id"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("PK_Post", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"Id"}, o.Columns)
+             End Sub)
 
     End Sub
 
@@ -352,9 +400,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     columns:= {""Id1"", ""Id2""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("PK_Post", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"Id1", "Id2"}, o.Columns)
+             End Sub)
 
     End Sub
 
@@ -376,9 +428,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     column:= ""AltId"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("AK_Post_AltId", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"AltId"}, o.Columns)
+             End Sub)
 
     End Sub
 
@@ -403,9 +459,14 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     column:= ""AltId"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("AK_Post_AltId", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"AltId"}, o.Columns)
+             End Sub)
 
     End Sub
 
@@ -416,20 +477,24 @@ mb.Sql(""-- close to me"")"
 
         Dim operation = New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId",
+                .Name = "AK_Post_AltId1_AltId2",
                 .Table = "Post",
                 .Columns = {"AltId1", "AltId2"}
             }
 
         Dim expectedCode =
 "mb.AddUniqueConstraint(
-    name:= ""AK_Post_AltId"",
+    name:= ""AK_Post_AltId1_AltId2"",
     table:= ""Post"",
     columns:= {""AltId1"", ""AltId2""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("AK_Post_AltId1_AltId2", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"AltId1", "AltId2"}, o.Columns)
+             End Sub)
 
     End Sub
 
@@ -452,9 +517,32 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     nullable:= False)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Null(o.ColumnType)
+                 Assert.Null(o.IsUnicode)
+                 Assert.Null(o.IsFixedLength)
+                 Assert.Null(o.MaxLength)
+                 Assert.False(o.IsRowVersion)
+                 Assert.False(o.IsNullable)
+                 Assert.Null(o.DefaultValue)
+                 Assert.Null(o.DefaultValueSql)
+                 Assert.Null(o.ComputedColumnSql)
+                 Assert.Equal(GetType(Integer), o.OldColumn.ClrType)
+                 Assert.Null(o.OldColumn.ColumnType)
+                 Assert.Null(o.OldColumn.IsUnicode)
+                 Assert.Null(o.OldColumn.IsFixedLength)
+                 Assert.Null(o.OldColumn.MaxLength)
+                 Assert.False(o.OldColumn.IsRowVersion)
+                 Assert.False(o.OldColumn.IsNullable)
+                 Assert.Null(o.OldColumn.DefaultValue)
+                 Assert.Null(o.OldColumn.DefaultValueSql)
+                 Assert.Null(o.OldColumn.ComputedColumnSql)
+             End Sub)
 
     End Sub
 
@@ -476,6 +564,7 @@ mb.Sql(""-- close to me"")"
                 .IsRowVersion = True,
                 .IsNullable = True,
                 .DefaultValue = 1,
+                .IsFixedLength = True,
                 .OldColumn = New ColumnOperation With
                 {
                    .ClrType = GetType(String),
@@ -484,7 +573,8 @@ mb.Sql(""-- close to me"")"
                     .MaxLength = 20,
                     .IsRowVersion = True,
                     .IsNullable = True,
-                    .DefaultValue = 0
+                    .DefaultValue = 0,
+                    .IsFixedLength = True
                 }
             }
 
@@ -495,6 +585,7 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     type:= ""Integer"",
     unicode:= False,
+    fixedLength:= True,
     maxLength:= 30,
     rowVersion:= True,
     nullable:= True,
@@ -502,15 +593,39 @@ mb.Sql(""-- close to me"")"
     oldClrType:= GetType(String),
     oldType:= ""String"",
     oldUnicode:= False,
+    oldFixedLength:= True,
     oldMaxLength:= 20,
     oldRowVersion:= True,
     oldNullable:= True,
     oldDefaultValue:= 0)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Equal("Integer", o.ColumnType)
+                 Assert.False(o.IsUnicode)
+                 Assert.True(o.IsFixedLength)
+                 Assert.Equal(30, o.MaxLength)
+                 Assert.True(o.IsRowVersion)
+                 Assert.True(o.IsNullable)
+                 Assert.Equal(1, o.DefaultValue)
+                 Assert.Null(o.DefaultValueSql)
+                 Assert.Null(o.ComputedColumnSql)
+                 Assert.Equal(GetType(String), o.OldColumn.ClrType)
+                 Assert.Equal("String", o.OldColumn.ColumnType)
+                 Assert.False(o.OldColumn.IsUnicode)
+                 Assert.True(o.OldColumn.IsFixedLength)
+                 Assert.Equal(20, o.OldColumn.MaxLength)
+                 Assert.True(o.OldColumn.IsRowVersion)
+                 Assert.True(o.OldColumn.IsNullable)
+                 Assert.Equal(0, o.OldColumn.DefaultValue)
+                 Assert.Null(o.OldColumn.DefaultValueSql)
+                 Assert.Null(o.OldColumn.ComputedColumnSql)
+             End Sub)
     End Sub
 
     <Fact>
@@ -534,9 +649,32 @@ mb.Sql(""-- close to me"")"
     nullable:= False,
     defaultValueSql:= ""1"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("1", o.DefaultValueSql)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Null(o.ColumnType)
+                 Assert.Null(o.IsUnicode)
+                 Assert.Null(o.IsFixedLength)
+                 Assert.Null(o.MaxLength)
+                 Assert.False(o.IsRowVersion)
+                 Assert.False(o.IsNullable)
+                 Assert.Null(o.DefaultValue)
+                 Assert.Null(o.ComputedColumnSql)
+                 Assert.Equal(GetType(Integer), o.OldColumn.ClrType)
+                 Assert.Null(o.OldColumn.ColumnType)
+                 Assert.Null(o.OldColumn.IsUnicode)
+                 Assert.Null(o.OldColumn.IsFixedLength)
+                 Assert.Null(o.OldColumn.MaxLength)
+                 Assert.False(o.OldColumn.IsRowVersion)
+                 Assert.False(o.OldColumn.IsNullable)
+                 Assert.Null(o.OldColumn.DefaultValue)
+                 Assert.Null(o.OldColumn.DefaultValueSql)
+                 Assert.Null(o.OldColumn.ComputedColumnSql)
+             End Sub)
     End Sub
 
     <Fact>
@@ -559,10 +697,32 @@ mb.Sql(""-- close to me"")"
     nullable:= False,
     computedColumnSql:= ""1"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("1", o.ComputedColumnSql)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Null(o.ColumnType)
+                 Assert.Null(o.IsUnicode)
+                 Assert.Null(o.IsFixedLength)
+                 Assert.Null(o.MaxLength)
+                 Assert.False(o.IsRowVersion)
+                 Assert.False(o.IsNullable)
+                 Assert.Null(o.DefaultValue)
+                 Assert.Null(o.DefaultValueSql)
+                 Assert.Equal(GetType(Integer), o.OldColumn.ClrType)
+                 Assert.Null(o.OldColumn.ColumnType)
+                 Assert.Null(o.OldColumn.IsUnicode)
+                 Assert.Null(o.OldColumn.IsFixedLength)
+                 Assert.Null(o.OldColumn.MaxLength)
+                 Assert.False(o.OldColumn.IsRowVersion)
+                 Assert.False(o.OldColumn.IsNullable)
+                 Assert.Null(o.OldColumn.DefaultValue)
+                 Assert.Null(o.OldColumn.DefaultValueSql)
+                 Assert.Null(o.OldColumn.ComputedColumnSql)
+             End Sub)
     End Sub
 
     <Fact>
@@ -575,13 +735,16 @@ mb.Sql(""-- close to me"")"
         operation.OldDatabase("bar") = "foo"
 
         Dim expectedCode =
-"mb.AlterDatabase()
-    .Annotation(""foo"", ""bar"")
+"mb.AlterDatabase() _
+    .Annotation(""foo"", ""bar"") _
     .OldAnnotation(""bar"", ""foo"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("bar", o("foo"))
+                 Assert.Equal("foo", o.OldDatabase("bar"))
+             End Sub)
     End Sub
 
     <Fact>
@@ -599,9 +762,20 @@ mb.Sql(""-- close to me"")"
 "mb.AlterSequence(
     name:= ""EntityFrameworkHiLoSequence"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Null(o.Schema)
+                 Assert.Equal(1, o.IncrementBy)
+                 Assert.Null(o.MinValue)
+                 Assert.Null(o.MaxValue)
+                 Assert.False(o.IsCyclic)
+                 Assert.Equal(1, o.OldSequence.IncrementBy)
+                 Assert.Null(o.OldSequence.MinValue)
+                 Assert.Null(o.OldSequence.MaxValue)
+                 Assert.False(o.OldSequence.IsCyclic)
+             End Sub)
     End Sub
 
     <Fact>
@@ -639,10 +813,20 @@ mb.Sql(""-- close to me"")"
     oldMaxValue:= 5L,
     oldCyclic:= True)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal(3, o.IncrementBy)
+                 Assert.Equal(2, o.MinValue)
+                 Assert.Equal(4, o.MaxValue)
+                 Assert.True(o.IsCyclic)
+                 Assert.Equal(4, o.OldSequence.IncrementBy)
+                 Assert.Equal(3, o.OldSequence.MinValue)
+                 Assert.Equal(5, o.OldSequence.MaxValue)
+                 Assert.True(o.OldSequence.IsCyclic)
+             End Sub)
     End Sub
 
     <Fact>
@@ -661,9 +845,12 @@ mb.Sql(""-- close to me"")"
     name:= ""Customer"",
     schema:= ""dbo"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Customer", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+             End Sub)
     End Sub
 
     <Fact>
@@ -684,10 +871,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     column:= ""Title"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_Post_Title", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"Title"}, o.Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -699,6 +889,7 @@ mb.Sql(""-- close to me"")"
         Dim operation = New CreateIndexOperation() With
         {
                 .Name = "IX_Post_Title",
+                .Schema = "dbo",
                 .Table = "Post",
                 .Columns = {"Title"},
                 .IsUnique = True,
@@ -708,15 +899,21 @@ mb.Sql(""-- close to me"")"
         Dim expectedCode =
 "mb.CreateIndex(
     name:= ""IX_Post_Title"",
+    schema:= ""dbo"",
     table:= ""Post"",
     column:= ""Title"",
     unique:= True,
     filter:= ""[Title] IS NOT NULL"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_Post_Title", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"Title"}, o.Columns)
+                 Assert.True(o.IsUnique)
+             End Sub)
     End Sub
 
     <Fact>
@@ -737,10 +934,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     columns:= {""Title"", ""Subtitle""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_Post_Title_Subtitle", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal({"Title", "Subtitle"}, o.Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -754,10 +954,11 @@ mb.Sql(""-- close to me"")"
 "mb.EnsureSchema(
     name:= ""my"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("my", o.Name)
+             End Sub)
     End Sub
 
     <Fact>
@@ -776,9 +977,12 @@ mb.Sql(""-- close to me"")"
 "mb.CreateSequence(
     name:= ""EntityFrameworkHiLoSequence"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal(GetType(Long), o.ClrType)
+             End Sub)
 
     End Sub
 
@@ -798,10 +1002,12 @@ mb.Sql(""-- close to me"")"
 "mb.CreateSequence(Of Integer)(
     name:= ""EntityFrameworkHiLoSequence"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+             End Sub)
     End Sub
 
     <Fact>
@@ -831,10 +1037,18 @@ mb.Sql(""-- close to me"")"
     maxValue:= 4L,
     cyclic:= True)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal(GetType(Long), o.ClrType)
+                 Assert.Equal(3, o.StartValue)
+                 Assert.Equal(5, o.IncrementBy)
+                 Assert.Equal(2, o.MinValue)
+                 Assert.Equal(4, o.MaxValue)
+                 Assert.True(o.IsCyclic)
+             End Sub)
     End Sub
 
     <Fact>
@@ -864,10 +1078,18 @@ mb.Sql(""-- close to me"")"
     maxValue:= 4L,
     cyclic:= True)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal(GetType(Integer), o.ClrType)
+                 Assert.Equal(3, o.StartValue)
+                 Assert.Equal(5, o.IncrementBy)
+                 Assert.Equal(2, o.MinValue)
+                 Assert.Equal(4, o.MaxValue)
+                 Assert.True(o.IsCyclic)
+             End Sub)
     End Sub
 
     <Fact>
@@ -891,15 +1113,20 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .Id = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
-    End Function)"
+    },
+    constraints:= Sub(table)
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Name)
+                 Assert.Equal(1, o.Columns.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("Id", o.Columns(0).Name)
+                 Assert.Equal("Post", o.Columns(0).Table)
+                 Assert.Equal(GetType(Integer), o.Columns(0).ClrType)
+             End Sub)
     End Sub
 
     <Fact>
@@ -922,6 +1149,7 @@ mb.Sql(""-- close to me"")"
                 .ClrType = GetType(Integer),
                 .ColumnType = "Integer",
                 .IsUnicode = False,
+                .IsFixedLength = True,
                 .MaxLength = 30,
                 .IsRowVersion = True,
                 .IsNullable = True,
@@ -934,16 +1162,28 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     columns:= Function(table) New With 
     {
-        .PostId = table.Column(Of Integer)(name:= ""Post Id"", type:= ""Integer"", unicode:= False, maxLength:= 30, rowVersion:= True, nullable:= True, defaultValue:= 1)
-    }
-    End Function,
-    constraints:= Function(table)
-    End Function)"
+        .PostId = table.Column(Of Integer)(name:= ""Post Id"", type:= ""Integer"", unicode:= False, fixedLength:= True, maxLength:= 30, rowVersion:= True, nullable:= True, defaultValue:= 1)
+    },
+    constraints:= Sub(table)
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal(1, o.Columns.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("Post Id", o.Columns(0).Name)
+                 Assert.Equal("dbo", o.Columns(0).Schema)
+                 Assert.Equal("Post", o.Columns(0).Table)
+                 Assert.Equal(GetType(Integer), o.Columns(0).ClrType)
+                 Assert.Equal("Integer", o.Columns(0).ColumnType)
+                 Assert.True(o.Columns(0).IsNullable)
+                 Assert.False(o.Columns(0).IsUnicode)
+                 Assert.True(o.Columns(0).IsFixedLength)
+                 Assert.Equal(1, o.Columns(0).DefaultValue)
+             End Sub)
     End Sub
 
     <Fact>
@@ -968,14 +1208,20 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .Id = table.Column(Of Integer)(nullable:= False, defaultValueSql:= ""1"")
-    }
-    End Function,
-    constraints:= Function(table)
-    End Function)"
+    },
+    constraints:= Sub(table)
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.Columns.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
+                 Assert.Equal("Id", o.Columns(0).Name)
+                 Assert.Equal("Post", o.Columns(0).Table)
+                 Assert.Equal(GetType(Integer), o.Columns(0).ClrType)
+                 Assert.Equal("1", o.Columns(0).DefaultValueSql)
+             End Sub)
 
     End Sub
 
@@ -1000,15 +1246,20 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .Id = table.Column(Of Integer)(nullable:= False, computedColumnSql:= ""1"")
-    }
-    End Function,
-    constraints:= Function(table)
-    End Function)"
+    },
+    constraints:= Sub(table)
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.Columns.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("Id", o.Columns(0).Name)
+                 Assert.Equal("Post", o.Columns(0).Table)
+                 Assert.Equal(GetType(Integer), o.Columns(0).ClrType)
+                 Assert.Equal("1", o.Columns(0).ComputedColumnSql)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1039,20 +1290,26 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .BlogId = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.ForeignKey(
             name:= ""FK_Post_Blog_BlogId"",
             column:= Function(x) x.BlogId,
             principalTable:= ""Blog"",
             principalColumn:= ""Id"")
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.ForeignKeys.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Dim fk = o.ForeignKeys.First()
+                 Assert.Equal("FK_Post_Blog_BlogId", fk.Name)
+                 Assert.Equal("Post", fk.Table)
+                 Assert.Equal({"BlogId"}, fk.Columns.ToArray())
+                 Assert.Equal("Blog", fk.PrincipalTable)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1092,9 +1349,8 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .BlogId = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.ForeignKey(
             name:= ""FK_Post_Blog_BlogId"",
             column:= Function(x) x.BlogId,
@@ -1103,12 +1359,24 @@ mb.Sql(""-- close to me"")"
             principalColumn:= ""Id"",
             onUpdate:= ReferentialAction.SetNull,
             onDelete:= ReferentialAction.SetDefault)
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.ForeignKeys.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Dim fk = o.ForeignKeys.First()
+                 Assert.Equal("Post", fk.Table)
+                 Assert.Equal("dbo", fk.Schema)
+                 Assert.Equal("FK_Post_Blog_BlogId", fk.Name)
+                 Assert.Equal({"BlogId"}, fk.Columns.ToArray())
+                 Assert.Equal("Blog", fk.PrincipalTable)
+                 Assert.Equal("my", fk.PrincipalSchema)
+                 Assert.Equal({"Id"}, fk.PrincipalColumns)
+                 Assert.Equal(ReferentialAction.SetNull, fk.OnUpdate)
+                 Assert.Equal(ReferentialAction.SetDefault, fk.OnDelete)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1147,20 +1415,26 @@ mb.Sql(""-- close to me"")"
     {
         .BlogId1 = table.Column(Of Integer)(nullable:= False),
         .BlogId2 = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.ForeignKey(
             name:= ""FK_Post_Blog_BlogId1_BlogId2"",
             columns:= Function(x) New With {x.BlogId1, x.BlogId2},
             principalTable:= ""Blog"",
             principalColumns:= {""Id1"", ""Id2""})
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.ForeignKeys.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Dim fk = o.ForeignKeys.First()
+                 Assert.Equal("Post", fk.Table)
+                 Assert.Equal({"BlogId1", "BlogId2"}, fk.Columns.ToArray())
+                 Assert.Equal("Blog", fk.PrincipalTable)
+                 Assert.Equal({"Id1", "Id2"}, fk.PrincipalColumns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1189,16 +1463,20 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .Id = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.PrimaryKey(""PK_Post"", Function(x) x.Id)
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.NotNull(o.PrimaryKey)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("PK_Post", o.PrimaryKey.Name)
+                 Assert.Equal("Post", o.PrimaryKey.Table)
+                 Assert.Equal({"Id"}, o.PrimaryKey.Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1232,16 +1510,21 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .Id = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.PrimaryKey(""PK_Post"", Function(x) x.Id)
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.NotNull(o.PrimaryKey)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("PK_Post", o.PrimaryKey.Name)
+                 Assert.Equal("dbo", o.PrimaryKey.Schema)
+                 Assert.Equal("Post", o.PrimaryKey.Table)
+                 Assert.Equal({"Id"}, o.PrimaryKey.Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1277,16 +1560,20 @@ mb.Sql(""-- close to me"")"
     {
         .Id1 = table.Column(Of Integer)(nullable:= False),
         .Id2 = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.PrimaryKey(""PK_Post"", Function(x) New With {x.Id1, x.Id2})
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.NotNull(o.PrimaryKey)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("PK_Post", o.PrimaryKey.Name)
+                 Assert.Equal("Post", o.PrimaryKey.Table)
+                 Assert.Equal({"Id1", "Id2"}, o.PrimaryKey.Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1315,16 +1602,20 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .AltId = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.UniqueConstraints.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("AK_Post_AltId", o.UniqueConstraints(0).Name)
+                 Assert.Equal("Post", o.UniqueConstraints(0).Table)
+                 Assert.Equal({"AltId"}, o.UniqueConstraints(0).Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1360,16 +1651,21 @@ mb.Sql(""-- close to me"")"
     columns:= Function(table) New With 
     {
         .AltId = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
+    },
+    constraints:= Sub(table)
         table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
-    End Function)"
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.UniqueConstraints.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("AK_Post_AltId", o.UniqueConstraints(0).Name)
+                 Assert.Equal("dbo", o.UniqueConstraints(0).Schema)
+                 Assert.Equal("Post", o.UniqueConstraints(0).Table)
+                 Assert.Equal({"AltId"}, o.UniqueConstraints(0).Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1398,7 +1694,7 @@ mb.Sql(""-- close to me"")"
         operation.UniqueConstraints.Add(
             New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId",
+                .Name = "AK_Post_AltId1_AltId2",
                 .Schema = "dbo",
                 .Table = "Post",
                 .Columns = {"AltId1", "AltId2"}
@@ -1411,16 +1707,20 @@ mb.Sql(""-- close to me"")"
     {
         .AltId1 = table.Column(Of Integer)(nullable:= False),
         .AltId2 = table.Column(Of Integer)(nullable:= False)
-    }
-    End Function,
-    constraints:= Function(table)
-        table.UniqueConstraint(""AK_Post_AltId"", Function(x) New With {x.AltId1, x.AltId2})
-    End Function)"
+    },
+    constraints:= Sub(table)
+        table.UniqueConstraint(""AK_Post_AltId1_AltId2"", Function(x) New With {x.AltId1, x.AltId2})
+    End Sub)"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal(1, o.UniqueConstraints.Count)
 
-        Assert.Equal(expectedCode, builder.ToString())
-
+                 Assert.Equal("AK_Post_AltId1_AltId2", o.UniqueConstraints(0).Name)
+                 Assert.Equal("Post", o.UniqueConstraints(0).Table)
+                 Assert.Equal({"AltId1", "AltId2"}, o.UniqueConstraints(0).Columns)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1440,10 +1740,12 @@ mb.Sql(""-- close to me"")"
     name:= ""Id"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1465,10 +1767,13 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1488,10 +1793,12 @@ mb.Sql(""-- close to me"")"
     name:= ""FK_Post_BlogId"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("FK_Post_BlogId", o.Name)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1513,10 +1820,13 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("FK_Post_BlogId", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1535,10 +1845,12 @@ mb.Sql(""-- close to me"")"
     name:= ""IX_Post_Title"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_Post_Title", o.Name)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1560,10 +1872,13 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_Post_Title", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1583,10 +1898,12 @@ mb.Sql(""-- close to me"")"
     name:= ""PK_Post"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("PK_Post", o.Name)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1608,9 +1925,13 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("PK_Post", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1625,10 +1946,11 @@ mb.Sql(""-- close to me"")"
 "mb.DropSchema(
     name:= ""my"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("my", o.Name)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1643,9 +1965,11 @@ mb.Sql(""-- close to me"")"
 "mb.DropSequence(
     name:= ""EntityFrameworkHiLoSequence"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1664,10 +1988,12 @@ mb.Sql(""-- close to me"")"
     name:= ""EntityFrameworkHiLoSequence"",
     schema:= ""dbo"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1681,10 +2007,11 @@ mb.Sql(""-- close to me"")"
 "mb.DropTable(
     name:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Name)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1703,10 +2030,12 @@ mb.Sql(""-- close to me"")"
     name:= ""Post"",
     schema:= ""dbo"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1725,10 +2054,12 @@ mb.Sql(""-- close to me"")"
     name:= ""AK_Post_AltId"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("AK_Post_AltId", o.Name)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1749,10 +2080,13 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     table:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("AK_Post_AltId", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1773,10 +2107,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     newName:= ""PostId"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("PostId", o.NewName)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1799,10 +2136,14 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     newName:= ""PostId"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Id", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("PostId", o.NewName)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1823,10 +2164,13 @@ mb.Sql(""-- close to me"")"
     table:= ""Post"",
     newName:= ""IX_Post_PostTitle"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_Post_Title", o.Name)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("IX_Post_PostTitle", o.NewName)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1836,7 +2180,7 @@ mb.Sql(""-- close to me"")"
 
         Dim operation = New RenameIndexOperation() With
         {
-            .Name = "IX_Post_Title",
+            .Name = "IX_dbo.Post_Title",
             .Schema = "dbo",
             .Table = "Post",
             .NewName = "IX_dbo.Post_PostTitle"
@@ -1844,15 +2188,19 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameIndex(
-    name:= ""IX_Post_Title"",
+    name:= ""IX_dbo.Post_Title"",
     schema:= ""dbo"",
     table:= ""Post"",
     newName:= ""IX_dbo.Post_PostTitle"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("IX_dbo.Post_Title", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Post", o.Table)
+                 Assert.Equal("IX_dbo.Post_PostTitle", o.NewName)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1866,10 +2214,11 @@ mb.Sql(""-- close to me"")"
 "mb.RenameSequence(
     name:= ""EntityFrameworkHiLoSequence"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1893,10 +2242,14 @@ mb.Sql(""-- close to me"")"
     newName:= ""MySequence"",
     newSchema:= ""my"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("MySequence", o.NewName)
+                 Assert.Equal("my", o.NewSchema)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1911,9 +2264,11 @@ mb.Sql(""-- close to me"")"
 "mb.RenameTable(
     name:= ""Post"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Name)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1936,10 +2291,14 @@ mb.Sql(""-- close to me"")"
     newName:= ""Posts"",
     newSchema:= ""my"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("Post", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("Posts", o.NewName)
+                 Assert.Equal("my", o.NewSchema)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1958,10 +2317,12 @@ mb.Sql(""-- close to me"")"
     name:= ""EntityFrameworkHiLoSequence"",
     startValue:= 1L)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal(1, o.StartValue)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1982,10 +2343,13 @@ mb.Sql(""-- close to me"")"
     schema:= ""dbo"",
     startValue:= 1L)"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("EntityFrameworkHiLoSequence", o.Name)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal(1, o.StartValue)
+             End Sub)
     End Sub
 
     <Fact>
@@ -1997,8 +2361,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode = "mb.Sql(""-- I <3 DDL"")"
 
-        generator.Generate("mb", {operation}, builder)
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("-- I <3 DDL", o.Sql)
+             End Sub)
     End Sub
 
     <Fact>
@@ -2033,10 +2400,16 @@ mb.Sql(""-- close to me"")"
         {4, ""Harry Strickland""}
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.Columns.Length)
+                 Assert.Equal(5, o.Values.GetLength(0))
+                 Assert.Equal(2, o.Values.GetLength(1))
+                 Assert.Equal("John Snow", o.Values(2, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2060,10 +2433,15 @@ mb.Sql(""-- close to me"")"
     column:= ""Full Name"",
     value:= ""John Snow"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(1, o.Values.GetLength(1))
+                 Assert.Equal("John Snow", o.Values(0, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2086,10 +2464,15 @@ mb.Sql(""-- close to me"")"
     columns:= {""First Name"", ""Last Name""},
     values:= New Object() {""John"", ""Snow""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(2, o.Values.GetLength(1))
+                 Assert.Equal("Snow", o.Values(0, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2116,10 +2499,15 @@ mb.Sql(""-- close to me"")"
         ""Daenerys Targaryen""
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.Columns.Length)
+                 Assert.Equal(2, o.Values.GetLength(0))
+                 Assert.Equal(1, o.Values.GetLength(1))
+                 Assert.Equal("John Snow", o.Values(0, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2154,10 +2542,16 @@ mb.Sql(""-- close to me"")"
         ""Harry""
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(5, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("John", o.KeyValues(2, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2191,10 +2585,15 @@ mb.Sql(""-- close to me"")"
         {""Harry"", ""Strickland""}
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.KeyColumns.Length)
+                 Assert.Equal(5, o.KeyValues.GetLength(0))
+                 Assert.Equal(2, o.KeyValues.GetLength(1))
+                 Assert.Equal("Snow", o.KeyValues(2, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2217,10 +2616,15 @@ mb.Sql(""-- close to me"")"
     keyColumn:= ""Last Name"",
     keyValue:= ""Snow"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("Snow", o.KeyValues(0, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2244,10 +2648,15 @@ mb.Sql(""-- close to me"")"
     keyColumns:= {""First Name"", ""Last Name""},
     keyValues:= New Object() {""John"", ""Snow""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(2, o.KeyValues.GetLength(1))
+                 Assert.Equal("Snow", o.KeyValues(0, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2286,10 +2695,20 @@ mb.Sql(""-- close to me"")"
         {""Dragonstone"", ""Targaryen"", ""Valyrian""}
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(2, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(1, 0))
+                 Assert.Equal(3, o.Columns.Length)
+                 Assert.Equal(2, o.Values.GetLength(0))
+                 Assert.Equal(3, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(1, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2326,10 +2745,19 @@ mb.Sql(""-- close to me"")"
         ""Targaryen""
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.KeyColumns.Length)
+                 Assert.Equal(2, o.KeyValues.GetLength(0))
+                 Assert.Equal(2, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(1, 0))
+                 Assert.Equal(1, o.Columns.Length)
+                 Assert.Equal(2, o.Values.GetLength(0))
+                 Assert.Equal(1, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(1, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2367,10 +2795,65 @@ mb.Sql(""-- close to me"")"
         {""Dragonstone"", ""Targaryen"", ""Valyrian""}
     })"
 
-        generator.Generate("mb", {operation}, builder)
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.KeyColumns.Length)
+                 Assert.Equal(2, o.KeyValues.GetLength(0))
+                 Assert.Equal(2, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(1, 0))
+                 Assert.Equal(3, o.Columns.Length)
+                 Assert.Equal(2, o.Values.GetLength(0))
+                 Assert.Equal(3, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(1, 1))
+             End Sub)
+    End Sub
 
-        Assert.Equal(expectedCode, builder.ToString())
+    <Fact>
+    Public Sub UpdateDataOperation_all_args_multi()
+        Dim generator = CreateGenerator()
+        Dim builder = New IndentedStringBuilder()
 
+        Dim operation = New UpdateDataOperation  With
+        {
+            .Schema = "dbo",
+            .Table = "People",
+            .KeyColumns = { "Full Name" },
+            .KeyValues = 
+            {
+                { "Daenerys Targaryen" }
+            },
+            .Columns = { "Birthplace", "House Allegiance", "Culture" },
+            .Values = 
+            {
+                { "Dragonstone", "Targaryen", "Valyrian" }
+            }
+        }
+
+        Dim expectedCode =
+"mb.UpdateData(
+    schema:= ""dbo"",
+    table:= ""People"",
+    keyColumn:= ""Full Name"",
+    keyValue:= ""Daenerys Targaryen"",
+    columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
+    values:= New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
+
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("dbo", o.Schema)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys Targaryen", o.KeyValues(0, 0))
+                 Assert.Equal(3, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(3, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(0, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2400,10 +2883,19 @@ mb.Sql(""-- close to me"")"
     column:= ""House Allegiance"",
     value:= ""Targaryen"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(0, 0))
+                 Assert.Equal(1, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(1, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(0, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2440,10 +2932,19 @@ mb.Sql(""-- close to me"")"
         ""Targaryen""
     })"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(2, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(1, 0))
+                 Assert.Equal(1, o.Columns.Length)
+                 Assert.Equal(2, o.Values.GetLength(0))
+                 Assert.Equal(1, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(1, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2473,10 +2974,19 @@ mb.Sql(""-- close to me"")"
     column:= ""House Allegiance"",
     value:= ""Targaryen"")"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(2, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(0, 0))
+                 Assert.Equal(1, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(1, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(0, 0))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2505,10 +3015,19 @@ mb.Sql(""-- close to me"")"
     columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
     values:= New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(2, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(2, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys", o.KeyValues(0, 0))
+                 Assert.Equal(3, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(3, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(0, 1))
+             End Sub)
     End Sub
 
     <Fact>
@@ -2538,10 +3057,19 @@ mb.Sql(""-- close to me"")"
     columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
     values:= New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
 
-        generator.Generate("mb", {operation}, builder)
-
-        Assert.Equal(expectedCode, builder.ToString())
-
+        Test(operation,
+             expectedCode,
+             Sub(o)
+                 Assert.Equal("People", o.Table)
+                 Assert.Equal(1, o.KeyColumns.Length)
+                 Assert.Equal(1, o.KeyValues.GetLength(0))
+                 Assert.Equal(1, o.KeyValues.GetLength(1))
+                 Assert.Equal("Daenerys Targaryen", o.KeyValues(0, 0))
+                 Assert.Equal(3, o.Columns.Length)
+                 Assert.Equal(1, o.Values.GetLength(0))
+                 Assert.Equal(3, o.Values.GetLength(1))
+                 Assert.Equal("Targaryen", o.Values(0, 1))
+             End Sub)
     End Sub
 
 End Class

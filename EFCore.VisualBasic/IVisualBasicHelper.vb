@@ -4,7 +4,7 @@
 Public Interface IVisualBasicHelper
 
     ''' <summary>
-    '''     Generates a valid C# identifier from the specified string unique to the scope.
+    '''     Generates a valid Visual Basic identifier from the specified string unique to the scope.
     ''' </summary>
     ''' <param name="name"> The base identifier name. </param>
     ''' <param name="scope"> A list of in-scope identifiers. </param>
@@ -197,14 +197,14 @@ Public Interface IVisualBasicHelper
     Function Literal(values As IReadOnlyList(Of Object), vertical As Boolean) As String
 
     ''' <summary>
-    '''     Generates a valid C# namespace from the specified parts.
+    '''     Generates a valid Visual Basic namespace from the specified parts.
     ''' </summary>
     ''' <param name="name"> The base parts of the namespace. </param>
     ''' <returns> The namespace. </returns>
     Function [Namespace](ParamArray name As String()) As String
 
     ''' <summary>
-    '''     Generates a C# type reference.
+    '''     Generates a Visual Basic type reference.
     ''' </summary>
     ''' <param name="type"> The type to reference. </param>
     ''' <returns> The reference. </returns>

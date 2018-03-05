@@ -10,7 +10,6 @@ Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 Public Class VisualBasicMigrationOperationGenerator
     Implements IVisualBasicMigrationOperationGenerator
 
-
     ''' <summary>
     '''     Initializes a New instance of the <see cref="VisualBasicMigrationOperationGenerator" /> class.
     ''' </summary>
@@ -50,8 +49,6 @@ Public Class VisualBasicMigrationOperationGenerator
             builder.Append(builderName)
 
             ExecuteGenerate(operation, builder)
-
-            Continue For
         Next
     End Sub
 
@@ -110,6 +107,11 @@ Public Class VisualBasicMigrationOperationGenerator
             If operation.IsUnicode = False Then
                 builder.AppendLine(",") _
                        .Append("unicode:= False")
+            End If
+
+            If operation.IsFixedLength = True Then
+                builder.AppendLine(",") _
+                       .Append("fixedLength:= True")
             End If
 
             If operation.MaxLength.HasValue Then
@@ -338,6 +340,11 @@ Public Class VisualBasicMigrationOperationGenerator
                        .Append("unicode:= False")
             End If
 
+            If operation.IsFixedLength = True Then
+                builder.AppendLine(",") _
+                       .Append("fixedLength:= True")
+            End If
+
             If operation.MaxLength.HasValue Then
                 builder.AppendLine(",") _
                        .Append("maxLength:= ") _
@@ -385,6 +392,11 @@ Public Class VisualBasicMigrationOperationGenerator
             If operation.OldColumn.IsUnicode = False Then
                 builder.AppendLine(",") _
                        .Append("oldUnicode:= False")
+            End If
+
+            If operation.OldColumn.IsFixedLength = True Then
+                builder.AppendLine(",") _
+                       .Append("oldFixedLength:= True")
             End If
 
             If operation.OldColumn.MaxLength.HasValue Then
@@ -721,6 +733,10 @@ Public Class VisualBasicMigrationOperationGenerator
                         builder.Append("unicode:= False, ")
                     End If
 
+                    If column.IsFixedLength = True Then
+                        builder.Append("fixedLength:= True, ")
+                    End If
+
                     If (column.MaxLength.HasValue) Then
                         builder.Append("maxLength:= ") _
                                .Append(VBCode.Literal(column.MaxLength.Value)) _
@@ -759,9 +775,8 @@ Public Class VisualBasicMigrationOperationGenerator
                 Next
             End Using
 
-            builder.AppendLine("}") _
-                   .AppendLine("End Function,") _
-            .AppendLine("constraints:= Function(table)")
+            builder.AppendLine("},") _
+            .AppendLine("constraints:= Sub(table)")
 
             Using builder.Indent()
                 If Not operation.PrimaryKey Is Nothing Then
@@ -840,7 +855,7 @@ Public Class VisualBasicMigrationOperationGenerator
                 Next
             End Using
 
-            builder.Append("End Function)")
+            builder.Append("End Sub)")
 
             Annotations(operation.GetAnnotations(), builder)
         End Using
@@ -1438,7 +1453,7 @@ Public Class VisualBasicMigrationOperationGenerator
         For Each annotation In annotations
 
             ' TODO: Give providers an opportunity To render these As provider-specific extension methods
-            builder.AppendLine() _
+            builder.AppendLine(" _") _
                    .Append(".Annotation(") _
                    .Append(VBCode.Literal(annotation.Name)) _
                    .Append(", ") _
@@ -1458,7 +1473,7 @@ Public Class VisualBasicMigrationOperationGenerator
 
         For Each annotation In annotations
             ' TODO: Give providers an opportunity To render these As provider-specific extension methods
-            builder.AppendLine() _
+            builder.AppendLine(" _") _
                        .Append(".OldAnnotation(") _
                        .Append(VBCode.Literal(annotation.Name)) _
                        .Append(", ") _
@@ -1479,8 +1494,4 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Return result
     End Function
-
-
-
-
 End Class

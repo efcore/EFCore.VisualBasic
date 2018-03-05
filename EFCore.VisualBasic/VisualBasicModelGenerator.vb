@@ -22,7 +22,7 @@ Public Class VisualBasicModelGenerator
         contextDir As String,
         contextName As String,
         connectionString As String,
-        dataAnnotations As Boolean) As ScaffoldedModel
+        options As ModelCodeGenerationOptions) As ScaffoldedModel
 
         Dim files As New ScaffoldedModel
         files.ContextFile = New ScaffoldedFile

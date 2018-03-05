@@ -7,6 +7,9 @@ EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic.Test", "EFCore.VisualBasic.Test\EFCore.VisualBasic.Test.vbproj", "{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F2DFBC0-2466-48B2-9F04-FAF61C2B0698}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.Config = NuGet.Config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

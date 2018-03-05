@@ -9,7 +9,6 @@ Module SharedTypeExtensions
         Return If(Nullable.GetUnderlyingType(type), type)
     End Function
 
-
     <Extension()>
     Function IsNullableType(ByVal type As Type) As Boolean
         Dim typeInfo = type.GetTypeInfo()

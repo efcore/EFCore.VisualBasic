@@ -53,5 +53,4 @@ Public Class VisualBasicMigrationOperationGeneratorDependencies
         Return New VisualBasicMigrationOperationGeneratorDependencies(vbHelper)
     End Function
 
-
 End Class

@@ -123,4 +123,3 @@ Public Module VBTypeExtensions
         builder.Append(")")
     End Sub
 End Module
-

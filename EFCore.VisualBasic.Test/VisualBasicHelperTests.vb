@@ -193,7 +193,8 @@ string with """"""")
     {""A"", 1},
     {""B"", 2}
 }",
-                    result)
+                    result,
+            ignoreLineEndingDifferences:=True)
     End Sub
 
     <Fact>

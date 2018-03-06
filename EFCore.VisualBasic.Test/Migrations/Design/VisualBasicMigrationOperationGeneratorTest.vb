@@ -29,7 +29,7 @@ Public Class VisualBasicMigrationOperationGeneratorTest
 
 mb.Sql(""-- close to me"")"
 
-        Assert.Equal(expectedCode, builder.ToString())
+        Assert.Equal(expectedCode, builder.ToString(), ignoreLineEndingDifferences:=True)
     End Sub
 
     Private Sub Test(Of T As MigrationOperation)(operation As T, expectedCode As String, assertAction As Action(Of T))
@@ -40,7 +40,7 @@ mb.Sql(""-- close to me"")"
         generator.Generate("mb", {operation}, builder)
         Dim code = builder.ToString()
 
-        Assert.Equal(expectedCode, code)
+        Assert.Equal(expectedCode, code, ignoreLineEndingDifferences:=True)
 
         Dim build = New BuildSource() With
         {

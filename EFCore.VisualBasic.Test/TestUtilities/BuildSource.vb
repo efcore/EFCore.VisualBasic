@@ -5,31 +5,6 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Class BuildSource
 
-#If NET461 Then
-        Public Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From
-        {
-            BuildReference.ByName("mscorlib"),
-            BuildReference.ByName("netstandard", True),
-            BuildReference.ByName("System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"),
-            BuildReference.ByName("System.Collections", True),
-            BuildReference.ByName("System.Collections.Concurrent", True),
-            BuildReference.ByName("System.ComponentModel", True),
-            BuildReference.ByName("System.ComponentModel.Annotations", True),
-            BuildReference.ByName("System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"),
-            BuildReference.ByName("System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"),
-            BuildReference.ByName("System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"),
-            BuildReference.ByName("System.Data.Common", True),
-            BuildReference.ByName("System.Globalization", True),
-            BuildReference.ByName("System.Linq", True),
-            BuildReference.ByName("System.Reflection", True),
-            BuildReference.ByName("System.Reflection.Extensions", True),
-            BuildReference.ByName("System.Runtime", True),
-            BuildReference.ByName("System.Runtime.Extensions", True),
-            BuildReference.ByName("System.Threading", True),
-            BuildReference.ByName("System.Threading.Tasks", True),
-            BuildReference.ByName("System.ValueTuple", True)
-            }
-#ElseIf NETCOREAPP2_0 OrElse NETCOREAPP2_1 Then
     Public Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From
         {
             BuildReference.ByName("netstandard"),
@@ -40,10 +15,6 @@ Public Class BuildSource
             BuildReference.ByName("System.Runtime"),
             BuildReference.ByName("System.Text.RegularExpressions")
         }
-
-#Else
-    Public  Property References As ICollection(Of BuildReference) = New List(Of BuildReference)
-#End If
 
     Public Property TargetDir As String
     Public Property Sources As ICollection(Of String) = New List(Of String)

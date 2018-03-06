@@ -1,6 +1,4 @@
-﻿Imports System.IO
-Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Scaffolding
+﻿Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Xunit
 
 Public Class VisualBasicModelGeneratorTests

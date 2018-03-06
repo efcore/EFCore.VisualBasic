@@ -13,7 +13,7 @@ Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 Imports Microsoft.EntityFrameworkCore.Storage
-Imports Microsoft.EntityFrameworkCore.Storage.Converters
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Xunit
 
 Public Class VisualBasicMigrationsGeneratorTests
@@ -272,16 +272,12 @@ Public Class VisualBasicMigrationsGeneratorTests
             commonPrefix + ", New ConverterMappingHints(unicode:= True)))")
 
         AssertConverter(
-            New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(fixedLength:=False)),
+            New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New RelationalConverterMappingHints(fixedLength:=False)),
             commonPrefix + ", New ConverterMappingHints(fixedLength:= False)))")
 
         AssertConverter(
-            New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(fixedLength:=False, size:=77, scale:=-1)),
+            New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New RelationalConverterMappingHints(fixedLength:=False, size:=77, scale:=-1)),
             commonPrefix + ", New ConverterMappingHints(size:= 77, scale:= -1, fixedLength:= False)))")
-
-        AssertConverter(
-             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(sizeFunction:=Function(s) s / 10)),
-             commonPrefix + ", New ConverterMappingHints(size:= 100)))")
     End Sub
 
     Private Shared Sub AssertConverter(valueConverter As ValueConverter, expected As String)
@@ -350,7 +346,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations
-Imports Microsoft.EntityFrameworkCore.Storage.Converters
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 Namespace MyNamespace
     <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
@@ -567,8 +563,9 @@ End Namespace
                         eb.Property(Function(e) e.NullableStringEnum).HasDefaultValue(Enum1.Default).HasConversion(Of String)()
                         eb.Property(Function(e) e.NullableGuid).HasDefaultValue(New Guid())
                         eb.Property(Function(e) e.NullableInt16).HasDefaultValue(Short.MinValue)
-                        eb.Property(Function(e) e.NullableInt32).HasDefaultValue(CInt(Integer.MinValue))
-                        eb.Property(Function(e) e.NullableInt64).HasDefaultValue(CLng(Long.MinValue))
+                        ' UNDONE: See issue #9
+                        'eb.Property(Function(e) e.NullableInt32).HasDefaultValue(CInt(Integer.MinValue))
+                        'eb.Property(Function(e) e.NullableInt64).HasDefaultValue(CLng(Long.MinValue))
                         eb.Property(Function(e) e.NullableSingle).HasDefaultValue(0.3333333F)
                         eb.Property(Function(e) e.NullableSByte).HasDefaultValue(SByte.MinValue)
                         eb.Property(Function(e) e.NullableTimeSpan).HasDefaultValue(New TimeSpan(-1, 0, 0))

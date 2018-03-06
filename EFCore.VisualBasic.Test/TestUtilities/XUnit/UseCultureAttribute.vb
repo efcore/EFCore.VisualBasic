@@ -1,7 +1,5 @@
-﻿Imports System
-Imports System.Globalization
+﻿Imports System.Globalization
 Imports System.Reflection
-Imports System.Threading
 Imports Xunit.Sdk
 
 Namespace Microsoft.EntityFrameworkCore.TestUtilities.Xunit

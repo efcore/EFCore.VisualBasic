@@ -700,7 +700,7 @@ Public Class VisualBasicMigrationOperationGenerator
             End If
 
             builder.AppendLine(",") _
-                   .AppendLine("columns:= Function(table) New With ") _
+                   .AppendLine("columns:= Function(table) New With") _
                    .AppendLine("{")
 
             Dim map = New Dictionary(Of String, String)

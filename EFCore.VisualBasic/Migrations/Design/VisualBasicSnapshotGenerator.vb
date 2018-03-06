@@ -6,7 +6,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Builders
 Imports Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
-Imports Microsoft.EntityFrameworkCore.Storage.Converters
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 ''' <summary>
 '''     Used to generate Visual Basic code for creating an <see cref="IModel" />.
@@ -287,7 +287,7 @@ Public Class VisualBasicSnapshotGenerator
                          .Append(".") _
                          .Append(NameOf(PropertyBuilder.HasConversion)) _
                          .Append("(New ") _
-                         .Append(NameOf(Storage.Converters.ValueConverter)) _
+                         .Append(NameOf(Storage.ValueConversion.ValueConverter)) _
                          .Append("(Of ") _
                          .Append(storeType) _
                          .Append(", ") _
@@ -297,15 +297,10 @@ Public Class VisualBasicSnapshotGenerator
                          .Append("), Function(v) CType(Nothing, ") _
                          .Append(storeType)
             Dim hints = valueConverter.MappingHints
-            If Not hints.IsEmpty Then
+            If hints IsNot Nothing Then
                 Dim nonNulls = New List(Of String)()
                 If hints.Size IsNot Nothing Then
                     nonNulls.Add("size:= " & VBCode.Literal(hints.Size.Value))
-                ElseIf hints.SizeFunction IsNot Nothing Then
-                    Dim maxLength = [property].GetMaxLength()
-                    If maxLength IsNot Nothing Then
-                        nonNulls.Add("size:= " & VBCode.Literal(hints.SizeFunction(maxLength.Value)))
-                    End If
                 End If
 
                 If hints.Precision IsNot Nothing Then
@@ -320,8 +315,9 @@ Public Class VisualBasicSnapshotGenerator
                     nonNulls.Add("unicode:= " & VBCode.Literal(hints.IsUnicode.Value))
                 End If
 
-                If hints.IsFixedLength IsNot Nothing Then
-                    nonNulls.Add("fixedLength:= " & VBCode.Literal(hints.IsFixedLength.Value))
+                Dim relationalHints = TryCast(hints, RelationalConverterMappingHints)
+                If relationalHints?.IsFixedLength IsNot Nothing Then
+                    nonNulls.Add("fixedLength:= " & VBCode.Literal(relationalHints.IsFixedLength.Value))
                 End If
 
                 stringBuilder.Append("), New ConverterMappingHints(").Append(String.Join(", ", nonNulls))
@@ -347,7 +343,7 @@ Public Class VisualBasicSnapshotGenerator
         GenerateFluentApiForAnnotation(
                 annotations,
                 RelationalAnnotationNames.DefaultValue,
-                Function(a) If(valueConverter Is Nothing, a?.Value, valueConverter.ConvertToStore(a?.Value)),
+                Function(a) If(valueConverter Is Nothing, a?.Value, valueConverter.ConvertToProvider(a?.Value)),
                 NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue),
                 stringBuilder)
         IgnoreAnnotations(annotations, CoreAnnotationNames.ValueGeneratorFactoryAnnotation, CoreAnnotationNames.PropertyAccessModeAnnotation, CoreAnnotationNames.TypeMapping, CoreAnnotationNames.ValueComparer)

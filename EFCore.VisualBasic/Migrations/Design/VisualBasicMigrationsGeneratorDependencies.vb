@@ -30,7 +30,7 @@ Public NotInheritable Class VisualBasicMigrationsGeneratorDependencies
     '''         the constructor at any point in this process.
     '''     </para>
     ''' </summary>
-    ''' 
+    '''
     ''' <param name="vbHelper"> The Visual Basic helper. </param>
     ''' <param name="vbMigrationOperationGenerator"> The Visual Basic migration operation generator. </param>
     ''' <param name="vbSnapshotGenerator"> The Visual Basic model snapshot generator. </param>

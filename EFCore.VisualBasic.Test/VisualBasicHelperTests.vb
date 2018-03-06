@@ -237,9 +237,9 @@ string with """"""")
     <InlineData("1nders", "_1nders")>
     <InlineData("Name.space", "[Namespace]")>
     <InlineData("$", "_")>
-    Public Sub Identifier_works( input As String,  expected As String)
-                Assert.Equal(expected, New VisualBasicHelper().Identifier(input))
-            End Sub
+    Public Sub Identifier_works(input As String, expected As String)
+        Assert.Equal(expected, New VisualBasicHelper().Identifier(input))
+    End Sub
 
     <Theory>
     <InlineData({"WebApplication1", "Migration"}, "WebApplication1.Migration")>

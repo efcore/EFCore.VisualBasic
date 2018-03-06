@@ -1,10 +1,7 @@
-﻿Imports System.Text
-Imports System
-Imports IndentedStringBuilder = Microsoft.EntityFrameworkCore.Internal.IndentedStringBuilder
-Imports Microsoft.EntityFrameworkCore.Utilities
-Imports System.Collections.ObjectModel
-Imports System.Globalization
+﻿Imports System.Globalization
+Imports System.Text
 Imports Bricelam.EntityFrameworkCore.VisualBasic
+Imports IndentedStringBuilder = Microsoft.EntityFrameworkCore.Internal.IndentedStringBuilder
 
 ''' <summary>
 '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used

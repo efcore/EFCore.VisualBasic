@@ -331,15 +331,16 @@ Public Class VisualBasicHelper
     ''' </summary>
     Public Overridable Function [Namespace](ParamArray name As String()) As String Implements IVisualBasicHelper.Namespace
 
-        Dim ns = New StringBuilder()
-        For Each piece In name.Where(Function(p) Not String.IsNullOrEmpty(p)).SelectMany(Function(p) p.Split({"."}, StringSplitOptions.RemoveEmptyEntries))
-            Dim ident = Identifier(piece)
-            If Not String.IsNullOrEmpty(ident) Then
-                ns.Append(ident) _
-                   .Append(".")
+        ' In Visual Basic there is a concept of Root namespace. We need only the last part
+        If name.Length > 0 Then
+            Dim namespaceParts = name(0).Split(".")
+            If namespaceParts.Length > 0 Then
+                Return namespaceParts(namespaceParts.Length - 1)
             End If
-        Next
-        Return If(ns.Length > 0, ns.Remove(ns.Length - 1, 1).ToString(), "_")
+        End If
+
+        Return String.Empty
+
     End Function
 
     ''' <summary>

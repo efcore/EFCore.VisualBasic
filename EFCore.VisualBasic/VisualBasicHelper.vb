@@ -333,7 +333,7 @@ Public Class VisualBasicHelper
 
         ' In Visual Basic there is a concept of Root namespace. We need only the last part
         If name.Length > 0 Then
-            Dim namespaceParts = name(0).Split(".")
+            Dim namespaceParts = name(0).Split("."c)
             If namespaceParts.Length > 0 Then
                 Return namespaceParts(namespaceParts.Length - 1)
             End If

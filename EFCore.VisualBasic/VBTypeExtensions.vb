@@ -79,7 +79,7 @@ Public Module VBTypeExtensions
 
         While type.IsArray
             builder.Append("(")
-            builder.Append(",", type.GetArrayRank() - 1)
+            builder.Append(","c, type.GetArrayRank() - 1)
             builder.Append(")")
             type = type.GetElementType()
         End While

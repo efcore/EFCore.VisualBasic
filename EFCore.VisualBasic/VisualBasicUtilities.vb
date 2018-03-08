@@ -184,6 +184,16 @@ Public Class VisualBasicUtilities
         Return True
     End Function
 
+    Friend Function ExecuteGenerateLiteral(obj As Object) As String
+        Dim method = GetType(VisualBasicUtilities).GetMethod(NameOf(GenerateLiteral), BindingFlags.Instance Or BindingFlags.Public, Nothing, New Type() {obj.GetType()}, Nothing)
+
+        If Not method Is Nothing Then
+            Return CStr(method.Invoke(Me, {obj}))
+        Else
+            Throw New ArgumentException("Type of argument is not supported")
+        End If
+    End Function
+
     Public Overridable Function Generate(methodCallCodeFragment As MethodCallCodeFragment) As String Implements IVisualBasicUtilities.Generate
         Dim builder = New StringBuilder()
         Dim current = methodCallCodeFragment
@@ -194,13 +204,7 @@ Public Class VisualBasicUtilities
                     builder.Append(", ")
                 End If
 
-                Dim method = GetType(VisualBasicUtilities).GetMethod(NameOf(GenerateLiteral), BindingFlags.Instance Or BindingFlags.Public, Nothing, New Type() {current.Arguments(i).GetType()}, Nothing)
-
-                If Not method Is Nothing Then
-                    builder.Append(CStr(method.Invoke(Me, {current.Arguments(i)})))
-                Else
-                    Throw New ArgumentException("Type of argument is not supported")
-                End If
+                builder.Append(ExecuteGenerateLiteral(current.Arguments(i)))
             Next
 
             builder.Append(")")

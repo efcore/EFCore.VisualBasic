@@ -28,7 +28,7 @@ Public Class VisualBasicModelGeneratorTests
     'End Sub
 
     Private Function CreateGenerator() As VisualBasicModelGenerator
-        Return New VisualBasicModelGenerator(New ModelCodeGeneratorDependencies())
+        Return New VisualBasicModelGenerator(New ModelCodeGeneratorDependencies(), New VisualBasicDbContextGenerator(), New VisualBasicEntityTypeGenerator(New VisualBasicUtilities()))
     End Function
 
     'Private Class TestDbContext

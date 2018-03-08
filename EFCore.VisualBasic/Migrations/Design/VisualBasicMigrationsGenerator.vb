@@ -18,7 +18,6 @@ Public Class VisualBasicMigrationsGenerator
 
         MyBase.New(dependencies)
         VisualBasicDependencies = vbDependencies
-
     End Sub
 
     ''' <summary>

@@ -71,7 +71,7 @@ Public Class VisualBasicMigrationsGenerator
 
         builder.AppendLine().Append("Namespace ").AppendLine(VBCode.[Namespace](migrationNamespace))
         Using builder.Indent()
-            builder.Append("Public Partial Class ").Append(VBCode.Identifier(migrationName)).AppendLine()
+            builder.Append("Partial Public Class ").Append(VBCode.Identifier(migrationName)).AppendLine()
             Using builder.Indent()
                 builder.AppendLine("Inherits Migration") _
                        .AppendLine()

@@ -69,11 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Magic.vb" />
-    <Compile Include="Migrations\20180308171022_InitialCreate.designer.vb">
-      <DependentUpon>20180308171022_InitialCreate.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20180308171022_InitialCreate.vb" />
-    <Compile Include="Migrations\TestContextModelSnapshot.vb" />
     <Compile Include="Model.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />

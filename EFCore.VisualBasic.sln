@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Sandbox", "Sandbox\Sandbox.vbproj", "{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,18 @@ Global
 		{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}.Release|x64.Build.0 = Release|Any CPU
 		{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}.Release|x86.Build.0 = Release|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Debug|x64.Build.0 = Debug|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Debug|x86.Build.0 = Debug|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x64.ActiveCfg = Release|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x64.Build.0 = Release|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x86.ActiveCfg = Release|Any CPU
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

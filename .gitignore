@@ -286,3 +286,5 @@ tools/**
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+*.CodeItRight.xml
+/Sandbox/Migrations

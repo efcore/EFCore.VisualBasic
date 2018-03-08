@@ -15,9 +15,11 @@ Public Class VisualBasicMigrationsGenerator
     ''' <param name="vbDependencies"> The dependencies. </param>
     Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
                    vbDependencies As VisualBasicMigrationsGeneratorDependencies)
-
         MyBase.New(dependencies)
+
         VisualBasicDependencies = vbDependencies
+
+        Debugger.Launch()
 
     End Sub
 

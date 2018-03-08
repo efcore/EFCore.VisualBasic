@@ -85,64 +85,64 @@ Public Class VisualBasicMigrationOperationGenerator
                .AppendLine(")(")
 
         Using builder.Indent()
-            builder.Append("name:= ").Append(VBCode.Literal(operation.Name))
+            builder.Append("name:=").Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
 
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table))
 
             If Not operation.ColumnType Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("type:= ") _
+                       .Append("type:=") _
                        .Append(VBCode.Literal(operation.ColumnType))
             End If
 
             If operation.IsUnicode = False Then
                 builder.AppendLine(",") _
-                       .Append("unicode:= False")
+                       .Append("unicode:=False")
             End If
 
             If operation.IsFixedLength = True Then
                 builder.AppendLine(",") _
-                       .Append("fixedLength:= True")
+                       .Append("fixedLength:=True")
             End If
 
             If operation.MaxLength.HasValue Then
                 builder.AppendLine(",") _
-                       .Append("maxLength:= ") _
+                       .Append("maxLength:=") _
                        .Append(VBCode.Literal(operation.MaxLength.Value))
             End If
 
             If operation.IsRowVersion Then
                 builder.AppendLine(",") _
-                       .Append("rowVersion:= True")
+                       .Append("rowVersion:=True")
             End If
 
             builder.AppendLine(",") _
-                   .Append("nullable:= ") _
+                   .Append("nullable:=") _
                    .Append(VBCode.Literal(operation.IsNullable))
 
             If Not operation.DefaultValueSql Is Nothing Then
 
                 builder.AppendLine(",") _
-                       .Append("defaultValueSql:= ") _
+                       .Append("defaultValueSql:=") _
                        .Append(VBCode.Literal(operation.DefaultValueSql))
 
             ElseIf Not operation.ComputedColumnSql Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("computedColumnSql:= ") _
+                       .Append("computedColumnSql:=") _
                        .Append(VBCode.UnknownLiteral(operation.ComputedColumnSql))
 
             ElseIf Not operation.DefaultValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("defaultValue:= ") _
+                       .Append("defaultValue:=") _
                        .Append(VBCode.UnknownLiteral(operation.DefaultValue))
             End If
 
@@ -164,60 +164,60 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Using (builder.Indent())
 
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If operation.Columns.Length = 1 Then
 
-                builder.Append("column:= ") _
+                builder.Append("column:=") _
                        .Append(VBCode.Literal(operation.Columns(0)))
 
             Else
-                builder.Append("columns:= ") _
+                builder.Append("columns:=") _
                        .Append(VBCode.Literal(operation.Columns))
             End If
 
             If Not operation.PrincipalSchema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("principalSchema:= ") _
+                       .Append("principalSchema:=") _
                        .Append(VBCode.Literal(operation.PrincipalSchema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("principalTable:= ") _
+                   .Append("principalTable:=") _
                    .Append(VBCode.Literal(operation.PrincipalTable)) _
                    .AppendLine(",")
 
             If operation.PrincipalColumns.Length = 1 Then
-                builder.Append("principalColumn:= ") _
+                builder.Append("principalColumn:=") _
                        .Append(VBCode.Literal(operation.PrincipalColumns(0)))
             Else
 
-                builder.Append("principalColumns:= ") _
+                builder.Append("principalColumns:=") _
                        .Append(VBCode.Literal(operation.PrincipalColumns))
             End If
 
             If operation.OnUpdate <> ReferentialAction.NoAction Then
                 builder.AppendLine(",") _
-                       .Append("onUpdate:= ") _
+                       .Append("onUpdate:=") _
                        .Append(VBCode.Literal(CType(operation.OnUpdate, [Enum])))
             End If
 
             If operation.OnDelete <> ReferentialAction.NoAction Then
 
                 builder.AppendLine(",") _
-                       .Append("onDelete:= ") _
+                       .Append("onDelete:=") _
                        .Append(VBCode.Literal(CType(operation.OnDelete, [Enum])))
             End If
 
@@ -237,26 +237,26 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".AddPrimaryKey(")
 
         Using (builder.Indent())
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If operation.Columns.Length = 1 Then
-                builder.Append("column:= ") _
+                builder.Append("column:=") _
                        .Append(VBCode.Literal(operation.Columns(0)))
             Else
 
-                builder.Append("columns:= ") _
+                builder.Append("columns:=") _
                        .Append(VBCode.Literal(operation.Columns))
             End If
 
@@ -277,25 +277,25 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Using (builder.Indent())
 
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If (operation.Columns.Length = 1) Then
-                builder.Append("column:= ") _
+                builder.Append("column:=") _
                        .Append(VBCode.Literal(operation.Columns(0)))
             Else
-                builder.Append("columns:= ") _
+                builder.Append("columns:=") _
                        .Append(VBCode.Literal(operation.Columns))
             End If
 
@@ -316,116 +316,116 @@ Public Class VisualBasicMigrationOperationGenerator
                .AppendLine(")(")
 
         Using (builder.Indent())
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table))
 
             If Not operation.ColumnType Is Nothing Then
                 builder.AppendLine(",") _
-                    .Append("type:= ") _
+                    .Append("type:=") _
                     .Append(VBCode.Literal(operation.ColumnType))
             End If
 
             If operation.IsUnicode = False Then
                 builder.AppendLine(",") _
-                       .Append("unicode:= False")
+                       .Append("unicode:=False")
             End If
 
             If operation.IsFixedLength = True Then
                 builder.AppendLine(",") _
-                       .Append("fixedLength:= True")
+                       .Append("fixedLength:=True")
             End If
 
             If operation.MaxLength.HasValue Then
                 builder.AppendLine(",") _
-                       .Append("maxLength:= ") _
+                       .Append("maxLength:=") _
                        .Append(VBCode.Literal(operation.MaxLength.Value))
             End If
 
             If operation.IsRowVersion Then
                 builder.AppendLine(",") _
-                       .Append("rowVersion:= True")
+                       .Append("rowVersion:=True")
             End If
 
             builder.AppendLine(",") _
-                   .Append("nullable:= ") _
+                   .Append("nullable:=") _
                    .Append(VBCode.Literal(operation.IsNullable))
 
             If Not operation.DefaultValueSql Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("defaultValueSql:= ") _
+                       .Append("defaultValueSql:=") _
                        .Append(VBCode.Literal(operation.DefaultValueSql))
 
             ElseIf Not operation.ComputedColumnSql Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("computedColumnSql:= ") _
+                       .Append("computedColumnSql:=") _
                        .Append(VBCode.UnknownLiteral(operation.ComputedColumnSql))
 
             ElseIf Not operation.DefaultValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("defaultValue:= ") _
+                       .Append("defaultValue:=") _
                        .Append(VBCode.UnknownLiteral(operation.DefaultValue))
             End If
 
             If Not operation.OldColumn.ClrType Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldClrType:= GetType(") _
+                       .Append("oldClrType:=GetType(") _
                        .Append(VBCode.Reference(operation.OldColumn.ClrType)) _
                        .Append(")")
             End If
 
             If Not operation.OldColumn.ColumnType Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldType:= ") _
+                       .Append("oldType:=") _
                        .Append(VBCode.Literal(operation.OldColumn.ColumnType))
             End If
 
             If operation.OldColumn.IsUnicode = False Then
                 builder.AppendLine(",") _
-                       .Append("oldUnicode:= False")
+                       .Append("oldUnicode:=False")
             End If
 
             If operation.OldColumn.IsFixedLength = True Then
                 builder.AppendLine(",") _
-                       .Append("oldFixedLength:= True")
+                       .Append("oldFixedLength:=True")
             End If
 
             If operation.OldColumn.MaxLength.HasValue Then
                 builder.AppendLine(",") _
-                       .Append("oldMaxLength:= ") _
+                       .Append("oldMaxLength:=") _
                        .Append(VBCode.Literal(operation.OldColumn.MaxLength.Value))
             End If
 
             If operation.OldColumn.IsRowVersion Then
                 builder.AppendLine(",") _
-                       .Append("oldRowVersion:= True")
+                       .Append("oldRowVersion:=True")
             End If
 
             If operation.OldColumn.IsNullable Then
                 builder.AppendLine(",") _
-                       .Append("oldNullable:= True")
+                       .Append("oldNullable:=True")
             End If
 
             If Not operation.OldColumn.DefaultValueSql Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldDefaultValueSql:= ") _
+                       .Append("oldDefaultValueSql:=") _
                        .Append(VBCode.Literal(operation.OldColumn.DefaultValueSql))
             ElseIf Not operation.OldColumn.ComputedColumnSql Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldComputedColumnSql:= ") _
+                       .Append("oldComputedColumnSql:=") _
                        .Append(VBCode.UnknownLiteral(operation.OldColumn.ComputedColumnSql))
             ElseIf Not operation.OldColumn.DefaultValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldDefaultValue:= ") _
+                       .Append("oldDefaultValue:=") _
                        .Append(VBCode.UnknownLiteral(operation.OldColumn.DefaultValue))
             End If
 
@@ -462,59 +462,59 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".AlterSequence(")
 
         Using (builder.Indent())
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             If operation.IncrementBy <> 1 Then
                 builder.AppendLine(",") _
-                       .Append("incrementBy:= ") _
+                       .Append("incrementBy:=") _
                        .Append(VBCode.Literal(operation.IncrementBy))
             End If
 
             If Not operation.MinValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("minValue:= ") _
+                       .Append("minValue:=") _
                        .Append(VBCode.Literal(operation.MinValue))
             End If
 
             If Not operation.MaxValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("maxValue:= ") _
+                       .Append("maxValue:=") _
                        .Append(VBCode.Literal(operation.MaxValue))
             End If
 
             If operation.IsCyclic Then
                 builder.AppendLine(",") _
-                       .Append("cyclic:= True")
+                       .Append("cyclic:=True")
             End If
 
             If operation.OldSequence.IncrementBy <> 1 Then
                 builder.AppendLine(",") _
-                       .Append("oldIncrementBy:= ") _
+                       .Append("oldIncrementBy:=") _
                        .Append(VBCode.Literal(operation.OldSequence.IncrementBy))
             End If
 
             If Not operation.OldSequence.MinValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldMinValue:= ") _
+                       .Append("oldMinValue:=") _
                        .Append(VBCode.Literal(operation.OldSequence.MinValue))
             End If
 
             If Not operation.OldSequence.MaxValue Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("oldMaxValue:= ") _
+                       .Append("oldMaxValue:=") _
                        .Append(VBCode.Literal(operation.OldSequence.MaxValue))
             End If
 
             If operation.OldSequence.IsCyclic Then
                 builder.AppendLine(",") _
-                       .Append("oldCyclic:= True")
+                       .Append("oldCyclic:=True")
             End If
 
             builder.Append(")")
@@ -534,12 +534,12 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".AlterTable(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
@@ -561,36 +561,36 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Using builder.Indent()
 
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If operation.Columns.Length = 1 Then
-                builder.Append("column:= ") _
+                builder.Append("column:=") _
                        .Append(VBCode.Literal(operation.Columns(0)))
             Else
-                builder.Append("columns:= ") _
+                builder.Append("columns:=") _
                        .Append(VBCode.Literal(operation.Columns))
             End If
 
             If operation.IsUnique Then
                 builder.AppendLine(",") _
-                       .Append("unique:= True")
+                       .Append("unique:=True")
             End If
 
             If Not operation.Filter Is Nothing Then
                 builder.AppendLine(",") _
-                           .Append("filter:= ") _
+                           .Append("filter:=") _
                            .Append(VBCode.Literal(operation.Filter))
             End If
 
@@ -610,7 +610,7 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".EnsureSchema(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name)) _
                    .Append(")")
 
@@ -636,42 +636,42 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine("(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             If operation.StartValue <> 1L Then
                 builder.AppendLine(",") _
-                       .Append("startValue:= ") _
+                       .Append("startValue:=") _
                        .Append(VBCode.Literal(operation.StartValue))
             End If
 
             If operation.IncrementBy <> 1 Then
                 builder.AppendLine(",") _
-                       .Append("incrementBy:= ") _
+                       .Append("incrementBy:=") _
                        .Append(VBCode.Literal(operation.IncrementBy))
             End If
 
             If operation.MinValue.HasValue Then
                 builder.AppendLine(",") _
-                       .Append("minValue:= ") _
+                       .Append("minValue:=") _
                        .Append(VBCode.Literal(operation.MinValue.Value))
             End If
 
             If operation.MaxValue.HasValue Then
                 builder.AppendLine(",") _
-                       .Append("maxValue:= ") _
+                       .Append("maxValue:=") _
                        .Append(VBCode.Literal(operation.MaxValue.Value))
             End If
 
             If operation.IsCyclic Then
                 builder.AppendLine(",") _
-                       .Append("cyclic:= True")
+                       .Append("cyclic:=True")
             End If
 
             builder.Append(")")
@@ -690,17 +690,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".CreateTable(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .AppendLine("columns:= Function(table) New With") _
+                   .AppendLine("columns:=Function(table) New With") _
                    .AppendLine("{")
 
             Dim map = New Dictionary(Of String, String)
@@ -718,46 +718,46 @@ Public Class VisualBasicMigrationOperationGenerator
                            .Append(")(")
 
                     If propertyName <> column.Name Then
-                        builder.Append("name:= ") _
+                        builder.Append("name:=") _
                                .Append(VBCode.Literal(column.Name)) _
                                .Append(", ")
                     End If
 
                     If Not column.ColumnType Is Nothing Then
-                        builder.Append("type:= ") _
+                        builder.Append("type:=") _
                                .Append(VBCode.Literal(column.ColumnType)) _
                                .Append(", ")
                     End If
 
                     If column.IsUnicode = False Then
-                        builder.Append("unicode:= False, ")
+                        builder.Append("unicode:=False, ")
                     End If
 
                     If column.IsFixedLength = True Then
-                        builder.Append("fixedLength:= True, ")
+                        builder.Append("fixedLength:=True, ")
                     End If
 
                     If (column.MaxLength.HasValue) Then
-                        builder.Append("maxLength:= ") _
+                        builder.Append("maxLength:=") _
                                .Append(VBCode.Literal(column.MaxLength.Value)) _
                                .Append(", ")
                     End If
 
                     If column.IsRowVersion Then
-                        builder.Append("rowVersion:= True, ")
+                        builder.Append("rowVersion:=True, ")
                     End If
 
-                    builder.Append("nullable:= ") _
+                    builder.Append("nullable:=") _
                            .Append(VBCode.Literal(column.IsNullable))
 
                     If Not column.DefaultValueSql Is Nothing Then
-                        builder.Append(", defaultValueSql:= ") _
+                        builder.Append(", defaultValueSql:=") _
                                .Append(VBCode.Literal(column.DefaultValueSql))
                     ElseIf Not column.ComputedColumnSql Is Nothing Then
-                        builder.Append(", computedColumnSql:= ") _
+                        builder.Append(", computedColumnSql:=") _
                                .Append(VBCode.Literal(column.ComputedColumnSql))
                     ElseIf Not column.DefaultValue Is Nothing Then
-                        builder.Append(", defaultValue:= ") _
+                        builder.Append(", defaultValue:=") _
                                .Append(VBCode.UnknownLiteral(column.DefaultValue))
                     End If
 
@@ -776,7 +776,7 @@ Public Class VisualBasicMigrationOperationGenerator
             End Using
 
             builder.AppendLine("},") _
-            .AppendLine("constraints:= Sub(table)")
+            .AppendLine("constraints:=Sub(table)")
 
             Using builder.Indent()
                 If Not operation.PrimaryKey Is Nothing Then
@@ -810,40 +810,40 @@ Public Class VisualBasicMigrationOperationGenerator
                     builder.AppendLine("table.ForeignKey(")
 
                     Using builder.Indent()
-                        builder.Append("name:= ") _
+                        builder.Append("name:=") _
                                 .Append(VBCode.Literal(foreignKey.Name)) _
                                 .AppendLine(",") _
-                                .Append(If(foreignKey.Columns.Length = 1, "column:= ", "columns:= ")) _
+                                .Append(If(foreignKey.Columns.Length = 1, "column:=", "columns:=")) _
                                 .Append(VBCode.Lambda(foreignKey.Columns.Select(Function(c) map(c)).ToList()))
 
                         If Not foreignKey.PrincipalSchema Is Nothing Then
                             builder.AppendLine(",") _
-                                   .Append("principalSchema:= ") _
+                                   .Append("principalSchema:=") _
                                    .Append(VBCode.Literal(foreignKey.PrincipalSchema))
                         End If
 
                         builder.AppendLine(",") _
-                               .Append("principalTable:= ") _
+                               .Append("principalTable:=") _
                                .Append(VBCode.Literal(foreignKey.PrincipalTable)) _
                                .AppendLine(",")
 
                         If foreignKey.PrincipalColumns.Length = 1 Then
-                            builder.Append("principalColumn:= ") _
+                            builder.Append("principalColumn:=") _
                                    .Append(VBCode.Literal(foreignKey.PrincipalColumns(0)))
                         Else
-                            builder.Append("principalColumns:= ") _
+                            builder.Append("principalColumns:=") _
                                    .Append(VBCode.Literal(foreignKey.PrincipalColumns))
                         End If
 
                         If foreignKey.OnUpdate <> ReferentialAction.NoAction Then
                             builder.AppendLine(",") _
-                                       .Append("onUpdate:= ") _
+                                       .Append("onUpdate:=") _
                                        .Append(VBCode.Literal(CType(foreignKey.OnUpdate, [Enum])))
                         End If
 
                         If foreignKey.OnDelete <> ReferentialAction.NoAction Then
                             builder.AppendLine(",") _
-                                   .Append("onDelete:= ") _
+                                   .Append("onDelete:=") _
                                    .Append(VBCode.Literal(CType(foreignKey.OnDelete, [Enum])))
                         End If
 
@@ -871,17 +871,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropColumn(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .Append(")")
 
@@ -899,17 +899,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropForeignKey(")
 
         Using (builder.Indent())
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .Append(")")
 
@@ -927,17 +927,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropIndex(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .Append(")")
 
@@ -955,17 +955,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropPrimaryKey(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .Append(")")
 
@@ -983,7 +983,7 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropSchema(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name)) _
                    .Append(")")
 
@@ -1001,12 +1001,12 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropSequence(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
@@ -1026,12 +1026,12 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropTable(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
@@ -1051,17 +1051,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".DropUniqueConstraint(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .Append(")")
 
@@ -1079,20 +1079,20 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".RenameColumn(")
 
         Using (builder.Indent())
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",") _
-                   .Append("newName:= ") _
+                   .Append("newName:=") _
                    .Append(VBCode.Literal(operation.NewName)) _
                    .Append(")")
 
@@ -1110,20 +1110,20 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".RenameIndex(")
 
         Using (builder.Indent())
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("table:= ") _
+                   .Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",") _
-                   .Append("newName:= ") _
+                   .Append("newName:=") _
                    .Append(VBCode.Literal(operation.NewName)) _
                    .Append(")")
 
@@ -1141,24 +1141,24 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".RenameSequence(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             If Not operation.NewName Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("newName:= ") _
+                       .Append("newName:=") _
                        .Append(VBCode.Literal(operation.NewName))
             End If
 
             If Not operation.NewSchema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("newSchema:= ") _
+                       .Append("newSchema:=") _
                        .Append(VBCode.Literal(operation.NewSchema))
             End If
 
@@ -1178,24 +1178,24 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".RenameTable(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             If Not operation.NewName Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("newName:= ") _
+                       .Append("newName:=") _
                        .Append(VBCode.Literal(operation.NewName))
             End If
 
             If Not operation.NewSchema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("newSchema:= ") _
+                       .Append("newSchema:=") _
                        .Append(VBCode.Literal(operation.NewSchema))
             End If
 
@@ -1215,17 +1215,17 @@ Public Class VisualBasicMigrationOperationGenerator
         builder.AppendLine(".RestartSequence(")
 
         Using builder.Indent()
-            builder.Append("name:= ") _
+            builder.Append("name:=") _
                    .Append(VBCode.Literal(operation.Name))
 
             If Not operation.Schema Is Nothing Then
                 builder.AppendLine(",") _
-                       .Append("schema:= ") _
+                       .Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema))
             End If
 
             builder.AppendLine(",") _
-                   .Append("startValue:= ") _
+                   .Append("startValue:=") _
                    .Append(VBCode.Literal(operation.StartValue)) _
                    .Append(")")
 
@@ -1262,40 +1262,40 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Using builder.Indent()
             If Not operation.Schema Is Nothing Then
-                builder.Append("schema:= ") _
+                builder.Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema)) _
                        .AppendLine(",")
             End If
 
-            builder.Append("table:= ") _
+            builder.Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If operation.Columns.Length = 1 Then
-                builder.Append("column:= ") _
+                builder.Append("column:=") _
                        .Append(VBCode.Literal(operation.Columns(0)))
             Else
-                builder.Append("columns:= ") _
+                builder.Append("columns:=") _
                        .Append(VBCode.Literal(operation.Columns))
             End If
 
             builder.AppendLine(",")
 
             If operation.Values.GetLength(0) = 1 AndAlso operation.Values.GetLength(1) = 1 Then
-                builder.Append("value:= ") _
+                builder.Append("value:=") _
                        .Append(VBCode.UnknownLiteral(operation.Values(0, 0)))
             ElseIf operation.Values.GetLength(0) = 1 Then
-                builder.Append("values:= ") _
+                builder.Append("values:=") _
                        .Append(VBCode.Literal(ToOnedimensionalArray(operation.Values)))
             ElseIf operation.Values.GetLength(1) = 1 Then
-                builder.Append("values:= ") _
+                builder.Append("values:=") _
                        .AppendLines(
                         VBCode.Literal(
                             ToOnedimensionalArray(operation.Values, firstDimension:=True),
                             vertical:=True),
                         skipFinalNewline:=True)
             Else
-                builder.Append("values:= ") _
+                builder.Append("values:=") _
                        .AppendLines(VBCode.Literal(operation.Values), skipFinalNewline:=True)
             End If
 
@@ -1316,40 +1316,40 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Using builder.Indent()
             If Not operation.Schema Is Nothing Then
-                builder.Append("schema:= ") _
+                builder.Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema)) _
                        .AppendLine(",")
             End If
 
-            builder.Append("table:= ") _
+            builder.Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If (operation.KeyColumns.Length = 1) Then
-                builder.Append("keyColumn:= ") _
+                builder.Append("keyColumn:=") _
                        .Append(VBCode.Literal(operation.KeyColumns(0)))
             Else
-                builder.Append("keyColumns:= ") _
+                builder.Append("keyColumns:=") _
                        .Append(VBCode.Literal(operation.KeyColumns))
             End If
 
             builder.AppendLine(",")
 
             If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
-                builder.Append("keyValue:= ") _
+                builder.Append("keyValue:=") _
                        .Append(VBCode.UnknownLiteral(operation.KeyValues(0, 0)))
             ElseIf operation.KeyValues.GetLength(0) = 1 Then
-                builder.Append("keyValues:= ") _
+                builder.Append("keyValues:=") _
                        .Append(VBCode.Literal(ToOnedimensionalArray(operation.KeyValues)))
             ElseIf (operation.KeyValues.GetLength(1) = 1) Then
-                builder.Append("keyValues:= ") _
+                builder.Append("keyValues:=") _
                        .AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(operation.KeyValues, firstDimension:=True),
                                 vertical:=True),
                             skipFinalNewline:=True)
             Else
-                builder.Append("keyValues:= ") _
+                builder.Append("keyValues:=") _
                        .AppendLines(VBCode.Literal(operation.KeyValues), skipFinalNewline:=True)
             End If
 
@@ -1370,70 +1370,70 @@ Public Class VisualBasicMigrationOperationGenerator
 
         Using builder.Indent()
             If Not operation.Schema Is Nothing Then
-                builder.Append("schema:= ") _
+                builder.Append("schema:=") _
                        .Append(VBCode.Literal(operation.Schema)) _
                        .AppendLine(",")
             End If
 
-            builder.Append("table:= ") _
+            builder.Append("table:=") _
                    .Append(VBCode.Literal(operation.Table)) _
                    .AppendLine(",")
 
             If operation.KeyColumns.Length = 1 Then
-                builder.Append("keyColumn:= ") _
+                builder.Append("keyColumn:=") _
                        .Append(VBCode.Literal(operation.KeyColumns(0)))
             Else
-                builder.Append("keyColumns:= ") _
+                builder.Append("keyColumns:=") _
                        .Append(VBCode.Literal(operation.KeyColumns))
             End If
 
             builder.AppendLine(",")
 
             If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
-                builder.Append("keyValue:= ") _
+                builder.Append("keyValue:=") _
                        .Append(VBCode.UnknownLiteral(operation.KeyValues(0, 0)))
             ElseIf operation.KeyValues.GetLength(0) = 1 Then
-                builder.Append("keyValues:= ") _
+                builder.Append("keyValues:=") _
                        .Append(VBCode.Literal(ToOnedimensionalArray(operation.KeyValues)))
             ElseIf operation.KeyValues.GetLength(1) = 1 Then
-                builder.Append("keyValues:= ") _
+                builder.Append("keyValues:=") _
                        .AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(operation.KeyValues, firstDimension:=True),
                                                     vertical:=True),
                                                 skipFinalNewline:=True)
             Else
-                builder.Append("keyValues:= ") _
+                builder.Append("keyValues:=") _
                        .AppendLines(VBCode.Literal(operation.KeyValues), skipFinalNewline:=True)
             End If
 
             builder.AppendLine(",")
 
             If operation.Columns.Length = 1 Then
-                builder.Append("column:= ") _
+                builder.Append("column:=") _
                        .Append(VBCode.Literal(operation.Columns(0)))
             Else
-                builder.Append("columns:= ") _
+                builder.Append("columns:=") _
                        .Append(VBCode.Literal(operation.Columns))
             End If
 
             builder.AppendLine(",")
 
             If operation.Values.GetLength(0) = 1 AndAlso operation.Values.GetLength(1) = 1 Then
-                builder.Append("value:= ") _
+                builder.Append("value:=") _
                        .Append(VBCode.UnknownLiteral(operation.Values(0, 0)))
             ElseIf operation.Values.GetLength(0) = 1 Then
-                builder.Append("values:= ") _
+                builder.Append("values:=") _
                        .Append(VBCode.Literal(ToOnedimensionalArray(operation.Values)))
             ElseIf operation.Values.GetLength(1) = 1 Then
-                builder.Append("values:= ") _
+                builder.Append("values:=") _
                        .AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(operation.Values, firstDimension:=True),
                                                     vertical:=True),
                                                 skipFinalNewline:=True)
             Else
-                builder.Append("values:= ") _
+                builder.Append("values:=") _
                        .AppendLines(VBCode.Literal(operation.Values), skipFinalNewline:=True)
             End If
 

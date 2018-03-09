@@ -139,7 +139,7 @@ Public Class VisualBasicDbContextGenerator
             _sb.AppendLine("if Not optionsBuilder.IsConfigured")
             Using _sb.Indent()
                 'TODO : We should find an acceptable way to suggest the user remove the connection string from code.
-                'Warnings can not be created from VB code...
+                'Warnings can not be created from VB code : should we use comments ?
 
                 'If Not suppressConnectionStringWarning Then
                 '    _sb.DecrementIndent() _
@@ -168,7 +168,6 @@ Public Class VisualBasicDbContextGenerator
         _sb.AppendLine("End Sub")
         _sb.AppendLine()
     End Sub
-
 
     Protected Overridable Sub GenerateOnModelCreating(model As IModel, useDataAnnotations As Boolean)
         _sb.AppendLine("Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)")
@@ -232,7 +231,6 @@ Public Class VisualBasicDbContextGenerator
         _sb.AppendLine("End Sub")
     End Sub
 
-
     Private Sub InitializeEntityTypeBuilder(entityType As IEntityType)
         If Not _entityTypeBuilderInitialized Then
             _sb.AppendLine()
@@ -290,7 +288,6 @@ Public Class VisualBasicDbContextGenerator
         Next
     End Sub
 
-
     Private Sub AppendMultiLineFluentApi(entityType As IEntityType, lines As IList(Of String))
         If lines.Count <= 0 Then
             Return
@@ -309,7 +306,6 @@ Public Class VisualBasicDbContextGenerator
             End Using
         End Using
     End Sub
-
 
     Private Sub GenerateKey(key As IKey, useDataAnnotations As Boolean)
         If key Is Nothing Then
@@ -374,7 +370,6 @@ Public Class VisualBasicDbContextGenerator
 
         AppendMultiLineFluentApi(key.DeclaringEntityType, lines)
     End Sub
-
 
     Private Sub GenerateTableName(ByVal entityType As IEntityType)
         Dim tableName = entityType.Relational().TableName
@@ -675,6 +670,5 @@ Public Class VisualBasicDbContextGenerator
     Private Function GenerateAnnotation(ByVal annotation As IAnnotation) As String
         Return $".HasAnnotation({_visualBasicUtilities.DelimitString(annotation.Name)}, " & $"{CType(_visualBasicUtilities, VisualBasicUtilities).ExecuteGenerateLiteral(annotation.Value)})"
     End Function
-
 
 End Class

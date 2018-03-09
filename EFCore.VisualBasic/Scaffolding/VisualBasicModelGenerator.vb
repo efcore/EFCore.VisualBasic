@@ -2,7 +2,6 @@
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
-Imports Microsoft.EntityFrameworkCore.Utilities
 
 Public Class VisualBasicModelGenerator
     Inherits ModelCodeGenerator

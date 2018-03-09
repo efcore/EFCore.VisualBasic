@@ -10,7 +10,6 @@ Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
-Imports Microsoft.EntityFrameworkCore.Utilities
 
 ' <summary>
 '     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -78,7 +77,6 @@ Public Class VisualBasicEntityTypeGenerator
         End If
 
         _sb.AppendLine($"Public Partial Class {entityType.Name}")
-
 
         Using _sb.Indent()
             GenerateConstructor(entityType)
@@ -246,7 +244,6 @@ Public Class VisualBasicEntityTypeGenerator
         End If
     End Sub
 
-
     Private Sub GenerateNavigationDataAnnotations(navigation As INavigation)
         GenerateForeignKeyAttribute(navigation)
         GenerateInversePropertyAttribute(navigation)
@@ -262,8 +259,6 @@ Public Class VisualBasicEntityTypeGenerator
         End If
     End Sub
 
-
-
     Private Sub GenerateInversePropertyAttribute(navigation As INavigation)
         If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
             Dim inverseNavigation = navigation.FindInverse()
@@ -277,7 +272,6 @@ Public Class VisualBasicEntityTypeGenerator
             End If
         End If
     End Sub
-
 
     Private Class AttributeWriter
 
@@ -294,7 +288,7 @@ Public Class VisualBasicEntityTypeGenerator
         End Sub
 
         Public Overrides Function ToString() As String
-            Return "[" & (If(_parameters.Count = 0, StripAttribute(_attributeName), StripAttribute(_attributeName) & "(" + String.Join(", ", _parameters) & ")")) & "]"
+            Return "<" & (If(_parameters.Count = 0, StripAttribute(_attributeName), StripAttribute(_attributeName) & "(" + String.Join(", ", _parameters) & ")")) & ">"
         End Function
 
         Private Shared Function StripAttribute(attributeName As String) As String

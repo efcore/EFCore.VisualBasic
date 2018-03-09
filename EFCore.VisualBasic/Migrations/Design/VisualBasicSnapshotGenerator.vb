@@ -300,24 +300,24 @@ Public Class VisualBasicSnapshotGenerator
             If hints IsNot Nothing Then
                 Dim nonNulls = New List(Of String)()
                 If hints.Size IsNot Nothing Then
-                    nonNulls.Add("size:= " & VBCode.Literal(hints.Size.Value))
+                    nonNulls.Add("size:=" & VBCode.Literal(hints.Size.Value))
                 End If
 
                 If hints.Precision IsNot Nothing Then
-                    nonNulls.Add("precision:= " & VBCode.Literal(hints.Precision.Value))
+                    nonNulls.Add("precision:=" & VBCode.Literal(hints.Precision.Value))
                 End If
 
                 If hints.Scale IsNot Nothing Then
-                    nonNulls.Add("scale:= " & VBCode.Literal(hints.Scale.Value))
+                    nonNulls.Add("scale:=" & VBCode.Literal(hints.Scale.Value))
                 End If
 
                 If hints.IsUnicode IsNot Nothing Then
-                    nonNulls.Add("unicode:= " & VBCode.Literal(hints.IsUnicode.Value))
+                    nonNulls.Add("unicode:=" & VBCode.Literal(hints.IsUnicode.Value))
                 End If
 
                 Dim relationalHints = TryCast(hints, RelationalConverterMappingHints)
                 If relationalHints?.IsFixedLength IsNot Nothing Then
-                    nonNulls.Add("fixedLength:= " & VBCode.Literal(relationalHints.IsFixedLength.Value))
+                    nonNulls.Add("fixedLength:=" & VBCode.Literal(relationalHints.IsFixedLength.Value))
                 End If
 
                 stringBuilder.Append("), New ConverterMappingHints(").Append(String.Join(", ", nonNulls))

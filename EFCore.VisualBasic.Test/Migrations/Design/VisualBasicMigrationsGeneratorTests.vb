@@ -257,27 +257,27 @@ Public Class VisualBasicMigrationsGeneratorTests
 
         AssertConverter(
             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(size:=10)),
-            commonPrefix + ", New ConverterMappingHints(size:= 10)))")
+            commonPrefix + ", New ConverterMappingHints(size:=10)))")
 
         AssertConverter(
             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(precision:=10)),
-            commonPrefix + ", New ConverterMappingHints(precision:= 10)))")
+            commonPrefix + ", New ConverterMappingHints(precision:=10)))")
 
         AssertConverter(
             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(scale:=10)),
-            commonPrefix + ", New ConverterMappingHints(scale:= 10)))")
+            commonPrefix + ", New ConverterMappingHints(scale:=10)))")
 
         AssertConverter(
             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New ConverterMappingHints(unicode:=True)),
-            commonPrefix + ", New ConverterMappingHints(unicode:= True)))")
+            commonPrefix + ", New ConverterMappingHints(unicode:=True)))")
 
         AssertConverter(
             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New RelationalConverterMappingHints(fixedLength:=False)),
-            commonPrefix + ", New ConverterMappingHints(fixedLength:= False)))")
+            commonPrefix + ", New ConverterMappingHints(fixedLength:=False)))")
 
         AssertConverter(
             New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v), New RelationalConverterMappingHints(fixedLength:=False, size:=77, scale:=-1)),
-            commonPrefix + ", New ConverterMappingHints(size:= 77, scale:= -1, fixedLength:= False)))")
+            commonPrefix + ", New ConverterMappingHints(size:=77, scale:=-1, fixedLength:=False)))")
     End Sub
 
     Private Shared Sub AssertConverter(valueConverter As ValueConverter, expected As String)
@@ -359,10 +359,10 @@ Namespace MyNamespace
             modelBuilder.Entity(""Cheese"", Sub(b)
 
                     b.Property(Of String)(""Ham"") _
-                        .HasConversion(New ValueConverter(Of String, String)(Function(v) CType(Nothing, String), Function(v) CType(Nothing, String), New ConverterMappingHints(size:= 10)))
+                        .HasConversion(New ValueConverter(Of String, String)(Function(v) CType(Nothing, String), Function(v) CType(Nothing, String), New ConverterMappingHints(size:=10)))
 
                     b.Property(Of String)(""Pickle"") _
-                        .HasConversion(New ValueConverter(Of String, String)(Function(v) CType(Nothing, String), Function(v) CType(Nothing, String), New ConverterMappingHints(size:= 10)))
+                        .HasConversion(New ValueConverter(Of String, String)(Function(v) CType(Nothing, String), Function(v) CType(Nothing, String), New ConverterMappingHints(size:=10)))
 
                     b.ToTable(""Cheese"")
                 End Sub)
@@ -436,15 +436,15 @@ Namespace MyNamespace
                 .Annotation(""Some:EnumValue"", RegexOptions.Multiline)
 
             migrationBuilder.AlterColumn(Of Database)(
-                name:= ""C2"",
-                table:= ""T1"",
-                nullable:= False,
-                oldClrType:= GetType([Property]))
+                name:=""C2"",
+                table:=""T1"",
+                nullable:=False,
+                oldClrType:=GetType([Property]))
 
             migrationBuilder.AddColumn(Of PropertyEntry)(
-                name:= ""C3"",
-                table:= ""T1"",
-                nullable:= False)
+                name:=""C3"",
+                table:=""T1"",
+                nullable:=False)
         End Sub
 
         Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)

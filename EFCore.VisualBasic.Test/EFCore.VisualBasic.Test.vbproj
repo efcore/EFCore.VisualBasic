@@ -13,8 +13,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.1.0-preview2-*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="2.1.0-preview2-*" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview2-*" />
-    <!--<PackageReference Include="Remotion.Linq" Version="2.2.0" />-->
-    <!--<PackageReference Include="xunit" Version="2.3.1" />-->
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
   </ItemGroup>
 

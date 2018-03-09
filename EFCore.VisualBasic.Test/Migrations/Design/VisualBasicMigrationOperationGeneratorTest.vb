@@ -82,9 +82,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddColumn(Of Integer)(
-    name:= ""Id"",
-    table:= ""Post"",
-    nullable:= False)"
+    name:=""Id"",
+    table:=""Post"",
+    nullable:=False)"
 
         Test(operation,
              expectedCode,
@@ -114,16 +114,16 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddColumn(Of Integer)(
-    name:= ""Id"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    type:= ""Integer"",
-    unicode:= False,
-    fixedLength:= True,
-    maxLength:= 30,
-    rowVersion:= True,
-    nullable:= True,
-    defaultValue:= 1)"
+    name:=""Id"",
+    schema:=""dbo"",
+    table:=""Post"",
+    type:=""Integer"",
+    unicode:=False,
+    fixedLength:=True,
+    maxLength:=30,
+    rowVersion:=True,
+    nullable:=True,
+    defaultValue:=1)"
 
         Test(operation,
              expectedCode,
@@ -152,10 +152,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddColumn(Of Integer)(
-    name:= ""Id"",
-    table:= ""Post"",
-    nullable:= False,
-    defaultValueSql:= ""1"")"
+    name:=""Id"",
+    table:=""Post"",
+    nullable:=False,
+    defaultValueSql:=""1"")"
 
         Test(operation,
              expectedCode,
@@ -179,10 +179,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddColumn(Of Integer)(
-    name:= ""Id"",
-    table:= ""Post"",
-    nullable:= False,
-    computedColumnSql:= ""1"")"
+    name:=""Id"",
+    table:=""Post"",
+    nullable:=False,
+    computedColumnSql:=""1"")"
 
         Test(operation,
              expectedCode,
@@ -208,11 +208,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddForeignKey(
-    name:= ""FK_Post_Blog_BlogId"",
-    table:= ""Post"",
-    column:= ""BlogId"",
-    principalTable:= ""Blog"",
-    principalColumn:= ""Id"")"
+    name:=""FK_Post_Blog_BlogId"",
+    table:=""Post"",
+    column:=""BlogId"",
+    principalTable:=""Blog"",
+    principalColumn:=""Id"")"
 
         Test(operation,
              expectedCode,
@@ -242,15 +242,15 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddForeignKey(
-    name:= ""FK_Post_Blog_BlogId"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    column:= ""BlogId"",
-    principalSchema:= ""my"",
-    principalTable:= ""Blog"",
-    principalColumn:= ""Id"",
-    onUpdate:= ReferentialAction.Restrict,
-    onDelete:= ReferentialAction.Cascade)"
+    name:=""FK_Post_Blog_BlogId"",
+    schema:=""dbo"",
+    table:=""Post"",
+    column:=""BlogId"",
+    principalSchema:=""my"",
+    principalTable:=""Blog"",
+    principalColumn:=""Id"",
+    onUpdate:=ReferentialAction.Restrict,
+    onDelete:=ReferentialAction.Cascade)"
 
         Test(operation,
              expectedCode,
@@ -279,11 +279,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddForeignKey(
-    name:= ""FK_Post_Blog_BlogId1_BlogId2"",
-    table:= ""Post"",
-    columns:= {""BlogId1"", ""BlogId2""},
-    principalTable:= ""Blog"",
-    principalColumns:= {""Id1"", ""Id2""})"
+    name:=""FK_Post_Blog_BlogId1_BlogId2"",
+    table:=""Post"",
+    columns:={""BlogId1"", ""BlogId2""},
+    principalTable:=""Blog"",
+    principalColumns:={""Id1"", ""Id2""})"
 
         Test(operation,
              expectedCode,
@@ -307,9 +307,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddPrimaryKey(
-    name:= ""PK_Post"",
-    table:= ""Post"",
-    column:= ""Id"")"
+    name:=""PK_Post"",
+    table:=""Post"",
+    column:=""Id"")"
 
         Test(operation,
              expectedCode,
@@ -332,10 +332,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddPrimaryKey(
-    name:= ""PK_Post"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    column:= ""Id"")"
+    name:=""PK_Post"",
+    schema:=""dbo"",
+    table:=""Post"",
+    column:=""Id"")"
 
         Test(operation,
              expectedCode,
@@ -358,9 +358,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddPrimaryKey(
-    name:= ""PK_Post"",
-    table:= ""Post"",
-    columns:= {""Id1"", ""Id2""})"
+    name:=""PK_Post"",
+    table:=""Post"",
+    columns:={""Id1"", ""Id2""})"
 
         Test(operation,
              expectedCode,
@@ -385,9 +385,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddUniqueConstraint(
-    name:= ""AK_Post_AltId"",
-    table:= ""Post"",
-    column:= ""AltId"")"
+    name:=""AK_Post_AltId"",
+    table:=""Post"",
+    column:=""AltId"")"
 
         Test(operation,
              expectedCode,
@@ -410,10 +410,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddUniqueConstraint(
-    name:= ""AK_Post_AltId"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    column:= ""AltId"")"
+    name:=""AK_Post_AltId"",
+    schema:=""dbo"",
+    table:=""Post"",
+    column:=""AltId"")"
 
         Test(operation,
              expectedCode,
@@ -436,9 +436,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AddUniqueConstraint(
-    name:= ""AK_Post_AltId1_AltId2"",
-    table:= ""Post"",
-    columns:= {""AltId1"", ""AltId2""})"
+    name:=""AK_Post_AltId1_AltId2"",
+    table:=""Post"",
+    columns:={""AltId1"", ""AltId2""})"
 
         Test(operation,
              expectedCode,
@@ -460,9 +460,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterColumn(Of Integer)(
-    name:= ""Id"",
-    table:= ""Post"",
-    nullable:= False)"
+    name:=""Id"",
+    table:=""Post"",
+    nullable:=False)"
 
         Test(operation,
              expectedCode,
@@ -522,24 +522,24 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterColumn(Of Integer)(
-    name:= ""Id"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    type:= ""Integer"",
-    unicode:= False,
-    fixedLength:= True,
-    maxLength:= 30,
-    rowVersion:= True,
-    nullable:= True,
-    defaultValue:= 1,
-    oldClrType:= GetType(String),
-    oldType:= ""String"",
-    oldUnicode:= False,
-    oldFixedLength:= True,
-    oldMaxLength:= 20,
-    oldRowVersion:= True,
-    oldNullable:= True,
-    oldDefaultValue:= 0)"
+    name:=""Id"",
+    schema:=""dbo"",
+    table:=""Post"",
+    type:=""Integer"",
+    unicode:=False,
+    fixedLength:=True,
+    maxLength:=30,
+    rowVersion:=True,
+    nullable:=True,
+    defaultValue:=1,
+    oldClrType:=GetType(String),
+    oldType:=""String"",
+    oldUnicode:=False,
+    oldFixedLength:=True,
+    oldMaxLength:=20,
+    oldRowVersion:=True,
+    oldNullable:=True,
+    oldDefaultValue:=0)"
 
         Test(operation,
              expectedCode,
@@ -582,10 +582,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterColumn(Of Integer)(
-    name:= ""Id"",
-    table:= ""Post"",
-    nullable:= False,
-    defaultValueSql:= ""1"")"
+    name:=""Id"",
+    table:=""Post"",
+    nullable:=False,
+    defaultValueSql:=""1"")"
 
         Test(operation,
              expectedCode,
@@ -627,10 +627,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterColumn(Of Integer)(
-    name:= ""Id"",
-    table:= ""Post"",
-    nullable:= False,
-    computedColumnSql:= ""1"")"
+    name:=""Id"",
+    table:=""Post"",
+    nullable:=False,
+    computedColumnSql:=""1"")"
 
         Test(operation,
              expectedCode,
@@ -688,7 +688,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterSequence(
-    name:= ""EntityFrameworkHiLoSequence"")"
+    name:=""EntityFrameworkHiLoSequence"")"
 
         Test(operation,
              expectedCode,
@@ -727,16 +727,16 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterSequence(
-    name:= ""EntityFrameworkHiLoSequence"",
-    schema:= ""dbo"",
-    incrementBy:= 3,
-    minValue:= 2L,
-    maxValue:= 4L,
-    cyclic:= True,
-    oldIncrementBy:= 4,
-    oldMinValue:= 3L,
-    oldMaxValue:= 5L,
-    oldCyclic:= True)"
+    name:=""EntityFrameworkHiLoSequence"",
+    schema:=""dbo"",
+    incrementBy:=3,
+    minValue:=2L,
+    maxValue:=4L,
+    cyclic:=True,
+    oldIncrementBy:=4,
+    oldMinValue:=3L,
+    oldMaxValue:=5L,
+    oldCyclic:=True)"
 
         Test(operation,
              expectedCode,
@@ -764,8 +764,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.AlterTable(
-    name:= ""Customer"",
-    schema:= ""dbo"")"
+    name:=""Customer"",
+    schema:=""dbo"")"
 
         Test(operation,
              expectedCode,
@@ -786,9 +786,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateIndex(
-    name:= ""IX_Post_Title"",
-    table:= ""Post"",
-    column:= ""Title"")"
+    name:=""IX_Post_Title"",
+    table:=""Post"",
+    column:=""Title"")"
 
         Test(operation,
              expectedCode,
@@ -813,12 +813,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateIndex(
-    name:= ""IX_Post_Title"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    column:= ""Title"",
-    unique:= True,
-    filter:= ""[Title] IS NOT NULL"")"
+    name:=""IX_Post_Title"",
+    schema:=""dbo"",
+    table:=""Post"",
+    column:=""Title"",
+    unique:=True,
+    filter:=""[Title] IS NOT NULL"")"
 
         Test(operation,
              expectedCode,
@@ -842,9 +842,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateIndex(
-    name:= ""IX_Post_Title_Subtitle"",
-    table:= ""Post"",
-    columns:= {""Title"", ""Subtitle""})"
+    name:=""IX_Post_Title_Subtitle"",
+    table:=""Post"",
+    columns:={""Title"", ""Subtitle""})"
 
         Test(operation,
              expectedCode,
@@ -861,7 +861,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.EnsureSchema(
-    name:= ""my"")"
+    name:=""my"")"
 
         Test(operation,
              expectedCode,
@@ -880,7 +880,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateSequence(
-    name:= ""EntityFrameworkHiLoSequence"")"
+    name:=""EntityFrameworkHiLoSequence"")"
 
         Test(operation,
              expectedCode,
@@ -901,7 +901,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateSequence(Of Integer)(
-    name:= ""EntityFrameworkHiLoSequence"")"
+    name:=""EntityFrameworkHiLoSequence"")"
 
         Test(operation,
              expectedCode,
@@ -927,13 +927,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateSequence(
-    name:= ""EntityFrameworkHiLoSequence"",
-    schema:= ""dbo"",
-    startValue:= 3L,
-    incrementBy:= 5,
-    minValue:= 2L,
-    maxValue:= 4L,
-    cyclic:= True)"
+    name:=""EntityFrameworkHiLoSequence"",
+    schema:=""dbo"",
+    startValue:=3L,
+    incrementBy:=5,
+    minValue:=2L,
+    maxValue:=4L,
+    cyclic:=True)"
 
         Test(operation,
              expectedCode,
@@ -965,13 +965,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateSequence(Of Integer)(
-    name:= ""EntityFrameworkHiLoSequence"",
-    schema:= ""dbo"",
-    startValue:= 3L,
-    incrementBy:= 5,
-    minValue:= 2L,
-    maxValue:= 4L,
-    cyclic:= True)"
+    name:=""EntityFrameworkHiLoSequence"",
+    schema:=""dbo"",
+    startValue:=3L,
+    incrementBy:=5,
+    minValue:=2L,
+    maxValue:=4L,
+    cyclic:=True)"
 
         Test(operation,
              expectedCode,
@@ -1000,12 +1000,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .Id = table.Column(Of Integer)(nullable:= False)
+        .Id = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
     End Sub)"
 
         Test(operation,
@@ -1045,13 +1045,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    schema:= ""dbo"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    schema:=""dbo"",
+    columns:=Function(table) New With
     {
-        .PostId = table.Column(Of Integer)(name:= ""Post Id"", type:= ""Integer"", unicode:= False, fixedLength:= True, maxLength:= 30, rowVersion:= True, nullable:= True, defaultValue:= 1)
+        .PostId = table.Column(Of Integer)(name:=""Post Id"", type:=""Integer"", unicode:=False, fixedLength:=True, maxLength:=30, rowVersion:=True, nullable:=True, defaultValue:=1)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
     End Sub)"
 
         Test(operation,
@@ -1087,12 +1087,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .Id = table.Column(Of Integer)(nullable:= False, defaultValueSql:= ""1"")
+        .Id = table.Column(Of Integer)(nullable:=False, defaultValueSql:=""1"")
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
     End Sub)"
 
         Test(operation,
@@ -1121,12 +1121,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .Id = table.Column(Of Integer)(nullable:= False, computedColumnSql:= ""1"")
+        .Id = table.Column(Of Integer)(nullable:=False, computedColumnSql:=""1"")
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
     End Sub)"
 
         Test(operation,
@@ -1162,17 +1162,17 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .BlogId = table.Column(Of Integer)(nullable:= False)
+        .BlogId = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.ForeignKey(
-            name:= ""FK_Post_Blog_BlogId"",
-            column:= Function(x) x.BlogId,
-            principalTable:= ""Blog"",
-            principalColumn:= ""Id"")
+            name:=""FK_Post_Blog_BlogId"",
+            column:=Function(x) x.BlogId,
+            principalTable:=""Blog"",
+            principalColumn:=""Id"")
     End Sub)"
 
         Test(operation,
@@ -1217,21 +1217,21 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    schema:= ""dbo"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    schema:=""dbo"",
+    columns:=Function(table) New With
     {
-        .BlogId = table.Column(Of Integer)(nullable:= False)
+        .BlogId = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.ForeignKey(
-            name:= ""FK_Post_Blog_BlogId"",
-            column:= Function(x) x.BlogId,
-            principalSchema:= ""my"",
-            principalTable:= ""Blog"",
-            principalColumn:= ""Id"",
-            onUpdate:= ReferentialAction.SetNull,
-            onDelete:= ReferentialAction.SetDefault)
+            name:=""FK_Post_Blog_BlogId"",
+            column:=Function(x) x.BlogId,
+            principalSchema:=""my"",
+            principalTable:=""Blog"",
+            principalColumn:=""Id"",
+            onUpdate:=ReferentialAction.SetNull,
+            onDelete:=ReferentialAction.SetDefault)
     End Sub)"
 
         Test(operation,
@@ -1280,18 +1280,18 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .BlogId1 = table.Column(Of Integer)(nullable:= False),
-        .BlogId2 = table.Column(Of Integer)(nullable:= False)
+        .BlogId1 = table.Column(Of Integer)(nullable:=False),
+        .BlogId2 = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.ForeignKey(
-            name:= ""FK_Post_Blog_BlogId1_BlogId2"",
-            columns:= Function(x) New With {x.BlogId1, x.BlogId2},
-            principalTable:= ""Blog"",
-            principalColumns:= {""Id1"", ""Id2""})
+            name:=""FK_Post_Blog_BlogId1_BlogId2"",
+            columns:=Function(x) New With {x.BlogId1, x.BlogId2},
+            principalTable:=""Blog"",
+            principalColumns:={""Id1"", ""Id2""})
     End Sub)"
 
         Test(operation,
@@ -1325,12 +1325,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .Id = table.Column(Of Integer)(nullable:= False)
+        .Id = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.PrimaryKey(""PK_Post"", Function(x) x.Id)
     End Sub)"
 
@@ -1368,13 +1368,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    schema:= ""dbo"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    schema:=""dbo"",
+    columns:=Function(table) New With
     {
-        .Id = table.Column(Of Integer)(nullable:= False)
+        .Id = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.PrimaryKey(""PK_Post"", Function(x) x.Id)
     End Sub)"
 
@@ -1415,13 +1415,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .Id1 = table.Column(Of Integer)(nullable:= False),
-        .Id2 = table.Column(Of Integer)(nullable:= False)
+        .Id1 = table.Column(Of Integer)(nullable:=False),
+        .Id2 = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.PrimaryKey(""PK_Post"", Function(x) New With {x.Id1, x.Id2})
     End Sub)"
 
@@ -1455,12 +1455,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .AltId = table.Column(Of Integer)(nullable:= False)
+        .AltId = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
     End Sub)"
 
@@ -1499,13 +1499,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    schema:= ""dbo"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    schema:=""dbo"",
+    columns:=Function(table) New With
     {
-        .AltId = table.Column(Of Integer)(nullable:= False)
+        .AltId = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
     End Sub)"
 
@@ -1551,13 +1551,13 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.CreateTable(
-    name:= ""Post"",
-    columns:= Function(table) New With
+    name:=""Post"",
+    columns:=Function(table) New With
     {
-        .AltId1 = table.Column(Of Integer)(nullable:= False),
-        .AltId2 = table.Column(Of Integer)(nullable:= False)
+        .AltId1 = table.Column(Of Integer)(nullable:=False),
+        .AltId2 = table.Column(Of Integer)(nullable:=False)
     },
-    constraints:= Sub(table)
+    constraints:=Sub(table)
         table.UniqueConstraint(""AK_Post_AltId1_AltId2"", Function(x) New With {x.AltId1, x.AltId2})
     End Sub)"
 
@@ -1582,8 +1582,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropColumn(
-    name:= ""Id"",
-    table:= ""Post"")"
+    name:=""Id"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1604,9 +1604,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropColumn(
-    name:= ""Id"",
-    schema:= ""dbo"",
-    table:= ""Post"")"
+    name:=""Id"",
+    schema:=""dbo"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1627,8 +1627,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropForeignKey(
-    name:= ""FK_Post_BlogId"",
-    table:= ""Post"")"
+    name:=""FK_Post_BlogId"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1649,9 +1649,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropForeignKey(
-    name:= ""FK_Post_BlogId"",
-    schema:= ""dbo"",
-    table:= ""Post"")"
+    name:=""FK_Post_BlogId"",
+    schema:=""dbo"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1672,8 +1672,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropIndex(
-    name:= ""IX_Post_Title"",
-    table:= ""Post"")"
+    name:=""IX_Post_Title"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1694,9 +1694,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropIndex(
-    name:= ""IX_Post_Title"",
-    schema:= ""dbo"",
-    table:= ""Post"")"
+    name:=""IX_Post_Title"",
+    schema:=""dbo"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1717,8 +1717,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropPrimaryKey(
-    name:= ""PK_Post"",
-    table:= ""Post"")"
+    name:=""PK_Post"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1739,9 +1739,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropPrimaryKey(
-    name:= ""PK_Post"",
-    schema:= ""dbo"",
-    table:= ""Post"")"
+    name:=""PK_Post"",
+    schema:=""dbo"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1758,7 +1758,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropSchema(
-    name:= ""my"")"
+    name:=""my"")"
 
         Test(operation,
              expectedCode,
@@ -1773,7 +1773,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropSequence(
-    name:= ""EntityFrameworkHiLoSequence"")"
+    name:=""EntityFrameworkHiLoSequence"")"
 
         Test(operation,
              expectedCode,
@@ -1792,8 +1792,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropSequence(
-    name:= ""EntityFrameworkHiLoSequence"",
-    schema:= ""dbo"")"
+    name:=""EntityFrameworkHiLoSequence"",
+    schema:=""dbo"")"
 
         Test(operation,
              expectedCode,
@@ -1809,7 +1809,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropTable(
-    name:= ""Post"")"
+    name:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1828,8 +1828,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropTable(
-    name:= ""Post"",
-    schema:= ""dbo"")"
+    name:=""Post"",
+    schema:=""dbo"")"
 
         Test(operation,
              expectedCode,
@@ -1849,8 +1849,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropUniqueConstraint(
-    name:= ""AK_Post_AltId"",
-    table:= ""Post"")"
+    name:=""AK_Post_AltId"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1871,9 +1871,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DropUniqueConstraint(
-    name:= ""AK_Post_AltId"",
-    schema:= ""dbo"",
-    table:= ""Post"")"
+    name:=""AK_Post_AltId"",
+    schema:=""dbo"",
+    table:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -1895,9 +1895,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameColumn(
-    name:= ""Id"",
-    table:= ""Post"",
-    newName:= ""PostId"")"
+    name:=""Id"",
+    table:=""Post"",
+    newName:=""PostId"")"
 
         Test(operation,
              expectedCode,
@@ -1920,10 +1920,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameColumn(
-    name:= ""Id"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    newName:= ""PostId"")"
+    name:=""Id"",
+    schema:=""dbo"",
+    table:=""Post"",
+    newName:=""PostId"")"
 
         Test(operation,
              expectedCode,
@@ -1946,9 +1946,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameIndex(
-    name:= ""IX_Post_Title"",
-    table:= ""Post"",
-    newName:= ""IX_Post_PostTitle"")"
+    name:=""IX_Post_Title"",
+    table:=""Post"",
+    newName:=""IX_Post_PostTitle"")"
 
         Test(operation,
              expectedCode,
@@ -1971,10 +1971,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameIndex(
-    name:= ""IX_dbo.Post_Title"",
-    schema:= ""dbo"",
-    table:= ""Post"",
-    newName:= ""IX_dbo.Post_PostTitle"")"
+    name:=""IX_dbo.Post_Title"",
+    schema:=""dbo"",
+    table:=""Post"",
+    newName:=""IX_dbo.Post_PostTitle"")"
 
         Test(operation,
              expectedCode,
@@ -1992,7 +1992,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameSequence(
-    name:= ""EntityFrameworkHiLoSequence"")"
+    name:=""EntityFrameworkHiLoSequence"")"
 
         Test(operation,
              expectedCode,
@@ -2013,10 +2013,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameSequence(
-    name:= ""EntityFrameworkHiLoSequence"",
-    schema:= ""dbo"",
-    newName:= ""MySequence"",
-    newSchema:= ""my"")"
+    name:=""EntityFrameworkHiLoSequence"",
+    schema:=""dbo"",
+    newName:=""MySequence"",
+    newSchema:=""my"")"
 
         Test(operation,
              expectedCode,
@@ -2034,7 +2034,7 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameTable(
-    name:= ""Post"")"
+    name:=""Post"")"
 
         Test(operation,
              expectedCode,
@@ -2055,10 +2055,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RenameSequence(
-    name:= ""Post"",
-    schema:= ""dbo"",
-    newName:= ""Posts"",
-    newSchema:= ""my"")"
+    name:=""Post"",
+    schema:=""dbo"",
+    newName:=""Posts"",
+    newSchema:=""my"")"
 
         Test(operation,
              expectedCode,
@@ -2080,8 +2080,8 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RestartSequence(
-    name:= ""EntityFrameworkHiLoSequence"",
-    startValue:= 1L)"
+    name:=""EntityFrameworkHiLoSequence"",
+    startValue:=1L)"
 
         Test(operation,
              expectedCode,
@@ -2102,9 +2102,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.RestartSequence(
-    name:= ""EntityFrameworkHiLoSequence"",
-    schema:= ""dbo"",
-    startValue:= 1L)"
+    name:=""EntityFrameworkHiLoSequence"",
+    schema:=""dbo"",
+    startValue:=1L)"
 
         Test(operation,
              expectedCode,
@@ -2146,10 +2146,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.InsertData(
-    schema:= ""dbo"",
-    table:= ""People"",
-    columns:= {""Id"", ""Full Name""},
-    values:= New Object(,) {
+    schema:=""dbo"",
+    table:=""People"",
+    columns:={""Id"", ""Full Name""},
+    values:=New Object(,) {
         {0, Nothing},
         {1, ""Daenerys Targaryen""},
         {2, ""John Snow""},
@@ -2182,9 +2182,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.InsertData(
-    table:= ""People"",
-    column:= ""Full Name"",
-    value:= ""John Snow"")"
+    table:=""People"",
+    column:=""Full Name"",
+    value:=""John Snow"")"
 
         Test(operation,
              expectedCode,
@@ -2210,9 +2210,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.InsertData(
-    table:= ""People"",
-    columns:= {""First Name"", ""Last Name""},
-    values:= New Object() {""John"", ""Snow""})"
+    table:=""People"",
+    columns:={""First Name"", ""Last Name""},
+    values:=New Object() {""John"", ""Snow""})"
 
         Test(operation,
              expectedCode,
@@ -2239,9 +2239,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.InsertData(
-    table:= ""People"",
-    column:= ""Full Name"",
-    values:= New Object() {
+    table:=""People"",
+    column:=""Full Name"",
+    values:=New Object() {
         ""John Snow"",
         ""Daenerys Targaryen""
     })"
@@ -2275,10 +2275,10 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DeleteData(
-    schema:= ""dbo"",
-    table:= ""People"",
-    keyColumn:= ""First Name"",
-    keyValues:= New Object() {
+    schema:=""dbo"",
+    table:=""People"",
+    keyColumn:=""First Name"",
+    keyValues:=New Object() {
         ""Hodor"",
         ""Daenerys"",
         ""John"",
@@ -2315,9 +2315,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DeleteData(
-    table:= ""People"",
-    keyColumns:= {""First Name"", ""Last Name""},
-    keyValues:= New Object(,) {
+    table:=""People"",
+    keyColumns:={""First Name"", ""Last Name""},
+    keyValues:=New Object(,) {
         {""Hodor"", Nothing},
         {""Daenerys"", ""Targaryen""},
         {""John"", ""Snow""},
@@ -2349,9 +2349,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DeleteData(
-    table:= ""People"",
-    keyColumn:= ""Last Name"",
-    keyValue:= ""Snow"")"
+    table:=""People"",
+    keyColumn:=""Last Name"",
+    keyValue:=""Snow"")"
 
         Test(operation,
              expectedCode,
@@ -2377,9 +2377,9 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.DeleteData(
-    table:= ""People"",
-    keyColumns:= {""First Name"", ""Last Name""},
-    keyValues:= New Object() {""John"", ""Snow""})"
+    table:=""People"",
+    keyColumns:={""First Name"", ""Last Name""},
+    keyValues:=New Object() {""John"", ""Snow""})"
 
         Test(operation,
              expectedCode,
@@ -2412,15 +2412,15 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    schema:= ""dbo"",
-    table:= ""People"",
-    keyColumn:= ""First Name"",
-    keyValues:= New Object() {
+    schema:=""dbo"",
+    table:=""People"",
+    keyColumn:=""First Name"",
+    keyValues:=New Object() {
         ""Hodor"",
         ""Daenerys""
     },
-    columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
-    values:= New Object(,) {
+    columns:={""Birthplace"", ""House Allegiance"", ""Culture""},
+    values:=New Object(,) {
         {""Winterfell"", ""Stark"", ""Northmen""},
         {""Dragonstone"", ""Targaryen"", ""Valyrian""}
     })"
@@ -2460,14 +2460,14 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumns:= {""First Name"", ""Last Name""},
-    keyValues:= New Object(,) {
+    table:=""People"",
+    keyColumns:={""First Name"", ""Last Name""},
+    keyValues:=New Object(,) {
         {""Hodor"", Nothing},
         {""Daenerys"", ""Targaryen""}
     },
-    column:= ""House Allegiance"",
-    values:= New Object() {
+    column:=""House Allegiance"",
+    values:=New Object() {
         ""Stark"",
         ""Targaryen""
     })"
@@ -2506,14 +2506,14 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumns:= {""First Name"", ""Last Name""},
-    keyValues:= New Object(,) {
+    table:=""People"",
+    keyColumns:={""First Name"", ""Last Name""},
+    keyValues:=New Object(,) {
         {""Hodor"", Nothing},
         {""Daenerys"", ""Targaryen""}
     },
-    columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
-    values:= New Object(,) {
+    columns:={""Birthplace"", ""House Allegiance"", ""Culture""},
+    values:=New Object(,) {
         {""Winterfell"", ""Stark"", ""Northmen""},
         {""Dragonstone"", ""Targaryen"", ""Valyrian""}
     })"
@@ -2553,12 +2553,12 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    schema:= ""dbo"",
-    table:= ""People"",
-    keyColumn:= ""Full Name"",
-    keyValue:= ""Daenerys Targaryen"",
-    columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
-    values:= New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
+    schema:=""dbo"",
+    table:=""People"",
+    keyColumn:=""Full Name"",
+    keyValue:=""Daenerys Targaryen"",
+    columns:={""Birthplace"", ""House Allegiance"", ""Culture""},
+    values:=New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
 
         Test(operation,
              expectedCode,
@@ -2593,11 +2593,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumn:= ""First Name"",
-    keyValue:= ""Daenerys"",
-    column:= ""House Allegiance"",
-    value:= ""Targaryen"")"
+    table:=""People"",
+    keyColumn:=""First Name"",
+    keyValue:=""Daenerys"",
+    column:=""House Allegiance"",
+    value:=""Targaryen"")"
 
         Test(operation,
              expectedCode,
@@ -2633,14 +2633,14 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumn:= ""First Name"",
-    keyValues:= New Object() {
+    table:=""People"",
+    keyColumn:=""First Name"",
+    keyValues:=New Object() {
         ""Hodor"",
         ""Daenerys""
     },
-    column:= ""House Allegiance"",
-    values:= New Object() {
+    column:=""House Allegiance"",
+    values:=New Object() {
         ""Stark"",
         ""Targaryen""
     })"
@@ -2677,11 +2677,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumns:= {""First Name"", ""Last Name""},
-    keyValues:= New Object() {""Daenerys"", ""Targaryen""},
-    column:= ""House Allegiance"",
-    value:= ""Targaryen"")"
+    table:=""People"",
+    keyColumns:={""First Name"", ""Last Name""},
+    keyValues:=New Object() {""Daenerys"", ""Targaryen""},
+    column:=""House Allegiance"",
+    value:=""Targaryen"")"
 
         Test(operation,
              expectedCode,
@@ -2715,11 +2715,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumns:= {""First Name"", ""Last Name""},
-    keyValues:= New Object() {""Daenerys"", ""Targaryen""},
-    columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
-    values:= New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
+    table:=""People"",
+    keyColumns:={""First Name"", ""Last Name""},
+    keyValues:=New Object() {""Daenerys"", ""Targaryen""},
+    columns:={""Birthplace"", ""House Allegiance"", ""Culture""},
+    values:=New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
 
         Test(operation,
              expectedCode,
@@ -2753,11 +2753,11 @@ mb.Sql(""-- close to me"")"
 
         Dim expectedCode =
 "mb.UpdateData(
-    table:= ""People"",
-    keyColumn:= ""Full Name"",
-    keyValue:= ""Daenerys Targaryen"",
-    columns:= {""Birthplace"", ""House Allegiance"", ""Culture""},
-    values:= New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
+    table:=""People"",
+    keyColumn:=""Full Name"",
+    keyValue:=""Daenerys Targaryen"",
+    columns:={""Birthplace"", ""House Allegiance"", ""Culture""},
+    values:=New Object() {""Dragonstone"", ""Targaryen"", ""Valyrian""})"
 
         Test(operation,
              expectedCode,

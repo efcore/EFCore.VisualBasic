@@ -91,7 +91,7 @@ Public Class VisualBasicDbContextGenerator
                                             connectionString As String,
                                             useDataAnnotations As Boolean,
                                             suppressConnectionStringWarning As Boolean)
-        _sb.AppendLine($"Public Partial Class {contextName}")
+        _sb.AppendLine($"Partial Public Class {contextName}")
         Using _sb.Indent()
             _sb.AppendLine("Inherits DbContext").AppendLine()
 

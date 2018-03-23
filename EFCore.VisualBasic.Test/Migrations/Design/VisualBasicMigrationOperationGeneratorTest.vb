@@ -75,9 +75,9 @@ mb.Sql(""-- close to me"")"
     Public Sub AddColumnOperation_required_args()
         Dim operation = New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer)
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer)
             }
 
         Dim expectedCode =
@@ -99,17 +99,17 @@ mb.Sql(""-- close to me"")"
     Public Sub AddColumnOperation_all_args()
         Dim operation = New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Schema = "dbo",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .ColumnType = "Integer",
-                .IsUnicode = False,
-                .MaxLength = 30,
-                .IsRowVersion = True,
-                .IsNullable = True,
-                .DefaultValue = 1,
-                .IsFixedLength = True
+                 .Name = "Id",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .ColumnType = "Integer",
+                 .IsUnicode = False,
+                 .MaxLength = 30,
+                 .IsRowVersion = True,
+                 .IsNullable = True,
+                 .DefaultValue = 1,
+                 .IsFixedLength = True
             }
 
         Dim expectedCode =
@@ -144,10 +144,10 @@ mb.Sql(""-- close to me"")"
     Public Sub AddColumnOperation_DefaultValueSql()
         Dim operation = New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .DefaultValueSql = "1"
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .DefaultValueSql = "1"
             }
 
         Dim expectedCode =
@@ -171,10 +171,10 @@ mb.Sql(""-- close to me"")"
     Public Sub AddColumnOperation_ComputedExpression()
         Dim operation = New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .ComputedColumnSql = "1"
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .ComputedColumnSql = "1"
             }
 
         Dim expectedCode =
@@ -199,11 +199,11 @@ mb.Sql(""-- close to me"")"
     Public Sub AddForeignKeyOperation_required_args()
         Dim operation = New AddForeignKeyOperation() With
             {
-                .Table = "Post",
-                .Name = "FK_Post_Blog_BlogId",
-                .Columns = {"BlogId"},
-                .PrincipalTable = "Blog",
-                .PrincipalColumns = {"Id"}
+                 .Table = "Post",
+                 .Name = "FK_Post_Blog_BlogId",
+                 .Columns = {"BlogId"},
+                 .PrincipalTable = "Blog",
+                 .PrincipalColumns = {"Id"}
             }
 
         Dim expectedCode =
@@ -229,15 +229,15 @@ mb.Sql(""-- close to me"")"
     Public Sub AddForeignKeyOperation_all_args()
         Dim operation = New AddForeignKeyOperation() With
             {
-                .Schema = "dbo",
-                .Table = "Post",
-                .Name = "FK_Post_Blog_BlogId",
-                .Columns = {"BlogId"},
-                .PrincipalSchema = "my",
-                .PrincipalTable = "Blog",
-                .PrincipalColumns = {"Id"},
-                .OnUpdate = ReferentialAction.Restrict,
-                .OnDelete = ReferentialAction.Cascade
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Name = "FK_Post_Blog_BlogId",
+                 .Columns = {"BlogId"},
+                 .PrincipalSchema = "my",
+                 .PrincipalTable = "Blog",
+                 .PrincipalColumns = {"Id"},
+                 .OnUpdate = ReferentialAction.Restrict,
+                 .OnDelete = ReferentialAction.Cascade
             }
 
         Dim expectedCode =
@@ -271,10 +271,10 @@ mb.Sql(""-- close to me"")"
         Dim operation = New AddForeignKeyOperation() With
             {
 .Name = "FK_Post_Blog_BlogId1_BlogId2",
-                .Table = "Post",
-                .Columns = {"BlogId1", "BlogId2"},
-                .PrincipalTable = "Blog",
-                .PrincipalColumns = {"Id1", "Id2"}
+                 .Table = "Post",
+                 .Columns = {"BlogId1", "BlogId2"},
+                 .PrincipalTable = "Blog",
+                 .PrincipalColumns = {"Id1", "Id2"}
             }
 
         Dim expectedCode =
@@ -300,9 +300,9 @@ mb.Sql(""-- close to me"")"
     Public Sub AddPrimaryKey_required_args()
         Dim operation = New AddPrimaryKeyOperation() With
             {
-                .Name = "PK_Post",
-                .Table = "Post",
-                .Columns = {"Id"}
+                 .Name = "PK_Post",
+                 .Table = "Post",
+                 .Columns = {"Id"}
             }
 
         Dim expectedCode =
@@ -324,10 +324,10 @@ mb.Sql(""-- close to me"")"
     Public Sub AddPrimaryKey_all_args()
         Dim operation = New AddPrimaryKeyOperation() With
             {
-                .Name = "PK_Post",
-                .Schema = "dbo",
-                .Table = "Post",
-                .Columns = {"Id"}
+                 .Name = "PK_Post",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Columns = {"Id"}
             }
 
         Dim expectedCode =
@@ -351,9 +351,9 @@ mb.Sql(""-- close to me"")"
     Public Sub AddPrimaryKey_composite()
         Dim operation = New AddPrimaryKeyOperation() With
             {
-                .Name = "PK_Post",
-                .Table = "Post",
-                .Columns = {"Id1", "Id2"}
+                 .Name = "PK_Post",
+                 .Table = "Post",
+                 .Columns = {"Id1", "Id2"}
             }
 
         Dim expectedCode =
@@ -378,9 +378,9 @@ mb.Sql(""-- close to me"")"
 
         Dim operation = New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId",
-                .Table = "Post",
-                .Columns = {"AltId"}
+                 .Name = "AK_Post_AltId",
+                 .Table = "Post",
+                 .Columns = {"AltId"}
             }
 
         Dim expectedCode =
@@ -402,10 +402,10 @@ mb.Sql(""-- close to me"")"
     Public Sub AddUniqueConstraint_all_args()
         Dim operation = New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId",
-                .Schema = "dbo",
-                .Table = "Post",
-                .Columns = {"AltId"}
+                 .Name = "AK_Post_AltId",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Columns = {"AltId"}
             }
 
         Dim expectedCode =
@@ -429,9 +429,9 @@ mb.Sql(""-- close to me"")"
     Public Sub AddUniqueConstraint_composite()
         Dim operation = New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId1_AltId2",
-                .Table = "Post",
-                .Columns = {"AltId1", "AltId2"}
+                 .Name = "AK_Post_AltId1_AltId2",
+                 .Table = "Post",
+                 .Columns = {"AltId1", "AltId2"}
             }
 
         Dim expectedCode =
@@ -453,9 +453,9 @@ mb.Sql(""-- close to me"")"
     Public Sub AlterColumnOperation_required_args()
         Dim operation = New AlterColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer)
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer)
             }
 
         Dim expectedCode =
@@ -496,27 +496,27 @@ mb.Sql(""-- close to me"")"
     Public Sub AlterColumnOperation_all_args()
         Dim operation = New AlterColumnOperation() With
             {
-                .Name = "Id",
-                .Schema = "dbo",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .ColumnType = "Integer",
-                .IsUnicode = False,
-                .MaxLength = 30,
-                .IsRowVersion = True,
-                .IsNullable = True,
-                .DefaultValue = 1,
-                .IsFixedLength = True,
-                .OldColumn = New ColumnOperation With
+                 .Name = "Id",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .ColumnType = "Integer",
+                 .IsUnicode = False,
+                 .MaxLength = 30,
+                 .IsRowVersion = True,
+                 .IsNullable = True,
+                 .DefaultValue = 1,
+                 .IsFixedLength = True,
+                 .OldColumn = New ColumnOperation With
                 {
-                   .ClrType = GetType(String),
-                    .ColumnType = "String",
-                    .IsUnicode = False,
-                    .MaxLength = 20,
-                    .IsRowVersion = True,
-                    .IsNullable = True,
-                    .DefaultValue = 0,
-                    .IsFixedLength = True
+                    .ClrType = GetType(String),
+                     .ColumnType = "String",
+                     .IsUnicode = False,
+                     .MaxLength = 20,
+                     .IsRowVersion = True,
+                     .IsNullable = True,
+                     .DefaultValue = 0,
+                     .IsFixedLength = True
                 }
             }
 
@@ -574,10 +574,10 @@ mb.Sql(""-- close to me"")"
     Public Sub AlterColumnOperation_DefaultValueSql()
         Dim operation = New AlterColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .DefaultValueSql = "1"
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .DefaultValueSql = "1"
             }
 
         Dim expectedCode =
@@ -619,10 +619,10 @@ mb.Sql(""-- close to me"")"
     Public Sub AlterColumnOperation_computedColumnSql()
         Dim operation = New AlterColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .ComputedColumnSql = "1"
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .ComputedColumnSql = "1"
             }
 
         Dim expectedCode =
@@ -667,9 +667,9 @@ mb.Sql(""-- close to me"")"
         operation.OldDatabase("bar") = "foo"
 
         Dim expectedCode =
-"mb.AlterDatabase() _
-    .Annotation(""foo"", ""bar"") _
-    .OldAnnotation(""bar"", ""foo"")"
+"mb.AlterDatabase().
+    Annotation(""foo"", ""bar"").
+    OldAnnotation(""bar"", ""foo"")"
 
         Test(operation,
              expectedCode,
@@ -711,17 +711,17 @@ mb.Sql(""-- close to me"")"
         Dim operation = New AlterSequenceOperation() With
             {
  .Name = "EntityFrameworkHiLoSequence",
-                .Schema = "dbo",
-                .IncrementBy = 3,
-                .MinValue = 2,
-                .MaxValue = 4,
-                .IsCyclic = True,
-                .OldSequence = New SequenceOperation() With
+                 .Schema = "dbo",
+                 .IncrementBy = 3,
+                 .MinValue = 2,
+                 .MaxValue = 4,
+                 .IsCyclic = True,
+                 .OldSequence = New SequenceOperation() With
                 {
-                    .IncrementBy = 4,
-                    .MinValue = 3,
-                    .MaxValue = 5,
-                    .IsCyclic = True
+                     .IncrementBy = 4,
+                     .MinValue = 3,
+                     .MaxValue = 5,
+                     .IsCyclic = True
                 }
         }
 
@@ -779,9 +779,9 @@ mb.Sql(""-- close to me"")"
     Public Sub CreateIndexOperation_required_args()
         Dim operation = New CreateIndexOperation() With
         {
-                .Name = "IX_Post_Title",
-                .Table = "Post",
-                .Columns = {"Title"}
+                 .Name = "IX_Post_Title",
+                 .Table = "Post",
+                 .Columns = {"Title"}
         }
 
         Dim expectedCode =
@@ -803,12 +803,12 @@ mb.Sql(""-- close to me"")"
     Public Sub CreateIndexOperation_all_args()
         Dim operation = New CreateIndexOperation() With
         {
-                .Name = "IX_Post_Title",
-                .Schema = "dbo",
-                .Table = "Post",
-                .Columns = {"Title"},
-                .IsUnique = True,
-                .Filter = "[Title] IS NOT NULL"
+                 .Name = "IX_Post_Title",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Columns = {"Title"},
+                 .IsUnique = True,
+                 .Filter = "[Title] IS NOT NULL"
         }
 
         Dim expectedCode =
@@ -835,9 +835,9 @@ mb.Sql(""-- close to me"")"
     Public Sub CreateIndexOperation_composite()
         Dim operation = New CreateIndexOperation() With
         {
-                .Name = "IX_Post_Title_Subtitle",
-                .Table = "Post",
-                .Columns = {"Title", "Subtitle"}
+                 .Name = "IX_Post_Title_Subtitle",
+                 .Table = "Post",
+                 .Columns = {"Title", "Subtitle"}
         }
 
         Dim expectedCode =
@@ -916,13 +916,13 @@ mb.Sql(""-- close to me"")"
         Dim operation = New CreateSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
-                .Schema = "dbo",
-                .ClrType = GetType(Long),
-                .StartValue = 3,
-                .IncrementBy = 5,
-               .MinValue = 2,
-               .MaxValue = 4,
-                .IsCyclic = True
+                 .Schema = "dbo",
+                 .ClrType = GetType(Long),
+                 .StartValue = 3,
+                 .IncrementBy = 5,
+                 .MinValue = 2,
+                 .MaxValue = 4,
+                 .IsCyclic = True
         }
 
         Dim expectedCode =
@@ -954,13 +954,13 @@ mb.Sql(""-- close to me"")"
         Dim operation = New CreateSequenceOperation() With
         {
             .Name = "EntityFrameworkHiLoSequence",
-                .Schema = "dbo",
-                .ClrType = GetType(Integer),
-                .StartValue = 3,
-                .IncrementBy = 5,
-               .MinValue = 2,
-               .MaxValue = 4,
-                .IsCyclic = True
+                 .Schema = "dbo",
+                 .ClrType = GetType(Integer),
+                 .StartValue = 3,
+                 .IncrementBy = 5,
+                 .MinValue = 2,
+                 .MaxValue = 4,
+                 .IsCyclic = True
         }
 
         Dim expectedCode =
@@ -993,9 +993,9 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer)
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer)
             })
 
         Dim expectedCode =
@@ -1030,17 +1030,17 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "Post Id",
-                .Schema = "dbo",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .ColumnType = "Integer",
-                .IsUnicode = False,
-                .IsFixedLength = True,
-                .MaxLength = 30,
-                .IsRowVersion = True,
-                .IsNullable = True,
-                .DefaultValue = 1
+                 .Name = "Post Id",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .ColumnType = "Integer",
+                 .IsUnicode = False,
+                 .IsFixedLength = True,
+                 .MaxLength = 30,
+                 .IsRowVersion = True,
+                 .IsNullable = True,
+                 .DefaultValue = 1
             })
 
         Dim expectedCode =
@@ -1079,10 +1079,10 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .DefaultValueSql = "1"
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .DefaultValueSql = "1"
             })
 
         Dim expectedCode =
@@ -1113,10 +1113,10 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "Id",
-                .Table = "Post",
-                .ClrType = GetType(Integer),
-                .ComputedColumnSql = "1"
+                 .Name = "Id",
+                 .Table = "Post",
+                 .ClrType = GetType(Integer),
+                 .ComputedColumnSql = "1"
             })
 
         Dim expectedCode =
@@ -1147,17 +1147,17 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "BlogId",
-                .ClrType = GetType(Integer)
+                 .Name = "BlogId",
+                 .ClrType = GetType(Integer)
             })
         operation.ForeignKeys.Add(
             New AddForeignKeyOperation() With
             {
-                .Name = "FK_Post_Blog_BlogId",
-                .Table = "Post",
-                .Columns = {"BlogId"},
-                .PrincipalTable = "Blog",
-                .PrincipalColumns = {"Id"}
+                 .Name = "FK_Post_Blog_BlogId",
+                 .Table = "Post",
+                 .Columns = {"BlogId"},
+                 .PrincipalTable = "Blog",
+                 .PrincipalColumns = {"Id"}
             })
 
         Dim expectedCode =
@@ -1198,21 +1198,21 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "BlogId",
-                .ClrType = GetType(Integer)
+                 .Name = "BlogId",
+                 .ClrType = GetType(Integer)
             })
         operation.ForeignKeys.Add(
             New AddForeignKeyOperation() With
             {
-                .Schema = "dbo",
-                .Table = "Post",
-                .Name = "FK_Post_Blog_BlogId",
-                .Columns = {"BlogId"},
-                .PrincipalTable = "Blog",
-                .PrincipalSchema = "my",
-                .PrincipalColumns = {"Id"},
-                .OnUpdate = ReferentialAction.SetNull,
-                .OnDelete = ReferentialAction.SetDefault
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Name = "FK_Post_Blog_BlogId",
+                 .Columns = {"BlogId"},
+                 .PrincipalTable = "Blog",
+                 .PrincipalSchema = "my",
+                 .PrincipalColumns = {"Id"},
+                 .OnUpdate = ReferentialAction.SetNull,
+                 .OnDelete = ReferentialAction.SetDefault
             })
 
         Dim expectedCode =
@@ -1259,23 +1259,23 @@ mb.Sql(""-- close to me"")"
             {
                 New AddColumnOperation() With
                 {
-                    .Name = "BlogId1",
-                    .ClrType = GetType(Integer)
+                     .Name = "BlogId1",
+                     .ClrType = GetType(Integer)
                 },
                 New AddColumnOperation() With
                 {
-                    .Name = "BlogId2",
-                    .ClrType = GetType(Integer)
+                     .Name = "BlogId2",
+                     .ClrType = GetType(Integer)
                 }
             })
         operation.ForeignKeys.Add(
             New AddForeignKeyOperation() With
             {
-                .Name = "FK_Post_Blog_BlogId1_BlogId2",
-                .Table = "Post",
-                .Columns = {"BlogId1", "BlogId2"},
-                .PrincipalTable = "Blog",
-                .PrincipalColumns = {"Id1", "Id2"}
+                 .Name = "FK_Post_Blog_BlogId1_BlogId2",
+                 .Table = "Post",
+                 .Columns = {"BlogId1", "BlogId2"},
+                 .PrincipalTable = "Blog",
+                 .PrincipalColumns = {"Id1", "Id2"}
             })
 
         Dim expectedCode =
@@ -1313,14 +1313,14 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "Id",
-                .ClrType = GetType(Integer)
+                 .Name = "Id",
+                 .ClrType = GetType(Integer)
             })
         operation.PrimaryKey = New AddPrimaryKeyOperation() With
             {
-                .Name = "PK_Post",
-                .Table = "Post",
-                .Columns = {"Id"}
+                 .Name = "PK_Post",
+                 .Table = "Post",
+                 .Columns = {"Id"}
             }
 
         Dim expectedCode =
@@ -1355,15 +1355,15 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "Id",
-                .ClrType = GetType(Integer)
+                 .Name = "Id",
+                 .ClrType = GetType(Integer)
             })
         operation.PrimaryKey = New AddPrimaryKeyOperation() With
             {
-                .Name = "PK_Post",
-                .Schema = "dbo",
-                .Table = "Post",
-                .Columns = {"Id"}
+                 .Name = "PK_Post",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Columns = {"Id"}
             }
 
         Dim expectedCode =
@@ -1397,20 +1397,20 @@ mb.Sql(""-- close to me"")"
             {
                 New AddColumnOperation() With
                 {
-                    .Name = "Id1",
-                    .ClrType = GetType(Integer)
+                     .Name = "Id1",
+                     .ClrType = GetType(Integer)
                 },
                 New AddColumnOperation() With
                 {
-                    .Name = "Id2",
-                    .ClrType = GetType(Integer)
+                     .Name = "Id2",
+                     .ClrType = GetType(Integer)
                 }
             })
         operation.PrimaryKey = New AddPrimaryKeyOperation() With
             {
-                .Name = "PK_Post",
-                .Table = "Post",
-                .Columns = {"Id1", "Id2"}
+                 .Name = "PK_Post",
+                 .Table = "Post",
+                 .Columns = {"Id1", "Id2"}
             }
 
         Dim expectedCode =
@@ -1442,15 +1442,15 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "AltId",
-                .ClrType = GetType(Integer)
+                 .Name = "AltId",
+                 .ClrType = GetType(Integer)
             })
         operation.UniqueConstraints.Add(
             New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId",
-                .Table = "Post",
-                .Columns = {"AltId"}
+                 .Name = "AK_Post_AltId",
+                 .Table = "Post",
+                 .Columns = {"AltId"}
             })
 
         Dim expectedCode =
@@ -1485,16 +1485,16 @@ mb.Sql(""-- close to me"")"
         operation.Columns.Add(
             New AddColumnOperation() With
             {
-                .Name = "AltId",
-                .ClrType = GetType(Integer)
+                 .Name = "AltId",
+                 .ClrType = GetType(Integer)
             })
         operation.UniqueConstraints.Add(
             New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId",
-                .Schema = "dbo",
-                .Table = "Post",
-                .Columns = {"AltId"}
+                 .Name = "AK_Post_AltId",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Columns = {"AltId"}
             })
 
         Dim expectedCode =
@@ -1531,22 +1531,22 @@ mb.Sql(""-- close to me"")"
             {
                 New AddColumnOperation() With
                 {
-                    .Name = "AltId1",
-                    .ClrType = GetType(Integer)
+                     .Name = "AltId1",
+                     .ClrType = GetType(Integer)
                 },
                 New AddColumnOperation() With
                 {
-                    .Name = "AltId2",
-                    .ClrType = GetType(Integer)
+                     .Name = "AltId2",
+                     .ClrType = GetType(Integer)
                 }
             })
         operation.UniqueConstraints.Add(
             New AddUniqueConstraintOperation() With
             {
-                .Name = "AK_Post_AltId1_AltId2",
-                .Schema = "dbo",
-                .Table = "Post",
-                .Columns = {"AltId1", "AltId2"}
+                 .Name = "AK_Post_AltId1_AltId2",
+                 .Schema = "dbo",
+                 .Table = "Post",
+                 .Columns = {"AltId1", "AltId2"}
             })
 
         Dim expectedCode =

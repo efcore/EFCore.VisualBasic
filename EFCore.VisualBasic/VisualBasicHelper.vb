@@ -220,8 +220,8 @@ Public Class VisualBasicHelper
         builder.Append("Function(x) ")
 
         If properties.Count = 1 Then
-            builder.Append("x.") _
-                   .Append(properties(0))
+            builder.Append("x.").
+                Append(properties(0))
         Else
             builder.Append("New With {")
             builder.Append(String.Join(", ", properties.Select(Function(p) "x." + p)))
@@ -249,8 +249,8 @@ Public Class VisualBasicHelper
         Dim builder = New StringBuilder()
 
         If type.IsArray Then
-            builder.Append(Reference(type.GetElementType())) _
-                   .Append("(")
+            builder.Append(Reference(type.GetElementType())).
+                Append("(")
 
             Dim rank = type.GetArrayRank()
             For i = 1 To rank - 1
@@ -264,8 +264,8 @@ Public Class VisualBasicHelper
 
         If (type.IsNested) Then
             Debug.Assert(Not type.DeclaringType Is Nothing)
-            builder.Append(Reference(type.DeclaringType)) _
-                   .Append(".")
+            builder.Append(Reference(type.DeclaringType)).
+                Append(".")
         End If
 
         Dim typeName = type.ShortDisplayName()
@@ -330,18 +330,18 @@ Public Class VisualBasicHelper
     '''     directly from your code. This API may change Or be removed in future releases.
     ''' </summary>
     Public Overridable Function [Namespace](ParamArray name As String()) As String Implements IVisualBasicHelper.Namespace
+        Dim namespaces = New StringBuilder()
+        For Each piece In name.Where(Function(p) Not String.IsNullOrEmpty(p)).SelectMany(Function(p) p.Split({"."c}, StringSplitOptions.RemoveEmptyEntries))
+            Dim identify = Identifier(piece)
 
-        ' In Visual Basic there is a concept of Root namespace. We need only the last part
-        If name.Length > 0 Then
-            Dim namespaceParts = name(0).Split("."c)
-            If namespaceParts.Length > 0 Then
-                Return namespaceParts(namespaceParts.Length - 1)
+            If Not String.IsNullOrEmpty(identify) Then
+                namespaces.Append(identify).Append("."c)
             End If
-        End If
+        Next
 
-        Return String.Empty
-
+        Return If(namespaces.Length > 0, namespaces.Remove(namespaces.Length - 1, 1).ToString(), "_")
     End Function
+
 
     ''' <summary>
     '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -563,8 +563,8 @@ Public Class VisualBasicHelper
             Next
         End Using
 
-        builder.AppendLine() _
-               .Append("}")
+        builder.AppendLine().
+            Append("}")
 
         Return builder.ToString()
 
@@ -601,8 +601,8 @@ Public Class VisualBasicHelper
             Next
         End Using
 
-        builder.AppendLine() _
-               .Append("}")
+        builder.AppendLine().
+            Append("}")
 
         Return builder.ToString()
     End Function

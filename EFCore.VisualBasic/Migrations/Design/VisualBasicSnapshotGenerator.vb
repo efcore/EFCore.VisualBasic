@@ -246,24 +246,30 @@ Public Class VisualBasicSnapshotGenerator
 
         Dim clrType = If(FindValueConverter([property])?.ProviderClrType, [property].ClrType)
 
-        stringBuilder.AppendLine() _
-                     .Append(builderName) _
-                     .Append(".Property(Of ") _
-                     .Append(VBCode.Reference(clrType)) _
-                     .Append(")(") _
-                     .Append(VBCode.Literal([property].Name)) _
-                     .Append(")")
+        stringBuilder.
+            Append(builderName).
+            Append(".Property(Of ").
+            Append(VBCode.Reference(clrType)).
+            Append(")(").
+            Append(VBCode.Literal([property].Name)).
+            Append(")")
         Using stringBuilder.Indent()
             If [property].IsConcurrencyToken Then
-                stringBuilder.AppendLine(" _").Append(".IsConcurrencyToken()")
+                stringBuilder.
+                    AppendLine(".").
+                    Append("IsConcurrencyToken()")
             End If
 
             If [property].IsNullable <> ([property].ClrType.IsNullableType() AndAlso Not [property].IsPrimaryKey()) Then
-                stringBuilder.AppendLine(" _").Append(".IsRequired()")
+                stringBuilder.
+                    AppendLine(".").
+                    Append("IsRequired()")
             End If
 
             If [property].ValueGenerated <> ValueGenerated.Never Then
-                stringBuilder.AppendLine(" _").Append(If([property].ValueGenerated = ValueGenerated.OnAdd, ".ValueGeneratedOnAdd()", If([property].ValueGenerated = ValueGenerated.OnUpdate, ".ValueGeneratedOnUpdate()", ".ValueGeneratedOnAddOrUpdate()")))
+                stringBuilder.
+                    AppendLine(".").
+                    Append(If([property].ValueGenerated = ValueGenerated.OnAdd, "ValueGeneratedOnAdd()", If([property].ValueGenerated = ValueGenerated.OnUpdate, "ValueGeneratedOnUpdate()", "ValueGeneratedOnAddOrUpdate()")))
             End If
 
             GeneratePropertyAnnotations([property], stringBuilder)
@@ -283,19 +289,19 @@ Public Class VisualBasicSnapshotGenerator
         If valueConverter IsNot Nothing Then
             Dim storeType = VBCode.Reference(valueConverter.ProviderClrType)
 
-            stringBuilder.AppendLine(" _") _
-                         .Append(".") _
-                         .Append(NameOf(PropertyBuilder.HasConversion)) _
-                         .Append("(New ") _
-                         .Append(NameOf(Storage.ValueConversion.ValueConverter)) _
-                         .Append("(Of ") _
-                         .Append(storeType) _
-                         .Append(", ") _
-                         .Append(storeType) _
-                         .Append(")(Function(v) CType(Nothing, ") _
-                         .Append(storeType) _
-                         .Append("), Function(v) CType(Nothing, ") _
-                         .Append(storeType)
+            stringBuilder.
+                AppendLine(".").
+                Append(NameOf(PropertyBuilder.HasConversion)).
+                Append("(New ").
+                Append(NameOf(Storage.ValueConversion.ValueConverter)).
+                Append("(Of ").
+                Append(storeType).
+                Append(", ").
+                Append(storeType).
+                Append(")(Function(v) CType(Nothing, ").
+                Append(storeType).
+                Append("), Function(v) CType(Nothing, ").
+                Append(storeType)
             Dim hints = valueConverter.MappingHints
             If hints IsNot Nothing Then
                 Dim nonNulls = New List(Of String)()
@@ -450,7 +456,14 @@ Public Class VisualBasicSnapshotGenerator
         Dim annotations = entityType.GetAnnotations().ToList()
         Dim tableNameAnnotation = annotations.FirstOrDefault(Function(a) a.Name = RelationalAnnotationNames.TableName)
         Dim schemaAnnotation = annotations.FirstOrDefault(Function(a) a.Name = RelationalAnnotationNames.Schema)
-        stringBuilder.AppendLine().AppendLine().Append(builderName).Append(".").Append(NameOf(RelationalEntityTypeBuilderExtensions.ToTable)).Append("(").Append(VBCode.Literal(If(CStr(tableNameAnnotation?.Value), entityType.DisplayName())))
+        stringBuilder.
+            AppendLine().
+            AppendLine().
+            Append(builderName).
+            Append(".").
+            Append(NameOf(RelationalEntityTypeBuilderExtensions.ToTable)).
+            Append("(").
+            Append(VBCode.Literal(If(CStr(tableNameAnnotation?.Value), entityType.DisplayName())))
         annotations.Remove(tableNameAnnotation)
         If schemaAnnotation?.Value IsNot Nothing Then
             stringBuilder.Append(",").Append(VBCode.Literal(CStr(schemaAnnotation.Value)))
@@ -461,26 +474,32 @@ Public Class VisualBasicSnapshotGenerator
         Dim discriminatorPropertyAnnotation = annotations.FirstOrDefault(Function(a) a.Name = RelationalAnnotationNames.DiscriminatorProperty)
         Dim discriminatorValueAnnotation = annotations.FirstOrDefault(Function(a) a.Name = RelationalAnnotationNames.DiscriminatorValue)
         If (If(discriminatorPropertyAnnotation, discriminatorValueAnnotation)) IsNot Nothing Then
-            stringBuilder.AppendLine().Append(builderName).Append(".").Append(NameOf(RelationalEntityTypeBuilderExtensions.HasDiscriminator))
+            stringBuilder.
+                AppendLine().
+                Append(builderName).
+                Append(".").
+                Append(NameOf(RelationalEntityTypeBuilderExtensions.HasDiscriminator))
             If discriminatorPropertyAnnotation?.Value IsNot Nothing Then
                 Dim propertyClrType = entityType.FindProperty(CStr(discriminatorPropertyAnnotation.Value))?.ClrType
-                stringBuilder.Append("(Of ") _
-                             .Append(VBCode.Reference(propertyClrType.UnwrapEnumType())) _
-                             .Append(")(") _
-                             .Append(VBCode.UnknownLiteral(discriminatorPropertyAnnotation.Value)) _
-                             .Append(")") _
-                             .AppendLine()
+                stringBuilder.
+                    Append("(Of ").
+                    Append(VBCode.Reference(propertyClrType.UnwrapEnumType())).
+                    Append(")(").
+                    Append(VBCode.UnknownLiteral(discriminatorPropertyAnnotation.Value)).
+                    Append(")").
+                    AppendLine()
             Else
                 stringBuilder.Append("()")
             End If
 
             If discriminatorValueAnnotation?.Value IsNot Nothing Then
-                stringBuilder.Append(".") _
-                             .Append(NameOf(DiscriminatorBuilder.HasValue)) _
-                             .Append("(") _
-                             .Append(VBCode.UnknownLiteral(discriminatorValueAnnotation.Value)) _
-                             .Append(")") _
-                             .AppendLine()
+                stringBuilder.
+                    Append(".").
+                    Append(NameOf(DiscriminatorBuilder.HasValue)).
+                    Append("(").
+                    Append(VBCode.UnknownLiteral(discriminatorValueAnnotation.Value)).
+                    Append(")").
+                    AppendLine()
 
             End If
 
@@ -491,7 +510,10 @@ Public Class VisualBasicSnapshotGenerator
         IgnoreAnnotations(annotations, RelationshipDiscoveryConvention.NavigationCandidatesAnnotationName, RelationshipDiscoveryConvention.AmbiguousNavigationsAnnotationName, InversePropertyAttributeConvention.InverseNavigationsAnnotationName, CoreAnnotationNames.NavigationAccessModeAnnotation, CoreAnnotationNames.PropertyAccessModeAnnotation, CoreAnnotationNames.ConstructorBinding)
         If annotations.Any() Then
             For Each annotation In annotations
-                stringBuilder.AppendLine().Append(builderName).AppendLine(" _")
+                stringBuilder.
+                    AppendLine().
+                    Append(builderName).
+                    AppendLine(".")
                 GenerateAnnotation(annotation, stringBuilder)
                 stringBuilder.AppendLine()
             Next
@@ -607,7 +629,7 @@ Public Class VisualBasicSnapshotGenerator
     Protected Overridable Sub GenerateAnnotations(annotations As IReadOnlyList(Of IAnnotation),
                                                   stringBuilder As IndentedStringBuilder)
         For Each annotation In annotations
-            stringBuilder.AppendLine(" _")
+            stringBuilder.AppendLine(".")
             GenerateAnnotation(annotation, stringBuilder)
         Next
     End Sub
@@ -662,7 +684,9 @@ Public Class VisualBasicSnapshotGenerator
         Dim genericTypes = genericTypesFunc?.Invoke(annotation)
         Dim hasGenericTypes = genericTypes?.All(Function(t) t IsNot Nothing) = True
         If annotationValue IsNot Nothing OrElse hasGenericTypes Then
-            stringBuilder.AppendLine(" _").Append(".").Append(fluentApiMethodName)
+            stringBuilder.
+                AppendLine(".").
+                Append(fluentApiMethodName)
             If hasGenericTypes Then
                 stringBuilder.Append("(Of ").Append(String.Join(", ", genericTypes.[Select](Function(t) VBCode.Reference(t)))).Append(")")
             End If
@@ -684,7 +708,7 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
     Protected Overridable Sub GenerateAnnotation(annotation As IAnnotation,
                                                  stringBuilder As IndentedStringBuilder)
-        stringBuilder.Append(".HasAnnotation(").Append(VBCode.Literal(annotation.Name)).Append(", ").Append(VBCode.UnknownLiteral(annotation.Value)).Append(")")
+        stringBuilder.Append("HasAnnotation(").Append(VBCode.Literal(annotation.Name)).Append(", ").Append(VBCode.UnknownLiteral(annotation.Value)).Append(")")
     End Sub
 
     ''' <summary>

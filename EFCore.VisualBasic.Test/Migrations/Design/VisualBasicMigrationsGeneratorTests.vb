@@ -37,7 +37,7 @@ Public Class VisualBasicMigrationsGeneratorTests
     End Sub
 
 
-    <Fact>
+    <Fact(Skip:="Adjust in the next PR (Part 2)")>
     Public Sub Test_new_annotations_handled_for_entity_types()
         Dim model = InMemoryTestHelpers.Instance.CreateConventionBuilder()
         Dim entityType = model.Entity(Of WithAnnotations).Metadata
@@ -100,7 +100,7 @@ Public Class VisualBasicMigrationsGeneratorTests
                 End Sub)
     End Sub
 
-    <Fact>
+    <Fact(Skip:="Adjust in the next PR (Part 2)")>
     Public Sub Test_new_annotations_handled_for_properties()
         Dim Model = InMemoryTestHelpers.Instance.CreateConventionBuilder()
         Dim prop = Model.Entity(Of WithAnnotations).Property(Function(e) e.Id).Metadata
@@ -139,7 +139,7 @@ Public Class VisualBasicMigrationsGeneratorTests
                 {
                     CoreAnnotationNames.ValueConverter,
                     (New ValueConverter(Of Integer, Long)(Function(v) v, Function(v) CInt(v)),
-                    "." + NameOf(PropertyBuilder.HasConversion) + "(New " + NameOf(ValueConverter) + "(Of Long, Long)(Function(v) CType(Nothing, Long), Function(v) CType(Nothing, Long)))")
+                    "." + _nl + NameOf(PropertyBuilder.HasConversion) + "(New " + NameOf(ValueConverter) + "(Of Long, Long)(Function(v) CType(Nothing, Long), Function(v) CType(Nothing, Long)))")
                 },
                 {
                     CoreAnnotationNames.ProviderClrType,
@@ -209,7 +209,6 @@ Public Class VisualBasicMigrationsGeneratorTests
                 Try
                     ' Generator should Not throw--either update above, Or add to ignored list in generator
                     test(generator, metadataItem, sb)
-
                 Catch e As Exception
                     Assert.False(True, $"Annotation '{annotationName}' was not handled by the code generator: {e.Message}")
                 End Try
@@ -378,44 +377,44 @@ End Namespace
     Public Sub Migrations_compile()
         Dim codeHelper = New VisualBasicHelper()
         Dim generator = New VisualBasicMigrationsGenerator(
-                    New MigrationsCodeGeneratorDependencies(),
-                    New VisualBasicMigrationsGeneratorDependencies(
-                        codeHelper,
-                        New VisualBasicMigrationOperationGenerator(
-                            New VisualBasicMigrationOperationGeneratorDependencies(codeHelper)),
-                        New VisualBasicSnapshotGenerator(New VisualBasicSnapshotGeneratorDependencies(codeHelper))))
+            New MigrationsCodeGeneratorDependencies(),
+            New VisualBasicMigrationsGeneratorDependencies(
+                codeHelper,
+                New VisualBasicMigrationOperationGenerator(
+                    New VisualBasicMigrationOperationGeneratorDependencies(codeHelper)),
+                New VisualBasicSnapshotGenerator(New VisualBasicSnapshotGeneratorDependencies(codeHelper))))
 
         Dim sqlOp = New SqlOperation With {.Sql = "-- TEST"}
         sqlOp("Some:EnumValue") = RegexOptions.Multiline
 
         Dim alterColumnOp = New AlterColumnOperation With
-                        {
-                             .Name = "C2",
-                             .Table = "T1",
-                             .ClrType = GetType(Storage.Database),  ''''''''''''''''''''''''''''''''''''''''''''''''''' ???????????
-                             .OldColumn = New ColumnOperation With {.ClrType = GetType([Property])}
-                        }
+        {
+            .Name = "C2",
+            .Table = "T1",
+            .ClrType = GetType(Database),
+            .OldColumn = New ColumnOperation With {.ClrType = GetType([Property])}
+        }
 
         Dim migrationCode = generator.GenerateMigration(
-                    "MyNamespace",
-                    "MyMigration",
-                    {
-                       sqlOp,
-                        New AlterColumnOperation With
-                        {
-                             .Name = "C2",
-                             .Table = "T1",
-                             .ClrType = GetType(Storage.Database),  ''''''''''''''''''''''''''''''''''''''''''''''''''' ???????????
-                             .OldColumn = New ColumnOperation With {.ClrType = GetType([Property])}
-                        },
-                        New AddColumnOperation With
-                        {
-                             .Name = "C3",
-                             .Table = "T1",
-                             .ClrType = GetType(PropertyEntry)
-                        }
-                    },
-                    {})
+            "MyNamespace",
+            "MyMigration",
+            {
+                sqlOp,
+                New AlterColumnOperation With
+                {
+                    .Name = "C2",
+                    .Table = "T1",
+                    .ClrType = GetType(Database),
+                    .OldColumn = New ColumnOperation With {.ClrType = GetType([Property])}
+                },
+                New AddColumnOperation With
+                {
+                    .Name = "C3",
+                    .Table = "T1",
+                    .ClrType = GetType(PropertyEntry)
+                }
+            },
+            {})
 
         Assert.Equal(
 "Imports System

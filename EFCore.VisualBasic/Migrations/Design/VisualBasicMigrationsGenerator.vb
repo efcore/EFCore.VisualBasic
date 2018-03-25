@@ -15,8 +15,8 @@ Public Class VisualBasicMigrationsGenerator
     ''' <param name="vbDependencies"> The dependencies. </param>
     Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
                    vbDependencies As VisualBasicMigrationsGeneratorDependencies)
-        MyBase.New(dependencies)
 
+        MyBase.New(dependencies)
         VisualBasicDependencies = vbDependencies
     End Sub
 
@@ -66,28 +66,47 @@ Public Class VisualBasicMigrationsGenerator
         Dim namespaces = New List(Of String) From {"System", "System.Collections.Generic", "Microsoft.EntityFrameworkCore.Migrations"}
         namespaces.AddRange(GetNamespaces(upOperations.Concat(downOperations)))
         For Each n In namespaces.OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
-            builder.Append("Imports ").AppendLine(n)
+            builder.
+                Append("Imports ").
+                AppendLine(n)
         Next
 
-        builder.AppendLine().Append("Namespace ").AppendLine(VBCode.[Namespace](migrationNamespace))
+        builder.
+            AppendLine().
+            Append("Namespace ").
+            AppendLine(VBCode.[Namespace](migrationNamespace))
         Using builder.Indent()
-            builder.Append("Partial Public Class ").Append(VBCode.Identifier(migrationName)).AppendLine()
+            builder.
+                Append("Partial Public Class ").
+                Append(VBCode.Identifier(migrationName)).
+                AppendLine()
             Using builder.Indent()
-                builder.AppendLine("Inherits Migration") _
-                       .AppendLine()
+                builder.
+                    AppendLine("Inherits Migration").
+                    AppendLine()
             End Using
             Using builder.Indent()
                 builder.AppendLine("Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)")
                 Using builder.Indent()
-                    VisualBasicDependencies.VisualBasicMigrationOperationGenerator.Generate("migrationBuilder", upOperations, builder)
+                    VisualBasicDependencies.
+                        VisualBasicMigrationOperationGenerator.
+                        Generate("migrationBuilder", upOperations, builder)
                 End Using
 
-                builder.AppendLine().AppendLine("End Sub").AppendLine().AppendLine("Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)")
+                builder.
+                    AppendLine().
+                    AppendLine("End Sub").
+                    AppendLine().
+                    AppendLine("Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)")
                 Using builder.Indent()
-                    VisualBasicDependencies.VisualBasicMigrationOperationGenerator.Generate("migrationBuilder", downOperations, builder)
+                    VisualBasicDependencies.
+                        VisualBasicMigrationOperationGenerator.
+                        Generate("migrationBuilder", downOperations, builder)
                 End Using
 
-                builder.AppendLine().AppendLine("End Sub")
+                builder.
+                    AppendLine().
+                    AppendLine("End Sub")
             End Using
 
             builder.AppendLine("End Class")
@@ -107,11 +126,12 @@ Public Class VisualBasicMigrationsGenerator
     ''' <param name="migrationId"> The migration's ID. </param>
     ''' <param name="targetModel"> The migration's target model. </param>
     ''' <returns> The migration metadata code. </returns>
-    Public Overrides Function GenerateMetadata(migrationNamespace As String,
-                                               contextType As Type,
-                                               migrationName As String,
-                                               migrationId As String,
-                                               targetModel As IModel) As String
+    Public Overrides Function GenerateMetadata(
+        migrationNamespace As String,
+        contextType As Type,
+        migrationName As String,
+        migrationId As String,
+        targetModel As IModel) As String
 
         Dim builder As New IndentedStringBuilder()
 
@@ -134,20 +154,34 @@ Public Class VisualBasicMigrationsGenerator
             builder.Append("Imports ").AppendLine(n)
         Next
 
-        builder.AppendLine().Append("Namespace ").AppendLine(VBCode.Namespace(migrationNamespace))
+        builder.
+            AppendLine().
+            Append("Namespace ").
+            AppendLine(VBCode.Namespace(migrationNamespace))
         Using builder.Indent()
-            builder.Append("<DbContext(GetType(").Append(VBCode.Reference(contextType)).AppendLine("))>") _
-                   .Append("<Migration(").Append(VBCode.Literal(migrationId)).AppendLine(")>") _
-                   .Append("Partial Class ").AppendLine(VBCode.Identifier(migrationName))
+            builder.
+                Append("<DbContext(GetType(").
+                Append(VBCode.Reference(contextType)).
+                AppendLine("))>").
+                Append("<Migration(").
+                Append(VBCode.Literal(migrationId)).
+                AppendLine(")>").
+                Append("Partial Class ").
+                AppendLine(VBCode.Identifier(migrationName))
 
             Using builder.Indent()
-                builder.AppendLine("Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)")
+                builder.
+                    AppendLine("Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)")
 
                 Using builder.Indent()
                     ' TODO: Optimize.This Is repeated below
-                    VisualBasicDependencies.VisualBasicSnapshotGenerator.Generate("modelBuilder", targetModel, builder)
+                    VisualBasicDependencies.
+                        VisualBasicSnapshotGenerator.
+                        Generate("modelBuilder", targetModel, builder)
                 End Using
-                builder.AppendLine().AppendLine("End Sub")
+                builder.
+                    AppendLine().
+                    AppendLine("End Sub")
             End Using
             builder.AppendLine("End Class")
         End Using
@@ -189,23 +223,34 @@ Public Class VisualBasicMigrationsGenerator
         End If
         namespaces.AddRange(GetNamespaces(model))
         For Each n In namespaces.OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
-            builder.Append("Imports ").AppendLine(n)
+            builder.
+                Append("Imports ").
+                AppendLine(n)
         Next
 
-        builder.AppendLine() _
-               .Append("Namespace ").AppendLine(VBCode.Namespace(modelSnapshotNamespace))
+        builder.AppendLine().
+            Append("Namespace ").
+            AppendLine(VBCode.Namespace(modelSnapshotNamespace))
 
         Using builder.Indent()
-            builder.Append("<DbContext(GetType(").Append(VBCode.Reference(contextType)).AppendLine("))>") _
-            .Append("Partial Class ").AppendLine(VBCode.Identifier(modelSnapshotName))
+            builder.
+                Append("<DbContext(GetType(").
+                Append(VBCode.Reference(contextType)).
+                AppendLine("))>").
+                Append("Partial Class ").
+                AppendLine(VBCode.Identifier(modelSnapshotName))
 
             Using builder.Indent()
 
-                builder.AppendLine("Inherits ModelSnapshot").AppendLine()
+                builder.
+                    AppendLine("Inherits ModelSnapshot").
+                    AppendLine()
 
                 builder.AppendLine("Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)")
                 Using builder.Indent()
-                    VisualBasicDependencies.VisualBasicSnapshotGenerator.Generate("modelBuilder", model, builder)
+                    VisualBasicDependencies.
+                        VisualBasicSnapshotGenerator.
+                        Generate("modelBuilder", model, builder)
                 End Using
                 builder.AppendLine("End Sub")
             End Using

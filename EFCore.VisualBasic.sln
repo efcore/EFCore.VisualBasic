@@ -11,7 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Sandbox", "Sandbox\Sandbox.vbproj", "{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Sandbox", "Sandbox\Sandbox.vbproj", "{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{C3D0C44D-7137-4E12-A5B3-2CE7FF4C0C8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA} = {C3D0C44D-7137-4E12-A5B3-2CE7FF4C0C8C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C375B107-1605-4DF6-9765-F48FBA65D6FD}

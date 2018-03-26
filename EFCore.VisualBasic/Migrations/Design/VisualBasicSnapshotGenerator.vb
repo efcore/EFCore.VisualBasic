@@ -39,9 +39,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The <see cref="ModelBuilder" /> variable name. </param>
     ''' <param name="model"> The model. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Public Overridable Sub Generate(builderName As String,
-                                    model As IModel,
-                                    stringBuilder As IndentedStringBuilder) Implements IVisualBasicSnapshotGenerator.Generate
+    Public Overridable Sub Generate(
+        builderName As String,
+        model As IModel,
+        stringBuilder As IndentedStringBuilder) Implements IVisualBasicSnapshotGenerator.Generate
 
         Dim annotations = model.GetAnnotations().Cast(Of IAnnotation).ToList()
         If annotations.Any() Then
@@ -75,9 +76,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="entityTypes"> The entity types. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateEntityTypes(builderName As String,
-                                                  entityTypes As IReadOnlyList(Of IEntityType),
-                                                  stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateEntityTypes(
+        builderName As String,
+        entityTypes As IReadOnlyList(Of IEntityType),
+        stringBuilder As IndentedStringBuilder)
+
         For Each entityType In entityTypes.Where(Function(e) Not e.HasDefiningNavigation() AndAlso e.FindOwnership() Is Nothing)
             stringBuilder.AppendLine()
             GenerateEntityType(builderName, entityType, stringBuilder)
@@ -95,9 +98,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="entityType"> The entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateEntityType(builderName As String,
-                                                 entityType As IEntityType,
-                                                 stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateEntityType(
+        builderName As String,
+        entityType As IEntityType,
+        stringBuilder As IndentedStringBuilder)
 
         Dim ownerNavigation = entityType.FindOwnership()?.PrincipalToDependent.Name
         stringBuilder.Append(builderName).Append(If(ownerNavigation IsNot Nothing, ".OwnsOne(", ".Entity(")).Append(VBCode.Literal(entityType.Name))
@@ -144,9 +148,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="ownerships"> The foreign keys identifying each entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateOwnedTypes(builderName As String,
-                                                 ownerships As IEnumerable(Of IForeignKey),
-                                                 stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateOwnedTypes(
+        builderName As String,
+        ownerships As IEnumerable(Of IForeignKey),
+        stringBuilder As IndentedStringBuilder)
+
         For Each ownership In ownerships
             stringBuilder.AppendLine()
             GenerateOwnedType(builderName, ownership, stringBuilder)
@@ -159,9 +165,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="ownership"> The foreign key identifying the entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateOwnedType(builderName As String,
-                                                ownership As IForeignKey,
-                                                stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateOwnedType(
+        builderName As String,
+        ownership As IForeignKey,
+        stringBuilder As IndentedStringBuilder)
         GenerateEntityType(builderName, ownership.DeclaringEntityType, stringBuilder)
     End Sub
 
@@ -171,9 +178,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="entityType"> The entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateEntityTypeRelationships(builderName As String,
-                                                              entityType As IEntityType,
-                                                              stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateEntityTypeRelationships(
+        builderName As String,
+        entityType As IEntityType,
+        stringBuilder As IndentedStringBuilder)
 
         stringBuilder.Append(builderName).Append(".Entity(").Append(VBCode.Literal(entityType.Name)).AppendLine(", Function (b)")
         Using stringBuilder.Indent()
@@ -192,11 +200,18 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="entityType"> The entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateRelationships(builderName As String,
-                                                    entityType As IEntityType,
-                                                    stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateRelationships(
+        builderName As String,
+        entityType As IEntityType,
+        stringBuilder As IndentedStringBuilder)
+
         GenerateForeignKeys(builderName, entityType.GetDeclaredForeignKeys(), stringBuilder)
-        GenerateOwnedTypes(builderName, entityType.GetDeclaredReferencingForeignKeys().Where(Function(fk) fk.IsOwnership), stringBuilder)
+        GenerateOwnedTypes(
+            builderName,
+            entityType.
+                GetDeclaredReferencingForeignKeys().
+                    Where(Function(fk) fk.IsOwnership),
+            stringBuilder)
     End Sub
 
     ''' <summary>
@@ -205,11 +220,17 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="baseType"> The base entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateBaseType(builderName As String,
-                                               baseType As IEntityType,
-                                               stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateBaseType(
+        builderName As String,
+        baseType As IEntityType,
+        stringBuilder As IndentedStringBuilder)
         If baseType IsNot Nothing Then
-            stringBuilder.AppendLine().Append(builderName).Append(".HasBaseType(").Append(VBCode.Literal(baseType.Name)).AppendLine(")")
+            stringBuilder.
+                AppendLine().
+                Append(builderName).
+                Append(".HasBaseType(").
+                Append(VBCode.Literal(baseType.Name)).
+                AppendLine(")")
         End If
     End Sub
 
@@ -219,9 +240,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="properties"> The properties. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateProperties(builderName As String,
-                                                 properties As IEnumerable(Of IProperty),
-                                                 stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateProperties(
+        builderName As String,
+        properties As IEnumerable(Of IProperty),
+        stringBuilder As IndentedStringBuilder)
+
         Dim firstProperty = True
         For Each [property] In properties
             If Not firstProperty Then
@@ -240,9 +263,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="property"> The property. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateProperty(builderName As String,
-                                               [property] As IProperty,
-                                               stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateProperty(
+        builderName As String,
+        [property] As IProperty,
+        stringBuilder As IndentedStringBuilder)
 
         Dim clrType = If(FindValueConverter([property])?.ProviderClrType, [property].ClrType)
 
@@ -282,8 +306,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' </summary>
     ''' <param name="property"> The property. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GeneratePropertyAnnotations([property] As IProperty,
-                                                          stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GeneratePropertyAnnotations(
+        [property] As IProperty,
+        stringBuilder As IndentedStringBuilder)
+
         Dim annotations = [property].GetAnnotations().ToList()
         Dim valueConverter = FindValueConverter([property])
         If valueConverter IsNot Nothing Then
@@ -367,9 +393,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="keys"> The keys. </param>
     ''' <param name="primaryKey"> The primary key. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateKeys(builderName As String, keys As IEnumerable(Of IKey),
-                                           primaryKey As IKey,
-                                           stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateKeys(
+        builderName As String, keys As IEnumerable(Of IKey),
+        primaryKey As IKey,
+        stringBuilder As IndentedStringBuilder)
+
         If primaryKey IsNot Nothing Then
             GenerateKey(builderName, primaryKey, stringBuilder, primary:=True)
         End If
@@ -393,14 +421,26 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="key"> The key. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
     ''' <param name="primary">A value indicating whether the key Is primary. </param>
-    Protected Overridable Sub GenerateKey(builderName As String,
-                                          key As IKey,
-                                          stringBuilder As IndentedStringBuilder,
-                                          Optional primary As Boolean = False)
-        stringBuilder.AppendLine().AppendLine().Append(builderName).Append(If(primary, ".HasKey(", ".HasAlternateKey(")).Append(String.Join(", ", key.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).Append(")")
+    Protected Overridable Sub GenerateKey(
+        builderName As String,
+        key As IKey,
+        stringBuilder As IndentedStringBuilder,
+        Optional primary As Boolean = False)
+
+        stringBuilder.
+            AppendLine().
+            AppendLine().
+            Append(builderName).
+            Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
+            Append(String.Join(", ", key.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+            Append(")")
         Using stringBuilder.Indent()
             Dim annotations = key.GetAnnotations().ToList()
-            GenerateFluentApiForAnnotation(annotations, RelationalAnnotationNames.Name, NameOf(RelationalKeyBuilderExtensions.HasName), stringBuilder)
+            GenerateFluentApiForAnnotation(
+                annotations,
+                RelationalAnnotationNames.Name,
+                NameOf(RelationalKeyBuilderExtensions.HasName),
+                stringBuilder)
             GenerateAnnotations(annotations, stringBuilder)
         End Using
 
@@ -412,9 +452,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="indexes"> The indexes. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateIndexes(builderName As String,
-                                              indexes As IEnumerable(Of IIndex),
-                                              stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateIndexes(
+        builderName As String,
+        indexes As IEnumerable(Of IIndex),
+        stringBuilder As IndentedStringBuilder)
+
         For Each index In indexes
             stringBuilder.AppendLine()
             GenerateIndex(builderName, index, stringBuilder)
@@ -427,18 +469,35 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="index"> The index. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateIndex(builderName As String,
-                                            index As IIndex,
-                                            stringBuilder As IndentedStringBuilder)
-        stringBuilder.AppendLine().Append(builderName).Append(".HasIndex(").Append(String.Join(", ", index.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).Append(")")
+    Protected Overridable Sub GenerateIndex(
+        builderName As String,
+        index As IIndex,
+        stringBuilder As IndentedStringBuilder)
+
+        stringBuilder.
+            AppendLine().
+            Append(builderName).
+            Append(".HasIndex(").
+            Append(String.Join(", ", index.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+            Append(")")
         Using stringBuilder.Indent()
             If index.IsUnique Then
-                stringBuilder.AppendLine().Append(".IsUnique()")
+                stringBuilder.
+                    AppendLine().
+                    Append(".IsUnique()")
             End If
 
             Dim annotations = index.GetAnnotations().ToList()
-            GenerateFluentApiForAnnotation(annotations, RelationalAnnotationNames.Name, NameOf(RelationalIndexBuilderExtensions.HasName), stringBuilder)
-            GenerateFluentApiForAnnotation(annotations, RelationalAnnotationNames.Filter, NameOf(RelationalIndexBuilderExtensions.HasFilter), stringBuilder)
+            GenerateFluentApiForAnnotation(
+                annotations,
+                RelationalAnnotationNames.Name,
+                NameOf(RelationalIndexBuilderExtensions.HasName),
+                stringBuilder)
+            GenerateFluentApiForAnnotation(
+                annotations,
+                RelationalAnnotationNames.Filter,
+                NameOf(RelationalIndexBuilderExtensions.HasFilter),
+                stringBuilder)
             GenerateAnnotations(annotations, stringBuilder)
         End Using
 
@@ -450,9 +509,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="entityType"> The entity type. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateEntityTypeAnnotations(builderName As String,
-                                                            entityType As IEntityType,
-                                                            stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateEntityTypeAnnotations(
+        builderName As String,
+        entityType As IEntityType,
+        stringBuilder As IndentedStringBuilder)
+
         Dim annotations = entityType.GetAnnotations().ToList()
         Dim tableNameAnnotation = annotations.FirstOrDefault(Function(a) a.Name = RelationalAnnotationNames.TableName)
         Dim schemaAnnotation = annotations.FirstOrDefault(Function(a) a.Name = RelationalAnnotationNames.Schema)
@@ -466,7 +527,9 @@ Public Class VisualBasicSnapshotGenerator
             Append(VBCode.Literal(If(CStr(tableNameAnnotation?.Value), entityType.DisplayName())))
         annotations.Remove(tableNameAnnotation)
         If schemaAnnotation?.Value IsNot Nothing Then
-            stringBuilder.Append(",").Append(VBCode.Literal(CStr(schemaAnnotation.Value)))
+            stringBuilder.
+                Append(",").
+                Append(VBCode.Literal(CStr(schemaAnnotation.Value)))
             annotations.Remove(schemaAnnotation)
         End If
 
@@ -526,9 +589,11 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="foreignKeys"> The foreign keys. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateForeignKeys(builderName As String,
-                                                  foreignKeys As IEnumerable(Of IForeignKey),
-                                                  stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateForeignKeys(
+        builderName As String,
+        foreignKeys As IEnumerable(Of IForeignKey),
+        stringBuilder As IndentedStringBuilder)
+
         For Each foreignKey In foreignKeys
             stringBuilder.AppendLine()
             GenerateForeignKey(builderName, foreignKey, stringBuilder)
@@ -541,10 +606,14 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="builderName"> The name of the builder variable. </param>
     ''' <param name="foreignKey"> The foreign key. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateForeignKey(builderName As String,
-                                                 foreignKey As IForeignKey,
-                                                 stringBuilder As IndentedStringBuilder)
-        stringBuilder.Append(builderName).Append(".HasOne(").Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name))
+    Protected Overridable Sub GenerateForeignKey(
+        builderName As String,
+        foreignKey As IForeignKey,
+        stringBuilder As IndentedStringBuilder)
+        stringBuilder.
+            Append(builderName).
+            Append(".HasOne(").
+            Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name))
         If foreignKey.DependentToPrincipal IsNot Nothing Then
             stringBuilder.Append(", ").Append(VBCode.Literal(foreignKey.DependentToPrincipal.Name))
         End If
@@ -557,10 +626,21 @@ Public Class VisualBasicSnapshotGenerator
                     stringBuilder.Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
                 End If
 
-                stringBuilder.AppendLine(")").Append(".HasForeignKey(").Append(VBCode.Literal(foreignKey.DeclaringEntityType.Name)).Append(", ").Append(String.Join(", ", foreignKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).Append(")")
+                stringBuilder.
+                    AppendLine(")").
+                    Append(".HasForeignKey(").
+                    Append(VBCode.Literal(foreignKey.DeclaringEntityType.Name)).
+                    Append(", ").
+                    Append(String.Join(", ", foreignKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                    Append(")")
                 GenerateForeignKeyAnnotations(foreignKey, stringBuilder)
                 If Not foreignKey.PrincipalKey Is foreignKey.PrincipalEntityType.FindPrimaryKey() Then
-                    stringBuilder.AppendLine().Append(".HasPrincipalKey(").Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).Append(", ").Append(String.Join(", ", foreignKey.PrincipalKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).Append(")")
+                    stringBuilder.
+                        AppendLine().
+                        Append(".HasPrincipalKey(").
+                        Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).Append(", ").
+                        Append(String.Join(", ", foreignKey.PrincipalKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                        Append(")")
                 End If
             Else
                 stringBuilder.Append(".WithMany(")
@@ -568,15 +648,27 @@ Public Class VisualBasicSnapshotGenerator
                     stringBuilder.Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
                 End If
 
-                stringBuilder.AppendLine(")").Append(".HasForeignKey(").Append(String.Join(", ", foreignKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).Append(")")
+                stringBuilder.
+                    AppendLine(")").
+                    Append(".HasForeignKey(").
+                    Append(String.Join(", ", foreignKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                    Append(")")
                 GenerateForeignKeyAnnotations(foreignKey, stringBuilder)
                 If Not foreignKey.PrincipalKey Is foreignKey.PrincipalEntityType.FindPrimaryKey() Then
-                    stringBuilder.AppendLine().Append(".HasPrincipalKey(").Append(String.Join(", ", foreignKey.PrincipalKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).Append(")")
+                    stringBuilder.
+                        AppendLine().
+                        Append(".HasPrincipalKey(").
+                        Append(String.Join(", ", foreignKey.PrincipalKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                        Append(")")
                 End If
             End If
 
             If foreignKey.DeleteBehavior <> DeleteBehavior.ClientSetNull Then
-                stringBuilder.AppendLine().Append(".OnDelete(").Append(VBCode.Literal(CType(foreignKey.DeleteBehavior, [Enum]))).Append(")")
+                stringBuilder.
+                    AppendLine().
+                    Append(".OnDelete(").
+                    Append(VBCode.Literal(CType(foreignKey.DeleteBehavior, [Enum]))).
+                    Append(")")
             End If
         End Using
 
@@ -587,10 +679,16 @@ Public Class VisualBasicSnapshotGenerator
     ''' </summary>
     ''' <param name="foreignKey"> The foreign key. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateForeignKeyAnnotations(foreignKey As IForeignKey,
-                                                            stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateForeignKeyAnnotations(
+        foreignKey As IForeignKey,
+        stringBuilder As IndentedStringBuilder)
+
         Dim annotations = foreignKey.GetAnnotations().ToList()
-        GenerateFluentApiForAnnotation(annotations, RelationalAnnotationNames.Name, If(foreignKey.IsUnique, NameOf(RelationalReferenceReferenceBuilderExtensions.HasConstraintName), NameOf(RelationalReferenceCollectionBuilderExtensions.HasConstraintName)), stringBuilder)
+        GenerateFluentApiForAnnotation(
+            annotations,
+            RelationalAnnotationNames.Name,
+            If(foreignKey.IsUnique, NameOf(RelationalReferenceReferenceBuilderExtensions.HasConstraintName), NameOf(RelationalReferenceCollectionBuilderExtensions.HasConstraintName)),
+            stringBuilder)
         GenerateAnnotations(annotations, stringBuilder)
     End Sub
 
@@ -599,8 +697,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' </summary>
     ''' <param name="annotations"> The annotations to remove from. </param>
     ''' <param name="annotationNames"> The ignored annotation names. </param>
-    Protected Overridable Sub IgnoreAnnotations(annotations As IList(Of IAnnotation),
-                                                ParamArray annotationNames As String())
+    Protected Overridable Sub IgnoreAnnotations(
+        annotations As IList(Of IAnnotation),
+        ParamArray annotationNames As String())
+
         For Each annotationName In annotationNames
             Dim annotation = annotations.FirstOrDefault(Function(a) a.Name = annotationName)
             If annotation IsNot Nothing Then
@@ -614,8 +714,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' </summary>
     ''' <param name="annotations"> The annotations to remove from. </param>
     ''' <param name="annotationPrefixes"> The ignored annotation prefixes. </param>
-    Protected Overridable Sub IgnoreAnnotationTypes(annotations As IList(Of IAnnotation),
-                                                    ParamArray annotationPrefixes As String())
+    Protected Overridable Sub IgnoreAnnotationTypes(
+        annotations As IList(Of IAnnotation),
+        ParamArray annotationPrefixes As String())
+
         For Each ignoreAnnotation In annotations.Where(Function(a) annotationPrefixes.Any(Function(pre) a.Name.StartsWith(pre, StringComparison.OrdinalIgnoreCase))).ToList()
             annotations.Remove(ignoreAnnotation)
         Next
@@ -626,8 +728,10 @@ Public Class VisualBasicSnapshotGenerator
     ''' </summary>
     ''' <param name="annotations"> The annotations. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateAnnotations(annotations As IReadOnlyList(Of IAnnotation),
-                                                  stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateAnnotations(
+        annotations As IReadOnlyList(Of IAnnotation),
+        stringBuilder As IndentedStringBuilder)
+
         For Each annotation In annotations
             stringBuilder.AppendLine(".")
             GenerateAnnotation(annotation, stringBuilder)
@@ -641,11 +745,18 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="annotationName"> The name of the annotation to generate code for. </param>
     ''' <param name="fluentApiMethodName"> The Fluent API method name. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateFluentApiForAnnotation(ByRef annotations As List(Of IAnnotation),
-                                                             annotationName As String,
-                                                             fluentApiMethodName As String,
-                                                             stringBuilder As IndentedStringBuilder)
-        GenerateFluentApiForAnnotation(annotations, annotationName, Function(a) a?.Value, fluentApiMethodName, stringBuilder)
+    Protected Overridable Sub GenerateFluentApiForAnnotation(
+        ByRef annotations As List(Of IAnnotation),
+        annotationName As String,
+        fluentApiMethodName As String,
+        stringBuilder As IndentedStringBuilder)
+
+        GenerateFluentApiForAnnotation(
+            annotations,
+            annotationName,
+            Function(a) a?.Value,
+            fluentApiMethodName,
+            stringBuilder)
     End Sub
 
     ''' <summary>
@@ -656,12 +767,20 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="annotationValueFunc"> A delegate to generate the value from the annotation. </param>
     ''' <param name="fluentApiMethodName"> The Fluent API method name. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateFluentApiForAnnotation(ByRef annotations As List(Of IAnnotation),
-                                                             annotationName As String,
-                                                             annotationValueFunc As Func(Of IAnnotation, Object),
-                                                             fluentApiMethodName As String,
-                                                             stringBuilder As IndentedStringBuilder)
-        GenerateFluentApiForAnnotation(annotations, annotationName, annotationValueFunc, fluentApiMethodName, Nothing, stringBuilder)
+    Protected Overridable Sub GenerateFluentApiForAnnotation(
+        ByRef annotations As List(Of IAnnotation),
+        annotationName As String,
+        annotationValueFunc As Func(Of IAnnotation, Object),
+        fluentApiMethodName As String,
+        stringBuilder As IndentedStringBuilder)
+
+        GenerateFluentApiForAnnotation(
+            annotations,
+            annotationName,
+            annotationValueFunc,
+            fluentApiMethodName,
+            Nothing,
+            stringBuilder)
     End Sub
 
     ''' <summary>
@@ -673,12 +792,14 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="fluentApiMethodName"> The Fluent API method name. </param>
     ''' <param name="genericTypesFunc"> A delegate to generate the generic types to use for the method call. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateFluentApiForAnnotation(ByRef annotations As List(Of IAnnotation),
-                                                             annotationName As String,
-                                                              annotationValueFunc As Func(Of IAnnotation, Object),
-                                                              fluentApiMethodName As String,
-                                                              genericTypesFunc As Func(Of IAnnotation, IReadOnlyList(Of Type)),
-                                                              stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateFluentApiForAnnotation(
+        ByRef annotations As List(Of IAnnotation),
+        annotationName As String,
+        annotationValueFunc As Func(Of IAnnotation, Object),
+        fluentApiMethodName As String,
+        genericTypesFunc As Func(Of IAnnotation, IReadOnlyList(Of Type)),
+        stringBuilder As IndentedStringBuilder)
+
         Dim annotation = annotations.FirstOrDefault(Function(a) a.Name = annotationName)
         Dim annotationValue = annotationValueFunc?.Invoke(annotation)
         Dim genericTypes = genericTypesFunc?.Invoke(annotation)
@@ -688,7 +809,10 @@ Public Class VisualBasicSnapshotGenerator
                 AppendLine(".").
                 Append(fluentApiMethodName)
             If hasGenericTypes Then
-                stringBuilder.Append("(Of ").Append(String.Join(", ", genericTypes.[Select](Function(t) VBCode.Reference(t)))).Append(")")
+                stringBuilder.
+                    Append("(Of ").
+                    Append(String.Join(", ", genericTypes.[Select](Function(t) VBCode.Reference(t)))).
+                    Append(")")
             End If
 
             stringBuilder.Append("(")
@@ -706,9 +830,16 @@ Public Class VisualBasicSnapshotGenerator
     ''' </summary>
     ''' <param name="annotation"> The annotation. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateAnnotation(annotation As IAnnotation,
-                                                 stringBuilder As IndentedStringBuilder)
-        stringBuilder.Append("HasAnnotation(").Append(VBCode.Literal(annotation.Name)).Append(", ").Append(VBCode.UnknownLiteral(annotation.Value)).Append(")")
+    Protected Overridable Sub GenerateAnnotation(
+        annotation As IAnnotation,
+        stringBuilder As IndentedStringBuilder)
+
+        stringBuilder.
+            Append("HasAnnotation(").
+            Append(VBCode.Literal(annotation.Name)).
+            Append(", ").
+            Append(VBCode.UnknownLiteral(annotation.Value)).
+            Append(")")
     End Sub
 
     ''' <summary>
@@ -717,16 +848,21 @@ Public Class VisualBasicSnapshotGenerator
     ''' <param name="properties"> The properties to generate. </param>
     ''' <param name="data"> The data to be seeded. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
-    Protected Overridable Sub GenerateSeedData(properties As IEnumerable(Of IProperty),
-                                               data As IEnumerable(Of IDictionary(Of String, Object)),
-                                               stringBuilder As IndentedStringBuilder)
+    Protected Overridable Sub GenerateSeedData(
+        properties As IEnumerable(Of IProperty),
+        data As IEnumerable(Of IDictionary(Of String, Object)),
+        stringBuilder As IndentedStringBuilder)
+
         Dim dataList = data.ToList()
         If dataList.Count = 0 Then
             Return
         End If
 
         Dim propertiesToOutput = properties.ToList()
-        stringBuilder.AppendLine().AppendLine($"b.{NameOf(EntityTypeBuilder.SeedData)}(").AppendLine("{")
+        stringBuilder.
+            AppendLine().
+            AppendLine($"b.{NameOf(EntityTypeBuilder.SeedData)}(").
+            AppendLine("{")
         Using stringBuilder.Indent()
             Dim firstDatum = True
             For Each o In dataList
@@ -747,7 +883,10 @@ Public Class VisualBasicSnapshotGenerator
                             firstProperty = False
                         End If
 
-                        stringBuilder.Append(VBCode.Identifier([property].Name)).Append(" = ").Append(VBCode.UnknownLiteral(value))
+                        stringBuilder.
+                            Append(VBCode.Identifier([property].Name)).
+                            Append(" = ").
+                            Append(VBCode.UnknownLiteral(value))
                     End If
                 Next
 
@@ -755,7 +894,8 @@ Public Class VisualBasicSnapshotGenerator
             Next
         End Using
 
-        stringBuilder.AppendLine().AppendLine("})")
+        stringBuilder.
+            AppendLine().
+            AppendLine("})")
     End Sub
-
 End Class

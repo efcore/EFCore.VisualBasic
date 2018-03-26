@@ -10,7 +10,7 @@ Public Interface IVisualBasicSnapshotGenerator
     ''' <param name="model"> The model. </param>
     ''' <param name="stringBuilder"> The builder code Is added to. </param>
     Sub Generate(
-         builderName As String,
-         model As IModel,
+        builderName As String,
+        model As IModel,
         stringBuilder As IndentedStringBuilder)
 End Interface

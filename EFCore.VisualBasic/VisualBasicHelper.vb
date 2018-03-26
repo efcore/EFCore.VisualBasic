@@ -30,185 +30,185 @@ Public Class VisualBasicHelper
     }
 
     Private Shared ReadOnly _keywords As IReadOnlyCollection(Of String) =
-        {
-            "AddHandler",
-            "AddressOf",
-            "Alias",
-            "And",
-            "AndAlso",
-            "As",
-            "Boolean",
-            "ByRef",
-            "Byte",
-            "ByVal",
-            "Call",
-            "Case",
-            "Catch",
-            "CBool",
-            "CByte",
-            "CChar",
-            "CDate",
-            "CDbl",
-            "CDec",
-            "Char", ''
-            "CInt",
-            "Class",
-            "CLng",
-            "CObj",
-            "Const",
-            "Continue",
-            "CSByte",
-            "CShort",
-            "CSng",
-            "CStr",
-            "CType",
-            "CUInt",
-            "CULng",
-            "CUShort",
-            "Date",
-            "Decimal",
-            "Declare",
-            "Default",
-            "Delegate",
-            "Dim",
-            "DirectCast",
-            "Do",
-            "Double",
-            "Each",
-            "Else",
-            "ElseIf",
-            "End",
-            "EndIf",
-            "Enum",
-            "Erase",
-            "Error",
-            "Event",
-            "Exit",
-            "False",
-            "Finally",
-            "For",
-            "Friend",
-            "Function",
-            "Get",
-            "GetType",
-            "GetXMLNamespace",
-            "Global",
-            "GoSub",
-            "GoTo",
-            "Handles",
-            "If",
-            "Implements",
-            "Imports",
-            "In",
-            "Inherits",
-            "Integer",
-            "Interface",
-            "Is",
-            "IsNot",
-            "Let",
-            "Lib",
-            "Like",
-            "Long",
-            "Loop",
-            "Me",
-            "Mod",
-            "Module",
-            "MustInherit",
-            "MustOverride",
-            "MyBase",
-            "MyClass",
-            "Namespace",
-            "Narrowing",
-            "New",
-            "Next",
-            "Not",
-            "Nothing",
-            "NotInheritable",
-            "NotOverridable",
-            "Object",
-            "Of",
-            "On",
-            "Operator",
-            "Option",
-            "Optional",
-            "Or", ''
-            "OrElse",
-            "Out",
-            "Overloads",
-            "Overridable",
-            "Overrides",
-            "ParamArray",
-            "Partial",
-            "Private",
-            "Property",
-            "Protected",
-            "Public",
-            "RaiseEvent",
-            "ReadOnly",
-            "ReDim",
-            "REM",
-            "RemoveHandler",
-            "Resume",
-            "Return",
-            "SByte",
-            "Select",
-            "Set",
-            "Shadows",
-            "Shared",
-            "Short",
-            "Single",
-            "Static",
-            "Step",
-            "Stop",
-            "String",
-            "Structure",
-            "Sub",
-            "SyncLock",
-            "Then",
-            "Throw",
-            "To",
-            "True",
-            "Try",
-            "TryCast",
-            "TypeOf",
-            "UInteger",
-            "ULong",
-            "UShort",
-            "Using",
-            "Variant",
-            "Wend",
-            "When",
-            "While",
-            "Widening",
-            "With",
-            "WithEvents",
-            "WriteOnly",
-            "Xor"
-        }
+    {
+        "AddHandler",
+        "AddressOf",
+        "Alias",
+        "And",
+        "AndAlso",
+        "As",
+        "Boolean",
+        "ByRef",
+        "Byte",
+        "ByVal",
+        "Call",
+        "Case",
+        "Catch",
+        "CBool",
+        "CByte",
+        "CChar",
+        "CDate",
+        "CDbl",
+        "CDec",
+        "Char", ''
+        "CInt",
+        "Class",
+        "CLng",
+        "CObj",
+        "Const",
+        "Continue",
+        "CSByte",
+        "CShort",
+        "CSng",
+        "CStr",
+        "CType",
+        "CUInt",
+        "CULng",
+        "CUShort",
+        "Date",
+        "Decimal",
+        "Declare",
+        "Default",
+        "Delegate",
+        "Dim",
+        "DirectCast",
+        "Do",
+        "Double",
+        "Each",
+        "Else",
+        "ElseIf",
+        "End",
+        "EndIf",
+        "Enum",
+        "Erase",
+        "Error",
+        "Event",
+        "Exit",
+        "False",
+        "Finally",
+        "For",
+        "Friend",
+        "Function",
+        "Get",
+        "GetType",
+        "GetXMLNamespace",
+        "Global",
+        "GoSub",
+        "GoTo",
+        "Handles",
+        "If",
+        "Implements",
+        "Imports",
+        "In",
+        "Inherits",
+        "Integer",
+        "Interface",
+        "Is",
+        "IsNot",
+        "Let",
+        "Lib",
+        "Like",
+        "Long",
+        "Loop",
+        "Me",
+        "Mod",
+        "Module",
+        "MustInherit",
+        "MustOverride",
+        "MyBase",
+        "MyClass",
+        "Namespace",
+        "Narrowing",
+        "New",
+        "Next",
+        "Not",
+        "Nothing",
+        "NotInheritable",
+        "NotOverridable",
+        "Object",
+        "Of",
+        "On",
+        "Operator",
+        "Option",
+        "Optional",
+        "Or", ''
+        "OrElse",
+        "Out",
+        "Overloads",
+        "Overridable",
+        "Overrides",
+        "ParamArray",
+        "Partial",
+        "Private",
+        "Property",
+        "Protected",
+        "Public",
+        "RaiseEvent",
+        "ReadOnly",
+        "ReDim",
+        "REM",
+        "RemoveHandler",
+        "Resume",
+        "Return",
+        "SByte",
+        "Select",
+        "Set",
+        "Shadows",
+        "Shared",
+        "Short",
+        "Single",
+        "Static",
+        "Step",
+        "Stop",
+        "String",
+        "Structure",
+        "Sub",
+        "SyncLock",
+        "Then",
+        "Throw",
+        "To",
+        "True",
+        "Try",
+        "TryCast",
+        "TypeOf",
+        "UInteger",
+        "ULong",
+        "UShort",
+        "Using",
+        "Variant",
+        "Wend",
+        "When",
+        "While",
+        "Widening",
+        "With",
+        "WithEvents",
+        "WriteOnly",
+        "Xor"
+    }
 
     Private Shared ReadOnly _literalFuncs As IReadOnlyDictionary(Of Type, Func(Of IVisualBasicHelper, Object, String)) =
-            New Dictionary(Of Type, Func(Of IVisualBasicHelper, Object, String)) From
-            {
-                {GetType(Boolean), Function(c, v) c.Literal(CBool(v))},
-                {GetType(Byte), Function(c, v) c.Literal(CByte(v))},
-                {GetType(Byte()), Function(c, v) c.Literal(CType(v, Byte()))},
-                {GetType(Char), Function(c, v) c.Literal(CChar(v))},
-                {GetType(DateTime), Function(c, v) c.Literal(CDate(v))},
-                {GetType(DateTimeOffset), Function(c, v) c.Literal(CType(v, DateTimeOffset))},
-                {GetType(Decimal), Function(c, v) c.Literal(CDec(v))},
-                {GetType(Double), Function(c, v) c.Literal(CDbl(v))},
-                {GetType(Single), Function(c, v) c.Literal(CSng(v))},
-                {GetType(Guid), Function(c, v) c.Literal(CType(v, Guid))},
-                {GetType(Integer), Function(c, v) c.Literal(CInt(v))},
-                {GetType(Long), Function(c, v) c.Literal(CLng(v))},
-                {GetType(SByte), Function(c, v) c.Literal(CSByte(v))},
-                {GetType(Short), Function(c, v) c.Literal(CShort(v))},
-                {GetType(String), Function(c, v) c.Literal(CStr(v))},
-                {GetType(TimeSpan), Function(c, v) c.Literal(CType(v, TimeSpan))},
-                {GetType(UInteger), Function(c, v) c.Literal(CUInt(v))},
-                {GetType(ULong), Function(c, v) c.Literal(CULng(v))},
-                {GetType(UShort), Function(c, v) c.Literal(CUShort(v))}
-            }
+        New Dictionary(Of Type, Func(Of IVisualBasicHelper, Object, String)) From
+        {
+            {GetType(Boolean), Function(c, v) c.Literal(CBool(v))},
+            {GetType(Byte), Function(c, v) c.Literal(CByte(v))},
+            {GetType(Byte()), Function(c, v) c.Literal(CType(v, Byte()))},
+            {GetType(Char), Function(c, v) c.Literal(CChar(v))},
+            {GetType(DateTime), Function(c, v) c.Literal(CDate(v))},
+            {GetType(DateTimeOffset), Function(c, v) c.Literal(CType(v, DateTimeOffset))},
+            {GetType(Decimal), Function(c, v) c.Literal(CDec(v))},
+            {GetType(Double), Function(c, v) c.Literal(CDbl(v))},
+            {GetType(Single), Function(c, v) c.Literal(CSng(v))},
+            {GetType(Guid), Function(c, v) c.Literal(CType(v, Guid))},
+            {GetType(Integer), Function(c, v) c.Literal(CInt(v))},
+            {GetType(Long), Function(c, v) c.Literal(CLng(v))},
+            {GetType(SByte), Function(c, v) c.Literal(CSByte(v))},
+            {GetType(Short), Function(c, v) c.Literal(CShort(v))},
+            {GetType(String), Function(c, v) c.Literal(CStr(v))},
+            {GetType(TimeSpan), Function(c, v) c.Literal(CType(v, TimeSpan))},
+            {GetType(UInteger), Function(c, v) c.Literal(CUInt(v))},
+            {GetType(ULong), Function(c, v) c.Literal(CULng(v))},
+            {GetType(UShort), Function(c, v) c.Literal(CUShort(v))}
+        }
 
     ''' <summary>
     '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -220,12 +220,14 @@ Public Class VisualBasicHelper
         builder.Append("Function(x) ")
 
         If properties.Count = 1 Then
-            builder.Append("x.").
+            builder.
+                Append("x.").
                 Append(properties(0))
         Else
-            builder.Append("New With {")
-            builder.Append(String.Join(", ", properties.Select(Function(p) "x." + p)))
-            builder.Append("}")
+            builder.
+                Append("New With {").
+                Append(String.Join(", ", properties.Select(Function(p) "x." + p))).
+                Append("}")
         End If
 
         Return builder.ToString()
@@ -236,7 +238,6 @@ Public Class VisualBasicHelper
     '''     directly from your code. This API may change Or be removed in future releases.
     ''' </summary>
     Public Overridable Function Reference(type As Type) As String Implements IVisualBasicHelper.Reference
-
         Dim builtInType As String = Nothing
         If (_builtInTypes.TryGetValue(type, builtInType)) Then
             Return builtInType
@@ -249,7 +250,8 @@ Public Class VisualBasicHelper
         Dim builder = New StringBuilder()
 
         If type.IsArray Then
-            builder.Append(Reference(type.GetElementType())).
+            builder.
+                Append(Reference(type.GetElementType())).
                 Append("(")
 
             Dim rank = type.GetArrayRank()
@@ -264,7 +266,8 @@ Public Class VisualBasicHelper
 
         If (type.IsNested) Then
             Debug.Assert(Not type.DeclaringType Is Nothing)
-            builder.Append(Reference(type.DeclaringType)).
+            builder.
+                Append(Reference(type.DeclaringType)).
                 Append(".")
         End If
 
@@ -284,7 +287,6 @@ Public Class VisualBasicHelper
     '''     directly from your code. This API may change Or be removed in future releases.
     ''' </summary>
     Public Overridable Function Identifier(name As String, Optional scope As ICollection(Of String) = Nothing) As String Implements IVisualBasicHelper.Identifier
-
         Dim builder = New StringBuilder()
         Dim partStart = 0
 
@@ -389,16 +391,16 @@ Public Class VisualBasicHelper
     ''' </summary>
     Public Overridable Function Literal(value As DateTime) As String Implements IVisualBasicHelper.Literal
         Return String.Format(
-                CultureInfo.InvariantCulture,
-                "New DateTime({0}, {1}, {2}, {3}, {4}, {5}, {6}, DateTimeKind.{7})",
-                value.Year,
-                value.Month,
-                value.Day,
-                value.Hour,
-                value.Minute,
-                value.Second,
-                value.Millisecond,
-                value.Kind)
+            CultureInfo.InvariantCulture,
+            "New DateTime({0}, {1}, {2}, {3}, {4}, {5}, {6}, DateTimeKind.{7})",
+            value.Year,
+            value.Month,
+            value.Day,
+            value.Hour,
+            value.Minute,
+            value.Second,
+            value.Millisecond,
+            value.Kind)
     End Function
 
     ''' <summary>
@@ -563,7 +565,8 @@ Public Class VisualBasicHelper
             Next
         End Using
 
-        builder.AppendLine().
+        builder.
+            AppendLine().
             Append("}")
 
         Return builder.ToString()
@@ -601,7 +604,8 @@ Public Class VisualBasicHelper
             Next
         End Using
 
-        builder.AppendLine().
+        builder.
+            AppendLine().
             Append("}")
 
         Return builder.ToString()

@@ -1,8 +1,6 @@
-﻿'
-' Résumé :
-'     This API supports the Entity Framework Core infrastructure and is not intended
-'     to be used directly from your code. This API may change or be removed in future
-'     releases.
+﻿' *Incomplete*
+' This API supports the Entity Framework Core infrastructure and is not intended to be used
+' directly from your code. This API may change Or be removed In future releases.
 
 Public NotInheritable Class VBDesignStrings
     Public Shared Function UnknownOperation(operationType As Object) As String

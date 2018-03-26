@@ -1,5 +1,4 @@
-﻿
-''' <summary>
+﻿''' <summary>
 '''     <para>
 '''         Service dependencies parameter class for <see cref="VisualBasicSnapshotGenerator" />
 '''     </para>
@@ -38,7 +37,6 @@ Public Class VisualBasicSnapshotGeneratorDependencies
     ''' <param name="vbHelper"> The Visual Basic helper. </param>
     Public Sub New(vbHelper As IVisualBasicHelper)
         VisualBasicHelper = vbHelper
-
     End Sub
 
     ''' <summary>

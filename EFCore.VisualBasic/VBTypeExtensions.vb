@@ -1,5 +1,4 @@
-﻿
-Imports System.Runtime.CompilerServices
+﻿Imports System.Runtime.CompilerServices
 Imports System.Text
 ''' <summary>
 '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -8,22 +7,22 @@ Imports System.Text
 Public Module VBTypeExtensions
 
     Private ReadOnly _builtInTypeNames As Dictionary(Of Type, String) = New Dictionary(Of Type, String) From {
-            {GetType(Boolean), "Boolean"},
-            {GetType(Byte), "Byte"},
-            {GetType(Char), "Char"},
-            {GetType(Decimal), "Decimal"},
-            {GetType(Double), "Double"},
-            {GetType(Single), "Single"},
-            {GetType(Integer), "Integer"},
-            {GetType(Long), "Long"},
-            {GetType(Object), "Object"},
-            {GetType(SByte), "SByte"},
-            {GetType(Short), "Short"},
-            {GetType(String), "String"},
-            {GetType(UInteger), "UInteger"},
-            {GetType(ULong), "ULong"},
-            {GetType(UShort), "UShort"}
-        }
+        {GetType(Boolean), "Boolean"},
+        {GetType(Byte), "Byte"},
+        {GetType(Char), "Char"},
+        {GetType(Decimal), "Decimal"},
+        {GetType(Double), "Double"},
+        {GetType(Single), "Single"},
+        {GetType(Integer), "Integer"},
+        {GetType(Long), "Long"},
+        {GetType(Object), "Object"},
+        {GetType(SByte), "SByte"},
+        {GetType(Short), "Short"},
+        {GetType(String), "String"},
+        {GetType(UInteger), "UInteger"},
+        {GetType(ULong), "ULong"},
+        {GetType(UShort), "UShort"}
+    }
 
     ''' <summary>
     '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -78,9 +77,11 @@ Public Module VBTypeExtensions
         ProcessType(builder, innerType, fullName)
 
         While type.IsArray
-            builder.Append("(")
-            builder.Append(","c, type.GetArrayRank() - 1)
-            builder.Append(")")
+            builder.
+                Append("(").
+                Append(","c, type.GetArrayRank() - 1).
+                Append(")")
+
             type = type.GetElementType()
         End While
     End Sub
@@ -93,8 +94,9 @@ Public Module VBTypeExtensions
                 ProcessGenericType(builder, type.DeclaringType, genericArguments, offset, fullName)
                 builder.Append("+")
             Else
-                builder.Append(type.Namespace)
-                builder.Append(".")
+                builder.
+                    Append(type.Namespace).
+                    Append(".")
             End If
         End If
 

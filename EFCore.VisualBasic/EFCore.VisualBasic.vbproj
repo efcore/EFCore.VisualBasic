@@ -20,6 +20,7 @@
     <Version>2.1.0-alpha1</Version>
     <OptionStrict>On</OptionStrict>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <TimestampUrl>http://time.certum.pl</TimestampUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -49,12 +50,16 @@
 
   <Target Name="SignOutput" AfterTargets="Build" Condition="'$(SignOutput)' == 'True'">
     <PropertyGroup>
-      <TimestampUrl>http://time.certum.pl</TimestampUrl>
-      <WindowsSdkDir Condition=" '$(WindowsSdkDir)' == '' ">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0@InstallationFolder)</WindowsSdkDir>
-      <WindowsSDKVersion Condition=" '$(WindowsSDKVersion)' == '' ">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0@ProductVersion)\</WindowsSDKVersion>
-      <SignToolCommand>"$(WindowsSdkDir)bin\$(WindowsSDKVersion)x86\signtool.exe" sign /t $(TimestampUrl) /q</SignToolCommand>
+      <SignToolCommand>"$(SigntoolDir)signtool.exe" sign /t $(TimestampUrl) /q</SignToolCommand>
     </PropertyGroup>
     <Exec Command="$(SignToolCommand) &quot;$(TargetPath)&quot;" />
+  </Target>
+
+  <Target Name="DontKnowYet" AfterTargets="Pack" Condition="'$(SignOutput)' == 'True'">
+    <PropertyGroup>
+      <NuGetSignCommand>"$(NuGetExePath)" sign -Timestamper $(TimestampUrl)</NuGetSignCommand>
+    </PropertyGroup>
+    <Exec Command="$(NuGetSignCommand) &quot;$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg&quot;" />
   </Target>
 
 </Project>

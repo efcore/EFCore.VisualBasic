@@ -4,22 +4,38 @@ var signOutput = HasArgument("signOutput");
 
 Task("Build")
     .Does(
-        () =>
-            DotNetCoreBuild(
-                "EFCore.VisualBasic.sln",
-                new DotNetCoreBuildSettings
+        ctx =>
+        {
+            var settings = new DotNetCoreBuildSettings
+            {
+                Configuration = configuration,
+                MSBuildSettings = new DotNetCoreMSBuildSettings
                 {
-                    Configuration = configuration,
-                    MSBuildSettings = new DotNetCoreMSBuildSettings
+                    MaxCpuCount = 0,
+                    NoLogo = true,
+                    Properties =
                     {
-                        MaxCpuCount = 0,
-                        NoLogo = true,
-                        Properties =
-                        {
-                            { "SignOutput", new[] { signOutput.ToString() } }
-                        }
+                        { "SignOutput", new[] { signOutput.ToString() } }
                     }
-                }));
+                }
+            };
+
+            if (signOutput)
+            {
+                var properties = settings.MSBuildSettings.Properties;
+
+                var nugetExePath = ctx.Environment.GetSpecialPath(SpecialPath.LocalTemp).CombineWithFilePath("nuget.exe");
+                DownloadFile("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe", nugetExePath);
+                properties.Add("NuGetExePath", new[] { nugetExePath.FullPath });
+
+                var windowsSdkKey = ctx.Registry.LocalMachine.OpenKey(@"SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0");
+                var windowsSdkDir = windowsSdkKey.GetValue("InstallationFolder");
+                var windowsSDKVersion = windowsSdkKey.GetValue("ProductVersion");
+                properties.Add("SigntoolDir", new[] { $@"{windowsSdkDir}bin\{windowsSDKVersion}.0\x86\" });
+            }
+
+            DotNetCoreBuild("EFCore.VisualBasic.sln", settings);
+        });
 
 Task("Test")
     .IsDependentOn("Build")

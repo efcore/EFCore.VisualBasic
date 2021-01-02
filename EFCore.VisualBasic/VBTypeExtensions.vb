@@ -4,9 +4,9 @@ Imports System.Text
 '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
 '''     directly from your code. This API may change Or be removed in future releases.
 ''' </summary>
-Public Module VBTypeExtensions
+Friend Module VBTypeExtensions
 
-    Private ReadOnly _builtInTypeNames As Dictionary(Of Type, String) = New Dictionary(Of Type, String) From {
+    Public ReadOnly _builtInTypeNames As New Dictionary(Of Type, String) From {
         {GetType(Boolean), "Boolean"},
         {GetType(Byte), "Byte"},
         {GetType(Char), "Char"},

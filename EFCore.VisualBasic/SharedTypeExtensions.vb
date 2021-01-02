@@ -1,8 +1,8 @@
 ﻿Imports System.Reflection
 Imports System.Runtime.CompilerServices
 
-<DebuggerStepThrough>
-Module SharedTypeExtensions
+'<DebuggerStepThrough>
+Friend Module SharedTypeExtensions
 
     <Extension()>
     Public Function UnwrapNullableType(type As Type) As Type
@@ -12,7 +12,8 @@ Module SharedTypeExtensions
     <Extension()>
     Function IsNullableType(ByVal type As Type) As Boolean
         Dim typeInfo = type.GetTypeInfo()
-        Return Not typeInfo.IsValueType OrElse typeInfo.IsGenericType AndAlso typeInfo.GetGenericTypeDefinition() = GetType(Nullable(Of ))
+        Return Not typeInfo.IsValueType OrElse
+               typeInfo.IsGenericType AndAlso typeInfo.GetGenericTypeDefinition() = GetType(Nullable(Of ))
     End Function
 
     <Extension()>
@@ -26,9 +27,31 @@ Module SharedTypeExtensions
     End Function
 
     <Extension()>
+    Function MakeNullable(Type As Type, Optional nullable As Boolean = True) As Type
+
+        If Type.IsNullableType() = nullable Then
+            Return Type
+        Else
+            Return If(nullable,
+                        GetType(Nullable(Of)).MakeGenericType(Type),
+                        Type.UnwrapNullableType())
+        End If
+
+    End Function
+
+
+    <Extension()>
     Function IsInteger(ByVal type As Type) As Boolean
         type = type.UnwrapNullableType()
-        Return type = GetType(Integer) OrElse type = GetType(Long) OrElse type = GetType(Short) OrElse type = GetType(Byte) OrElse type = GetType(UInteger) OrElse type = GetType(ULong) OrElse type = GetType(UShort) OrElse type = GetType(SByte) OrElse type = GetType(Char)
+        Return type = GetType(Integer) OrElse
+               type = GetType(Long) OrElse
+               type = GetType(Short) OrElse
+               type = GetType(Byte) OrElse
+               type = GetType(UInteger) OrElse
+               type = GetType(ULong) OrElse
+               type = GetType(UShort) OrElse
+               type = GetType(SByte) OrElse
+               type = GetType(Char)
     End Function
 
     <Extension()>
@@ -51,12 +74,13 @@ Module SharedTypeExtensions
     End Function
 
     <Extension()>
-    Function IsGrouping(ByVal type As Type) As Boolean
-        Return IsGrouping(type.GetTypeInfo())
-    End Function
+    Function IsNumeric(type As Type) As Boolean
+        type = type.UnwrapNullableType()
 
-    Private Function IsGrouping(ByVal type As TypeInfo) As Boolean
-        Return type.IsGenericType AndAlso (type.GetGenericTypeDefinition() = GetType(IGrouping(Of , )) OrElse type.GetGenericTypeDefinition() = GetType(IAsyncGrouping(Of , )))
+        Return type.IsInteger() OrElse
+               type = GetType(Decimal) OrElse
+               type = GetType(Single) OrElse
+               type = GetType(Double)
     End Function
 
     <Extension()>
@@ -153,7 +177,23 @@ Module SharedTypeExtensions
         Next
     End Function
 
-    Private ReadOnly _commonTypeDictionary As Dictionary(Of Type, Object) = New Dictionary(Of Type, Object) From {{GetType(Integer), Nothing}, {GetType(Guid), Nothing}, {GetType(DateTime), Nothing}, {GetType(DateTimeOffset), Nothing}, {GetType(Long), Nothing}, {GetType(Boolean), Nothing}, {GetType(Double), Nothing}, {GetType(Short), Nothing}, {GetType(Single), Nothing}, {GetType(Byte), Nothing}, {GetType(Char), Nothing}, {GetType(UInteger), Nothing}, {GetType(UShort), Nothing}, {GetType(ULong), Nothing}, {GetType(SByte), Nothing}}
+
+    Private ReadOnly _commonTypeDictionary As New Dictionary(Of Type, Object) From
+        {{GetType(Integer), Nothing},
+         {GetType(Guid), Nothing},
+         {GetType(DateTime), Nothing},
+         {GetType(DateTimeOffset), Nothing},
+         {GetType(Long), Nothing},
+         {GetType(Boolean), Nothing},
+         {GetType(Double), Nothing},
+         {GetType(Short), Nothing},
+         {GetType(Single), Nothing},
+         {GetType(Byte), Nothing},
+         {GetType(Char), Nothing},
+         {GetType(UInteger), Nothing},
+         {GetType(UShort), Nothing},
+         {GetType(ULong), Nothing},
+         {GetType(SByte), Nothing}}
 
     <Extension()>
     Function GetDefaultValue(ByVal type As Type) As Object
@@ -164,6 +204,7 @@ Module SharedTypeExtensions
         Dim value As Object = Nothing
         Return If(_commonTypeDictionary.TryGetValue(type, value), value, Activator.CreateInstance(type))
     End Function
+
 
     <Extension()>
     Function GetConstructibleTypes(ByVal assembly As Assembly) As IEnumerable(Of TypeInfo)
@@ -178,4 +219,22 @@ Module SharedTypeExtensions
             Return ex.Types.Where(Function(t) t IsNot Nothing).[Select](Function(t) IntrospectionExtensions.GetTypeInfo(t))
         End Try
     End Function
+
+    <Extension()>
+    Iterator Function GetNamespaces(type As Type) As IEnumerable(Of String)
+        If _builtInTypeNames.ContainsKey(type) Then
+            Return
+        End If
+
+        Yield type.[Namespace]
+
+        If type.IsGenericType Then
+            For Each typeArgument In type.GenericTypeArguments
+                For Each ns In typeArgument.GetNamespaces()
+                    Yield ns
+                Next
+            Next
+        End If
+    End Function
+
 End Module

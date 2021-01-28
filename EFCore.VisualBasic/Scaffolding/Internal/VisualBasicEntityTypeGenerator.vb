@@ -268,8 +268,6 @@ Namespace Scaffolding.Internal
             GenerateRequiredAttribute(prop)
             GenerateColumnAttribute(prop)
             GenerateMaxLengthAttribute(prop)
-            GenerateUnicodeAttribute(prop)
-            GeneratePrecisionAttribute(prop)
 
             Dim annotations = _annotationCodeGenerator _
                 .FilterIgnoredAnnotations(prop.GetAnnotations()) _
@@ -333,37 +331,6 @@ Namespace Scaffolding.Internal
             End If
         End Sub
 
-        Private Sub GenerateUnicodeAttribute(prop As IProperty)
-            If prop.ClrType <> GetType(String) Then
-                Return
-            End If
-
-            Dim unicode = prop.IsUnicode()
-            If unicode.HasValue Then
-                Dim unicodeAttribute1 As AttributeWriter = New AttributeWriter("UnicodeAttribute")
-                If Not unicode.Value Then
-                    unicodeAttribute1.AddParameter(_code.Literal(False))
-                End If
-                _sb.AppendLine(unicodeAttribute1.ToString())
-            End If
-        End Sub
-
-        Private Sub GeneratePrecisionAttribute(prop As IProperty)
-
-            Dim precision = prop.GetPrecision()
-            If precision.HasValue Then
-                Dim precisionAttribute1 As AttributeWriter = New AttributeWriter("PrecisionAttribute")
-                precisionAttribute1.AddParameter(_code.Literal(precision.Value))
-
-                Dim scale = prop.GetScale()
-                If scale.HasValue Then
-                    precisionAttribute1.AddParameter(_code.Literal(scale.Value))
-                End If
-
-                _sb.AppendLine(precisionAttribute1.ToString())
-            End If
-
-        End Sub
 
         ''' <summary>
         '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

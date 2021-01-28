@@ -82,7 +82,10 @@ Namespace Scaffolding.Internal
             Dim addANamespace = Not String.IsNullOrWhiteSpace(finalContextNamespace)
 
             If finalContextNamespace <> modelNamespace Then
-                _sb.AppendLine($"Imports {modelNamespace}")
+                Dim importedModelNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, modelNamespace)
+                If Not String.IsNullOrWhiteSpace(importedModelNamespace) Then
+                    _sb.AppendLine($"Imports {importedModelNamespace}")
+                End If
             End If
 
             _sb.AppendLine()

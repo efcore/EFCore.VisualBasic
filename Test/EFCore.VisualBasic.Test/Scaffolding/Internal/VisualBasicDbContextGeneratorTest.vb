@@ -1,4 +1,5 @@
 ﻿
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
@@ -171,6 +172,9 @@ End Namespace
 
             services.AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)()
 
+            Dim vbServices = New EFCoreVisualBasicServices
+            vbServices.ConfigureDesignTimeServices(services)
+
             Dim generator = services _
                 .BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
 
@@ -179,13 +183,12 @@ End Namespace
                 Assert.Throws(Of ArgumentException)(
                     Function()
                         Return generator.GenerateModel(
-                      New Model(),
-New ModelCodeGenerationOptions With
-                      {
-                        .ModelNamespace = Nothing,
-                        .ContextName = "TestDbContext",
-                        .ConnectionString = "Initial Catalog=TestDatabase"
-                      })
+                            New Model(),
+                            New ModelCodeGenerationOptions With {
+                                .ModelNamespace = Nothing,
+                                .ContextName = "TestDbContext",
+                                .ConnectionString = "Initial Catalog=TestDatabase"
+                            })
                     End Function).Message)
 
             Assert.StartsWith(
@@ -193,13 +196,12 @@ New ModelCodeGenerationOptions With
                 Assert.Throws(Of ArgumentException)(
                     Function()
                         Return generator.GenerateModel(
-                      New Model(),
-New ModelCodeGenerationOptions With
-                      {
-                        .ModelNamespace = "TestNamespace",
-                        .ContextName = Nothing,
-                        .ConnectionString = "Initial Catalog=TestDatabase"
-                      })
+                        New Model(),
+                        New ModelCodeGenerationOptions With {
+                            .ModelNamespace = "TestNamespace",
+                            .ContextName = Nothing,
+                            .ConnectionString = "Initial Catalog=TestDatabase"
+                        })
                     End Function).Message)
 
             Assert.StartsWith(
@@ -207,13 +209,12 @@ New ModelCodeGenerationOptions With
                 Assert.Throws(Of ArgumentException)(
                     Function()
                         Return generator.GenerateModel(
-                      New Model(),
-New ModelCodeGenerationOptions With
-                      {
-                        .ModelNamespace = "TestNamespace",
-                        .ContextName = "TestDbContext",
-                        .ConnectionString = Nothing
-                      })
+                        New Model(),
+                        New ModelCodeGenerationOptions With {
+                            .ModelNamespace = "TestNamespace",
+                            .ContextName = "TestDbContext",
+                            .ConnectionString = Nothing
+                        })
                     End Function).Message)
         End Sub
         <ConditionalFact>
@@ -226,21 +227,23 @@ New ModelCodeGenerationOptions With
 
             services.AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)()
 
-            Dim generator = services _
-                .BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
+            Dim vbServices = New EFCoreVisualBasicServices
+            vbServices.ConfigureDesignTimeServices(services)
+
+            Dim generator = services.
+                BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
 
             Dim scaffoldedModel = generator.GenerateModel(
                 New Model(),
-New ModelCodeGenerationOptions With
-                {
-            .SuppressConnectionStringWarning = True,
-            .ModelNamespace = "TestNamespace",
-            .ContextName = "TestDbContext",
-            .ConnectionString = "Initial Catalog=TestDatabase"
+                New ModelCodeGenerationOptions With {
+                    .SuppressConnectionStringWarning = True,
+                    .ModelNamespace = "TestNamespace",
+                    .ContextName = "TestDbContext",
+                    .ConnectionString = "Initial Catalog=TestDatabase"
                 })
 
             Assert.Contains(
-                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", x => x.SetProviderOption()).SetContextOption();",
+                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", Function(x) x.SetProviderOption()).SetContextOption()",
                 scaffoldedModel.ContextFile.Code)
         End Sub
 
@@ -373,12 +376,12 @@ New ModelCodeGenerationOptions With
                 End Sub,
                 New ModelCodeGenerationOptions,
                 Sub(code)
-                    Assert.Contains($"Property(Function(x) x.ValueGeneratedOnAdd) _
-                        .ValueGeneratedOnAdd()", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(x) x.ValueGeneratedOnAddOrUpdate).ValueGeneratedOnAddOrUpdate()", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(x) x.ConcurrencyToken).IsConcurrencyToken()", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(x) x.ValueGeneratedOnUpdate).ValueGeneratedOnUpdate()", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(x) x.ValueGeneratedNever).ValueGeneratedNever()", code.ContextFile.Code)
+                    Assert.Contains($"Property(Function(e) e.ValueGeneratedOnAdd).
+                        ValueGeneratedOnAdd()", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.ValueGeneratedOnAddOrUpdate).ValueGeneratedOnAddOrUpdate()", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.ConcurrencyToken).IsConcurrencyToken()", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.ValueGeneratedOnUpdate).ValueGeneratedOnUpdate()", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.ValueGeneratedNever).ValueGeneratedNever()", code.ContextFile.Code)
                 End Sub,
                 Sub(model)
                     Dim entity1 = model.FindEntityType("TestNamespace.Entity")
@@ -403,8 +406,8 @@ New ModelCodeGenerationOptions With
                 End Sub,
                 New ModelCodeGenerationOptions,
                 Sub(code)
-                    Assert.Contains("Property(Function(x) x.HasPrecision).HasPrecision(12)", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(x) x.HasPrecisionAndScale).HasPrecision(14, 7)", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.HasPrecision).HasPrecision(12)", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.HasPrecisionAndScale).HasPrecision(14, 7)", code.ContextFile.Code)
                 End Sub,
                 Sub(model)
                     Dim entity1 = model.FindEntityType("TestNamespace.Entity")
@@ -420,7 +423,7 @@ New ModelCodeGenerationOptions With
             Test(
                 Sub(modelBuilder) modelBuilder.Entity("Entity").Property(Of String)("UseCollation").UseCollation("Some Collation"),
                 New ModelCodeGenerationOptions,
-                Sub(code) Assert.Contains("Property(Function(x) x.UseCollation).UseCollation(""Some Collation"")", code.ContextFile.Code),
+                Sub(code) Assert.Contains("Property(Function(e) e.UseCollation).UseCollation(""Some Collation"")", code.ContextFile.Code),
                 Sub(model)
                     Dim entity1 = model.FindEntityType("TestNamespace.Entity")
                     Assert.Equal("Some Collation", entity1.GetProperty("UseCollation").GetCollation())
@@ -448,8 +451,8 @@ New ModelCodeGenerationOptions With
                 End Sub,
                 New ModelCodeGenerationOptions,
                 Sub(code)
-                    Assert.Contains("Property(Function(x) x.UnicodeColumn).IsUnicode()", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(x) x.NonUnicodeColumn).IsUnicode(false)", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.UnicodeColumn).IsUnicode()", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.NonUnicodeColumn).IsUnicode(false)", code.ContextFile.Code)
                 End Sub,
                 Sub(model)
                     Dim entity1 = model.FindEntityType("TestNamespace.Entity")
@@ -541,12 +544,12 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(x) New With {x.A, x.B}, ""IndexOnAAndB"") _
-                        .IsUnique()
-                    entity.HasIndex(Function(x) New With {x.B, x.C}, ""IndexOnBAndC"") _
-                        .HasFilter(""Filter SQL"") _
-                        .HasAnnotation(""AnnotationName"", ""AnnotationValue"")
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
+                    entity.HasIndex(Function(e) New With {e.A, e.B}, ""IndexOnAAndB"").
+                        IsUnique()
+                    entity.HasIndex(Function(e) New With {e.B, e.C}, ""IndexOnBAndC"").
+                        HasFilter(""Filter SQL"").
+                        HasAnnotation(""AnnotationName"", ""AnnotationValue"")
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -617,10 +620,10 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(x) New With {x.B, x.C}, ""IndexOnBAndC"") _
-                        .HasFilter(""Filter SQL"") _
-                        .HasAnnotation(""AnnotationName"", ""AnnotationValue"")
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
+                    entity.HasIndex(Function(e) New With {e.B, e.C}, ""IndexOnBAndC"").
+                        HasFilter(""Filter SQL"").
+                        HasAnnotation(""AnnotationName"", ""AnnotationValue"")
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -693,19 +696,19 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of DependentEntity)(
                 Sub(entity)
-                    entity.HasIndex(Function(x) x.DependentId, ""IX_DependentEntity_DependentId"") _
-                        .IsUnique()
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
-                    entity.HasOne(Function(d) d.NavigationToPrincipal) _
-                        .WithOne(Function(p) p.NavigationToDependent) _
-                        .HasPrincipalKey(Of PrincipalEntity)(Function(x) x.PrincipalId) _
-                        .HasForeignKey(Of DependentEntity)(Function(x) x.DependentId)
+                    entity.HasIndex(Function(e) e.DependentId, ""IX_DependentEntity_DependentId"").
+                        IsUnique()
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                    entity.HasOne(Function(d) d.NavigationToPrincipal).
+                        WithOne(Function(p) p.NavigationToDependent).
+                        HasPrincipalKey(Of PrincipalEntity)(Function(e) e.PrincipalId).
+                        HasForeignKey(Of DependentEntity)(Function(e) e.DependentId)
                 End Sub)
 
             modelBuilder.Entity(Of PrincipalEntity)(
                 Sub(entity)
-                    entity.HasKey(Function(x) x.AlternateId)
-                    entity.Property(Function(x) x.AlternateId).UseIdentityColumn()
+                    entity.HasKey(Function(e) e.AlternateId)
+                    entity.Property(Function(e) e.AlternateId).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -780,10 +783,10 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Employee)(
                 Sub(entity)
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
-                    entity.Property(Function(x) x.HireDate) _
-                        .HasColumnType(""date"") _
-                        .HasColumnName(""hiring_date"")
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                    entity.Property(Function(e) e.HireDate).
+                        HasColumnType(""date"").
+                        HasColumnName(""hiring_date"")
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -827,6 +830,7 @@ End Namespace
                 },
                 Sub(code)
                     Assert.Contains("Namespace TestNamespace", code.ContextFile.Code)
+                    Assert.DoesNotContain("Imports Namespace", code.ContextFile.Code)
                     Assert.Contains("Namespace TestNamespace", code.AdditionalFiles(0).Code)
                 End Sub,
                 Sub(model)
@@ -847,7 +851,88 @@ End Namespace
                 },
                 Sub(code)
                     Assert.DoesNotContain("Namespace", code.ContextFile.Code)
+                    Assert.DoesNotContain("Imports Namespace", code.ContextFile.Code)
                     Assert.DoesNotContain("Namespace", code.AdditionalFiles(0).Code)
+                End Sub,
+                Sub(model)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Namespace_is_imported_if_model_is_in_another_namespace()
+
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("Entity").Property(Of Integer)("Id")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .ModelNamespace = "TestNaMeSpAcE.test2",
+                    .ContextNamespace = "TESTNAMESPACE"
+                },
+                Sub(code)
+                    Assert.Contains("Namespace TESTNAMESPACE", code.ContextFile.Code)
+                    Assert.Contains("Imports TestNaMeSpAcE.test2", code.ContextFile.Code)
+                    Assert.Contains("Namespace TestNaMeSpAcE.test2", code.AdditionalFiles(0).Code)
+                End Sub,
+                Sub(model)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Namespace_is_not_imported_if_model_is_in_the_same_namespace()
+
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("Entity").Property(Of Integer)("Id")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .RootNamespace = "TestNamespace.Test2",
+                    .ModelNamespace = "Test3",
+                    .ContextNamespace = "TestNamespace.Test2.Test3"
+                },
+                Sub(code)
+                    Assert.Contains("Namespace Test3", code.ContextFile.Code)
+                    Assert.DoesNotContain("Imports TestNamespace", code.ContextFile.Code)
+                    Assert.Contains("Namespace Test3", code.AdditionalFiles(0).Code)
+                End Sub,
+                Sub(model)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Root_namespace_is_added_to_imported_namespace_even_if_it_is_not_specified()
+
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("Entity").Property(Of Integer)("Id")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .RootNamespace = "TestNamespace",
+                    .ModelNamespace = "test1",
+                    .ContextNamespace = "TestNamespace.Test2"
+                },
+                Sub(code)
+                    Assert.Contains("Imports TestNamespace.test1", code.ContextFile.Code)
+                End Sub,
+                Sub(model)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Invalid_identifier_for_namespace_are_escaped()
+
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("Entity").Property(Of Integer)("Id")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .RootNamespace = "TestNamespace",
+                    .ContextNamespace = "TestNamespace.integer",
+                    .ModelNamespace = "TestNamespace.Integer"
+                },
+                Sub(code)
+                    Assert.Contains("Namespace [integer]", code.ContextFile.Code)
+                    Assert.Contains("Namespace [Integer]", code.AdditionalFiles(0).Code)
                 End Sub,
                 Sub(model)
                 End Sub)
@@ -863,76 +948,6 @@ End Namespace
                 Return New MethodCallCodeFragment("SetContextOption")
             End Function
         End Class
-
-        Protected Sub Test(
-            buildModel As Action(Of ModelBuilder),
-            options As ModelCodeGenerationOptions,
-            assertScaffold As Action(Of ScaffoldedModel),
-            assertModel As Action(Of IModel))
-
-            Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(skipValidation:=True)
-            mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-            buildModel(mb)
-
-            Call mb.Model.GetEntityTypeErrors()
-
-            Dim model1 = mb.FinalizeModel()
-
-            Dim services = New ServiceCollection
-            services.AddEntityFrameworkDesignTimeServices()
-            services.AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
-            services.AddSingleton(Of IVisualBasicDbContextGenerator, VisualBasicDbContextGenerator)()
-            services.AddSingleton(Of IVisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)()
-            services.AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()
-
-            Dim sqlSrvD = New SqlServerDesignTimeServices
-            sqlSrvD.ConfigureDesignTimeServices(services)
-
-            Dim generator = services.BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
-
-            options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
-            options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
-            options.ContextName = "TestDbContext"
-            options.ConnectionString = "Initial Catalog=TestDatabase"
-
-            Dim scaffoldedModel1 = generator.GenerateModel(model1, options)
-
-            assertScaffold(scaffoldedModel1)
-
-            Dim build As New BuildSource With {
-                .References =
-                {
-                    BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                    BuildReference.ByName("System.Runtime"),
-                    BuildReference.ByName("System.Linq.Expressions"),
-                    BuildReference.ByName("netstandard"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"),
-                    BuildReference.ByName("System.ComponentModel.Annotations"),
-                    BuildReference.ByName("System.ComponentModel.DataAnnotations"),
-                    BuildReference.ByName("System.ComponentModel.Primitives"),
-                    BuildReference.ByName("System.Data.Common"),
-                    BuildReference.ByName("System.Collections")
-                },
-                .Sources = New List(Of String)({scaffoldedModel1.ContextFile.Code}.
-                                                    Concat(scaffoldedModel1.
-                                                                AdditionalFiles.
-                                                                Select(Function(f) f.Code)))
-            }
-
-            Dim assembly = build.BuildInMemory()
-            Dim dbContextNameSpace = RemoveRootNamespaceFromNamespace(options.RootNamespace, options.ContextNamespace)
-            dbContextNameSpace &= If(Not String.IsNullOrEmpty(dbContextNameSpace), ".", "")
-            dbContextNameSpace &= options.ContextName
-            Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
-
-            If assertModel IsNot Nothing Then
-                Dim compiledModel = context.Model
-                assertModel(compiledModel)
-            End If
-        End Sub
 
         Private Shared Sub AssertFileContents(
             expectedCode As String,

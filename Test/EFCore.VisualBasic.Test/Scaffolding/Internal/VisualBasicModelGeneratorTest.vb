@@ -1,12 +1,9 @@
 ﻿
 Imports System.IO
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
-Imports EFCore.Design.Tests.Shared
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
-Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 

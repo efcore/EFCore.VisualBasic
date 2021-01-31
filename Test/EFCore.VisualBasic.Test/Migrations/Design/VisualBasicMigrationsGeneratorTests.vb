@@ -560,13 +560,16 @@ Namespace Global.MyNamespace
                 Sub(b)
                     b.Property(Of Integer)(""Id"").
                         HasColumnType(""int"")
+
                     b.Property(Of String)(""C2"").
                         IsRequired().
                         HasColumnType(""nvarchar(max)"")
+
                     b.Property(Of Integer)(""C3"").
                         HasColumnType(""int"")
 
                     b.HasKey(""Id"")
+
                     b.ToTable(""T1"")
                 End Sub)
 
@@ -685,10 +688,12 @@ Namespace Global.MyNamespace
                     b.Property(Of Integer)(""Id"").
                         ValueGeneratedOnAdd().
                         HasColumnType(""default_int_mapping"")
+
                     b.Property(Of Guid)(""PropertyWithValueGenerator"").
                         HasColumnType(""default_guid_mapping"")
 
                     b.HasKey(""Id"")
+
                     b.ToTable(""EntityWithConstructorBinding"")
                 End Sub)
 
@@ -696,10 +701,12 @@ Namespace Global.MyNamespace
                 Sub(b)
                     b.Property(Of String)(""Ham"").
                         HasColumnType(""just_string(10)"")
+
                     b.Property(Of String)(""Pickle"").
                         HasColumnType(""just_string(10)"")
 
                     b.HasKey(""Ham"")
+
                     b.ToTable(""Cheese"")
                 End Sub)
         End Sub

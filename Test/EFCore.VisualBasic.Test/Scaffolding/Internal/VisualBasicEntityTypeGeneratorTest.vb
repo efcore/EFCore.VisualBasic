@@ -1,17 +1,5 @@
-﻿
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Scaffolding.Internal
-Imports Microsoft.Data.SqlClient
-Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Design
-Imports Microsoft.EntityFrameworkCore.Diagnostics
-Imports Microsoft.EntityFrameworkCore.Metadata
-Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+﻿Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Scaffolding
-Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
-Imports Microsoft.EntityFrameworkCore.SqlServer.Diagnostics.Internal
-Imports Microsoft.EntityFrameworkCore.TestUtilities
-Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 
 Namespace Scaffolding.Internal
@@ -293,10 +281,10 @@ End Namespace
                     Return modelBuilder.Entity(
                       "EntityWithIndexes",
                       Sub(x)
-                          x.[Property](Of Integer)("Id")
-                          x.[Property](Of Integer)("A")
-                          x.[Property](Of Integer)("B")
-                          x.[Property](Of Integer)("C")
+                          x.Property(Of Integer)("Id")
+                          x.Property(Of Integer)("A")
+                          x.Property(Of Integer)("B")
+                          x.Property(Of Integer)("C")
                           x.HasKey("Id")
                           x.HasIndex({"A", "B"}, "IndexOnAAndB") _
                               .IsUnique()
@@ -375,9 +363,9 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(x) New With {x.B, x.C}, ""IndexOnBAndC"") _
-                        .HasFilter(""Filter SQL"")
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
+                    entity.HasIndex(Function(e) New With {e.B, e.C}, ""IndexOnBAndC"").
+                        HasFilter(""Filter SQL"")
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -393,10 +381,10 @@ End Namespace
                     Return modelBuilder.Entity(
                         "EntityWithIndexes",
                         Sub(x)
-                            x.[Property](Of Integer)("Id")
-                            x.[Property](Of Integer)("A")
-                            x.[Property](Of Integer)("B")
-                            x.[Property](Of Integer)("C")
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of Integer)("A")
+                            x.Property(Of Integer)("B")
+                            x.Property(Of Integer)("C")
                             x.HasKey("Id")
                             x.HasIndex({"A", "B"}, "IndexOnAAndB") _
                                 .IsUnique()
@@ -468,7 +456,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Entity)(
                 Sub(entity)
-                    entity.Property(Function(x) x.PrimaryKey).UseIdentityColumn()
+                    entity.Property(Function(e) e.PrimaryKey).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -485,7 +473,7 @@ End Namespace
                     Return modelBuilder.Entity(
                         "Entity",
                         Sub(x)
-                            x.[Property](Of Integer)("PrimaryKey")
+                            x.Property(Of Integer)("PrimaryKey")
                             x.HasKey("PrimaryKey")
                         End Sub)
                 End Function,
@@ -554,7 +542,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
-                    entity.HasKey(Function(x) New With {x.Key, x.Serial})
+                    entity.HasKey(Function(e) New With {e.Key, e.Serial})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -571,8 +559,8 @@ End Namespace
                     Return modelBuilder.Entity(
                       "Post",
                       Sub(x)
-                          x.[Property](Of Integer)("Key")
-                          x.[Property](Of Integer)("Serial")
+                          x.Property(Of Integer)("Key")
+                          x.Property(Of Integer)("Serial")
                           x.HasKey("Key", "Serial")
                       End Sub)
                 End Function,
@@ -619,8 +607,8 @@ End Namespace
                     Return modelBuilder.Entity(
                         "Entity",
                           Sub(x)
-                              x.[Property](Of Integer)("Id")
-                              x.[Property](Of String)("RequiredString").IsRequired()
+                              x.Property(Of Integer)("Id")
+                              x.Property(Of String)("RequiredString").IsRequired()
                           End Sub)
                 End Function,
                 New ModelCodeGenerationOptions With {
@@ -657,7 +645,7 @@ End Namespace
                     Return modelBuilder.Entity(
                         "Entity",
                         Sub(x)
-                            x.[Property](Of String)("RequiredString")
+                            x.Property(Of String)("RequiredString")
                             x.HasKey("RequiredString")
                         End Sub)
                 End Function,
@@ -729,7 +717,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Entity)(
                 Sub(entity)
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -746,12 +734,12 @@ End Namespace
                     Return modelBuilder.Entity(
                         "Entity",
                         Sub(x)
-                            x.[Property](Of Integer)("Id")
-                            x.[Property](Of String)("A").HasColumnName("propertyA")
-                            x.[Property](Of String)("B").HasColumnType("nchar(10)")
-                            x.[Property](Of String)("C").HasColumnName("random").HasColumnType("varchar(200)")
-                            x.[Property](Of Decimal)("D").HasColumnType("numeric(18, 2)")
-                            x.[Property](Of String)("E").HasMaxLength(100)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of String)("A").HasColumnName("propertyA")
+                            x.Property(Of String)("B").HasColumnType("nchar(10)")
+                            x.Property(Of String)("C").HasColumnName("random").HasColumnType("varchar(200)")
+                            x.Property(Of Decimal)("D").HasColumnType("numeric(18, 2)")
+                            x.Property(Of String)("E").HasMaxLength(100)
                         End Sub)
                 End Function,
                 New ModelCodeGenerationOptions With {
@@ -1161,12 +1149,12 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.HasKey(Function(x) New With {x.Id1, x.Id2})
+                    entity.HasKey(Function(e) New With {e.Id1, e.Id2})
                 End Sub)
 
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1185,14 +1173,14 @@ End Namespace
   .Entity(
       "Blog",
       Sub(x)
-          x.[Property](Of Integer)("Id1")
-          x.[Property](Of Integer)("Id2")
+          x.Property(Of Integer)("Id1")
+          x.Property(Of Integer)("Id2")
           x.HasKey("Id1", "Id2")
       End Sub) _
   .Entity(
       "Post",
       Sub(x)
-          x.[Property](Of Integer)("Id")
+          x.Property(Of Integer)("Id")
 
           x.HasOne("Blog", "BlogNavigation").WithMany("Posts").HasForeignKey("BlogId1", "BlogId2")
       End Sub)
@@ -1270,16 +1258,16 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
-                    entity.Property(Function(x) x.Id).UseIdentityColumn()
-                    entity.HasOne(Function(d) d.BlogNavigation) _
-                        .WithMany(Function(p) p.Posts) _
-                        .HasPrincipalKey(Function(x) New With {x.Id1, x.Id2}) _
-                        .HasForeignKey(Function(x) New With {x.BlogId1, x.BlogId2})
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                    entity.HasOne(Function(d) d.BlogNavigation).
+                        WithMany(Function(p) p.Posts).
+                        HasPrincipalKey(Function(e) New With {e.Id1, e.Id2}).
+                        HasForeignKey(Function(e) New With {e.BlogId1, e.BlogId2})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1297,14 +1285,14 @@ End Namespace
                     Return modelBuilder.Entity(
                     "Blog",
                     Sub(x)
-                        x.[Property](Of Integer)("Id")
-                        x.[Property](Of Integer)("Id1")
-                        x.[Property](Of Integer)("Id2")
+                        x.Property(Of Integer)("Id")
+                        x.Property(Of Integer)("Id1")
+                        x.Property(Of Integer)("Id2")
                     End Sub) _
                 .Entity(
                     "Post",
                     Sub(x)
-                        x.[Property](Of Integer)("Id")
+                        x.Property(Of Integer)("Id")
 
                         x.HasOne("Blog", "BlogNavigation").WithMany("Posts") _
                             .HasPrincipalKey("Id1", "Id2") _
@@ -1361,11 +1349,11 @@ End Namespace
                     Return modelBuilder _
   .Entity(
       "Blog",
-      Function(x) x.[Property](Of Integer)("Id")) _
+      Function(x) x.Property(Of Integer)("Id")) _
   .Entity(
       "Post",
       Sub(x)
-          x.[Property](Of Integer)("Id")
+          x.Property(Of Integer)("Id")
           x.HasOne("Blog", "Blog").WithMany("Posts")
       End Sub)
                 End Function,
@@ -1418,11 +1406,11 @@ End Namespace
                 Function(modelBuilder)
                     Return modelBuilder.Entity(
                       "Blog",
-                      Function(x) x.[Property](Of Integer)("Id")) _
+                      Function(x) x.Property(Of Integer)("Id")) _
                   .Entity(
                       "Post",
                       Sub(x)
-                          x.[Property](Of Integer)("Id")
+                          x.Property(Of Integer)("Id")
                           x.HasOne("Blog", "BlogNavigation").WithMany("Posts").HasForeignKey("Blog")
                       End Sub)
                 End Function,
@@ -1479,10 +1467,10 @@ End Namespace
                 Function(modelBuilder)
                     Return modelBuilder.Entity(
                         "Blog",
-                        Function(x) x.[Property](Of Integer)("Id")).Entity(
+                        Function(x) x.Property(Of Integer)("Id")).Entity(
                         "Post",
                         Sub(x)
-                            x.[Property](Of Integer)("Id")
+                            x.Property(Of Integer)("Id")
                             x.HasOne("Blog", "Blog").WithMany("Posts")
                             x.HasOne("Blog", "OriginalBlog").WithMany("OriginalPosts").HasForeignKey("OriginalBlogId")
                         End Sub)
@@ -1516,73 +1504,6 @@ End Namespace
                     Assert.Equal("TestNamespace.Blog", originalInverseNavigation.DeclaringEntityType.Name)
                     Assert.Equal("OriginalPosts", originalInverseNavigation.Name)
                 End Sub)
-        End Sub
-
-
-        Protected Sub Test(
-            buildModel As Action(Of ModelBuilder),
-            options As ModelCodeGenerationOptions,
-            assertScaffold As Action(Of ScaffoldedModel),
-            assertModel As Action(Of IModel))
-
-            Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(skipValidation:=True)
-            mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-            buildModel(mb)
-
-            Call mb.Model.GetEntityTypeErrors()
-
-            Dim model1 = mb.FinalizeModel()
-
-            Dim services = New ServiceCollection
-            services.AddEntityFrameworkDesignTimeServices()
-            services.AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
-            services.AddSingleton(Of IVisualBasicDbContextGenerator, VisualBasicDbContextGenerator)()
-            services.AddSingleton(Of IVisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)()
-            services.AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()
-
-            Dim sqlSrvD = New SqlServerDesignTimeServices
-            sqlSrvD.ConfigureDesignTimeServices(services)
-
-            Dim generator = services.BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
-
-            options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
-            options.ContextName = "TestDbContext"
-            options.ConnectionString = "Initial Catalog=TestDatabase"
-
-            Dim scaffoldedModel1 = generator.GenerateModel(model1, options)
-
-            assertScaffold(scaffoldedModel1)
-
-            Dim build As New BuildSource With {
-                .References =
-                {
-                    BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                    BuildReference.ByName("System.Runtime"),
-                    BuildReference.ByName("System.Linq.Expressions"),
-                    BuildReference.ByName("netstandard"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"),
-                    BuildReference.ByName("System.ComponentModel.Annotations"),
-                    BuildReference.ByName("System.ComponentModel.DataAnnotations"),
-                    BuildReference.ByName("System.ComponentModel.Primitives"),
-                    BuildReference.ByName("System.Data.Common"),
-                    BuildReference.ByName("System.Collections")
-                },
-                .Sources = New List(Of String)({scaffoldedModel1.ContextFile.Code}.
-                                                    Concat(scaffoldedModel1.
-                                                                AdditionalFiles.
-                                                                Select(Function(f) f.Code)))
-            }
-
-            Dim assembly = build.BuildInMemory()
-            Dim context = CType(assembly.CreateInstance("TestNamespace.TestDbContext"), DbContext)
-
-            If assertModel IsNot Nothing Then
-                Dim compiledModel = context.Model
-                assertModel(compiledModel)
-            End If
         End Sub
 
         Private Shared Sub AssertFileContents(

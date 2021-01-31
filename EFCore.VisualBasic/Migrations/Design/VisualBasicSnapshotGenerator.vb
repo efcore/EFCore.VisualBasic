@@ -310,16 +310,16 @@ Namespace Migrations.Design
                 Append(builderName).
                 Append(".Entity(").
                 Append(VBCode.Literal(entityType.Name)).
-                AppendLine(",").
-                AppendLine("Sub(b)")
+                AppendLine(",")
 
             Using stringBuilder.Indent()
+                stringBuilder.AppendLine("Sub(b)")
 
                 Using stringBuilder.Indent()
                     GenerateRelationships("b", entityType, stringBuilder)
                 End Using
 
-                stringBuilder.AppendLine().AppendLine("End Sub)")
+                stringBuilder.AppendLine("End Sub)")
             End Using
         End Sub
 
@@ -470,6 +470,7 @@ Namespace Migrations.Design
                 End If
 
                 GenerateProperty(builderName, [property], stringBuilder)
+                stringBuilder.AppendLine()
             Next
         End Sub
 
@@ -647,11 +648,10 @@ Namespace Migrations.Design
 
             stringBuilder.
                 AppendLine().
-                AppendLine().
                 Append(builderName).
                 Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
                 Append(String.Join(", ", key.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                Append(")")
+                AppendLine(")")
 
             Using stringBuilder.Indent()
                 GenerateKeyAnnotations(key, stringBuilder)
@@ -714,36 +714,38 @@ Namespace Migrations.Design
             NotNull(index, NameOf(index))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-
             ' Note - method names below are meant to be hard-coded
             ' because old snapshot files will fail if they are changed
-            stringBuilder _
-                .AppendLine().Append(builderName) _
-                .Append(".HasIndex(")
+            stringBuilder.
+                Append(builderName).
+                Append(".HasIndex(")
 
             If index.Name Is Nothing Then
-                stringBuilder _
-                .Append(String.Join(", ", index.Properties.[Select](Function(p) VBCode.Literal(p.Name))))
+                stringBuilder.
+                    Append(String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name))))
             Else
-                stringBuilder _
-                .Append("{ ") _
-                .Append(String.Join(", ", index.Properties.[Select](Function(p) VBCode.Literal(p.Name)))) _
-                .Append(" }, ") _
-                .Append(VBCode.Literal(index.Name))
+                stringBuilder.
+                    Append("{ ").
+                    Append(String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
+                    Append(" }, ").
+                    Append(VBCode.Literal(index.Name))
             End If
 
-            stringBuilder.Append(")")
+            stringBuilder.
+                Append(")")
 
             Using stringBuilder.Indent()
                 If index.IsUnique Then
-                    stringBuilder _
-                .AppendLine().Append(".IsUnique()")
+                    stringBuilder.
+                        AppendLine().
+                        Append(".IsUnique()")
                 End If
 
                 GenerateIndexAnnotations(index, stringBuilder)
             End Using
 
-            stringBuilder.AppendLine()
+            stringBuilder.
+                AppendLine()
 
         End Sub
 
@@ -1199,15 +1201,16 @@ Namespace Migrations.Design
                 Append(builderName).
                 Append(".Entity(").
                 Append(VBCode.Literal(entityType.Name)).
-                AppendLine(",").
-                AppendLine("Sub(b)")
+                AppendLine(",")
 
             Using stringBuilder.Indent()
-                stringBuilder.AppendLine()
+
+                stringBuilder.AppendLine("Sub(b)")
 
                 Using stringBuilder.Indent()
                     GenerateNavigations("b", entityType.GetDeclaredNavigations().
-                                                Where(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership), stringBuilder)
+                                                Where(Function(n) Not n.IsOnDependent AndAlso
+                                                                  Not n.ForeignKey.IsOwnership), stringBuilder)
                 End Using
 
                 stringBuilder.AppendLine("End Sub)")

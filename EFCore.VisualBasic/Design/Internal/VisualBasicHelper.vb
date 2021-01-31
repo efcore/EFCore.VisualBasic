@@ -61,16 +61,16 @@ Namespace Design.Internal
         Public Overridable Function Lambda(properties As IReadOnlyList(Of String), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
 
             Dim builder = New StringBuilder()
-            builder.Append("Function(x) ")
+            builder.Append("Function(e) ")
 
             If properties.Count = 1 Then
                 builder.
-                Append("x.").
+                Append("e.").
                 Append(properties(0))
             Else
                 builder.
                 Append("New With {").
-                AppendJoin(", ", properties.Select(Function(p) "x." & p)).
+                AppendJoin(", ", properties.Select(Function(p) "e." & p)).
                 Append("}")
             End If
 

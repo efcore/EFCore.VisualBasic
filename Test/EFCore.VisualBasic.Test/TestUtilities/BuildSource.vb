@@ -5,6 +5,13 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Class BuildSource
 
+    Sub New()
+    End Sub
+
+    Sub New(RootNamespace As String)
+        _RootNamespace = RootNamespace
+    End Sub
+
     Public Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From
         {
             BuildReference.ByName("System.Runtime"),
@@ -19,6 +26,8 @@ Public Class BuildSource
 
     Public Property TargetDir As String
     Public Property Sources As ICollection(Of String) = New List(Of String)
+
+    Private _RootNamespace As String = Nothing
 
     Public Function Build() As BuildFileResult
 
@@ -37,10 +46,12 @@ Public Class BuildSource
         Next
 
         Dim compilation = VisualBasicCompilation.Create(
-                projectName,
-                Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
-                refs,
-                New VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                assemblyName:=projectName,
+                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
+                references:=refs,
+                New VisualBasicCompilationOptions(
+                   outputKind:=OutputKind.DynamicallyLinkedLibrary,
+                   rootNamespace:=_RootNamespace))
 
         Dim targetPath = Path.Combine(If(TargetDir, Path.GetTempPath()), projectName & ".dll")
 
@@ -64,10 +75,12 @@ Public Class BuildSource
         Next
 
         Dim compilation = VisualBasicCompilation.Create(
-                projectName,
-                Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
-                refs,
-                New VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                assemblyName:=projectName,
+                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
+                references:=refs,
+                New VisualBasicCompilationOptions(
+                   outputKind:=OutputKind.DynamicallyLinkedLibrary,
+                   rootNamespace:=_RootNamespace))
 
         Dim asm As Assembly
 

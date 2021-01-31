@@ -82,7 +82,7 @@ Namespace Scaffolding.Internal
             _sb.AppendLine()
 
             If addANamespace Then
-                _sb.AppendLine($"Namespace {modelNamespace}")
+                _sb.AppendLine($"Namespace {_code.Namespace(modelNamespace)}")
                 _sb.IncrementIndent()
             End If
 

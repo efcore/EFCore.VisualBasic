@@ -1332,7 +1332,7 @@ mb.Sql(""-- close to me"")"
     constraints:= Sub(table)
         table.ForeignKey(
             name:= ""FK_Post_Blog_BlogId"",
-            column:= Function(x) x.BlogId,
+            column:= Function(e) e.BlogId,
             principalTable:= ""Blog"",
             principalColumn:= ""Id"")
     End Sub)"
@@ -1388,7 +1388,7 @@ mb.Sql(""-- close to me"")"
     constraints:= Sub(table)
         table.ForeignKey(
             name:= ""FK_Post_Blog_BlogId"",
-            column:= Function(x) x.BlogId,
+            column:= Function(e) e.BlogId,
             principalSchema:= ""my"",
             principalTable:= ""Blog"",
             principalColumn:= ""Id"",
@@ -1451,7 +1451,7 @@ mb.Sql(""-- close to me"")"
     constraints:= Sub(table)
         table.ForeignKey(
             name:= ""FK_Post_Blog_BlogId1_BlogId2"",
-            columns:= Function(x) New With {x.BlogId1, x.BlogId2},
+            columns:= Function(e) New With {e.BlogId1, e.BlogId2},
             principalTable:= ""Blog"",
             principalColumns:= {""Id1"", ""Id2""})
     End Sub)"
@@ -1493,7 +1493,7 @@ mb.Sql(""-- close to me"")"
         .Id = table.Column(Of Integer)(nullable:= False)
     },
     constraints:= Sub(table)
-        table.PrimaryKey(""PK_Post"", Function(x) x.Id)
+        table.PrimaryKey(""PK_Post"", Function(e) e.Id)
     End Sub)"
 
             Test(operation,
@@ -1537,7 +1537,7 @@ mb.Sql(""-- close to me"")"
         .Id = table.Column(Of Integer)(nullable:= False)
     },
     constraints:= Sub(table)
-        table.PrimaryKey(""PK_Post"", Function(x) x.Id)
+        table.PrimaryKey(""PK_Post"", Function(e) e.Id)
     End Sub)"
 
             Test(operation,
@@ -1584,7 +1584,7 @@ mb.Sql(""-- close to me"")"
         .Id2 = table.Column(Of Integer)(nullable:= False)
     },
     constraints:= Sub(table)
-        table.PrimaryKey(""PK_Post"", Function(x) New With {x.Id1, x.Id2})
+        table.PrimaryKey(""PK_Post"", Function(e) New With {e.Id1, e.Id2})
     End Sub)"
 
             Test(operation,
@@ -1623,7 +1623,7 @@ mb.Sql(""-- close to me"")"
         .AltId = table.Column(Of Integer)(nullable:= False)
     },
     constraints:= Sub(table)
-        table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
+        table.UniqueConstraint(""AK_Post_AltId"", Function(e) e.AltId)
     End Sub)"
 
             Test(operation,
@@ -1668,7 +1668,7 @@ mb.Sql(""-- close to me"")"
         .AltId = table.Column(Of Integer)(nullable:= False)
     },
     constraints:= Sub(table)
-        table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
+        table.UniqueConstraint(""AK_Post_AltId"", Function(e) e.AltId)
     End Sub)"
 
             Test(operation,
@@ -1720,7 +1720,7 @@ mb.Sql(""-- close to me"")"
         .AltId2 = table.Column(Of Integer)(nullable:= False)
     },
     constraints:= Sub(table)
-        table.UniqueConstraint(""AK_Post_AltId1_AltId2"", Function(x) New With {x.AltId1, x.AltId2})
+        table.UniqueConstraint(""AK_Post_AltId1_AltId2"", Function(e) New With {e.AltId1, e.AltId2})
     End Sub)"
 
             Test(operation,

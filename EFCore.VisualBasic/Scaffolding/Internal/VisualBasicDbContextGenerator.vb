@@ -77,21 +77,31 @@ Namespace Scaffolding.Internal
             _sb.AppendLine("Imports Microsoft.EntityFrameworkCore.Metadata")
 
             Dim finalContextNamespace As String = If(contextNamespace, modelNamespace)
+            Dim trimmedFinalContextNamespace = finalContextNamespace
 
-            finalContextNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, finalContextNamespace)
-            Dim addANamespace = Not String.IsNullOrWhiteSpace(finalContextNamespace)
+            If Not String.IsNullOrWhiteSpace(rootNamespace) Then
+                If Not modelNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
+                    modelNamespace = rootNamespace & "." & modelNamespace
+                End If
+                If finalContextNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
+                    trimmedFinalContextNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, finalContextNamespace)
+                Else
+                    finalContextNamespace = rootNamespace & "." & finalContextNamespace
+                End If
+            End If
 
-            If finalContextNamespace <> modelNamespace Then
-                Dim importedModelNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, modelNamespace)
-                If Not String.IsNullOrWhiteSpace(importedModelNamespace) Then
-                    _sb.AppendLine($"Imports {importedModelNamespace}")
+            If Not finalContextNamespace.Equals(modelNamespace, StringComparison.OrdinalIgnoreCase) Then
+                If Not String.IsNullOrWhiteSpace(modelNamespace) Then
+                    _sb.AppendLine($"Imports {_code.Namespace(modelNamespace)}")
                 End If
             End If
 
             _sb.AppendLine()
 
+            Dim addANamespace = Not String.IsNullOrWhiteSpace(trimmedFinalContextNamespace)
+
             If addANamespace Then
-                _sb.AppendLine($"Namespace {finalContextNamespace}")
+                _sb.AppendLine($"Namespace {_code.Namespace(trimmedFinalContextNamespace)}")
                 _sb.IncrementIndent()
             End If
 
@@ -369,6 +379,12 @@ Namespace Scaffolding.Internal
                 Return
             End If
 
+            If lines.Count > 1 Then
+                For i = 1 To lines.Count - 1
+                    lines(i) = If(lines(i).StartsWith("."), lines(i).Remove(0, 1), lines(i))
+                Next
+            End If
+
             InitializeEntityTypeBuilder(entityType)
 
             Using _sb.Indent()
@@ -377,7 +393,7 @@ Namespace Scaffolding.Internal
 
                 Using _sb.Indent()
                     For Each line In lines.Skip(1)
-                        _sb.AppendLine(" _")
+                        _sb.AppendLine(".")
                         _sb.Append(line)
                     Next
                 End Using
@@ -506,7 +522,7 @@ Namespace Scaffolding.Internal
 
         Private Sub GenerateProperty(prop As IProperty, useDataAnnotations As Boolean)
             Dim lines As New List(Of String) From {
-                $".{NameOf(EntityTypeBuilder.[Property])}({_code.Lambda({prop.Name}, "e")})"}
+                $".{NameOf(EntityTypeBuilder.Property)}({_code.Lambda({prop.Name}, "e")})"}
 
             Dim annotations = _annotationCodeGenerator.
                 FilterIgnoredAnnotations(prop.GetAnnotations()).
@@ -667,8 +683,7 @@ Namespace Scaffolding.Internal
                     Select(Function(m) _code.Fragment(m)).
                     Concat(GenerateAnnotations(annotations.Values)))
 
-            If Not useDataAnnotations _
-                OrElse Not canUseDataAnnotations Then
+            If Not useDataAnnotations OrElse Not canUseDataAnnotations Then
                 AppendMultiLineFluentApi(foreignKey.DeclaringEntityType, lines)
             End If
         End Sub

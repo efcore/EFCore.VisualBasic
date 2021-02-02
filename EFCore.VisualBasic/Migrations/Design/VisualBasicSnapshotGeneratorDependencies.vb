@@ -43,16 +43,16 @@ Namespace Migrations.Design
         ''' <param name="vbHelper"> The Visual Basic helper. </param>
         <EntityFrameworkInternal>
         Public Sub New(vbHelper As IVisualBasicHelper,
-                       RelationalTypeMappingSource As IRelationalTypeMappingSource,
-                       AnnotationCodeGenerator As IAnnotationCodeGenerator)
+                       relationalTypeMappingSource As IRelationalTypeMappingSource,
+                       annotationCodeGenerator As IAnnotationCodeGenerator)
 
             NotNull(vbHelper, NameOf(vbHelper))
-            NotNull(RelationalTypeMappingSource, NameOf(RelationalTypeMappingSource))
-            NotNull(AnnotationCodeGenerator, NameOf(AnnotationCodeGenerator))
+            NotNull(relationalTypeMappingSource, NameOf(relationalTypeMappingSource))
+            NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
 
             Me.VisualBasicHelper = vbHelper
-            Me.RelationalTypeMappingSource = RelationalTypeMappingSource
-            Me.AnnotationCodeGenerator = AnnotationCodeGenerator
+            Me.RelationalTypeMappingSource = relationalTypeMappingSource
+            Me.AnnotationCodeGenerator = annotationCodeGenerator
         End Sub
 
         ''' <summary>

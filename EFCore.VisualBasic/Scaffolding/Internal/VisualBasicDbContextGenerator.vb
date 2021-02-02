@@ -36,10 +36,9 @@ Namespace Scaffolding.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Sub New(
-                providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
-                annotationCodeGenerator As IAnnotationCodeGenerator,
-                VisualBasicHelper As IVisualBasicHelper)
+        Public Sub New(providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
+                       annotationCodeGenerator As IAnnotationCodeGenerator,
+                       VisualBasicHelper As IVisualBasicHelper)
 
             NotNull(providerConfigurationCodeGenerator, NameOf(providerConfigurationCodeGenerator))
             NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
@@ -204,9 +203,8 @@ Namespace Scaffolding.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Protected Overridable Sub GenerateOnConfiguring(
-            connectionString As String,
-            suppressConnectionStringWarning As Boolean)
+        Protected Overridable Sub GenerateOnConfiguring(connectionString As String,
+                                                        suppressConnectionStringWarning As Boolean)
 
             NotNull(connectionString, NameOf(connectionString))
 
@@ -244,9 +242,8 @@ Namespace Scaffolding.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Protected Overridable Sub GenerateOnModelCreating(
-            model As IModel,
-            useDataAnnotations As Boolean)
+        Protected Overridable Sub GenerateOnModelCreating(model As IModel,
+                                                          useDataAnnotations As Boolean)
             NotNull(model, NameOf(model))
 
             _sb.AppendLine("Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)")

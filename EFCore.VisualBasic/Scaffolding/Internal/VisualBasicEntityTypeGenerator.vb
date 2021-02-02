@@ -32,13 +32,13 @@ Namespace Scaffolding.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Sub New(
-            annotationCodeGenerator As IAnnotationCodeGenerator,
-            VisualBasicHelper As IVisualBasicHelper)
-            NotNull(VisualBasicHelper, NameOf(VisualBasicHelper))
+        Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
+                       vbHelper As IVisualBasicHelper)
+
+            NotNull(vbHelper, NameOf(vbHelper))
 
             _annotationCodeGenerator = annotationCodeGenerator
-            _code = VisualBasicHelper
+            _code = vbHelper
         End Sub
 
         ''' <summary>
@@ -338,8 +338,7 @@ Namespace Scaffolding.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Protected Overridable Sub GenerateNavigationProperties(
-            entityType As IEntityType)
+        Protected Overridable Sub GenerateNavigationProperties(entityType As IEntityType)
 
             NotNull(entityType, NameOf(entityType))
 

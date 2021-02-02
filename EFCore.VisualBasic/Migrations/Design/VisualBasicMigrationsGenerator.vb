@@ -143,10 +143,10 @@ Namespace Migrations.Design
         ''' <param name="targetModel"> The migration's target model. </param>
         ''' <returns> The migration metadata code. </returns>
         Public Overrides Function GenerateMetadata(migrationNamespace As String,
-                                                    contextType As Type,
-                                                    migrationName As String,
-                                                    migrationId As String,
-                                                    targetModel As IModel) As String
+                                                   contextType As Type,
+                                                   migrationName As String,
+                                                   migrationId As String,
+                                                   targetModel As IModel) As String
 
             NotEmpty(migrationNamespace, NameOf(migrationNamespace))
             NotNull(contextType, NameOf(contextType))
@@ -223,9 +223,9 @@ Namespace Migrations.Design
         ''' <param name="model"> The model. </param>
         ''' <returns> The model snapshot code. </returns>
         Public Overrides Function GenerateSnapshot(modelSnapshotNamespace As String,
-                                                    contextType As Type,
-                                                    modelSnapshotName As String,
-                                                    model As IModel) As String
+                                                   contextType As Type,
+                                                   modelSnapshotName As String,
+                                                   model As IModel) As String
 
             NotEmpty(modelSnapshotNamespace, NameOf(modelSnapshotNamespace))
             NotNull(contextType, NameOf(contextType))

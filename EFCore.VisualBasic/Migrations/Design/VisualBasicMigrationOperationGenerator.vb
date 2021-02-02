@@ -15,11 +15,11 @@ Namespace Migrations.Design
         '''     Initializes a New instance of the <see cref="VisualBasicMigrationOperationGenerator" /> class.
         ''' </summary>
         ''' <param name="dependencies"> The dependencies. </param>
-        Public Sub New(Dependencies As VisualBasicMigrationOperationGeneratorDependencies)
+        Public Sub New(dependencies As VisualBasicMigrationOperationGeneratorDependencies)
 
-            NotNull(Dependencies, NameOf(Dependencies))
+            NotNull(dependencies, NameOf(dependencies))
 
-            VisualBasicDependencies = Dependencies
+            VisualBasicDependencies = dependencies
         End Sub
 
         ''' <summary>
@@ -39,37 +39,37 @@ Namespace Migrations.Design
         ''' <param name="builderName"> The <see cref="MigrationOperation" /> variable name. </param>
         ''' <param name="operations"> The operations. </param>
         ''' <param name="builder"> The builder code Is added to. </param>
-        Public Overloads Sub Generate(BuilderName As String,
-                                      Operations As IReadOnlyList(Of MigrationOperation),
-                                      Builder As IndentedStringBuilder) Implements IVisualBasicMigrationOperationGenerator.Generate
+        Public Overloads Sub Generate(builderName As String,
+                                      operations As IReadOnlyList(Of MigrationOperation),
+                                      builder As IndentedStringBuilder) Implements IVisualBasicMigrationOperationGenerator.Generate
 
-            NotEmpty(BuilderName, NameOf(BuilderName))
-            NotNull(Operations, NameOf(Operations))
-            NotNull(Builder, NameOf(Builder))
+            NotEmpty(builderName, NameOf(builderName))
+            NotNull(operations, NameOf(operations))
+            NotNull(builder, NameOf(builder))
 
             Dim first = True
-            For Each operation In Operations
+            For Each operation In operations
                 If first Then
                     first = False
                 Else
-                    Builder.AppendLine().AppendLine()
+                    builder.AppendLine().AppendLine()
                 End If
 
-                Builder.Append(BuilderName)
+                builder.Append(builderName)
 
-                ExecuteGenerate(operation, Builder)
+                ExecuteGenerate(operation, builder)
             Next
         End Sub
 
-        Private Sub ExecuteGenerate(Operation As MigrationOperation, Builder As IndentedStringBuilder)
+        Private Sub ExecuteGenerate(operation As MigrationOperation, builder As IndentedStringBuilder)
 
             Dim method = GetType(VisualBasicMigrationOperationGenerator).
-                            GetMethod(NameOf(Generate), BindingFlags.Instance Or BindingFlags.NonPublic, Nothing, New Type() {Operation.GetType(), GetType(IndentedStringBuilder)}, Nothing)
+                            GetMethod(NameOf(Generate), BindingFlags.Instance Or BindingFlags.NonPublic, Nothing, New Type() {operation.GetType(), GetType(IndentedStringBuilder)}, Nothing)
 
             If method Is Nothing Then
-                Generate(Operation, Builder)
+                Generate(operation, builder)
             Else
-                method.Invoke(Me, {Operation, Builder})
+                method.Invoke(Me, {operation, builder})
             End If
 
         End Sub

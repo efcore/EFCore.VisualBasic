@@ -94,27 +94,27 @@ Namespace Design.Internal
             Return Reference(type, useFullName:=False)
         End Function
 
-        Private Function Reference(Type As Type, useFullName As Boolean) As String
+        Private Function Reference(type As Type, useFullName As Boolean) As String
 
-            NotNull(Type, NameOf(Type))
+            NotNull(type, NameOf(type))
 
             Dim builtInType As String = Nothing
-            If _builtInTypes.TryGetValue(Type, builtInType) Then
+            If _builtInTypes.TryGetValue(type, builtInType) Then
                 Return builtInType
             End If
 
-            If Type.IsConstructedGenericType AndAlso Type.GetGenericTypeDefinition() = GetType(Nullable(Of )) Then
-                Return Reference(Type.UnwrapNullableType()) & "?"
+            If type.IsConstructedGenericType AndAlso type.GetGenericTypeDefinition() = GetType(Nullable(Of )) Then
+                Return Reference(type.UnwrapNullableType()) & "?"
             End If
 
             Dim builder As New StringBuilder()
 
-            If Type.IsArray Then
+            If type.IsArray Then
                 builder.
-                Append(Reference(Type.GetElementType())).
+                Append(Reference(type.GetElementType())).
                 Append("(")
 
-                Dim rank = Type.GetArrayRank()
+                Dim rank = type.GetArrayRank()
                 For i = 1 To rank - 1
                     builder.Append(",")
                 Next
@@ -124,14 +124,14 @@ Namespace Design.Internal
                 Return builder.ToString()
             End If
 
-            If Type.IsNested Then
-                Debug.Assert(Type.DeclaringType IsNot Nothing, "DeclaringType is null")
+            If type.IsNested Then
+                Debug.Assert(type.DeclaringType IsNot Nothing, "DeclaringType is null")
                 builder.
-                    Append(Reference(Type.DeclaringType)).
+                    Append(Reference(type.DeclaringType)).
                     Append(".")
             End If
 
-            Dim typeName = If(useFullName, Type.DisplayName(), Type.ShortDisplayName())
+            Dim typeName = If(useFullName, type.DisplayName(), type.ShortDisplayName())
 
             If IsVisualBasicKeyword(typeName) Then
                 builder.Append($"[{typeName}]")
@@ -565,7 +565,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Protected Overridable Function GetCompositeEnumValue(Type As Type, flags As [Enum]) As String
+        Protected Overridable Function GetCompositeEnumValue(type As Type, flags As [Enum]) As String
 
             Dim allValues As New HashSet(Of [Enum])(GetFlags(flags))
 
@@ -580,8 +580,8 @@ Namespace Design.Internal
                         Nothing,
                         Function(previous, current)
                             Return If(previous Is Nothing,
-                                        GetSimpleEnumValue(Type, [Enum].GetName(Type, current)),
-                                        previous & " Or " & GetSimpleEnumValue(Type, [Enum].GetName(Type, current)))
+                                        GetSimpleEnumValue(type, [Enum].GetName(type, current)),
+                                        previous & " Or " & GetSimpleEnumValue(type, [Enum].GetName(type, current)))
                         End Function)
         End Function
 

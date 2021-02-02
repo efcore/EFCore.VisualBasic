@@ -28,16 +28,16 @@ Namespace Scaffolding.Internal
 
 
         Public Sub New(dependencies As ModelCodeGeneratorDependencies,
-                       VBDbContextGenerator As IVisualBasicDbContextGenerator,
-                       VBEntityTypeGenerator As IVisualBasicEntityTypeGenerator)
+                       vbDbContextGenerator As IVisualBasicDbContextGenerator,
+                       vbEntityTypeGenerator As IVisualBasicEntityTypeGenerator)
 
             MyBase.New(dependencies)
 
-            NotNull(VBDbContextGenerator, NameOf(VBDbContextGenerator))
-            NotNull(VBEntityTypeGenerator, NameOf(VBEntityTypeGenerator))
+            NotNull(vbDbContextGenerator, NameOf(vbDbContextGenerator))
+            NotNull(vbEntityTypeGenerator, NameOf(vbEntityTypeGenerator))
 
-            _VBDbContextGenerator = VBDbContextGenerator
-            _VBEntityTypeGenerator = VBEntityTypeGenerator
+            _VBDbContextGenerator = vbDbContextGenerator
+            _VBEntityTypeGenerator = vbEntityTypeGenerator
         End Sub
 
         Private Const FileExtension = ".vb"

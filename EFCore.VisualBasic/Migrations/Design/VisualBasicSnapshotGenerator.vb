@@ -606,10 +606,9 @@ Namespace Migrations.Design
         ''' <param name="keys"> The keys. </param>
         ''' <param name="primaryKey"> The primary key. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateKeys(
-        builderName As String, keys As IEnumerable(Of IKey),
-        primaryKey As IKey,
-        stringBuilder As IndentedStringBuilder)
+        Protected Overridable Sub GenerateKeys(builderName As String, keys As IEnumerable(Of IKey),
+                                               primaryKey As IKey,
+                                               stringBuilder As IndentedStringBuilder)
 
             NotNull(builderName, NameOf(builderName))
             NotNull(keys, NameOf(keys))
@@ -685,10 +684,9 @@ Namespace Migrations.Design
         ''' <param name="builderName"> The name of the builder variable. </param>
         ''' <param name="indexes"> The indexes. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateIndexes(
-        builderName As String,
-        indexes As IEnumerable(Of IIndex),
-        stringBuilder As IndentedStringBuilder)
+        Protected Overridable Sub GenerateIndexes(builderName As String,
+                                                  indexes As IEnumerable(Of IIndex),
+                                                  stringBuilder As IndentedStringBuilder)
 
             NotNull(builderName, NameOf(builderName))
             NotNull(indexes, NameOf(indexes))
@@ -976,8 +974,7 @@ Namespace Migrations.Design
         ''' <param name="builderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateCheckConstraints(
-                                                           builderName As String,
+        Protected Overridable Sub GenerateCheckConstraints(builderName As String,
                                                            entityType As IEntityType,
                                                            stringBuilder As IndentedStringBuilder)
 
@@ -1490,8 +1487,8 @@ Namespace Migrations.Design
                     value = valueConverter.ConvertToProvider(defaultValue)
                 End If
 
-                stringBuilder _
-                    .Append(VBCode.UnknownLiteral(value))
+                stringBuilder.
+                    Append(VBCode.UnknownLiteral(value))
             End If
 
             stringBuilder.

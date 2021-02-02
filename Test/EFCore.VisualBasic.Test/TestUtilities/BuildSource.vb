@@ -8,8 +8,8 @@ Public Class BuildSource
     Sub New()
     End Sub
 
-    Sub New(RootNamespace As String)
-        _RootNamespace = RootNamespace
+    Sub New(rootNamespace As String)
+        _RootNamespace = rootNamespace
     End Sub
 
     Public Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From

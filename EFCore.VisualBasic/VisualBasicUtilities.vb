@@ -106,7 +106,7 @@ Public Module VisualBasicUtilities
             "Operator",
             "Option",
             "Optional",
-            "Or", ''
+            "Or",
             "OrElse",
             "Out",
             "Overloads",

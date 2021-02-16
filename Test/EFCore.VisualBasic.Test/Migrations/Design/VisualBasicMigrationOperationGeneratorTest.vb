@@ -756,7 +756,7 @@ mb.Sql(""-- close to me"")"
              End Sub)
         End Sub
 
-        <ConditionalFact(Skip:="will be fixed in 5.0.3 ")>
+        <ConditionalFact>
         Public Sub AlterDatabaseOperation()
             Dim operation = New AlterDatabaseOperation()
             operation.Collation = "Some collation"
@@ -795,7 +795,7 @@ mb.Sql(""-- close to me"")"
                     End Sub)
         End Sub
 
-        <ConditionalFact(Skip:="will be fixed in 5.0.3 ")>
+        <ConditionalFact>
         Public Sub AlterDatabaseOperation_with_default_new_collation()
             Dim Operation = New AlterDatabaseOperation
             Operation.OldDatabase.Collation = "Some collation"

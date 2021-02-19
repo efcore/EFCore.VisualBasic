@@ -496,20 +496,20 @@ Namespace Global.MyNamespace
                 Annotation(""Some:EnumValue"", RegexOptions.Multiline)
 
             migrationBuilder.AlterColumn(Of Database)(
-                name:= ""C2"",
-                table:= ""T1"",
-                nullable:= False,
-                oldClrType:= GetType([Property]))
+                name:=""C2"",
+                table:=""T1"",
+                nullable:=False,
+                oldClrType:=GetType([Property]))
 
             migrationBuilder.AddColumn(Of PropertyEntry)(
-                name:= ""C3"",
-                table:= ""T1"",
-                nullable:= False)
+                name:=""C3"",
+                table:=""T1"",
+                nullable:=False)
 
             migrationBuilder.InsertData(
-                table:= ""T1"",
-                columns:= {""Id"", ""C2"", ""C3""},
-                values:= New Object() {1, Nothing, -1})
+                table:=""T1"",
+                columns:={""Id"", ""C2"", ""C3""},
+                values:=New Object() {1, Nothing, -1})
         End Sub
 
         Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)

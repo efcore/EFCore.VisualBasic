@@ -180,7 +180,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    <Table(""Vista"", Schema := ""custom"")>
+    <Table(""Vista"", Schema :=""custom"")>
     Public Partial Class Vista
         <Key>
         Public Property Id As Integer
@@ -264,8 +264,8 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Index(""C"")>
-    <Index(""A"", ""B"", Name := ""IndexOnAAndB"", IsUnique := True)>
-    <Index(""B"", ""C"", Name := ""IndexOnBAndC"")>
+    <Index(""A"", ""B"", Name :=""IndexOnAAndB"", IsUnique :=True)>
+    <Index(""B"", ""C"", Name :=""IndexOnBAndC"")>
     Public Partial Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
@@ -323,7 +323,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    <Index(""A"", ""B"", Name := ""IndexOnAAndB"", IsUnique := True)>
+    <Index(""A"", ""B"", Name :=""IndexOnAAndB"", IsUnique :=True)>
     Public Partial Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
@@ -677,11 +677,11 @@ Namespace TestNamespace
         Public Property Id As Integer
         <Column(""propertyA"")>
         Public Property A As String
-        <Column(TypeName := ""nchar(10)"")>
+        <Column(TypeName :=""nchar(10)"")>
         Public Property B As String
-        <Column(""random"", TypeName := ""varchar(200)"")>
+        <Column(""random"", TypeName :=""varchar(200)"")>
         Public Property C As String
-        <Column(TypeName := ""numeric(18, 2)"")>
+        <Column(TypeName :=""numeric(18, 2)"")>
         Public Property D As Decimal
         <StringLength(100)>
         Public Property E As String

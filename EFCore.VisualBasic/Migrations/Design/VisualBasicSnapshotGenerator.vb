@@ -827,7 +827,7 @@ Namespace Migrations.Design
                         If CType(isExcludedAnnotation.Value, Boolean?) = True Then
                             If entityType.IsOwned() Then
                                 ' Issue #23173
-                                stringBuilder.Append(", excludedFromMigrations:= true")
+                                stringBuilder.Append(", excludedFromMigrations:=true")
                             Else
                                 stringBuilder.Append(", Function(t) t.ExcludeFromMigrations()")
                             End If
@@ -1029,8 +1029,14 @@ Namespace Migrations.Design
             NotNull(foreignKeys, NameOf(foreignKeys))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
+            Dim isFirst = True
             For Each foreignKey In foreignKeys
-                stringBuilder.AppendLine()
+                If isFirst Then
+                    isFirst = False
+                Else
+                    stringBuilder.AppendLine()
+                End If
+
                 GenerateForeignKey(builderName, foreignKey, stringBuilder)
             Next
         End Sub
@@ -1228,8 +1234,14 @@ Namespace Migrations.Design
             NotNull(navigations, NameOf(navigations))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
+            Dim isFirst = True
             For Each navigation In navigations
-                stringBuilder.AppendLine()
+                If isFirst Then
+                    isFirst = False
+                Else
+                    stringBuilder.AppendLine()
+                End If
+
                 GenerateNavigation(builderName, navigation, stringBuilder)
             Next
         End Sub

@@ -104,110 +104,110 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table))
 
                 If operation.ColumnType IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("type:= ").
+                        Append("type:=").
                         Append(VBCode.Literal(operation.ColumnType))
                 End If
 
                 If operation.IsUnicode = False Then
                     builder.
                         AppendLine(",").
-                        Append("unicode:= False")
+                        Append("unicode:=False")
                 End If
 
                 If operation.IsFixedLength = True Then
                     builder.
                         AppendLine(",").
-                        Append("fixedLength:= True")
+                        Append("fixedLength:=True")
                 End If
 
                 If operation.MaxLength.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("maxLength:= ").
+                        Append("maxLength:=").
                         Append(VBCode.Literal(operation.MaxLength.Value))
                 End If
 
                 If operation.Precision.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("precision:= ").
+                        Append("precision:=").
                         Append(VBCode.Literal(operation.Precision.Value))
                 End If
 
                 If operation.Scale.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("scale:= ").
+                        Append("scale:=").
                         Append(VBCode.Literal(operation.Scale.Value))
                 End If
 
                 If operation.IsRowVersion Then
                     builder.
                         AppendLine(",").
-                        Append("rowVersion:= True")
+                        Append("rowVersion:=True")
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("nullable:= ").
+                    Append("nullable:=").
                     Append(VBCode.Literal(operation.IsNullable))
 
                 If operation.DefaultValueSql IsNot Nothing Then
 
                     builder.
                         AppendLine(",").
-                        Append("defaultValueSql:= ").
+                        Append("defaultValueSql:=").
                         Append(VBCode.Literal(operation.DefaultValueSql))
 
                 ElseIf operation.ComputedColumnSql IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("computedColumnSql:= ").
+                        Append("computedColumnSql:=").
                         Append(VBCode.UnknownLiteral(operation.ComputedColumnSql))
 
                     If operation.IsStored IsNot Nothing Then
                         builder.
                             AppendLine(",").
-                            Append("stored:= ").
+                            Append("stored:=").
                             Append(VBCode.Literal(operation.IsStored))
                     End If
 
                 ElseIf operation.DefaultValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("defaultValue:= ").
+                        Append("defaultValue:=").
                         Append(VBCode.UnknownLiteral(operation.DefaultValue))
                 End If
 
                 If operation.Comment IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("comment:= ").
+                        Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
                 If operation.Collation IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("collation:= ").
+                        Append("collation:=").
                         Append(VBCode.Literal(operation.Collation))
                 End If
 
@@ -233,54 +233,54 @@ Namespace Migrations.Design
             Using builder.Indent()
 
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.Columns.Length = 1 Then
                     builder.
-                        Append("column:= ").
+                        Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
                     builder.
-                        Append("columns:= ").
+                        Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
                 If operation.PrincipalSchema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("principalSchema:= ").
+                        Append("principalSchema:=").
                         Append(VBCode.Literal(operation.PrincipalSchema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("principalTable:= ").
+                    Append("principalTable:=").
                     Append(VBCode.Literal(operation.PrincipalTable))
 
                 If operation.PrincipalColumns IsNot Nothing Then
                     If operation.PrincipalColumns.Length = 1 Then
                         builder.
                             AppendLine(",").
-                            Append("principalColumn:= ").
+                            Append("principalColumn:=").
                             Append(VBCode.Literal(operation.PrincipalColumns(0)))
                     Else
                         builder.
                             AppendLine(",").
-                            Append("principalColumns:= ").
+                            Append("principalColumns:=").
                             Append(VBCode.Literal(operation.PrincipalColumns))
                     End If
                 End If
@@ -288,14 +288,14 @@ Namespace Migrations.Design
                 If operation.OnUpdate <> ReferentialAction.NoAction Then
                     builder.
                         AppendLine(",").
-                        Append("onUpdate:= ").
+                        Append("onUpdate:=").
                         Append(VBCode.Literal(CType(operation.OnUpdate, [Enum])))
                 End If
 
                 If operation.OnDelete <> ReferentialAction.NoAction Then
                     builder.
                         AppendLine(",").
-                        Append("onDelete:= ").
+                        Append("onDelete:=").
                         Append(VBCode.Literal(CType(operation.OnDelete, [Enum])))
                 End If
 
@@ -319,28 +319,28 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.Columns.Length = 1 Then
                     builder.
-                        Append("column:= ").
+                        Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
 
                     builder.
-                        Append("columns:= ").
+                        Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
@@ -365,29 +365,29 @@ Namespace Migrations.Design
             Using builder.Indent()
 
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.Columns.Length = 1 Then
                     builder.
-                        Append("column:= ").
+                        Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
                     builder.
-                        Append("columns:= ").
+                        Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
@@ -412,22 +412,22 @@ Namespace Migrations.Design
             Using builder.Indent()
 
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",").
-                    Append("sql:= ").
+                    Append("sql:=").
                     Append(VBCode.Literal(operation.Sql)).
                     Append(")")
 
@@ -454,116 +454,116 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table))
 
                 If operation.ColumnType IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("type:= ").
+                        Append("type:=").
                         Append(VBCode.Literal(operation.ColumnType))
                 End If
 
                 If operation.IsUnicode = False Then
                     builder.
                         AppendLine(",").
-                        Append("unicode:= False")
+                        Append("unicode:=False")
                 End If
 
                 If operation.IsFixedLength = True Then
                     builder.
                         AppendLine(",").
-                        Append("fixedLength:= True")
+                        Append("fixedLength:=True")
                 End If
 
                 If operation.MaxLength.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("maxLength:= ").
+                        Append("maxLength:=").
                         Append(VBCode.Literal(operation.MaxLength.Value))
                 End If
 
                 If operation.Precision.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("precision:= ").
+                        Append("precision:=").
                         Append(VBCode.Literal(operation.Precision.Value))
                 End If
 
                 If operation.Scale.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("scale:= ").
+                        Append("scale:=").
                         Append(VBCode.Literal(operation.Scale.Value))
                 End If
 
                 If operation.IsRowVersion Then
                     builder.
                         AppendLine(",").
-                        Append("rowVersion:= True")
+                        Append("rowVersion:=True")
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("nullable:= ").
+                    Append("nullable:=").
                     Append(VBCode.Literal(operation.IsNullable))
 
                 If operation.DefaultValueSql IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("defaultValueSql:= ").
+                        Append("defaultValueSql:=").
                         Append(VBCode.Literal(operation.DefaultValueSql))
 
                 ElseIf operation.ComputedColumnSql IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("computedColumnSql:= ").
+                        Append("computedColumnSql:=").
                         Append(VBCode.UnknownLiteral(operation.ComputedColumnSql))
 
                     If operation.IsStored IsNot Nothing Then
                         builder.
                             AppendLine(",").
-                            Append("stored:= ").
+                            Append("stored:=").
                             Append(VBCode.Literal(operation.IsStored))
                     End If
 
                 ElseIf operation.DefaultValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("defaultValue:= ").
+                        Append("defaultValue:=").
                         Append(VBCode.UnknownLiteral(operation.DefaultValue))
                 End If
 
                 If operation.Comment IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("comment:= ").
+                        Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
                 If operation.Collation IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("collation:= ").
+                        Append("collation:=").
                         Append(VBCode.Literal(operation.Collation))
                 End If
 
                 If operation.OldColumn.ClrType IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldClrType:= GetType(").
+                        Append("oldClrType:=GetType(").
                         Append(VBCode.Reference(operation.OldColumn.ClrType)).
                         Append(")")
                 End If
@@ -571,91 +571,91 @@ Namespace Migrations.Design
                 If operation.OldColumn.ColumnType IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldType:= ").
+                        Append("oldType:=").
                         Append(VBCode.Literal(operation.OldColumn.ColumnType))
                 End If
 
                 If operation.OldColumn.IsUnicode = False Then
                     builder.
                         AppendLine(",").
-                        Append("oldUnicode:= False")
+                        Append("oldUnicode:=False")
                 End If
 
                 If operation.OldColumn.IsFixedLength = True Then
                     builder.
                         AppendLine(",").
-                        Append("oldFixedLength:= True")
+                        Append("oldFixedLength:=True")
                 End If
 
                 If operation.OldColumn.MaxLength.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("oldMaxLength:= ").
+                        Append("oldMaxLength:=").
                         Append(VBCode.Literal(operation.OldColumn.MaxLength.Value))
                 End If
 
                 If operation.OldColumn.Precision.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("oldPrecision:= ").
+                        Append("oldPrecision:=").
                         Append(VBCode.Literal(operation.OldColumn.Precision.Value))
                 End If
 
                 If operation.OldColumn.Scale.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("oldScale:= ").
+                        Append("oldScale:=").
                         Append(VBCode.Literal(operation.OldColumn.Scale.Value))
                 End If
 
                 If operation.OldColumn.IsRowVersion Then
                     builder.
                         AppendLine(",").
-                        Append("oldRowVersion:= True")
+                        Append("oldRowVersion:=True")
                 End If
 
                 If operation.OldColumn.IsNullable Then
                     builder.
                         AppendLine(",").
-                        Append("oldNullable:= True")
+                        Append("oldNullable:=True")
                 End If
 
                 If operation.OldColumn.DefaultValueSql IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldDefaultValueSql:= ").
+                        Append("oldDefaultValueSql:=").
                         Append(VBCode.Literal(operation.OldColumn.DefaultValueSql))
                 ElseIf Not operation.OldColumn.ComputedColumnSql Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldComputedColumnSql:= ").
+                        Append("oldComputedColumnSql:=").
                         Append(VBCode.UnknownLiteral(operation.OldColumn.ComputedColumnSql))
 
                     If operation.IsStored IsNot Nothing Then
                         builder.
                             AppendLine(",").
-                            Append("oldStored:= ").
+                            Append("oldStored:=").
                             Append(VBCode.Literal(operation.OldColumn.IsStored))
                     End If
 
                 ElseIf operation.OldColumn.DefaultValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldDefaultValue:= ").
+                        Append("oldDefaultValue:=").
                         Append(VBCode.UnknownLiteral(operation.OldColumn.DefaultValue))
                 End If
 
                 If operation.OldColumn.Comment IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldComment:= ").
+                        Append("oldComment:=").
                         Append(VBCode.Literal(operation.OldColumn.Comment))
                 End If
 
                 If operation.OldColumn.Collation IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldCollation:= ").
+                        Append("oldCollation:=").
                         Append(VBCode.Literal(operation.OldColumn.Collation))
                 End If
 
@@ -685,7 +685,7 @@ Namespace Migrations.Design
                 If operation.Collation IsNot Nothing Then
                     builder.
                         AppendLine().
-                        Append("collation:= ").
+                        Append("collation:=").
                         Append(VBCode.Literal(operation.Collation))
                     needComma = True
                 End If
@@ -697,7 +697,7 @@ Namespace Migrations.Design
 
                     builder.
                         AppendLine().
-                        Append("oldCollation:= ").
+                        Append("oldCollation:=").
                         Append(VBCode.Literal(operation.OldDatabase.Collation))
                     needComma = True
                 End If
@@ -724,68 +724,68 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.IncrementBy <> 1 Then
                     builder.
                         AppendLine(",").
-                        Append("incrementBy:= ").
+                        Append("incrementBy:=").
                         Append(VBCode.Literal(operation.IncrementBy))
                 End If
 
                 If Not operation.MinValue Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("minValue:= ").
+                        Append("minValue:=").
                         Append(VBCode.Literal(operation.MinValue))
                 End If
 
                 If Not operation.MaxValue Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("maxValue:= ").
+                        Append("maxValue:=").
                         Append(VBCode.Literal(operation.MaxValue))
                 End If
 
                 If operation.IsCyclic Then
                     builder.
                         AppendLine(",").
-                        Append("cyclic:= True")
+                        Append("cyclic:=True")
                 End If
 
                 If operation.OldSequence.IncrementBy <> 1 Then
                     builder.
                         AppendLine(",").
-                        Append("oldIncrementBy:= ").
+                        Append("oldIncrementBy:=").
                         Append(VBCode.Literal(operation.OldSequence.IncrementBy))
                 End If
 
                 If Not operation.OldSequence.MinValue Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldMinValue:= ").
+                        Append("oldMinValue:=").
                         Append(VBCode.Literal(operation.OldSequence.MinValue))
                 End If
 
                 If Not operation.OldSequence.MaxValue Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldMaxValue:= ").
+                        Append("oldMaxValue:=").
                         Append(VBCode.Literal(operation.OldSequence.MaxValue))
                 End If
 
                 If operation.OldSequence.IsCyclic Then
                     builder.
                         AppendLine(",").
-                        Append("oldCyclic:= True")
+                        Append("oldCyclic:=True")
                 End If
 
                 builder.Append(")")
@@ -809,27 +809,27 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.Comment IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("comment:= ").
+                        Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
                 If operation.OldTable.Comment IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("oldComment:= ").
+                        Append("oldComment:=").
                         Append(VBCode.Literal(operation.OldTable.Comment))
                 End If
 
@@ -855,42 +855,42 @@ Namespace Migrations.Design
             Using builder.Indent()
 
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.Columns.Length = 1 Then
                     builder.
-                        Append("column:= ").
+                        Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
                     builder.
-                        Append("columns:= ").
+                        Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
                 If operation.IsUnique Then
                     builder.
                         AppendLine(",").
-                        Append("unique:= True")
+                        Append("unique:=True")
                 End If
 
                 If Not operation.Filter Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("filter:= ").
+                        Append("filter:=").
                         Append(VBCode.Literal(operation.Filter))
                 End If
 
@@ -914,7 +914,7 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name)).
                     Append(")")
 
@@ -945,48 +945,48 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.StartValue <> 1L Then
                     builder.
                         AppendLine(",").
-                        Append("startValue:= ").
+                        Append("startValue:=").
                         Append(VBCode.Literal(operation.StartValue))
                 End If
 
                 If operation.IncrementBy <> 1 Then
                     builder.
                         AppendLine(",").
-                        Append("incrementBy:= ").
+                        Append("incrementBy:=").
                         Append(VBCode.Literal(operation.IncrementBy))
                 End If
 
                 If operation.MinValue.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("minValue:= ").
+                        Append("minValue:=").
                         Append(VBCode.Literal(operation.MinValue.Value))
                 End If
 
                 If operation.MaxValue.HasValue Then
                     builder.
                         AppendLine(",").
-                        Append("maxValue:= ").
+                        Append("maxValue:=").
                         Append(VBCode.Literal(operation.MaxValue.Value))
                 End If
 
                 If operation.IsCyclic Then
                     builder.
                         AppendLine(",").
-                        Append("cyclic:= True")
+                        Append("cyclic:=True")
                 End If
 
                 builder.Append(")")
@@ -1009,19 +1009,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    AppendLine("columns:= Function(table) New With").
+                    AppendLine("columns:=Function(table) New With").
                     AppendLine("{")
 
                 Dim map = New Dictionary(Of String, String)
@@ -1041,85 +1041,85 @@ Namespace Migrations.Design
 
                         If propertyName <> column.Name Then
                             builder.
-                                Append("name:= ").
+                                Append("name:=").
                                 Append(VBCode.Literal(column.Name)).
                                 Append(", ")
                         End If
 
                         If column.ColumnType IsNot Nothing Then
                             builder.
-                                Append("type:= ").
+                                Append("type:=").
                                 Append(VBCode.Literal(column.ColumnType)).
                                 Append(", ")
                         End If
 
                         If column.IsUnicode = False Then
-                            builder.Append("unicode:= False, ")
+                            builder.Append("unicode:=False, ")
                         End If
 
                         If column.IsFixedLength = True Then
-                            builder.Append("fixedLength:= True, ")
+                            builder.Append("fixedLength:=True, ")
                         End If
 
                         If column.MaxLength.HasValue Then
                             builder.
-                                Append("maxLength:= ").
+                                Append("maxLength:=").
                                 Append(VBCode.Literal(column.MaxLength.Value)).
                                 Append(", ")
                         End If
 
                         If column.Precision.HasValue Then
                             builder.
-                                Append("precision:= ").
+                                Append("precision:=").
                                 Append(VBCode.Literal(column.Precision.Value)).
                                 Append(", ")
                         End If
 
                         If column.Scale.HasValue Then
                             builder.
-                                Append("scale:= ").
+                                Append("scale:=").
                                 Append(VBCode.Literal(column.Scale.Value)).
                                 Append(", ")
                         End If
 
                         If column.IsRowVersion Then
-                            builder.Append("rowVersion:= True, ")
+                            builder.Append("rowVersion:=True, ")
                         End If
 
                         builder.
-                            Append("nullable:= ").
+                            Append("nullable:=").
                             Append(VBCode.Literal(column.IsNullable))
 
                         If column.DefaultValueSql IsNot Nothing Then
                             builder.
-                                Append(", defaultValueSql:= ").
+                                Append(", defaultValueSql:=").
                                 Append(VBCode.Literal(column.DefaultValueSql))
                         ElseIf column.ComputedColumnSql IsNot Nothing Then
                             builder.
-                                Append(", computedColumnSql:= ").
+                                Append(", computedColumnSql:=").
                                 Append(VBCode.Literal(column.ComputedColumnSql))
 
                             If column.IsStored IsNot Nothing Then
                                 builder.
-                                    Append(", stored:= ").
+                                    Append(", stored:=").
                                     Append(VBCode.Literal(column.IsStored))
                             End If
 
                         ElseIf Not column.DefaultValue Is Nothing Then
                             builder.
-                                Append(", defaultValue:= ").
+                                Append(", defaultValue:=").
                                 Append(VBCode.UnknownLiteral(column.DefaultValue))
                         End If
 
                         If column.Comment IsNot Nothing Then
                             builder.
-                                Append(", comment:= ").
+                                Append(", comment:=").
                                 Append(VBCode.Literal(column.Comment))
                         End If
 
                         If column.Collation IsNot Nothing Then
                             builder.
-                                Append(", collation:= ").
+                                Append(", collation:=").
                                 Append(VBCode.Literal(column.Collation))
                         End If
 
@@ -1139,7 +1139,7 @@ Namespace Migrations.Design
 
                 builder.
                 AppendLine("},").
-                AppendLine("constraints:= Sub(table)")
+                AppendLine("constraints:=Sub(table)")
 
                 Using builder.Indent()
                     If operation.PrimaryKey IsNot Nothing Then
@@ -1191,46 +1191,46 @@ Namespace Migrations.Design
 
                         Using builder.Indent()
                             builder.
-                                Append("name:= ").
+                                Append("name:=").
                                 Append(VBCode.Literal(foreignKey.Name)).
                                 AppendLine(",").
-                                Append(If(foreignKey.Columns.Length = 1, "column:= ", "columns:= ")).
+                                Append(If(foreignKey.Columns.Length = 1, "column:=", "columns:=")).
                                 Append(VBCode.Lambda(foreignKey.Columns.Select(Function(c) map(c)).ToList()))
 
                             If Not foreignKey.PrincipalSchema Is Nothing Then
                                 builder.
                                     AppendLine(",").
-                                    Append("principalSchema:= ").
+                                    Append("principalSchema:=").
                                     Append(VBCode.Literal(foreignKey.PrincipalSchema))
                             End If
 
                             builder.
                                 AppendLine(",").
-                                Append("principalTable:= ").
+                                Append("principalTable:=").
                                 Append(VBCode.Literal(foreignKey.PrincipalTable)).
                                 AppendLine(",")
 
                             If foreignKey.PrincipalColumns.Length = 1 Then
                                 builder.
-                                    Append("principalColumn:= ").
+                                    Append("principalColumn:=").
                                     Append(VBCode.Literal(foreignKey.PrincipalColumns(0)))
                             Else
                                 builder.
-                                    Append("principalColumns:= ").
+                                    Append("principalColumns:=").
                                     Append(VBCode.Literal(foreignKey.PrincipalColumns))
                             End If
 
                             If foreignKey.OnUpdate <> ReferentialAction.NoAction Then
                                 builder.
                                     AppendLine(",").
-                                    Append("onUpdate:= ").
+                                    Append("onUpdate:=").
                                     Append(VBCode.Literal(CType(foreignKey.OnUpdate, [Enum])))
                             End If
 
                             If foreignKey.OnDelete <> ReferentialAction.NoAction Then
                                 builder.
                                     AppendLine(",").
-                                    Append("onDelete:= ").
+                                    Append("onDelete:=").
                                     Append(VBCode.Literal(CType(foreignKey.OnDelete, [Enum])))
                             End If
 
@@ -1247,7 +1247,7 @@ Namespace Migrations.Design
                 If operation.Comment IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("comment:= ").
+                        Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
@@ -1271,19 +1271,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     Append(")")
 
@@ -1305,19 +1305,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     Append(")")
 
@@ -1339,19 +1339,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     Append(")")
 
@@ -1373,19 +1373,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     Append(")")
 
@@ -1407,7 +1407,7 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name)).
                     Append(")")
 
@@ -1429,13 +1429,13 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                Append("name:= ").
+                Append("name:=").
                 Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                     AppendLine(",").
-                    Append("schema:= ").
+                    Append("schema:=").
                     Append(VBCode.Literal(operation.Schema))
                 End If
 
@@ -1459,13 +1459,13 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
@@ -1489,19 +1489,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     Append(")")
 
@@ -1523,19 +1523,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     Append(")")
 
@@ -1558,22 +1558,22 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",").
-                    Append("newName:= ").
+                    Append("newName:=").
                     Append(VBCode.Literal(operation.NewName)).
                     Append(")")
 
@@ -1595,22 +1595,22 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",").
-                    Append("newName:= ").
+                    Append("newName:=").
                     Append(VBCode.Literal(operation.NewName)).
                     Append(")")
 
@@ -1632,27 +1632,27 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.NewName IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("newName:= ").
+                        Append("newName:=").
                         Append(VBCode.Literal(operation.NewName))
                 End If
 
                 If operation.NewSchema IsNot Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("newSchema:= ").
+                        Append("newSchema:=").
                         Append(VBCode.Literal(operation.NewSchema))
                 End If
 
@@ -1676,27 +1676,27 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If Not operation.NewName Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("newName:= ").
+                        Append("newName:=").
                         Append(VBCode.Literal(operation.NewName))
                 End If
 
                 If Not operation.NewSchema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("newSchema:= ").
+                        Append("newSchema:=").
                         Append(VBCode.Literal(operation.NewSchema))
                 End If
 
@@ -1720,19 +1720,19 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                    Append("name:= ").
+                    Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
                 If Not operation.Schema Is Nothing Then
                     builder.
                         AppendLine(",").
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
                     AppendLine(",").
-                    Append("startValue:= ").
+                    Append("startValue:=").
                     Append(VBCode.Literal(operation.StartValue)).
                     Append(")")
 
@@ -1773,23 +1773,23 @@ Namespace Migrations.Design
             Using builder.Indent()
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).
                         AppendLine(",")
                 End If
 
                 builder.
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.Columns.Length = 1 Then
                     builder.
-                        Append("column:= ").
+                        Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
                     builder.
-                        Append("columns:= ").
+                        Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
@@ -1797,15 +1797,15 @@ Namespace Migrations.Design
 
                 If operation.Values.GetLength(0) = 1 AndAlso operation.Values.GetLength(1) = 1 Then
                     builder.
-                        Append("value:= ").
+                        Append("value:=").
                         Append(VBCode.UnknownLiteral(operation.Values(0, 0)))
                 ElseIf operation.Values.GetLength(0) = 1 Then
                     builder.
-                        Append("values:= ").
+                        Append("values:=").
                         Append(VBCode.Literal(ToOnedimensionalArray(operation.Values)))
                 ElseIf operation.Values.GetLength(1) = 1 Then
                     builder.
-                        Append("values:= ").
+                        Append("values:=").
                         AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(operation.Values, firstDimension:=True),
@@ -1813,7 +1813,7 @@ Namespace Migrations.Design
                             skipFinalNewline:=True)
                 Else
                     builder.
-                        Append("values:= ").
+                        Append("values:=").
                         AppendLines(VBCode.Literal(operation.Values), skipFinalNewline:=True)
                 End If
 
@@ -1836,23 +1836,23 @@ Namespace Migrations.Design
             Using builder.Indent()
                 If Not operation.Schema Is Nothing Then
                     builder.
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).
                         AppendLine(",")
                 End If
 
                 builder.
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.KeyColumns.Length = 1 Then
                     builder.
-                        Append("keyColumn:= ").
+                        Append("keyColumn:=").
                         Append(VBCode.Literal(operation.KeyColumns(0)))
                 Else
                     builder.
-                        Append("keyColumns:= ").
+                        Append("keyColumns:=").
                         Append(VBCode.Literal(operation.KeyColumns))
                 End If
 
@@ -1860,15 +1860,15 @@ Namespace Migrations.Design
 
                 If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
                     builder.
-                        Append("keyValue:= ").
+                        Append("keyValue:=").
                         Append(VBCode.UnknownLiteral(operation.KeyValues(0, 0)))
                 ElseIf operation.KeyValues.GetLength(0) = 1 Then
                     builder.
-                        Append("keyValues:= ").
+                        Append("keyValues:=").
                         Append(VBCode.Literal(ToOnedimensionalArray(operation.KeyValues)))
                 ElseIf operation.KeyValues.GetLength(1) = 1 Then
                     builder.
-                        Append("keyValues:= ").
+                        Append("keyValues:=").
                         AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(operation.KeyValues, firstDimension:=True),
@@ -1876,7 +1876,7 @@ Namespace Migrations.Design
                             skipFinalNewline:=True)
                 Else
                     builder.
-                        Append("keyValues:= ").
+                        Append("keyValues:=").
                         AppendLines(VBCode.Literal(operation.KeyValues), skipFinalNewline:=True)
                 End If
 
@@ -1899,23 +1899,23 @@ Namespace Migrations.Design
             Using builder.Indent()
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        Append("schema:= ").
+                        Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).
                         AppendLine(",")
                 End If
 
                 builder.
-                    Append("table:= ").
+                    Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
 
                 If operation.KeyColumns.Length = 1 Then
                     builder.
-                        Append("keyColumn:= ").
+                        Append("keyColumn:=").
                         Append(VBCode.Literal(operation.KeyColumns(0)))
                 Else
                     builder.
-                        Append("keyColumns:= ").
+                        Append("keyColumns:=").
                         Append(VBCode.Literal(operation.KeyColumns))
                 End If
 
@@ -1923,15 +1923,15 @@ Namespace Migrations.Design
 
                 If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
                     builder.
-                        Append("keyValue:= ").
+                        Append("keyValue:=").
                         Append(VBCode.UnknownLiteral(operation.KeyValues(0, 0)))
                 ElseIf operation.KeyValues.GetLength(0) = 1 Then
                     builder.
-                        Append("keyValues:= ").
+                        Append("keyValues:=").
                         Append(VBCode.Literal(ToOnedimensionalArray(operation.KeyValues)))
                 ElseIf operation.KeyValues.GetLength(1) = 1 Then
                     builder.
-                        Append("keyValues:= ").
+                        Append("keyValues:=").
                         AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(
@@ -1941,7 +1941,7 @@ Namespace Migrations.Design
                             skipFinalNewline:=True)
                 Else
                     builder.
-                        Append("keyValues:= ").
+                        Append("keyValues:=").
                         AppendLines(VBCode.Literal(operation.KeyValues), skipFinalNewline:=True)
                 End If
 
@@ -1949,11 +1949,11 @@ Namespace Migrations.Design
 
                 If operation.Columns.Length = 1 Then
                     builder.
-                        Append("column:= ").
+                        Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
                     builder.
-                        Append("columns:= ").
+                        Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
@@ -1961,15 +1961,15 @@ Namespace Migrations.Design
 
                 If operation.Values.GetLength(0) = 1 AndAlso operation.Values.GetLength(1) = 1 Then
                     builder.
-                        Append("value:= ").
+                        Append("value:=").
                         Append(VBCode.UnknownLiteral(operation.Values(0, 0)))
                 ElseIf operation.Values.GetLength(0) = 1 Then
                     builder.
-                        Append("values:= ").
+                        Append("values:=").
                         Append(VBCode.Literal(ToOnedimensionalArray(operation.Values)))
                 ElseIf operation.Values.GetLength(1) = 1 Then
                     builder.
-                        Append("values:= ").
+                        Append("values:=").
                         AppendLines(
                             VBCode.Literal(
                                 ToOnedimensionalArray(
@@ -1979,7 +1979,7 @@ Namespace Migrations.Design
                             skipFinalNewline:=True)
                 Else
                     builder.
-                        Append("values:= ").
+                        Append("values:=").
                         AppendLines(VBCode.Literal(operation.Values), skipFinalNewline:=True)
                 End If
 

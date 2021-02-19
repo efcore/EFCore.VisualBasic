@@ -170,7 +170,7 @@ Namespace Scaffolding.Internal
                 tableAttribute1.AddParameter(_code.Literal(tableName))
 
                 If schemaParameterNeeded Then
-                    tableAttribute1.AddParameter($"{NameOf(TableAttribute.Schema)} := {_code.Literal(schema)}")
+                    tableAttribute1.AddParameter($"{NameOf(TableAttribute.Schema)} :={_code.Literal(schema)}")
                 End If
 
                 _sb.AppendLine(tableAttribute1.ToString())
@@ -196,11 +196,11 @@ Namespace Scaffolding.Internal
                     Next
 
                     If index.Name IsNot Nothing Then
-                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.Name)} := {_code.Literal(index.Name)}")
+                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.Name)} :={_code.Literal(index.Name)}")
                     End If
 
                     If index.IsUnique Then
-                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.IsUnique)} := {_code.Literal(index.IsUnique)}")
+                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.IsUnique)} :={_code.Literal(index.IsUnique)}")
                     End If
 
                     _sb.AppendLine(indexAttribute1.ToString())
@@ -304,7 +304,7 @@ Namespace Scaffolding.Internal
                 End If
 
                 If delimitedColumnType IsNot Nothing Then
-                    columnAttribute1.AddParameter($"{NameOf(ColumnAttribute.TypeName)} := {delimitedColumnType}")
+                    columnAttribute1.AddParameter($"{NameOf(ColumnAttribute.TypeName)} :={delimitedColumnType}")
                 End If
 
                 _sb.AppendLine(columnAttribute1.ToString())

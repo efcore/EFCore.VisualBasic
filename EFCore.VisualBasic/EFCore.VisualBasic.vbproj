@@ -17,12 +17,12 @@
     <LangVersion>latest</LangVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.0.3-alpha1</Version>
+    <Version>5.0.4-alpha1</Version>
     <OptionStrict>On</OptionStrict>
     <DevelopmentDependency>true</DevelopmentDependency>
     <TimestampUrl>http://time.certum.pl</TimestampUrl>
-    <AssemblyVersion>5.0.3.0</AssemblyVersion>
-    <FileVersion>5.0.3.0</FileVersion>
+    <AssemblyVersion>5.0.4.0</AssemblyVersion>
+    <FileVersion>5.0.4.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.3">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>all</IncludeAssets>
     </PackageReference>

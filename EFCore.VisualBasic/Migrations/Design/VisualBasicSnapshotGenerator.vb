@@ -12,6 +12,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.Utilities
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Migrations.Design
 

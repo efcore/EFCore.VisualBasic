@@ -9,6 +9,7 @@ Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Scaffolding.Internal
 
@@ -249,9 +250,7 @@ Namespace Scaffolding.Internal
                     GeneratePropertyDataAnnotations(prop)
                 End If
 
-                Dim propName = prop.Name
-                If IsVisualBasicKeyword(propName) Then propName = $"[{propName}]"
-                _sb.AppendLine($"Public Property {propName} As {_code.Reference(prop.ClrType)}")
+                _sb.AppendLine($"Public Property {_code.Identifier(prop.Name)} As {_code.Reference(prop.ClrType)}")
             Next
         End Sub
 

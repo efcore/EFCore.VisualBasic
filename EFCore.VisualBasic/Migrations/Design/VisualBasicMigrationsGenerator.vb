@@ -4,6 +4,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Migrations.Design
 

@@ -2,6 +2,7 @@
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Migrations.Design
 
@@ -322,7 +323,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.AppendLine(",").
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
@@ -368,7 +369,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -625,7 +626,7 @@ Namespace Migrations.Design
                         AppendLine(",").
                         Append("oldDefaultValueSql:=").
                         Append(VBCode.Literal(operation.OldColumn.DefaultValueSql))
-                ElseIf Not operation.OldColumn.ComputedColumnSql Is Nothing Then
+                ElseIf operation.OldColumn.ComputedColumnSql IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("oldComputedColumnSql:=").
@@ -741,14 +742,14 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.IncrementBy))
                 End If
 
-                If Not operation.MinValue Is Nothing Then
+                If operation.MinValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("minValue:=").
                         Append(VBCode.Literal(operation.MinValue))
                 End If
 
-                If Not operation.MaxValue Is Nothing Then
+                If operation.MaxValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("maxValue:=").
@@ -768,14 +769,14 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.OldSequence.IncrementBy))
                 End If
 
-                If Not operation.OldSequence.MinValue Is Nothing Then
+                If operation.OldSequence.MinValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("oldMinValue:=").
                         Append(VBCode.Literal(operation.OldSequence.MinValue))
                 End If
 
-                If Not operation.OldSequence.MaxValue Is Nothing Then
+                If operation.OldSequence.MaxValue IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("oldMaxValue:=").
@@ -812,7 +813,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -887,7 +888,7 @@ Namespace Migrations.Design
                         Append("unique:=True")
                 End If
 
-                If Not operation.Filter Is Nothing Then
+                If operation.Filter IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("filter:=").
@@ -1105,7 +1106,7 @@ Namespace Migrations.Design
                                     Append(VBCode.Literal(column.IsStored))
                             End If
 
-                        ElseIf Not column.DefaultValue Is Nothing Then
+                        ElseIf column.DefaultValue IsNot Nothing Then
                             builder.
                                 Append(", defaultValue:=").
                                 Append(VBCode.UnknownLiteral(column.DefaultValue))
@@ -1197,7 +1198,7 @@ Namespace Migrations.Design
                                 Append(If(foreignKey.Columns.Length = 1, "column:=", "columns:=")).
                                 Append(VBCode.Lambda(foreignKey.Columns.Select(Function(c) map(c)).ToList()))
 
-                            If Not foreignKey.PrincipalSchema Is Nothing Then
+                            If foreignKey.PrincipalSchema IsNot Nothing Then
                                 builder.
                                     AppendLine(",").
                                     Append("principalSchema:=").
@@ -1274,7 +1275,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -1308,7 +1309,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -1376,7 +1377,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -1432,7 +1433,7 @@ Namespace Migrations.Design
                 Append("name:=").
                 Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                     AppendLine(",").
                     Append("schema:=").
@@ -1462,7 +1463,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -1679,21 +1680,21 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
-                If Not operation.NewName Is Nothing Then
+                If operation.NewName IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("newName:=").
                         Append(VBCode.Literal(operation.NewName))
                 End If
 
-                If Not operation.NewSchema Is Nothing Then
+                If operation.NewSchema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("newSchema:=").
@@ -1723,7 +1724,7 @@ Namespace Migrations.Design
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name))
 
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         AppendLine(",").
                         Append("schema:=").
@@ -1834,7 +1835,7 @@ Namespace Migrations.Design
             builder.AppendLine(".DeleteData(")
 
             Using builder.Indent()
-                If Not operation.Schema Is Nothing Then
+                If operation.Schema IsNot Nothing Then
                     builder.
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).

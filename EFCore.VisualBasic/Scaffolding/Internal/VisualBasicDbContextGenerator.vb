@@ -9,6 +9,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Builders
 Imports Microsoft.EntityFrameworkCore.Metadata.Conventions
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Scaffolding.Internal
 
@@ -215,10 +216,7 @@ Namespace Scaffolding.Internal
 
                 Using _sb.Indent()
                     If Not suppressConnectionStringWarning Then
-                        'TODO, set a SensitiveInformationWarning, (can we do that in VB?)
-                        '_sb.DecrementIndent().DecrementIndent().DecrementIndent().DecrementIndent().
-                        '    AppendLine("#warning " & DesignStrings.SensitiveInformationWarning).
-                        '    IncrementIndent().IncrementIndent().IncrementIndent().IncrementIndent()
+                        _sb.AppendLine("'TODO /!\ " & DesignStrings.SensitiveInformationWarning)
                     End If
 
                     _sb.Append("optionsBuilder")
@@ -320,9 +318,10 @@ Namespace Scaffolding.Internal
 
             GenerateKey(entityType.FindPrimaryKey(), entityType, useDataAnnotations)
 
-            Dim annotations = _annotationCodeGenerator _
-                .FilterIgnoredAnnotations(entityType.GetAnnotations()) _
-                .ToDictionary(Function(a) a.Name, Function(a) a)
+            Dim annotations = _annotationCodeGenerator.
+                              FilterIgnoredAnnotations(entityType.GetAnnotations()).
+                              ToDictionary(Function(a) a.Name, Function(a) a)
+
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(entityType, annotations)
 
             annotations.Remove(RelationalAnnotationNames.TableName)
@@ -372,9 +371,7 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Sub AppendMultiLineFluentApi(entityType As IEntityType, lines As IList(Of String))
-            If lines.Count <= 0 Then
-                Return
-            End If
+            If lines.Count <= 0 Then Exit Sub
 
             If lines.Count > 1 Then
                 For i = 1 To lines.Count - 1
@@ -407,7 +404,7 @@ Namespace Scaffolding.Internal
                     AppendMultiLineFluentApi(entityType, line)
                 End If
 
-                Return
+                Exit Sub
             End If
 
             Dim annotations = _annotationCodeGenerator.

@@ -1,9 +1,9 @@
 ﻿
 Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
+Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
@@ -18,7 +18,7 @@ Namespace Scaffolding.Internal
         Public Sub Empty_model()
 
             Dim expectedCode As String =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -36,6 +36,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -65,7 +66,7 @@ End Namespace
                 Sub(model) Assert.Empty(model.GetEntityTypes()))
         End Sub
 
-        <ConditionalFact(Skip:="Can we put a warning in VB?")>
+        <ConditionalFact()>
         Public Sub SuppressConnectionStringWarning_works()
 
             Dim expectedCode As String =
@@ -516,7 +517,7 @@ End Namespace
         Public Sub Entity_with_indexes_and_use_data_annotations_false_always_generates_fluent_API()
 
             Dim expectedcode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -536,6 +537,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -544,9 +546,9 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(e) New With {e.A, e.B}, ""IndexOnAAndB"").
+                    entity.HasIndex(Function(e) New With {{e.A, e.B}}, ""IndexOnAAndB"").
                         IsUnique()
-                    entity.HasIndex(Function(e) New With {e.B, e.C}, ""IndexOnBAndC"").
+                    entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
@@ -592,7 +594,7 @@ End Namespace
         Public Sub Entity_with_indexes_and_use_data_annotations_true_generates_fluent_API_only_for_indexes_with_annotations()
 
             Dim expectedCode As String =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -612,6 +614,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -620,7 +623,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(e) New With {e.B, e.C}, ""IndexOnBAndC"").
+                    entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
@@ -667,7 +670,7 @@ End Namespace
         Public Sub Entity_lambda_uses_correct_identifiers()
 
             Dim expectedCode As String =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -688,6 +691,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -755,7 +759,7 @@ End Namespace
         Public Sub Column_type_is_not_scaffolded_as_annotation()
 
             Dim expectedCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -775,6 +779,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub

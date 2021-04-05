@@ -22,7 +22,9 @@ Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 Imports Xunit
+Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 Imports Bricelam.EntityFrameworkCore.VisualBasic.TestUtilities
+
 
 Namespace Migrations.Design
 

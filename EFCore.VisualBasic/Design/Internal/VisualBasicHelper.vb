@@ -170,7 +170,7 @@ Namespace Design.Internal
             End If
 
             Dim baseIdentifier = builder.ToString()
-            If Not scope Is Nothing Then
+            If scope IsNot Nothing Then
                 Dim uniqueIdentifier = baseIdentifier
                 Dim qualifier = 0
                 While scope.Contains(uniqueIdentifier)

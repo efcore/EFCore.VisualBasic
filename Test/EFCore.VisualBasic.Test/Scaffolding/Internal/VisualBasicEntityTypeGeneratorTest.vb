@@ -1,4 +1,5 @@
 ﻿Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Xunit
 
@@ -23,7 +24,7 @@ Namespace TestNamespace
 End Namespace
 "
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -43,6 +44,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -335,7 +337,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -355,6 +357,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -363,7 +366,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(e) New With {e.B, e.C}, ""IndexOnBAndC"").
+                    entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"")
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
@@ -428,7 +431,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -448,6 +451,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -514,7 +518,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -534,6 +538,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -542,7 +547,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
-                    entity.HasKey(Function(e) New With {e.Key, e.Serial})
+                    entity.HasKey(Function(e) New With {{e.Key, e.Serial}})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -689,7 +694,7 @@ Namespace TestNamespace
 End Namespace
 "
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -709,6 +714,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -1120,7 +1126,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -1141,6 +1147,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -1149,7 +1156,7 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.HasKey(Function(e) New With {e.Id1, e.Id2})
+                    entity.HasKey(Function(e) New With {{e.Id1, e.Id2}})
                 End Sub)
 
             modelBuilder.Entity(Of Post)(
@@ -1229,7 +1236,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-"Imports System
+$"Imports System
 Imports Microsoft.VisualBasic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -1250,6 +1257,7 @@ Namespace TestNamespace
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
                 optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
             End If
         End Sub
@@ -1266,8 +1274,8 @@ Namespace TestNamespace
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                     entity.HasOne(Function(d) d.BlogNavigation).
                         WithMany(Function(p) p.Posts).
-                        HasPrincipalKey(Function(e) New With {e.Id1, e.Id2}).
-                        HasForeignKey(Function(e) New With {e.BlogId1, e.BlogId2})
+                        HasPrincipalKey(Function(e) New With {{e.Id1, e.Id2}}).
+                        HasForeignKey(Function(e) New With {{e.BlogId1, e.BlogId2}})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)

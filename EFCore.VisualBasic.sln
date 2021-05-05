@@ -1,10 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic", "EFCore.VisualBasic\EFCore.VisualBasic.vbproj", "{E0800FF3-BC02-4425-A7EE-6D00015095FC}"
 EndProject
-Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic.Test", "EFCore.VisualBasic.Test\EFCore.VisualBasic.Test.vbproj", "{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic.Test", "Test\EFCore.VisualBasic.Test\EFCore.VisualBasic.Test.vbproj", "{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F2DFBC0-2466-48B2-9F04-FAF61C2B0698}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,6 +14,10 @@ EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Sandbox", "Sandbox\Sandbox.vbproj", "{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{C3D0C44D-7137-4E12-A5B3-2CE7FF4C0C8C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Design.Tests.Shared", "Test\EFCore.Design.Tests.Shared\EFCore.Design.Tests.Shared.csproj", "{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6E650A1B-2917-4775-9008-80EBE29734C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,12 +65,26 @@ Global
 		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x64.Build.0 = Release|Any CPU
 		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x86.ActiveCfg = Release|Any CPU
 		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA}.Release|x86.Build.0 = Release|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Debug|x64.Build.0 = Debug|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Debug|x86.Build.0 = Debug|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x64.ActiveCfg = Release|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x64.Build.0 = Release|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x86.ActiveCfg = Release|Any CPU
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{52265A0B-AE3D-4860-BBC5-8BB2839CF8A4} = {6E650A1B-2917-4775-9008-80EBE29734C8}
 		{92EB8DAB-3E38-4596-BEFD-92BBDC2E45FA} = {C3D0C44D-7137-4E12-A5B3-2CE7FF4C0C8C}
+		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED} = {6E650A1B-2917-4775-9008-80EBE29734C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C375B107-1605-4DF6-9765-F48FBA65D6FD}

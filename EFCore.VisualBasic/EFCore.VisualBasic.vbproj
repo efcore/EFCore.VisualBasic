@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>Bricelam.EntityFrameworkCore.VisualBasic</AssemblyName>
     <RootNamespace>Bricelam.EntityFrameworkCore.VisualBasic</RootNamespace>
     <Authors>Brice Lambson</Authors>
@@ -17,10 +17,12 @@
     <LangVersion>latest</LangVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.1.0-alpha1</Version>
+    <Version>5.0.5-alpha1</Version>
     <OptionStrict>On</OptionStrict>
     <DevelopmentDependency>true</DevelopmentDependency>
     <TimestampUrl>http://time.certum.pl</TimestampUrl>
+    <AssemblyVersion>5.0.5.0</AssemblyVersion>
+    <FileVersion>5.0.5.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -45,7 +47,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.0-preview2-30366" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>all</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="SignOutput" AfterTargets="Build" Condition="'$(SignOutput)' == 'True'">

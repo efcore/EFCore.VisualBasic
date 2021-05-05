@@ -1,8 +1,10 @@
-﻿' *Incomplete*
-' This API supports the Entity Framework Core infrastructure and is not intended to be used
+﻿' This API supports the Entity Framework Core infrastructure and is not intended to be used
 ' directly from your code. This API may change Or be removed In future releases.
 
 Public NotInheritable Class VBDesignStrings
+    Private Sub New()
+    End Sub
+
     Public Shared Function UnknownOperation(operationType As Object) As String
         Return $"The current VisualBasicMigrationOperationGenerator cannot scaffold operations of type '{operationType}'. Configure your services to use one that can."
     End Function

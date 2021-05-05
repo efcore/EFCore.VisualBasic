@@ -1,7 +1,7 @@
 ﻿Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.Extensions.DependencyInjection
 
-<Assembly: DesignTimeServicesReference("Bricelam.EntityFrameworkCore.VisualBasic.EFCoreVisualBasicServices, Bricelam.EntityFrameworkCore.VisualBasic")>
+<Assembly: DesignTimeServicesReference("Bricelam.EntityFrameworkCore.VisualBasic.Design.EFCoreVisualBasicServices, Bricelam.EntityFrameworkCore.VisualBasic")>
 
 Class DesignTimeServices
     Implements IDesignTimeServices

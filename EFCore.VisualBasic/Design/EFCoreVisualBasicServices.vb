@@ -1,6 +1,6 @@
-﻿Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Migrations.Design
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+﻿Imports EntityFrameworkCore.VisualBasic.Design.Internal
+Imports EntityFrameworkCore.VisualBasic.Migrations.Design
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Scaffolding

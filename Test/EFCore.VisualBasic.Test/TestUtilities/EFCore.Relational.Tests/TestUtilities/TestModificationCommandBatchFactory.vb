@@ -1,6 +1,4 @@
-﻿
-Imports System.Linq
-Imports Bricelam.EntityFrameworkCore.VisualBasic.TestUtilities.FakeProvider
+﻿Imports EntityFrameworkCore.VisualBasic.TestUtilities.FakeProvider
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Update
 

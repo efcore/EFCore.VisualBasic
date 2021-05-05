@@ -1,5 +1,5 @@
 ﻿
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
+Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics

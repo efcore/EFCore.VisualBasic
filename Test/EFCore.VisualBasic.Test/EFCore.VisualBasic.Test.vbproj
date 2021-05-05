@@ -4,8 +4,8 @@
     <TargetFramework>net5.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Bricelam.EntityFrameworkCore.VisualBasic</RootNamespace>
-    <AssemblyName>Bricelam.EntityFrameworkCore.VisualBasic.Test</AssemblyName>
+    <RootNamespace>EntityFrameworkCore.VisualBasic</RootNamespace>
+    <AssemblyName>EntityFrameworkCore.VisualBasic.Test</AssemblyName>
     <OptionStrict>On</OptionStrict>
   </PropertyGroup>
 

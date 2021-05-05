@@ -1,4 +1,4 @@
-﻿Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
+﻿Imports EntityFrameworkCore.VisualBasic.Design
 Namespace Migrations.Design
     ''' <summary>
     '''     <para>

@@ -1,6 +1,6 @@
-﻿Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+﻿Imports EntityFrameworkCore.VisualBasic.Design
+Imports EntityFrameworkCore.VisualBasic.Design.Internal
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Metadata

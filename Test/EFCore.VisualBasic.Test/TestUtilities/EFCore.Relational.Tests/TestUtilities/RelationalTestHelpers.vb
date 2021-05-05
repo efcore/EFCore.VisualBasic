@@ -1,4 +1,4 @@
-﻿Imports Bricelam.EntityFrameworkCore.VisualBasic.TestUtilities.FakeProvider
+﻿Imports EntityFrameworkCore.VisualBasic.TestUtilities.FakeProvider
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.TestUtilities

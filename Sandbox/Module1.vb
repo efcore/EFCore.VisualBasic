@@ -1,5 +1,5 @@
-﻿Imports Sandbox.Models
-Imports Sandbox.Data
+﻿Imports Sandbox.Data
+Imports Sandbox.Models
 
 Module Module1
 

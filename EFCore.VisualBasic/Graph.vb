@@ -1,8 +1,4 @@
-﻿
-Imports System.Collections.Generic
-Imports System.Linq
-
-Namespace Utilities
+﻿Namespace Utilities
     Friend MustInherit Class Graph(Of TVertex)
 
         Public MustOverride ReadOnly Property Vertices As IEnumerable(Of TVertex)

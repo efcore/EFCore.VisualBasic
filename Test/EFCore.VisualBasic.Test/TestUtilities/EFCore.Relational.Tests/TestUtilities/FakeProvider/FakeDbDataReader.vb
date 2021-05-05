@@ -1,7 +1,4 @@
-﻿
-Imports System.Collections
-Imports System.Collections.Generic
-Imports System.Data.Common
+﻿Imports System.Data.Common
 Imports System.Threading
 
 Namespace TestUtilities.FakeProvider

@@ -2,7 +2,7 @@
 Imports System.Linq.Expressions
 Imports System.Numerics
 Imports System.Text
-Imports Bricelam.EntityFrameworkCore.VisualBasic
+Imports EntityFrameworkCore.VisualBasic
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata

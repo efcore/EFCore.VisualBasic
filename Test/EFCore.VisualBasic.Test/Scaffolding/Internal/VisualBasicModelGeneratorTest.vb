@@ -1,7 +1,7 @@
 ﻿
 Imports System.IO
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design.Internal
+Imports EntityFrameworkCore.VisualBasic.Design
+Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding

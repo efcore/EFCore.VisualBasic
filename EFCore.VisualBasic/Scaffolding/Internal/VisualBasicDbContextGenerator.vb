@@ -1,5 +1,6 @@
 ﻿' Copyright (c) .NET Foundation. All rights reserved.
 ' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
@@ -9,7 +10,6 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Builders
 Imports Microsoft.EntityFrameworkCore.Metadata.Conventions
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Scaffolding.Internal
 
@@ -24,7 +24,7 @@ Namespace Scaffolding.Internal
 
         Private Const EntityLambdaIdentifier As String = "entity"
 
-        Private ReadOnly _code As iVisualBasicHelper
+        Private ReadOnly _code As IVisualBasicHelper
         Private ReadOnly _providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
 
@@ -334,7 +334,7 @@ Namespace Scaffolding.Internal
             If useDataAnnotations Then
                 ' Strip out any annotations handled as attributes - these are already handled when generating
                 ' the entity's properties
-                call _annotationCodeGenerator.GenerateDataAnnotationAttributes(entityType, annotations)
+                Call _annotationCodeGenerator.GenerateDataAnnotationAttributes(entityType, annotations)
             End If
 
             If Not useDataAnnotations OrElse entityType.GetViewName() IsNot Nothing Then
@@ -416,20 +416,20 @@ Namespace Scaffolding.Internal
             Dim explicitName As Boolean = akey.GetName() <> akey.GetDefaultName()
             annotations.Remove(RelationalAnnotationNames.Name)
 
-            If akey.Properties.Count = 1 AndAlso annotations.Count = 0 Then                
-                If TypeOf aKey Is Key then
-                    Dim concreteKey = DirectCast(akey, key)
+            If akey.Properties.Count = 1 AndAlso annotations.Count = 0 Then
+                If TypeOf akey Is Key Then
+                    Dim concreteKey = DirectCast(akey, Key)
 
-                     IF akey.Properties.SequenceEqual(
-                            KeyDiscoveryConvention.DiscoverKeyProperties(
-                                concreteKey.DeclaringEntityType,
-                                concreteKey.DeclaringEntityType.GetProperties())) Then
-                        Exit sub
+                    If akey.Properties.SequenceEqual(
+                           KeyDiscoveryConvention.DiscoverKeyProperties(
+                               concreteKey.DeclaringEntityType,
+                               concreteKey.DeclaringEntityType.GetProperties())) Then
+                        Exit Sub
                     End If
-                End If                
-               
+                End If
+
                 If Not explicitName AndAlso useDataAnnotations Then
-                    Exit sub
+                    Exit Sub
                 End If
             End If
 
@@ -532,7 +532,7 @@ Namespace Scaffolding.Internal
                 annotations.Remove(RelationalAnnotationNames.ColumnName)
                 annotations.Remove(RelationalAnnotationNames.ColumnType)
 
-                call _annotationCodeGenerator.GenerateDataAnnotationAttributes(prop, annotations)
+                Call _annotationCodeGenerator.GenerateDataAnnotationAttributes(prop, annotations)
             Else
                 If Not prop.IsNullable AndAlso prop.ClrType.IsNullableType() AndAlso Not prop.IsPrimaryKey() Then
                     lines.Add($".{NameOf(PropertyBuilder.IsRequired)}()")
@@ -563,7 +563,7 @@ Namespace Scaffolding.Internal
             End If
 
             Dim defaultValue = prop.GetDefaultValue()
-            If defaultValue is DBNull.Value Then
+            If defaultValue Is DBNull.Value Then
                 lines.Add($".{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)}()")
                 annotations.Remove(RelationalAnnotationNames.DefaultValue)
             ElseIf defaultValue IsNot Nothing Then
@@ -619,7 +619,7 @@ Namespace Scaffolding.Internal
 
             Select Case lines.Count
                 Case 1
-                    Exit sub
+                    Exit Sub
                 Case 2
                     lines = New List(Of String) From {lines(0) & lines(1)}
             End Select
@@ -628,7 +628,7 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Sub GenerateRelationship(foreignKey As IForeignKey, useDataAnnotations As Boolean)
-            
+
             Dim canUseDataAnnotations As Boolean = True
 
             Dim annotations = _annotationCodeGenerator.
@@ -651,7 +651,7 @@ Namespace Scaffolding.Internal
                 canUseDataAnnotations = False
                 lines.Add(
                     $".{NameOf(ReferenceReferenceBuilder.HasPrincipalKey)}" &
-                     If(foreignKey.IsUnique, 
+                     If(foreignKey.IsUnique,
                         $"(Of {foreignKey.PrincipalEntityType.Name})", "") &
                         $"({_code.Lambda(foreignKey.PrincipalKey.Properties, "p")})")
             End If

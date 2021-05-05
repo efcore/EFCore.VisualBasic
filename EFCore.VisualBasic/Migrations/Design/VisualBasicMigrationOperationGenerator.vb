@@ -1,8 +1,8 @@
 ﻿Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Migrations.Design
 

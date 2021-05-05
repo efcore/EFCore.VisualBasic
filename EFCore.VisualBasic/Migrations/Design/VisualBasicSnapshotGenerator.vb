@@ -2,7 +2,8 @@
 ' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 Imports System.Collections.Immutable
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Utilities
+Imports EntityFrameworkCore.VisualBasic.Design
+Imports EntityFrameworkCore.VisualBasic.Utilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
@@ -12,7 +13,6 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.Utilities
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Design
 
 Namespace Migrations.Design
 

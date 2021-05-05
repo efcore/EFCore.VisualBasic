@@ -1,8 +1,7 @@
 ﻿Imports System.Linq.Expressions
 Imports System.Numerics
-Imports System.Runtime.CompilerServices
-Imports Bricelam.EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities.Xunit
 Imports EFCore.Design.Tests.Shared
+Imports EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities.Xunit
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal
@@ -85,9 +84,6 @@ Namespace Design.Internal
             42UL,
             "42UL")>
         <InlineData(
-            42UL,
-            "42UL")>
-        <InlineData(
             18000000000000000000UL,
             "18000000000000000000UL")>
         <InlineData(
@@ -131,7 +127,7 @@ Namespace Design.Internal
             Literal_works(
 "multi-line
 string with """,
-"""multi-line"" & vbCrLf & ""string with """"""")
+"""multi-line"" & " & If(Environment.Newline = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
         End Sub
 
         <UseCulture("de-DE")>

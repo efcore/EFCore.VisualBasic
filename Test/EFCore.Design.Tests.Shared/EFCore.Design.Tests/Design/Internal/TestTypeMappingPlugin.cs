@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using System;
+﻿using System;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.Design.Tests.Shared
-{   
+{
     public class TestTypeMappingPlugin<T> : IRelationalTypeMappingSourcePlugin
     {
         private readonly Func<T, Expression> _literalExpressionFunc;
@@ -15,10 +15,10 @@ namespace EFCore.Design.Tests.Shared
         }
 
         public RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
-        {             
-           return _literalExpressionFunc == null
-                ? (RelationalTypeMapping)new SimpleTestNonImplementedTypeMapping()
-                : new SimpleTestTypeMapping<T>(_literalExpressionFunc);
+        {
+            return _literalExpressionFunc == null
+                 ? (RelationalTypeMapping)new SimpleTestNonImplementedTypeMapping()
+                 : new SimpleTestTypeMapping<T>(_literalExpressionFunc);
         }
     }
 

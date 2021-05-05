@@ -1,8 +1,8 @@
 ﻿
 Imports System.Data.Common
-Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports System.Runtime.CompilerServices
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Infrastructure
 
 Namespace TestUtilities.FakeProvider
     Public Module FakeRelationalDbContextOptionsExtension

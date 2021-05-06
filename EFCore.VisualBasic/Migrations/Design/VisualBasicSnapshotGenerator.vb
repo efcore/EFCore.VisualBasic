@@ -105,7 +105,7 @@ Namespace Migrations.Design
 
         End Sub
 
-        Private Function Sort(entityTypes As IEnumerable(Of IEntityType)) As IReadOnlyList(Of IEntityType)
+        Private Shared Function Sort(entityTypes As IEnumerable(Of IEntityType)) As IReadOnlyList(Of IEntityType)
 
             Dim entityTypeGraph As New Multigraph(Of IEntityType, Integer)
             entityTypeGraph.AddVertices(entityTypes)
@@ -444,7 +444,7 @@ Namespace Migrations.Design
                 End If
             End Using
 
-            stringBuilder.AppendLine("")
+            stringBuilder.AppendLine()
         End Sub
 
 
@@ -963,7 +963,7 @@ Namespace Migrations.Design
                     GenerateAnnotations(annotations.Values, stringBuilder)
 
                     stringBuilder.
-                        AppendLine("")
+                        AppendLine()
                 End Using
             End If
 

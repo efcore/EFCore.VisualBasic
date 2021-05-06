@@ -174,7 +174,7 @@ Namespace Design.Internal
                 Dim uniqueIdentifier = baseIdentifier
                 Dim qualifier = 0
                 While scope.Contains(uniqueIdentifier)
-                    uniqueIdentifier = baseIdentifier + qualifier.ToString()
+                    uniqueIdentifier = baseIdentifier + qualifier.ToString(CultureInfo.InvariantCulture)
                     qualifier += 1
                 End While
                 scope.Add(uniqueIdentifier)
@@ -233,7 +233,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As Byte) As String Implements IVisualBasicHelper.Literal
-            Return "CByte(" & value.ToString() & ")"
+            Return "CByte(" & value.ToString(CultureInfo.InvariantCulture) & ")"
         End Function
 
         ''' <summary>
@@ -338,7 +338,7 @@ Namespace Design.Internal
         ''' </summary>
         Public Overridable Function Literal(value As Long) As String Implements IVisualBasicHelper.Literal
             If value = Long.MinValue Then Return "Long.MinValue"
-            Return value.ToString() & "L"
+            Return value.ToString(CultureInfo.InvariantCulture) & "L"
         End Function
 
         ''' <summary>
@@ -346,7 +346,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As SByte) As String Implements IVisualBasicHelper.Literal
-            Return "CSByte(" & value.ToString() & ")"
+            Return "CSByte(" & value.ToString(CultureInfo.InvariantCulture) & ")"
         End Function
 
         ''' <summary>
@@ -355,7 +355,7 @@ Namespace Design.Internal
         ''' </summary>
         Public Overridable Function Literal(value As Short) As String Implements IVisualBasicHelper.Literal
             If value = Short.MinValue Then Return "Short.MinValue"
-            Return value.ToString() & "S"
+            Return value.ToString(CultureInfo.InvariantCulture) & "S"
         End Function
 
         ''' <summary>
@@ -385,7 +385,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As UInteger) As String Implements IVisualBasicHelper.Literal
-            Return value.ToString() & "UI"
+            Return value.ToString(CultureInfo.InvariantCulture) & "UI"
         End Function
 
         ''' <summary>
@@ -393,7 +393,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As ULong) As String Implements IVisualBasicHelper.Literal
-            Return value.ToString() & "UL"
+            Return value.ToString(CultureInfo.InvariantCulture) & "UL"
         End Function
 
         ''' <summary>
@@ -401,7 +401,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As UShort) As String Implements IVisualBasicHelper.Literal
-            Return value.ToString() & "US"
+            Return value.ToString(CultureInfo.InvariantCulture) & "US"
         End Function
 
         ''' <summary>

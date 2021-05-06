@@ -100,7 +100,7 @@ Friend Module VBTypeExtensions
             End If
         End If
 
-        Dim genericPartIndex = type.Name.IndexOf("`")
+        Dim genericPartIndex = type.Name.IndexOf("`", StringComparison.InvariantCulture)
         If genericPartIndex <= 0 Then
             builder.Append(type.Name)
             Return

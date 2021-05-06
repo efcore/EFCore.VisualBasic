@@ -14,7 +14,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.0.0-alpha.1</Version>
+    <Version>5.0.0-alpha.2</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OptionStrict>On</OptionStrict>
     <LangVersion>latest</LangVersion>

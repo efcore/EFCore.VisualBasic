@@ -149,7 +149,7 @@ Friend Module SharedTypeExtensions
 
     <Extension()>
     Function GetDeclaredConstructor(type As Type, types As Type()) As ConstructorInfo
-        types = If(types, New Type(-1) {})
+        types = If(types, Array.Empty(Of Type))
         Return type.GetTypeInfo().DeclaredConstructors.SingleOrDefault(Function(c) Not c.IsStatic AndAlso c.GetParameters().[Select](Function(p) p.ParameterType).SequenceEqual(types))
     End Function
 

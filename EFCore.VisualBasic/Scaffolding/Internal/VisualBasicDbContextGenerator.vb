@@ -28,7 +28,7 @@ Namespace Scaffolding.Internal
         Private ReadOnly _providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
 
-        Private _sb As IndentedStringBuilder = Nothing
+        Private _sb As IndentedStringBuilder
         Private _entityTypeBuilderInitialized As Boolean
 
         ''' <summary>
@@ -375,7 +375,7 @@ Namespace Scaffolding.Internal
 
             If lines.Count > 1 Then
                 For i = 1 To lines.Count - 1
-                    lines(i) = If(lines(i).StartsWith("."), lines(i).Remove(0, 1), lines(i))
+                    lines(i) = If(lines(i).StartsWith(".", StringComparison.InvariantCulture), lines(i).Remove(0, 1), lines(i))
                 Next
             End If
 

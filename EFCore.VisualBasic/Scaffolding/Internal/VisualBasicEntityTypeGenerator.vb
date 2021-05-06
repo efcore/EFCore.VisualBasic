@@ -24,7 +24,7 @@ Namespace Scaffolding.Internal
 
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
         Private ReadOnly _code As IVisualBasicHelper
-        Private _sb As IndentedStringBuilder = Nothing
+        Private _sb As IndentedStringBuilder
         Private _useDataAnnotations As Boolean
 
         ''' <summary>

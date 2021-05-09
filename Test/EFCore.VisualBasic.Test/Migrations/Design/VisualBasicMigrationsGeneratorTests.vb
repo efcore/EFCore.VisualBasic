@@ -292,9 +292,9 @@ Namespace Migrations.Design
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
 
             Dim generator As New TestVisualBasicSnapshotGenerator(
-                New VisualBasicSnapshotGeneratorDependencies(codeHelper,
-                                                             sqlServerTypeMappingSource1,
-                                                             sqlServerAnnotationCodeGenerator1))
+                codeHelper,
+                sqlServerTypeMappingSource1,
+                sqlServerAnnotationCodeGenerator1)
 
             Dim coreAnnotations = GetType(CoreAnnotationNames).GetFields().
                                     Where(Function(f) f.FieldType = GetType(String)).ToList()
@@ -345,8 +345,11 @@ Namespace Migrations.Design
         Private Class TestVisualBasicSnapshotGenerator
             Inherits VisualBasicSnapshotGenerator
 
-            Public Sub New(dependencies As VisualBasicSnapshotGeneratorDependencies)
-                MyBase.New(dependencies)
+            Public Sub New(vbHelper As IVisualBasicHelper,
+                           relationalTypeMappingSource As IRelationalTypeMappingSource,
+                           annotationCodeGenerator As IAnnotationCodeGenerator)
+
+                MyBase.New(vbHelper, relationalTypeMappingSource, annotationCodeGenerator)
             End Sub
 
             Public Overridable Sub TestGenerateEntityTypeAnnotations(builderName As String, entityType As IEntityType, stringBuilder As IndentedStringBuilder)
@@ -380,18 +383,15 @@ Namespace Migrations.Design
                 New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
 
             Dim generator As New VisualBasicMigrationsGenerator(
-            New MigrationsCodeGeneratorDependencies(
-                sqlServerTypeMappingSource1,
-                sqlServerAnnotationCodeGenerator1),
-            New VisualBasicMigrationsGeneratorDependencies(
+                New MigrationsCodeGeneratorDependencies(
+                    sqlServerTypeMappingSource1,
+                    sqlServerAnnotationCodeGenerator1),
                 codeHelper,
-                New VisualBasicMigrationOperationGenerator(
-                    New VisualBasicMigrationOperationGeneratorDependencies(
-                        codeHelper)),
+                New VisualBasicMigrationOperationGenerator(codeHelper),
                 New VisualBasicSnapshotGenerator(
-                    New VisualBasicSnapshotGeneratorDependencies(
-                        codeHelper, sqlServerTypeMappingSource1, sqlServerAnnotationCodeGenerator1))))
-
+                        codeHelper,
+                        sqlServerTypeMappingSource1,
+                        sqlServerAnnotationCodeGenerator1))
 
             Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
@@ -434,8 +434,9 @@ Namespace Migrations.Design
             Dim sqlServerAnnotationCodeGenerator1 As New SqlServerAnnotationCodeGenerator(
                 New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
 
-            Dim generator As New TestVisualBasicSnapshotGenerator(
-                New VisualBasicSnapshotGeneratorDependencies(codeHelper, sqlServerTypeMappingSource1, sqlServerAnnotationCodeGenerator1))
+            Dim generator As New TestVisualBasicSnapshotGenerator(codeHelper,
+                                                                  sqlServerTypeMappingSource1,
+                                                                  sqlServerAnnotationCodeGenerator1)
 
             Dim sb As New IndentedStringBuilder
 
@@ -970,12 +971,9 @@ End Namespace
             Return New ServiceCollection().
                         AddEntityFrameworkSqlServer().
                         AddEntityFrameworkDesignTimeServices().
-                        AddSingleton(Of VisualBasicMigrationOperationGeneratorDependencies)().
-                        AddSingleton(Of VisualBasicMigrationsGeneratorDependencies)().
-                        AddSingleton(Of VisualBasicSnapshotGeneratorDependencies)().
                         AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
-                        AddSingleton(Of IVisualBasicMigrationOperationGenerator, VisualBasicMigrationOperationGenerator)().
-                        AddSingleton(Of IVisualBasicSnapshotGenerator, VisualBasicSnapshotGenerator)().
+                        AddSingleton(Of VisualBasicMigrationOperationGenerator)().
+                        AddSingleton(Of VisualBasicSnapshotGenerator)().
                         AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)().
                         BuildServiceProvider().
                         GetRequiredService(Of IMigrationsCodeGenerator)()

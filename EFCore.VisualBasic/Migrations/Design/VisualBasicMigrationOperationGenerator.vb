@@ -10,29 +10,19 @@ Namespace Migrations.Design
     '''     Used to generate Visual Basic code for creating <see cref="MigrationOperation" /> objects.
     ''' </summary>
     Public Class VisualBasicMigrationOperationGenerator
-        Implements IVisualBasicMigrationOperationGenerator
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicMigrationOperationGenerator" /> class.
         ''' </summary>
-        ''' <param name="dependencies"> The dependencies. </param>
-        Public Sub New(dependencies As VisualBasicMigrationOperationGeneratorDependencies)
-
-            NotNull(dependencies, NameOf(dependencies))
-
-            VisualBasicDependencies = dependencies
+        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        Public Sub New(vbHelper As IVisualBasicHelper)
+            VBCode = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>
-        '''     Parameter object containing dependencies for this service.
+        '''     The VB helper.
         ''' </summary>
-        Protected Overridable Overloads ReadOnly Property VisualBasicDependencies As VisualBasicMigrationOperationGeneratorDependencies
-
-        Private ReadOnly Property VBCode As IVisualBasicHelper
-            Get
-                Return VisualBasicDependencies.VisualBasicHelper
-            End Get
-        End Property
+        Protected Overridable ReadOnly Property VBCode As IVisualBasicHelper
 
         ''' <summary>
         '''     Generates code for creating <see cref="MigrationOperation" /> objects.
@@ -42,7 +32,7 @@ Namespace Migrations.Design
         ''' <param name="builder"> The builder code Is added to. </param>
         Public Overloads Sub Generate(builderName As String,
                                       operations As IReadOnlyList(Of MigrationOperation),
-                                      builder As IndentedStringBuilder) Implements IVisualBasicMigrationOperationGenerator.Generate
+                                      builder As IndentedStringBuilder)
 
             NotEmpty(builderName, NameOf(builderName))
             NotNull(operations, NameOf(operations))

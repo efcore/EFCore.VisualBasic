@@ -20,11 +20,11 @@ Namespace Migrations.Design
         <ConditionalFact>
         Public Sub Generate_seperates_operations_by_a_blank_line()
 
-            Dim generator As New VisualBasicMigrationOperationGenerator(New VisualBasicMigrationOperationGeneratorDependencies(
+            Dim generator As New VisualBasicMigrationOperationGenerator(
                 New VisualBasicHelper(
                 New SqlServerTypeMappingSource(
                     TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                    TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)()))))
+                    TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())))
 
             Dim builder = New IndentedStringBuilder()
 
@@ -3343,14 +3343,13 @@ mb.Sql(""-- close to me"")"
         Private Sub Test(Of T As MigrationOperation)(operation As T, expectedCode As String, assertAction As Action(Of T))
 
             Dim generator As New VisualBasicMigrationOperationGenerator(
-               New VisualBasicMigrationOperationGeneratorDependencies(
-                   New VisualBasicHelper(
-                       New SqlServerTypeMappingSource(
-                           TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                           New RelationalTypeMappingSourceDependencies(
-                               New IRelationalTypeMappingSourcePlugin() {
-                               New SqlServerNetTopologySuiteTypeMappingSourcePlugin(NtsGeometryServices.Instance)
-                               })))))
+                New VisualBasicHelper(
+                    New SqlServerTypeMappingSource(
+                        TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
+                        New RelationalTypeMappingSourceDependencies(
+                            New IRelationalTypeMappingSourcePlugin() {
+                            New SqlServerNetTopologySuiteTypeMappingSourcePlugin(NtsGeometryServices.Instance)
+                            }))))
 
             Dim builder = New IndentedStringBuilder()
             generator.Generate("mb", {operation}, builder)

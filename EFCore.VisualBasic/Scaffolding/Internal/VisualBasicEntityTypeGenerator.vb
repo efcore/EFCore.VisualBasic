@@ -20,7 +20,6 @@ Namespace Scaffolding.Internal
     '''     doing so can result in application failures when updating to a new Entity Framework Core release.
     ''' </summary>
     Public Class VisualBasicEntityTypeGenerator
-        Implements IVisualBasicEntityTypeGenerator
 
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
         Private ReadOnly _code As IVisualBasicHelper
@@ -51,7 +50,7 @@ Namespace Scaffolding.Internal
         Public Overridable Function WriteCode(entityType As IEntityType,
                                               rootNamespace As String,
                                               modelNamespace As String,
-                                              useDataAnnotations As Boolean) As String Implements IVisualBasicEntityTypeGenerator.WriteCode
+                                              useDataAnnotations As Boolean) As String
 
             NotNull(entityType, NameOf(entityType))
             NotNull(modelNamespace, NameOf(modelNamespace))

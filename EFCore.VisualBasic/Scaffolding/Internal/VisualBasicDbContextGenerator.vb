@@ -20,7 +20,6 @@ Namespace Scaffolding.Internal
     '''     doing so can result in application failures when updating to a new Entity Framework Core release.
     ''' </summary>
     Public Class VisualBasicDbContextGenerator
-        Implements IVisualBasicDbContextGenerator
 
         Private Const EntityLambdaIdentifier As String = "entity"
 
@@ -65,7 +64,7 @@ Namespace Scaffolding.Internal
             modelNamespace As String,
             useDataAnnotations As Boolean,
             suppressConnectionStringWarning As Boolean,
-            suppressOnConfiguring As Boolean) As String Implements IVisualBasicDbContextGenerator.WriteCode
+            suppressOnConfiguring As Boolean) As String
 
             NotNull(model, NameOf(model))
 

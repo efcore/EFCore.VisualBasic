@@ -15,15 +15,19 @@ Namespace Migrations.Design
         '''     Initializes a New instance of the <see cref="VisualBasicMigrationsGenerator" /> class.
         ''' </summary>
         ''' <param name="dependencies"> The base dependencies. </param>
-        ''' <param name="vbDependencies"> The dependencies. </param>
+        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        ''' <param name="vbMigrationOperationGenerator"> The Visual Basic migration operation generator. </param>
+        ''' <param name="vbSnapshotGenerator"> The Visual Basic model snapshot generator. </param>
         Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
-                       vbDependencies As VisualBasicMigrationsGeneratorDependencies)
+                       vbHelper As IVisualBasicHelper,
+                       vbMigrationOperationGenerator As VisualBasicMigrationOperationGenerator,
+                       vbSnapshotGenerator As VisualBasicSnapshotGenerator)
 
             MyBase.New(dependencies)
 
-            NotNull(vbDependencies, NameOf(vbDependencies))
-
-            VisualBasicDependencies = vbDependencies
+            VBCode = NotNull(vbHelper, NameOf(vbHelper))
+            VisualBasicMigrationOperationGenerator = NotNull(vbMigrationOperationGenerator, NameOf(vbMigrationOperationGenerator))
+            VisualBasicSnapshotGenerator = NotNull(vbSnapshotGenerator, NameOf(vbSnapshotGenerator))
         End Sub
 
         ''' <summary>
@@ -46,13 +50,20 @@ Namespace Migrations.Design
             End Get
         End Property
 
-        Protected Overridable ReadOnly Property VisualBasicDependencies As VisualBasicMigrationsGeneratorDependencies
+        ''' <summary>
+        '''     The Visual Basic helper.
+        ''' </summary>
+        Private VBCode As IVisualBasicHelper
 
-        Private ReadOnly Property VBCode As IVisualBasicHelper
-            Get
-                Return VisualBasicDependencies.VisualBasicHelper
-            End Get
-        End Property
+        ''' <summary>
+        '''     The Visual Basic migration operation generator.
+        ''' </summary>
+        Private VisualBasicMigrationOperationGenerator As VisualBasicMigrationOperationGenerator
+
+        ''' <summary>
+        '''     The Visual Basic model snapshot generator.
+        ''' </summary>
+        Private VisualBasicSnapshotGenerator As VisualBasicSnapshotGenerator
 
         ''' <summary>
         '''     Generates the migration code.
@@ -102,9 +113,8 @@ Namespace Migrations.Design
                 Using builder.Indent()
                     builder.AppendLine("Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)")
                     Using builder.Indent()
-                        VisualBasicDependencies.
-                            VisualBasicMigrationOperationGenerator.
-                            Generate("migrationBuilder", upOperations, builder)
+                        VisualBasicMigrationOperationGenerator.
+                        Generate("migrationBuilder", upOperations, builder)
                     End Using
 
                     builder.
@@ -113,9 +123,8 @@ Namespace Migrations.Design
                         AppendLine().
                         AppendLine("Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)")
                     Using builder.Indent()
-                        VisualBasicDependencies.
-                            VisualBasicMigrationOperationGenerator.
-                            Generate("migrationBuilder", downOperations, builder)
+                        VisualBasicMigrationOperationGenerator.
+                        Generate("migrationBuilder", downOperations, builder)
                     End Using
 
                     builder.
@@ -197,9 +206,8 @@ Namespace Migrations.Design
 
                     Using builder.Indent()
                         ' TODO: Optimize.This Is repeated below
-                        VisualBasicDependencies.
-                            VisualBasicSnapshotGenerator.
-                                Generate("modelBuilder", targetModel, builder)
+                        VisualBasicSnapshotGenerator.
+                            Generate("modelBuilder", targetModel, builder)
                     End Using
                     builder.
                         AppendLine().
@@ -274,9 +282,8 @@ Namespace Migrations.Design
 
                     builder.AppendLine("Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)")
                     Using builder.Indent()
-                        VisualBasicDependencies.
-                            VisualBasicSnapshotGenerator.
-                                Generate("modelBuilder", model, builder)
+                        VisualBasicSnapshotGenerator.
+                            Generate("modelBuilder", model, builder)
                     End Using
                     builder.AppendLine("End Sub")
                 End Using

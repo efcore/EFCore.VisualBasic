@@ -16,7 +16,6 @@ Namespace Design.Internal
     '''     directly from your code. This API may change Or be removed in future releases.
     ''' </summary>
     Public Class VisualBasicHelper
-        Implements IVisualBasicHelper
 
         Private ReadOnly _relationalTypeMappingSource As IRelationalTypeMappingSource
 
@@ -58,7 +57,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Lambda(properties As IReadOnlyList(Of String), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
+        Public Overridable Function Lambda(properties As IReadOnlyList(Of String), Optional lambdaIdentifier As String = Nothing) As String
 
             Dim builder = New StringBuilder()
             builder.Append("Function(e) ")
@@ -81,7 +80,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Lambda(properties As IEnumerable(Of IProperty), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
+        Public Overridable Function Lambda(properties As IEnumerable(Of IProperty), Optional lambdaIdentifier As String = Nothing) As String
             Return Lambda(properties.Select(Function(p) p.Name).ToList(), lambdaIdentifier)
         End Function
 
@@ -90,7 +89,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Reference(type As Type) As String Implements IVisualBasicHelper.Reference
+        Public Overridable Function Reference(type As Type) As String
             Return Reference(type, useFullName:=False)
         End Function
 
@@ -147,7 +146,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Identifier(name As String, Optional scope As ICollection(Of String) = Nothing) As String Implements IVisualBasicHelper.Identifier
+        Public Overridable Function Identifier(name As String, Optional scope As ICollection(Of String) = Nothing) As String
             Dim builder = New StringBuilder()
             Dim partStart = 0
 
@@ -192,7 +191,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function [Namespace](ParamArray name As String()) As String Implements IVisualBasicHelper.Namespace
+        Public Overridable Function [Namespace](ParamArray name As String()) As String
             Dim namespaces = New StringBuilder()
             For Each piece In name.Where(Function(p) Not String.IsNullOrEmpty(p)).
                                    SelectMany(Function(p) p.Split({"."c}, StringSplitOptions.RemoveEmptyEntries))
@@ -211,7 +210,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As String) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As String) As String
 
             Return """" & value.Replace("""", """""").
                                 Replace(vbCrLf, """ & vbCrLf & """).
@@ -224,7 +223,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure and is not intended to be used
         '''     directly from your code. This API may change or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Boolean) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Boolean) As String
             Return If(value, "True", "False")
         End Function
 
@@ -232,7 +231,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure and is not intended to be used
         '''     directly from your code. This API may change or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Byte) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Byte) As String
             Return "CByte(" & value.ToString(CultureInfo.InvariantCulture) & ")"
         End Function
 
@@ -240,7 +239,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Char) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Char) As String
             Return """" & If(value = """", """""", value.ToString()) & """c"
         End Function
 
@@ -249,7 +248,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As DateTime) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As DateTime) As String
             Return String.Format(
             CultureInfo.InvariantCulture,
             "New DateTime({0}, {1}, {2}, {3}, {4}, {5}, {6}, DateTimeKind.{7})",
@@ -270,7 +269,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As DateTimeOffset) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As DateTimeOffset) As String
             Return "New DateTimeOffset(" & Literal(value.DateTime) & ", " & Literal(value.Offset) & ")"
         End Function
 
@@ -278,7 +277,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Decimal) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Decimal) As String
             Return value.ToString(CultureInfo.InvariantCulture) & "D"
         End Function
 
@@ -286,7 +285,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Double) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Double) As String
 
             Dim str = value.ToString("G17", CultureInfo.InvariantCulture)
 
@@ -311,7 +310,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Single) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Single) As String
             Return value.ToString(CultureInfo.InvariantCulture) & "F"
         End Function
 
@@ -319,7 +318,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Guid) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Guid) As String
             Return "New Guid(""" & value.ToString() & """)"
         End Function
 
@@ -327,7 +326,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Integer) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Integer) As String
             If value = Integer.MinValue Then Return "Integer.MinValue"
             Return value.ToString(CultureInfo.InvariantCulture)
         End Function
@@ -336,7 +335,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Long) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Long) As String
             If value = Long.MinValue Then Return "Long.MinValue"
             Return value.ToString(CultureInfo.InvariantCulture) & "L"
         End Function
@@ -345,7 +344,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As SByte) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As SByte) As String
             Return "CSByte(" & value.ToString(CultureInfo.InvariantCulture) & ")"
         End Function
 
@@ -353,7 +352,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As Short) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Short) As String
             If value = Short.MinValue Then Return "Short.MinValue"
             Return value.ToString(CultureInfo.InvariantCulture) & "S"
         End Function
@@ -362,7 +361,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As TimeSpan) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As TimeSpan) As String
 
             If value.Ticks Mod 10000 = 0 Then
                 Return String.Format(CultureInfo.InvariantCulture,
@@ -384,7 +383,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As UInteger) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As UInteger) As String
             Return value.ToString(CultureInfo.InvariantCulture) & "UI"
         End Function
 
@@ -392,7 +391,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As ULong) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As ULong) As String
             Return value.ToString(CultureInfo.InvariantCulture) & "UL"
         End Function
 
@@ -400,7 +399,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As UShort) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As UShort) As String
             Return value.ToString(CultureInfo.InvariantCulture) & "US"
         End Function
 
@@ -410,7 +409,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Literal(value As BigInteger) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As BigInteger) As String
             Return $"BigInteger.Parse(""{value.ToString(NumberFormatInfo.InvariantInfo)}"", NumberFormatInfo.InvariantInfo)"
         End Function
 
@@ -420,7 +419,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Literal(Of T As Structure)(value As T?) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(Of T As Structure)(value As T?) As String
             Return UnknownLiteral(value)
         End Function
 
@@ -430,7 +429,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Literal(Of T)(values As T(), Optional vertical As Boolean = False) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(Of T)(values As T(), Optional vertical As Boolean = False) As String
             Return ArrayLitetal(GetType(T), values, vertical)
         End Function
 
@@ -501,7 +500,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(values As Object(,)) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(values As Object(,)) As String
             Dim builder = New IndentedStringBuilder()
 
             builder.AppendLine("New Object(,) {")
@@ -539,7 +538,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As [Enum]) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As [Enum]) As String
 
             Dim type = value.GetType()
             Dim name = [Enum].GetName(type, value)
@@ -608,7 +607,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function UnknownLiteral(value As Object) As String Implements IVisualBasicHelper.UnknownLiteral
+        Public Overridable Function UnknownLiteral(value As Object) As String
             If value Is Nothing OrElse value Is DBNull.Value Then
                 Return "Nothing"
             End If
@@ -777,7 +776,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Fragment(frag As MethodCallCodeFragment) As String Implements IVisualBasicHelper.Fragment
+        Public Overridable Function Fragment(frag As MethodCallCodeFragment) As String
             Dim builder As New StringBuilder
 
             Dim current = frag

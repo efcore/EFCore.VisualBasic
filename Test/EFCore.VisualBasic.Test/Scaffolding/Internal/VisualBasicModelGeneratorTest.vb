@@ -58,7 +58,7 @@ Namespace Scaffolding.Internal
                         AddSingleton(Of VisualBasicDbContextGenerator, VisualBasicDbContextGenerator)().
                         AddSingleton(Of VisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)().
                         AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)().
-                        AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
+                        AddSingleton(Of VisualBasicHelper)().
                         BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
 
         End Function

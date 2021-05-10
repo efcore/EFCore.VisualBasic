@@ -1,5 +1,5 @@
 ﻿Imports System.Reflection
-Imports EntityFrameworkCore.VisualBasic.Design
+Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
@@ -15,14 +15,14 @@ Namespace Migrations.Design
         '''     Initializes a New instance of the <see cref="VisualBasicMigrationOperationGenerator" /> class.
         ''' </summary>
         ''' <param name="vbHelper"> The Visual Basic helper. </param>
-        Public Sub New(vbHelper As IVisualBasicHelper)
+        Public Sub New(vbHelper As VisualBasicHelper)
             VBCode = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>
         '''     The VB helper.
         ''' </summary>
-        Protected Overridable ReadOnly Property VBCode As IVisualBasicHelper
+        Private VBCode As VisualBasicHelper
 
         ''' <summary>
         '''     Generates code for creating <see cref="MigrationOperation" /> objects.

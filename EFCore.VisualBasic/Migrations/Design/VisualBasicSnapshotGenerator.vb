@@ -3,6 +3,7 @@
 
 Imports System.Collections.Immutable
 Imports EntityFrameworkCore.VisualBasic.Design
+Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports EntityFrameworkCore.VisualBasic.Utilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
@@ -26,7 +27,7 @@ Namespace Migrations.Design
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
         ''' </summary>
         ''' <param name="vbHelper"> The Visual Basic helper. </param>
-        Public Sub New(vbHelper As IVisualBasicHelper,
+        Public Sub New(vbHelper As VisualBasicHelper,
                        relationalTypeMappingSource As IRelationalTypeMappingSource,
                        annotationCodeGenerator As IAnnotationCodeGenerator)
 
@@ -38,7 +39,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     The Visual Basic helper.
         ''' </summary>
-        Private VBCode As IVisualBasicHelper
+        Private VBCode As VisualBasicHelper
 
         ''' <summary>
         '''     The type mapper.

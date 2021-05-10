@@ -1,4 +1,4 @@
-﻿Imports EntityFrameworkCore.VisualBasic.Design
+﻿Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
@@ -19,7 +19,7 @@ Namespace Migrations.Design
         ''' <param name="vbMigrationOperationGenerator"> The Visual Basic migration operation generator. </param>
         ''' <param name="vbSnapshotGenerator"> The Visual Basic model snapshot generator. </param>
         Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
-                       vbHelper As IVisualBasicHelper,
+                       vbHelper As VisualBasicHelper,
                        vbMigrationOperationGenerator As VisualBasicMigrationOperationGenerator,
                        vbSnapshotGenerator As VisualBasicSnapshotGenerator)
 
@@ -53,7 +53,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     The Visual Basic helper.
         ''' </summary>
-        Private VBCode As IVisualBasicHelper
+        Private VBCode As VisualBasicHelper
 
         ''' <summary>
         '''     The Visual Basic migration operation generator.

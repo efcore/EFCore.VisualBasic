@@ -14,7 +14,7 @@ Namespace Design
 
             With services
 
-                .AddSingleton(Of VisualBasicHelper)()
+                .AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
 
                 'Migrations
                 .AddSingleton(Of VisualBasicMigrationOperationGenerator)()

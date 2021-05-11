@@ -27,7 +27,7 @@ Friend Module VisualBasicModelCodeGeneratorTestBase
 
         Dim services = New ServiceCollection
         services.AddEntityFrameworkDesignTimeServices()
-        services.AddSingleton(Of VisualBasicHelper)()
+        services.AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
         services.AddSingleton(Of VisualBasicDbContextGenerator, VisualBasicDbContextGenerator)()
         services.AddSingleton(Of VisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)()
         services.AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()

@@ -1,6 +1,6 @@
 ﻿' Copyright (c) .NET Foundation. All rights reserved.
 ' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-Imports EntityFrameworkCore.VisualBasic.Design.Internal
+Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
@@ -23,7 +23,7 @@ Namespace Scaffolding.Internal
 
         Private Const EntityLambdaIdentifier As String = "entity"
 
-        Private ReadOnly _code As VisualBasicHelper
+        Private ReadOnly _code As IVisualBasicHelper
         Private ReadOnly _providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
 
@@ -38,7 +38,7 @@ Namespace Scaffolding.Internal
         ''' </summary>
         Public Sub New(providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
                        annotationCodeGenerator As IAnnotationCodeGenerator,
-                       VisualBasicHelper As VisualBasicHelper)
+                       VisualBasicHelper As IVisualBasicHelper)
 
             NotNull(providerConfigurationCodeGenerator, NameOf(providerConfigurationCodeGenerator))
             NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))

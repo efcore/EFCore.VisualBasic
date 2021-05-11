@@ -345,7 +345,7 @@ Namespace Migrations.Design
         Private Class TestVisualBasicSnapshotGenerator
             Inherits VisualBasicSnapshotGenerator
 
-            Public Sub New(vbHelper As VisualBasicHelper,
+            Public Sub New(vbHelper As IVisualBasicHelper,
                            relationalTypeMappingSource As IRelationalTypeMappingSource,
                            annotationCodeGenerator As IAnnotationCodeGenerator)
 
@@ -971,7 +971,7 @@ End Namespace
             Return New ServiceCollection().
                         AddEntityFrameworkSqlServer().
                         AddEntityFrameworkDesignTimeServices().
-                        AddSingleton(Of VisualBasicHelper)().
+                        AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
                         AddSingleton(Of VisualBasicMigrationOperationGenerator)().
                         AddSingleton(Of VisualBasicSnapshotGenerator)().
                         AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)().

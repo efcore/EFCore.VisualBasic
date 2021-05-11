@@ -3,7 +3,7 @@
 
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
-Imports EntityFrameworkCore.VisualBasic.Design.Internal
+Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Design.Internal
@@ -22,7 +22,7 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicEntityTypeGenerator
 
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
-        Private ReadOnly _code As VisualBasicHelper
+        Private ReadOnly _code As IVisualBasicHelper
         Private _sb As IndentedStringBuilder
         Private _useDataAnnotations As Boolean
 
@@ -33,7 +33,7 @@ Namespace Scaffolding.Internal
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
         Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
-                       vbHelper As VisualBasicHelper)
+                       vbHelper As IVisualBasicHelper)
 
             NotNull(vbHelper, NameOf(vbHelper))
 

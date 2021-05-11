@@ -19,8 +19,6 @@ Namespace Migrations.Design
         ''' <param name="dependencies"> The base dependencies. </param>
         ''' <param name="vbHelper"> The Visual Basic helper. </param>
         Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
-                       annotationCodeGenerator As IAnnotationCodeGenerator,
-                       RelationalTypeMappingSource As IRelationalTypeMappingSource,
                        vbHelper As IVisualBasicHelper)
 
             MyBase.New(dependencies)
@@ -28,8 +26,8 @@ Namespace Migrations.Design
             VBCode = NotNull(vbHelper, NameOf(vbHelper))
 
             VisualBasicMigrationOperationGenerator = New VisualBasicMigrationOperationGenerator(vbHelper)
-            VisualBasicSnapshotGenerator = New VisualBasicSnapshotGenerator(annotationCodeGenerator,
-                                                                            RelationalTypeMappingSource,
+            VisualBasicSnapshotGenerator = New VisualBasicSnapshotGenerator(dependencies.AnnotationCodeGenerator,
+                                                                            dependencies.RelationalTypeMappingSource,
                                                                             vbHelper)
         End Sub
 

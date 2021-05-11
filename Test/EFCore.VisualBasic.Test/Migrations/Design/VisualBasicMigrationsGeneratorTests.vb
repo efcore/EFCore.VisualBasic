@@ -385,8 +385,6 @@ Namespace Migrations.Design
                 New MigrationsCodeGeneratorDependencies(
                     sqlServerTypeMappingSource1,
                     sqlServerAnnotationCodeGenerator1),
-                sqlServerAnnotationCodeGenerator1,
-                sqlServerTypeMappingSource1,
                 codeHelper)
 
             Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()

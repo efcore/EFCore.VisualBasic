@@ -13,25 +13,13 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 
 Namespace Scaffolding.Internal
 
-    ''' <summary>
-    '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    '''     any release. You should only use it directly in your code with extreme caution and knowing that
-    '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-    ''' </summary>
-    Public Class VisualBasicEntityTypeGenerator
+    Friend Class VisualBasicEntityTypeGenerator
 
         Private ReadOnly _annotationCodeGenerator As IAnnotationCodeGenerator
         Private ReadOnly _code As IVisualBasicHelper
         Private _sb As IndentedStringBuilder
         Private _useDataAnnotations As Boolean
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
                        vbHelper As IVisualBasicHelper)
 
@@ -39,12 +27,6 @@ Namespace Scaffolding.Internal
             _code = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Public Overridable Function WriteCode(entityType As IEntityType,
                                               rootNamespace As String,
                                               modelNamespace As String,
@@ -94,12 +76,6 @@ Namespace Scaffolding.Internal
             Return _sb.ToString()
         End Function
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateClass(entityType As IEntityType)
 
             NotNull(entityType, NameOf(entityType))
@@ -121,12 +97,6 @@ Namespace Scaffolding.Internal
             _sb.AppendLine("End Class")
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateEntityTypeDataAnnotations(entityType As IEntityType)
 
             NotNull(entityType, NameOf(entityType))
@@ -206,12 +176,6 @@ Namespace Scaffolding.Internal
             Next
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateConstructor(entityType As IEntityType)
             NotNull(entityType, NameOf(entityType))
 
@@ -231,12 +195,6 @@ Namespace Scaffolding.Internal
             End If
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateProperties(entityType As IEntityType)
             NotNull(entityType, NameOf(entityType))
 
@@ -251,12 +209,6 @@ Namespace Scaffolding.Internal
             Next
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GeneratePropertyDataAnnotations(prop As IProperty)
             NotNull(prop, NameOf(prop))
 
@@ -327,13 +279,6 @@ Namespace Scaffolding.Internal
             End If
         End Sub
 
-
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateNavigationProperties(entityType As IEntityType)
 
             NotNull(entityType, NameOf(entityType))

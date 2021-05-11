@@ -1,5 +1,6 @@
 ﻿' Copyright (c) .NET Foundation. All rights reserved.
 ' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
@@ -36,17 +37,13 @@ Namespace Scaffolding.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Sub New(providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
-                       annotationCodeGenerator As IAnnotationCodeGenerator,
-                       VisualBasicHelper As IVisualBasicHelper)
+        Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
+                       providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
+                       vbHelper As IVisualBasicHelper)
 
-            NotNull(providerConfigurationCodeGenerator, NameOf(providerConfigurationCodeGenerator))
-            NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
-            NotNull(VisualBasicHelper, NameOf(VisualBasicHelper))
-
-            _providerConfigurationCodeGenerator = providerConfigurationCodeGenerator
-            _annotationCodeGenerator = annotationCodeGenerator
-            _code = VisualBasicHelper
+            _annotationCodeGenerator = NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
+            _providerConfigurationCodeGenerator = NotNull(providerConfigurationCodeGenerator, NameOf(providerConfigurationCodeGenerator))
+            _code = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>

@@ -1,4 +1,6 @@
 ﻿Imports System.IO
+Imports EntityFrameworkCore.VisualBasic.Design
+Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
@@ -9,34 +11,22 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicModelGenerator
         Inherits ModelCodeGenerator
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
-        Public Overridable ReadOnly Property _VBDbContextGenerator As VisualBasicDbContextGenerator
-
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
-        Public Overridable ReadOnly Property _VBEntityTypeGenerator As VisualBasicEntityTypeGenerator
-
+        Private _VBDbContextGenerator As VisualBasicDbContextGenerator
+        Private _VBEntityTypeGenerator As VisualBasicEntityTypeGenerator
 
         Public Sub New(dependencies As ModelCodeGeneratorDependencies,
-                       vbDbContextGenerator As VisualBasicDbContextGenerator,
-                       vbEntityTypeGenerator As VisualBasicEntityTypeGenerator)
+                       annotationCodeGenerator As IAnnotationCodeGenerator,
+                       providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
+                       vbHelper As IVisualBasicHelper)
 
             MyBase.New(dependencies)
 
-            NotNull(vbDbContextGenerator, NameOf(vbDbContextGenerator))
-            NotNull(vbEntityTypeGenerator, NameOf(vbEntityTypeGenerator))
+            _VBDbContextGenerator = New VisualBasicDbContextGenerator(annotationCodeGenerator,
+                                                                      providerConfigurationCodeGenerator,
+                                                                      vbHelper)
 
-            _VBDbContextGenerator = vbDbContextGenerator
-            _VBEntityTypeGenerator = vbEntityTypeGenerator
+            _VBEntityTypeGenerator = New VisualBasicEntityTypeGenerator(annotationCodeGenerator,
+                                                                        vbHelper)
         End Sub
 
         Private Const FileExtension = ".vb"

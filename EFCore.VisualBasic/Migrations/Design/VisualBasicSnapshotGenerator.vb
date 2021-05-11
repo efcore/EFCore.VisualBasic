@@ -26,13 +26,13 @@ Namespace Migrations.Design
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
         ''' </summary>
         ''' <param name="vbHelper"> The Visual Basic helper. </param>
-        Public Sub New(vbHelper As IVisualBasicHelper,
+        Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
                        relationalTypeMappingSource As IRelationalTypeMappingSource,
-                       annotationCodeGenerator As IAnnotationCodeGenerator)
+                       vbHelper As IVisualBasicHelper)
 
-            Me.VBCode = NotNull(vbHelper, NameOf(vbHelper))
-            Me.RelationalTypeMappingSource = NotNull(relationalTypeMappingSource, NameOf(relationalTypeMappingSource))
             Me.AnnotationCodeGenerator = NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
+            Me.RelationalTypeMappingSource = NotNull(relationalTypeMappingSource, NameOf(relationalTypeMappingSource))
+            Me.VBCode = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>

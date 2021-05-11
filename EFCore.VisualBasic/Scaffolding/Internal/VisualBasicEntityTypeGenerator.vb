@@ -35,10 +35,8 @@ Namespace Scaffolding.Internal
         Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
                        vbHelper As IVisualBasicHelper)
 
-            NotNull(vbHelper, NameOf(vbHelper))
-
-            _annotationCodeGenerator = annotationCodeGenerator
-            _code = vbHelper
+            _annotationCodeGenerator = NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
+            _code = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>

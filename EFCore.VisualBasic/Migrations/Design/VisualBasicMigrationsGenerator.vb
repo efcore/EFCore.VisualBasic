@@ -1,10 +1,12 @@
 ﻿Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace Migrations.Design
 
@@ -16,18 +18,19 @@ Namespace Migrations.Design
         ''' </summary>
         ''' <param name="dependencies"> The base dependencies. </param>
         ''' <param name="vbHelper"> The Visual Basic helper. </param>
-        ''' <param name="vbMigrationOperationGenerator"> The Visual Basic migration operation generator. </param>
-        ''' <param name="vbSnapshotGenerator"> The Visual Basic model snapshot generator. </param>
         Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
-                       vbHelper As IVisualBasicHelper,
-                       vbMigrationOperationGenerator As VisualBasicMigrationOperationGenerator,
-                       vbSnapshotGenerator As VisualBasicSnapshotGenerator)
+                       annotationCodeGenerator As IAnnotationCodeGenerator,
+                       RelationalTypeMappingSource As IRelationalTypeMappingSource,
+                       vbHelper As IVisualBasicHelper)
 
             MyBase.New(dependencies)
 
             VBCode = NotNull(vbHelper, NameOf(vbHelper))
-            VisualBasicMigrationOperationGenerator = NotNull(vbMigrationOperationGenerator, NameOf(vbMigrationOperationGenerator))
-            VisualBasicSnapshotGenerator = NotNull(vbSnapshotGenerator, NameOf(vbSnapshotGenerator))
+
+            VisualBasicMigrationOperationGenerator = New VisualBasicMigrationOperationGenerator(vbHelper)
+            VisualBasicSnapshotGenerator = New VisualBasicSnapshotGenerator(annotationCodeGenerator,
+                                                                            RelationalTypeMappingSource,
+                                                                            vbHelper)
         End Sub
 
         ''' <summary>

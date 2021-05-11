@@ -349,7 +349,7 @@ Namespace Migrations.Design
                            relationalTypeMappingSource As IRelationalTypeMappingSource,
                            annotationCodeGenerator As IAnnotationCodeGenerator)
 
-                MyBase.New(vbHelper, relationalTypeMappingSource, annotationCodeGenerator)
+                MyBase.New(annotationCodeGenerator, relationalTypeMappingSource, vbHelper)
             End Sub
 
             Public Overridable Sub TestGenerateEntityTypeAnnotations(builderName As String, entityType As IEntityType, stringBuilder As IndentedStringBuilder)
@@ -359,8 +359,8 @@ Namespace Migrations.Design
             Public Overridable Sub TestGeneratePropertyAnnotations(prop As IProperty, stringBuilder As IndentedStringBuilder)
                 GeneratePropertyAnnotations(prop, stringBuilder)
             End Sub
-
         End Class
+
         Private Class WithAnnotations
             Public Property Id As Integer
         End Class
@@ -376,8 +376,7 @@ Namespace Migrations.Design
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
                 TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
-            Dim codeHelper As New VisualBasicHelper(
-                sqlServerTypeMappingSource1)
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
 
             Dim sqlServerAnnotationCodeGenerator1 As New SqlServerAnnotationCodeGenerator(
                 New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
@@ -386,12 +385,9 @@ Namespace Migrations.Design
                 New MigrationsCodeGeneratorDependencies(
                     sqlServerTypeMappingSource1,
                     sqlServerAnnotationCodeGenerator1),
-                codeHelper,
-                New VisualBasicMigrationOperationGenerator(codeHelper),
-                New VisualBasicSnapshotGenerator(
-                        codeHelper,
-                        sqlServerTypeMappingSource1,
-                        sqlServerAnnotationCodeGenerator1))
+                sqlServerAnnotationCodeGenerator1,
+                sqlServerTypeMappingSource1,
+                codeHelper)
 
             Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
@@ -972,8 +968,6 @@ End Namespace
                         AddEntityFrameworkSqlServer().
                         AddEntityFrameworkDesignTimeServices().
                         AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
-                        AddSingleton(Of VisualBasicMigrationOperationGenerator)().
-                        AddSingleton(Of VisualBasicSnapshotGenerator)().
                         AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)().
                         BuildServiceProvider().
                         GetRequiredService(Of IMigrationsCodeGenerator)()

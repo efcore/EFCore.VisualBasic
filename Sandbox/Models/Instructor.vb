@@ -19,7 +19,7 @@ Namespace Models
         <DataType(DataType.[Date])>
         <DisplayFormat(DataFormatString:="{0:yyyy-MM-dd}", ApplyFormatInEditMode:=True)>
         <Display(Name:="Hire Date")>
-        Public Property HireDate As DateTime
+        Public Property HireDate As Date
         <Display(Name:="Full Name")>
         Public ReadOnly Property FullName As String
             Get

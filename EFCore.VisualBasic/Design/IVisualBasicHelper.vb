@@ -82,11 +82,11 @@ Namespace Design
         Function Literal(value As Char) As String
 
         ''' <summary>
-        '''     Generates a DateTime literal.
+        '''     Generates a Date literal.
         ''' </summary>
         ''' <param name="value"> The value. </param>
         ''' <returns> The literal. </returns>
-        Function Literal(value As DateTime) As String
+        Function Literal(value As Date) As String
 
         ''' <summary>
         '''     Generates a DateTimeOffset literal.

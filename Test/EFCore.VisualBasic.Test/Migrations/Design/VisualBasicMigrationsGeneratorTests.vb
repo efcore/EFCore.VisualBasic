@@ -727,7 +727,7 @@ End Namespace
                 eb.Property(Function(e) e.Byte).HasDefaultValue(Byte.MinValue)
                 eb.Property(Function(e) e.ByteArray).HasDefaultValue(New Byte() {0})
                 eb.Property(Function(e) e.Char).HasDefaultValue("0"c)
-                eb.Property(Function(e) e.DateTime).HasDefaultValue(DateTime.MinValue)
+                eb.Property(Function(e) e.Date).HasDefaultValue(Date.MinValue)
                 eb.Property(Function(e) e.DateTimeOffset).HasDefaultValue(DateTimeOffset.MinValue)
                 eb.Property(Function(e) e.Decimal).HasDefaultValue(Decimal.MinValue)
                 eb.Property(Function(e) e.Double).HasDefaultValue(Double.MinValue) 'double.NegativeInfinity
@@ -747,7 +747,7 @@ End Namespace
                 eb.Property(Function(e) e.NullableBoolean).HasDefaultValue(True)
                 eb.Property(Function(e) e.NullableByte).HasDefaultValue(Byte.MaxValue)
                 eb.Property(Function(e) e.NullableChar).HasDefaultValue("'"c)
-                eb.Property(Function(e) e.NullableDateTime).HasDefaultValue(DateTime.MaxValue)
+                eb.Property(Function(e) e.NullableDate).HasDefaultValue(Date.MaxValue)
                 eb.Property(Function(e) e.NullableDateTimeOffset).HasDefaultValue(DateTimeOffset.MaxValue)
                 eb.Property(Function(e) e.NullableDecimal).HasDefaultValue(Decimal.MaxValue)
                 eb.Property(Function(e) e.NullableDouble).HasDefaultValue(0.6822871999174)
@@ -808,7 +808,7 @@ End Namespace
             Public Property [Byte] As Byte
             Public Property ByteArray As Byte()
             Public Property [Char] As Char
-            Public Property DateTime As DateTime
+            Public Property [Date] As Date
             Public Property DateTimeOffset As DateTimeOffset
             Public Property [Decimal] As Decimal
             Public Property [Double] As Double
@@ -821,7 +821,7 @@ End Namespace
             Public Property NullableBoolean As Boolean?
             Public Property NullableByte As Byte?
             Public Property NullableChar As Char?
-            Public Property NullableDateTime As DateTime?
+            Public Property NullableDate As Date?
             Public Property NullableDateTimeOffset As DateTimeOffset?
             Public Property NullableDecimal As Decimal?
             Public Property NullableDouble As Double?

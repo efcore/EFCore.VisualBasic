@@ -181,7 +181,7 @@ Friend Module SharedTypeExtensions
     Private ReadOnly _commonTypeDictionary As New Dictionary(Of Type, Object) From
         {{GetType(Integer), Nothing},
          {GetType(Guid), Nothing},
-         {GetType(DateTime), Nothing},
+         {GetType(Date), Nothing},
          {GetType(DateTimeOffset), Nothing},
          {GetType(Long), Nothing},
          {GetType(Boolean), Nothing},

@@ -808,7 +808,7 @@ End Namespace
                         "Employee",
                         Sub(x)
                             x.Property(Of Integer)("Id")
-                            x.Property(Of DateTime)("HireDate").HasColumnType("date").HasColumnName("hiring_date")
+                            x.Property(Of Date)("HireDate").HasColumnType("date").HasColumnName("hiring_date")
                         End Sub)
                 End Sub,
                 New ModelCodeGenerationOptions With {

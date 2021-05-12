@@ -134,8 +134,8 @@ string with """,
         <ConditionalFact>
         Public Sub Literal_works_when_DateTime()
             Literal_works(
-                    New DateTime(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local),
-                    "New DateTime(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local)")
+                    New Date(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local),
+                    "New Date(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local)")
         End Sub
 
         <ConditionalFact>

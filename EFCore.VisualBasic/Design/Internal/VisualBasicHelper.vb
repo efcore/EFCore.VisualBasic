@@ -33,7 +33,7 @@ Namespace Design.Internal
             {GetType(Byte), Function(c, v) c.Literal(CByte(v))},
             {GetType(Byte()), Function(c, v) c.Literal(CType(v, Byte()))},
             {GetType(Char), Function(c, v) c.Literal(CChar(v))},
-            {GetType(DateTime), Function(c, v) c.Literal(CDate(v))},
+            {GetType(Date), Function(c, v) c.Literal(CDate(v))},
             {GetType(DateTimeOffset), Function(c, v) c.Literal(CType(v, DateTimeOffset))},
             {GetType(Decimal), Function(c, v) c.Literal(CDec(v))},
             {GetType(Double), Function(c, v) c.Literal(CDbl(v))},
@@ -249,10 +249,10 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As DateTime) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As Date) As String Implements IVisualBasicHelper.Literal
             Return String.Format(
             CultureInfo.InvariantCulture,
-            "New DateTime({0}, {1}, {2}, {3}, {4}, {5}, {6}, DateTimeKind.{7})",
+            "New Date({0}, {1}, {2}, {3}, {4}, {5}, {6}, DateTimeKind.{7})",
             value.Year,
             value.Month,
             value.Day,

@@ -1,5 +1,6 @@
 ﻿' Copyright (c) .NET Foundation. All rights reserved.
 ' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
@@ -13,14 +14,7 @@ Imports Microsoft.EntityFrameworkCore.Scaffolding
 
 Namespace Scaffolding.Internal
 
-    ''' <summary>
-    '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    '''     any release. You should only use it directly in your code with extreme caution and knowing that
-    '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-    ''' </summary>
-    Public Class VisualBasicDbContextGenerator
-        Implements IVisualBasicDbContextGenerator
+    Friend Class VisualBasicDbContextGenerator
 
         Private Const EntityLambdaIdentifier As String = "entity"
 
@@ -31,31 +25,15 @@ Namespace Scaffolding.Internal
         Private _sb As IndentedStringBuilder
         Private _entityTypeBuilderInitialized As Boolean
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
-        Public Sub New(providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
-                       annotationCodeGenerator As IAnnotationCodeGenerator,
-                       VisualBasicHelper As IVisualBasicHelper)
+        Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
+                       providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
+                       vbHelper As IVisualBasicHelper)
 
-            NotNull(providerConfigurationCodeGenerator, NameOf(providerConfigurationCodeGenerator))
-            NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
-            NotNull(VisualBasicHelper, NameOf(VisualBasicHelper))
-
-            _providerConfigurationCodeGenerator = providerConfigurationCodeGenerator
-            _annotationCodeGenerator = annotationCodeGenerator
-            _code = VisualBasicHelper
+            _annotationCodeGenerator = NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
+            _providerConfigurationCodeGenerator = NotNull(providerConfigurationCodeGenerator, NameOf(providerConfigurationCodeGenerator))
+            _code = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Public Overridable Function WriteCode(
             model As IModel,
             contextName As String,
@@ -65,7 +43,7 @@ Namespace Scaffolding.Internal
             modelNamespace As String,
             useDataAnnotations As Boolean,
             suppressConnectionStringWarning As Boolean,
-            suppressOnConfiguring As Boolean) As String Implements IVisualBasicDbContextGenerator.WriteCode
+            suppressOnConfiguring As Boolean) As String
 
             NotNull(model, NameOf(model))
 
@@ -121,12 +99,6 @@ Namespace Scaffolding.Internal
             Return _sb.ToString()
         End Function
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateClass(
             model As IModel,
             contextName As String,
@@ -198,12 +170,6 @@ Namespace Scaffolding.Internal
             End If
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateOnConfiguring(connectionString As String,
                                                         suppressConnectionStringWarning As Boolean)
 
@@ -234,12 +200,6 @@ Namespace Scaffolding.Internal
             _sb.AppendLine()
         End Sub
 
-        ''' <summary>
-        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution and knowing that
-        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
-        ''' </summary>
         Protected Overridable Sub GenerateOnModelCreating(model As IModel,
                                                           useDataAnnotations As Boolean)
             NotNull(model, NameOf(model))

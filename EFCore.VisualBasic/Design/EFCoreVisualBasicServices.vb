@@ -13,25 +13,9 @@ Namespace Design
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
 
             With services
-
                 .AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
-
-                'Migrations
-
-                .AddSingleton(Of VisualBasicMigrationOperationGeneratorDependencies)()
-                .AddSingleton(Of IVisualBasicMigrationOperationGenerator, VisualBasicMigrationOperationGenerator)()
-
-                .AddSingleton(Of VisualBasicSnapshotGeneratorDependencies)()
-                .AddSingleton(Of IVisualBasicSnapshotGenerator, VisualBasicSnapshotGenerator)()
-
-                .AddSingleton(Of VisualBasicMigrationsGeneratorDependencies)()
                 .AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)()
-
-                'Scaffolding
-                .AddSingleton(Of IVisualBasicDbContextGenerator, VisualBasicDbContextGenerator)()
-                .AddSingleton(Of IVisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)()
                 .AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()
-
             End With
 
         End Sub

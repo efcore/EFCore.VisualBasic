@@ -55,8 +55,6 @@ Namespace Scaffolding.Internal
                         AddEntityFrameworkDesignTimeServices().
                         AddSingleton(Of IAnnotationCodeGenerator, AnnotationCodeGenerator)().
                         AddSingleton(Of IProviderConfigurationCodeGenerator, TestProviderCodeGenerator)().
-                        AddSingleton(Of IVisualBasicDbContextGenerator, VisualBasicDbContextGenerator)().
-                        AddSingleton(Of IVisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)().
                         AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)().
                         AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
                         BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()

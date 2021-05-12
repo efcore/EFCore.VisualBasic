@@ -5,6 +5,7 @@ Imports System.Collections.Immutable
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.Utilities
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -20,27 +21,35 @@ Namespace Migrations.Design
     '''     Used to generate Visual Basic code for creating an <see cref="IModel" />.
     ''' </summary>
     Public Class VisualBasicSnapshotGenerator
-        Implements IVisualBasicSnapshotGenerator
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
         ''' </summary>
-        ''' <param name="dependencies"> The dependencies. </param>
-        Public Sub New(dependencies As VisualBasicSnapshotGeneratorDependencies)
-            NotNull(dependencies, NameOf(dependencies))
-            VisualBasicDependencies = dependencies
+        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
+                       relationalTypeMappingSource As IRelationalTypeMappingSource,
+                       vbHelper As IVisualBasicHelper)
+
+            Me.AnnotationCodeGenerator = NotNull(annotationCodeGenerator, NameOf(annotationCodeGenerator))
+            Me.RelationalTypeMappingSource = NotNull(relationalTypeMappingSource, NameOf(relationalTypeMappingSource))
+            Me.VBCode = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>
-        '''     Parameter object containing dependencies for this service.
+        '''     The Visual Basic helper.
         ''' </summary>
-        Protected Overridable ReadOnly Property VisualBasicDependencies As VisualBasicSnapshotGeneratorDependencies
+        Private VBCode As IVisualBasicHelper
 
-        Private ReadOnly Property VBCode As IVisualBasicHelper
-            Get
-                Return VisualBasicDependencies.VisualBasicHelper
-            End Get
-        End Property
+        ''' <summary>
+        '''     The type mapper.
+        ''' </summary>
+        Private RelationalTypeMappingSource As IRelationalTypeMappingSource
+
+        ''' <summary>
+        '''     The annotation code generator.
+        ''' </summary>
+        Private AnnotationCodeGenerator As IAnnotationCodeGenerator
+
 
         ''' <summary>
         '''     Generates code for creating an <see cref="IModel" />.
@@ -50,14 +59,13 @@ Namespace Migrations.Design
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
         Public Overridable Sub Generate(builderName As String,
                                         model As IModel,
-                                        stringBuilder As IndentedStringBuilder) Implements IVisualBasicSnapshotGenerator.Generate
+                                        stringBuilder As IndentedStringBuilder)
 
             NotEmpty(builderName, NameOf(builderName))
             NotNull(model, NameOf(model))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim annotations = VisualBasicDependencies.
-                                AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(model.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
@@ -81,7 +89,7 @@ Namespace Migrations.Design
                                           OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
                             End Function)
 
-                    For Each methodCallCodeFragment In VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls(model, annotations)
+                    For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(model, annotations)
                         stringBuilder.AppendLine().Append(VBCode.Fragment(methodCallCodeFragment))
                     Next
 
@@ -552,7 +560,7 @@ Namespace Migrations.Design
             NotNull([property], NameOf([property]))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim annotations = VisualBasicDependencies.AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations([property].GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
@@ -564,7 +572,7 @@ Namespace Migrations.Design
                 AppendLine(".").
                 Append(NameOf(RelationalPropertyBuilderExtensions.HasColumnType)).
                 Append("(").
-                Append(VBCode.Literal(If([property].GetColumnType(), VisualBasicDependencies.RelationalTypeMappingSource.GetMapping([property]).StoreType))).
+                Append(VBCode.Literal(If([property].GetColumnType(), RelationalTypeMappingSource.GetMapping([property]).StoreType))).
                 Append(")")
 
             annotations.Remove(RelationalAnnotationNames.ColumnType)
@@ -585,7 +593,7 @@ Namespace Migrations.Design
                 End Function
             )
 
-            For Each methodCallCodeFragment In VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls([property], annotations)
+            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls([property], annotations)
                 stringBuilder.
                     AppendLine(" _").
                     Append(VBCode.Fragment(methodCallCodeFragment))
@@ -595,7 +603,7 @@ Namespace Migrations.Design
         End Sub
 
         Private Function FindValueConverter([property] As IProperty) As ValueConverter
-            Dim t = If([property].FindTypeMapping(), VisualBasicDependencies.RelationalTypeMappingSource.FindMapping([property]))
+            Dim t = If([property].FindTypeMapping(), RelationalTypeMappingSource.FindMapping([property]))
             Return If([property].GetValueConverter(), t?.Converter)
         End Function
 
@@ -667,11 +675,11 @@ Namespace Migrations.Design
         Protected Overridable Sub GenerateKeyAnnotations(key As IKey,
                                                          stringBuilder As IndentedStringBuilder)
 
-            Dim annotations = VisualBasicDependencies.AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(key.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            For Each methodCallCodeFragment In VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls(key, annotations)
+            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(key, annotations)
                 stringBuilder.
                     AppendLine().Append(VBCode.Fragment(methodCallCodeFragment))
             Next
@@ -756,7 +764,7 @@ Namespace Migrations.Design
         Protected Overridable Sub GenerateIndexAnnotations(index As IIndex,
                                                            stringBuilder As IndentedStringBuilder)
 
-            Dim annotations = VisualBasicDependencies.AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(index.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
@@ -766,7 +774,7 @@ Namespace Migrations.Design
                 annotations,
                 Function(name) name.EndsWith(":Include", StringComparison.Ordinal))
 
-            For Each methodCallCodeFragment In VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls(index, annotations)
+            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(index, annotations)
                 stringBuilder.
                 AppendLine().
                 Append(VBCode.Fragment(methodCallCodeFragment))
@@ -795,7 +803,7 @@ Namespace Migrations.Design
             Dim discriminatorMappingCompleteAnnotation = annotationList.FirstOrDefault(Function(a) a.Name = CoreAnnotationNames.DiscriminatorMappingComplete)
             Dim discriminatorValueAnnotation = annotationList.FirstOrDefault(Function(a) a.Name = CoreAnnotationNames.DiscriminatorValue)
 
-            Dim annotations = VisualBasicDependencies.AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(entityType.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
@@ -946,7 +954,7 @@ Namespace Migrations.Design
                 stringBuilder.AppendLine()
             End If
 
-            Dim fluentApiCalls = VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls(entityType, annotations)
+            Dim fluentApiCalls = AnnotationCodeGenerator.GenerateFluentApiCalls(entityType, annotations)
             If fluentApiCalls.Count > 0 OrElse annotations.Count > 0 Then
 
                 stringBuilder.
@@ -1173,11 +1181,11 @@ Namespace Migrations.Design
             NotNull(foreignKey, NameOf(foreignKey))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim annotations = VisualBasicDependencies.AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                 FilterIgnoredAnnotations(foreignKey.GetAnnotations()).
                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            For Each methodCallCodeFragment In VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls(foreignKey, annotations)
+            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(foreignKey, annotations)
                 stringBuilder.
                     AppendLine().
                     Append(VBCode.Fragment(methodCallCodeFragment))
@@ -1294,11 +1302,11 @@ Namespace Migrations.Design
             NotNull(navigation, NameOf(navigation))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim annotations = VisualBasicDependencies.AnnotationCodeGenerator.
+            Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(navigation.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            For Each methodCallCodeFragment In VisualBasicDependencies.AnnotationCodeGenerator.GenerateFluentApiCalls(navigation, annotations)
+            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(navigation, annotations)
                 stringBuilder.
                     AppendLine().Append(VBCode.Fragment(methodCallCodeFragment))
             Next

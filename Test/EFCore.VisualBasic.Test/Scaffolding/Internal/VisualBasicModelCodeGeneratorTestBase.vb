@@ -28,8 +28,6 @@ Friend Module VisualBasicModelCodeGeneratorTestBase
         Dim services = New ServiceCollection
         services.AddEntityFrameworkDesignTimeServices()
         services.AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
-        services.AddSingleton(Of IVisualBasicDbContextGenerator, VisualBasicDbContextGenerator)()
-        services.AddSingleton(Of IVisualBasicEntityTypeGenerator, VisualBasicEntityTypeGenerator)()
         services.AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()
 
         Dim sqlSrvD = New SqlServerDesignTimeServices

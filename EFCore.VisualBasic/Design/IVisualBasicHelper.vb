@@ -14,7 +14,7 @@ Namespace Design
         ''' </summary>
         ''' <param name="frag"> The method call. </param>
         ''' <returns> The fragment. </returns>
-        Function Fragment(frag As MethodCallCodeFragment) As String
+        Function Fragment(frag As MethodCallCodeFragment, Optional vertical As Boolean = False) As String
 
         ''' <summary>
         '''     Generates a valid Visual Basic identifier from the specified string unique to the scope.

@@ -1,7 +1,4 @@
-﻿' Copyright (c) .NET Foundation. All rights reserved.
-' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-Imports System.Collections.Immutable
+﻿Imports System.Collections.Immutable
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.Utilities
 Imports Microsoft.EntityFrameworkCore
@@ -90,7 +87,7 @@ Namespace Migrations.Design
                             End Function)
 
                     For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(model, annotations)
-                        stringBuilder.AppendLine().Append(VBCode.Fragment(methodCallCodeFragment))
+                        stringBuilder.AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
                     Next
 
                     Dim remainingAnnotations As IEnumerable(Of IAnnotation) = annotations.Values
@@ -141,7 +138,6 @@ Namespace Migrations.Design
 
             For Each entityType In entityTypes.Where(Function(e) e.FindOwnership() Is Nothing)
                 stringBuilder.AppendLine()
-
                 GenerateEntityType(builderName, entityType, stringBuilder)
             Next
 
@@ -365,16 +361,15 @@ Namespace Migrations.Design
                                                    stringBuilder As IndentedStringBuilder)
 
             NotNull(builderName, NameOf(builderName))
-            'baseType can be nothing
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             If baseType IsNot Nothing Then
                 stringBuilder.
-                AppendLine().
-                Append(builderName).
-                Append(".HasBaseType(").
-                Append(VBCode.Literal(baseType.Name)).
-                AppendLine(")")
+                    AppendLine().
+                    Append(builderName).
+                    Append(".HasBaseType(").
+                    Append(VBCode.Literal(baseType.Name)).
+                    AppendLine(")")
             End If
         End Sub
 
@@ -389,14 +384,15 @@ Namespace Migrations.Design
                                                    stringBuilder As IndentedStringBuilder)
 
             stringBuilder.
-                AppendLine().Append(builderName).
+                AppendLine().
+                Append(builderName).
                 Append(".HasSequence")
 
             If sequence.Type <> Internal.Sequence.DefaultClrType Then
                 stringBuilder.
-                    Append("<").
+                    Append("(Of ").
                     Append(VBCode.Reference(sequence.Type)).
-                    Append(">")
+                    Append(")")
             End If
 
             stringBuilder.
@@ -430,7 +426,7 @@ Namespace Migrations.Design
                         Append(")")
                 End If
 
-                If sequence.MinValue <> Internal.Sequence.DefaultMinValue Then
+                If Not sequence.MinValue.Equals(Internal.Sequence.DefaultMinValue) Then
                     stringBuilder.
                         AppendLine(".").
                         Append("HasMin(").
@@ -438,7 +434,7 @@ Namespace Migrations.Design
                         Append(")")
                 End If
 
-                If sequence.MaxValue <> Internal.Sequence.DefaultMaxValue Then
+                If Not sequence.MaxValue.Equals(Internal.Sequence.DefaultMaxValue) Then
                     stringBuilder.
                         AppendLine(".").
                         Append("HasMax(").
@@ -448,7 +444,8 @@ Namespace Migrations.Design
 
                 If sequence.IsCyclic <> Internal.Sequence.DefaultIsCyclic Then
                     stringBuilder.
-                        AppendLine().Append(".IsCyclic()")
+                        AppendLine(".").
+                        Append("IsCyclic()")
                 End If
             End Using
 
@@ -595,8 +592,7 @@ Namespace Migrations.Design
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls([property], annotations)
                 stringBuilder.
-                    AppendLine(" _").
-                    Append(VBCode.Fragment(methodCallCodeFragment))
+                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
             Next
 
             GenerateAnnotations(annotations.Values.Concat(ambiguousAnnotations), stringBuilder)
@@ -627,7 +623,8 @@ Namespace Migrations.Design
                 GenerateKey(builderName, primaryKey, stringBuilder, primary:=True)
             End If
 
-            If primaryKey?.DeclaringEntityType.IsOwned() <> True Then
+            Dim IsOwned = primaryKey?.DeclaringEntityType.IsOwned()
+            If Not IsOwned.HasValue OrElse Not IsOwned Then
                 For Each key In keys.Where(Function(k)
                                                Return k IsNot primaryKey AndAlso
                                                       (Not k.GetReferencingForeignKeys().Any() OrElse
@@ -659,12 +656,14 @@ Namespace Migrations.Design
                 Append(builderName).
                 Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
                 Append(String.Join(", ", key.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                AppendLine(")")
+                Append(")")
 
             Using stringBuilder.Indent()
                 GenerateKeyAnnotations(key, stringBuilder)
             End Using
 
+            stringBuilder.
+                AppendLine()
         End Sub
 
         ''' <summary>
@@ -681,7 +680,7 @@ Namespace Migrations.Design
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(key, annotations)
                 stringBuilder.
-                    AppendLine().Append(VBCode.Fragment(methodCallCodeFragment))
+                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
             Next
 
             GenerateAnnotations(annotations.Values, stringBuilder)
@@ -776,8 +775,7 @@ Namespace Migrations.Design
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(index, annotations)
                 stringBuilder.
-                AppendLine().
-                Append(VBCode.Fragment(methodCallCodeFragment))
+                AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
             Next
 
             GenerateAnnotations(annotations.Values.Concat(ambiguousAnnotations), stringBuilder)
@@ -813,7 +811,8 @@ Namespace Migrations.Design
                 Dim tableName = If(CStr(tableNameAnnotation?.Value), entityType.GetTableName())
                 If tableName IsNot Nothing Then
                     stringBuilder.
-                        AppendLine().Append(builderName).
+                        AppendLine().
+                        Append(builderName).
                         Append(".ToTable(").
                         Append(VBCode.Literal(tableName))
 
@@ -854,9 +853,10 @@ Namespace Migrations.Design
                 Dim viewName = If(CStr(viewNameAnnotation?.Value), entityType.GetViewName())
                 If viewName IsNot Nothing Then
                     stringBuilder.
-                    AppendLine().Append(builderName).
-                    Append(".ToView(").
-                    Append(VBCode.Literal(viewName))
+                        AppendLine().
+                        Append(builderName).
+                        Append(".ToView(").
+                        Append(VBCode.Literal(viewName))
 
                     If viewNameAnnotation IsNot Nothing Then
                         annotations.Remove(viewNameAnnotation.Name)
@@ -964,8 +964,7 @@ Namespace Migrations.Design
                 Using stringBuilder.Indent()
                     For Each methodCallCodeFragment In fluentApiCalls
                         stringBuilder.
-                            AppendLine().
-                            Append(VBCode.Fragment(methodCallCodeFragment))
+                            AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
                     Next
 
                     GenerateAnnotations(annotations.Values, stringBuilder)
@@ -1104,7 +1103,7 @@ Namespace Migrations.Design
                         Append("HasForeignKey(").
                         Append(VBCode.Literal(foreignKey.DeclaringEntityType.Name)).
                         Append(", ").
-                        Append(String.Join(", ", foreignKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                        Append(String.Join(", ", foreignKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                         Append(")")
 
                     GenerateForeignKeyAnnotations(foreignKey, stringBuilder)
@@ -1115,7 +1114,7 @@ Namespace Migrations.Design
                             Append("HasPrincipalKey(").
                             Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).
                             Append(", ").
-                            Append(String.Join(", ", foreignKey.PrincipalKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                            Append(String.Join(", ", foreignKey.PrincipalKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                             Append(")")
                     End If
 
@@ -1136,7 +1135,7 @@ Namespace Migrations.Design
                     stringBuilder.
                         AppendLine(".").
                         Append("HasForeignKey(").
-                        Append(String.Join(", ", foreignKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                        Append(String.Join(", ", foreignKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                         Append(")")
 
                     GenerateForeignKeyAnnotations(foreignKey, stringBuilder)
@@ -1145,7 +1144,7 @@ Namespace Migrations.Design
                         stringBuilder.
                             AppendLine(".").
                             Append("HasPrincipalKey(").
-                            Append(String.Join(", ", foreignKey.PrincipalKey.Properties.[Select](Function(p) VBCode.Literal(p.Name)))).
+                            Append(String.Join(", ", foreignKey.PrincipalKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                             Append(")")
                     End If
                 End If
@@ -1183,17 +1182,15 @@ Namespace Migrations.Design
 
             Dim annotations = AnnotationCodeGenerator.
                 FilterIgnoredAnnotations(foreignKey.GetAnnotations()).
-                ToDictionary(Function(a) a.Name, Function(a) a)
+                    ToDictionary(Function(a) a.Name, Function(a) a)
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(foreignKey, annotations)
                 stringBuilder.
-                    AppendLine().
-                    Append(VBCode.Fragment(methodCallCodeFragment))
+                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
             Next
 
             GenerateAnnotations(annotations.Values, stringBuilder)
         End Sub
-
 
         ''' <summary>
         '''     Generates code for the navigations of an <see cref= "IEntityType"/>.
@@ -1308,7 +1305,7 @@ Namespace Migrations.Design
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(navigation, annotations)
                 stringBuilder.
-                    AppendLine().Append(VBCode.Fragment(methodCallCodeFragment))
+                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
             Next
 
             GenerateAnnotations(annotations.Values, stringBuilder)
@@ -1364,18 +1361,17 @@ Namespace Migrations.Design
             NotNull(data, NameOf(data))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim dataList = data.ToList()
-            If dataList.Count = 0 Then
-                Return
-            End If
+            Dim dataList = data
+            If Not dataList.Any Then Exit Sub
 
-            Dim propertiesToOutput = properties.ToList()
+            Dim propertiesToOutput = properties
 
             stringBuilder.
-                AppendLine().Append(builderName).
+                AppendLine().
+                Append(builderName).
                 Append(".").
                 Append(NameOf(EntityTypeBuilder.HasData)).
-                AppendLine("{")
+                AppendLine("({")
 
             Using stringBuilder.Indent()
                 Dim firstDatum As Boolean = True
@@ -1386,7 +1382,7 @@ Namespace Migrations.Design
                         firstDatum = False
                     End If
 
-                    stringBuilder.Append("New With { ")
+                    stringBuilder.AppendLine("New With {")
 
                     Using stringBuilder.Indent()
                         Dim firstProperty As Boolean = True
@@ -1394,12 +1390,13 @@ Namespace Migrations.Design
                             Dim value As Object = Nothing
                             If o.TryGetValue([property].Name, value) AndAlso value IsNot Nothing Then
                                 If Not firstProperty Then
-                                    stringBuilder.AppendLine(", ")
+                                    stringBuilder.AppendLine(",")
                                 Else
                                     firstProperty = False
                                 End If
 
                                 stringBuilder.
+                                    Append(".").
                                     Append(VBCode.Identifier([property].Name)).
                                     Append(" = ").
                                     Append(VBCode.UnknownLiteral(value))

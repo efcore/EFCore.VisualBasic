@@ -421,12 +421,10 @@ Namespace Migrations.Design
                     Append("sql:=").
                     Append(VBCode.Literal(operation.Sql)).
                     Append(")")
-
             End Using
 
             Annotations(operation.GetAnnotations(), builder)
         End Sub
-
 
         ''' <summary>
         '''     Generates code for an <see cref="AlterColumnOperation" />.
@@ -1012,8 +1010,7 @@ Namespace Migrations.Design
 
                 builder.
                     AppendLine(",").
-                    AppendLine("columns:=Function(table) New With").
-                    AppendLine("{")
+                    AppendLine("columns:=Function(table) New With {")
 
                 Dim map = New Dictionary(Of String, String)
                 Using builder.Indent()
@@ -1116,9 +1113,7 @@ Namespace Migrations.Design
 
                         builder.Append(")")
 
-                        Using builder.Indent()
-                            Annotations(column.GetAnnotations(), builder)
-                        End Using
+                        Annotations(column.GetAnnotations(), builder)
 
                         If i <> operation.Columns.Count - 1 Then
                             builder.Append(",")
@@ -1139,12 +1134,10 @@ Namespace Migrations.Design
                             Append(VBCode.Literal(operation.PrimaryKey.Name)).
                             Append(", ").
                             Append(VBCode.Lambda(operation.PrimaryKey.Columns.Select(Function(c) map(c)).ToList())).
-                            AppendLine(")")
+                            Append(")")
 
-                        Using builder.Indent()
-                            Annotations(operation.PrimaryKey.GetAnnotations(), builder)
-                        End Using
-
+                        Annotations(operation.PrimaryKey.GetAnnotations(), builder)
+                        builder.AppendLine()
                     End If
 
                     For Each uniqueConstraint In operation.UniqueConstraints
@@ -1155,11 +1148,8 @@ Namespace Migrations.Design
                             Append(VBCode.Lambda(uniqueConstraint.Columns.Select(Function(c) map(c)).ToList())).
                             Append(")")
 
-                        Using builder.Indent()
-                            Annotations(uniqueConstraint.GetAnnotations(), builder)
-                            builder.AppendLine()
-                        End Using
-
+                        Annotations(uniqueConstraint.GetAnnotations(), builder)
+                        builder.AppendLine()
                     Next
 
                     For Each checkConstraints In operation.CheckConstraints
@@ -1170,10 +1160,7 @@ Namespace Migrations.Design
                             Append(VBCode.Literal(checkConstraints.Sql)).
                             Append(")")
 
-                        Using builder.Indent()
-                            Annotations(checkConstraints.GetAnnotations(), builder)
-                        End Using
-
+                        Annotations(checkConstraints.GetAnnotations(), builder)
                         builder.AppendLine()
                     Next
 
@@ -1225,9 +1212,11 @@ Namespace Migrations.Design
                                     Append(VBCode.Literal(CType(foreignKey.OnDelete, [Enum])))
                             End If
 
-                            builder.AppendLine(")")
+                            builder.Append(")")
 
                             Annotations(foreignKey.GetAnnotations(), builder)
+
+                            builder.AppendLine()
                         End Using
 
                     Next

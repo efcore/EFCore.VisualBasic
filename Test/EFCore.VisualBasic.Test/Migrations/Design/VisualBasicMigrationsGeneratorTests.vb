@@ -25,7 +25,6 @@ Imports Microsoft.EntityFrameworkCore.ValueGeneration
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 
-
 Namespace Migrations.Design
 
     Public Class VisualBasicMigrationsGeneratorTests
@@ -36,14 +35,12 @@ Namespace Migrations.Design
         <ConditionalFact>
         Sub FileExtension_works()
             Dim generator = CreateMigrationsCodeGenerator()
-
             Assert.Equal(".vb", generator.FileExtension)
         End Sub
 
         <ConditionalFact>
         Sub Language_works()
             Dim generator = CreateMigrationsCodeGenerator()
-
             Assert.Equal("VB", generator.Language)
         End Sub
 
@@ -132,9 +129,9 @@ Namespace Migrations.Design
                     RelationalAnnotationNames.Comment, ("My Comment",
                         _toTable &
                         _nl &
-                        "modelBuilder" &
+                        "modelBuilder." &
                         _nl &
-                        "    .HasComment(""My Comment"")" &
+                        "    HasComment(""My Comment"")" &
                         _nl)
                 },
                 {
@@ -235,7 +232,7 @@ Namespace Migrations.Design
                 },
                 {
                     RelationalAnnotationNames.ColumnName,
-                    ("MyColumn", $"{columnMapping} _{_nl}.{NameOf(RelationalPropertyBuilderExtensions.HasColumnName)}(""MyColumn"")")
+                    ("MyColumn", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnName)}(""MyColumn"")")
                 },
                 {
                     RelationalAnnotationNames.ColumnType,
@@ -243,11 +240,11 @@ Namespace Migrations.Design
                 },
                 {
                     RelationalAnnotationNames.DefaultValueSql,
-                    ("some SQL", $"{columnMapping} _{_nl}.{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValueSql)}(""some SQL"")")
+                    ("some SQL", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValueSql)}(""some SQL"")")
                 },
                 {
                     RelationalAnnotationNames.ComputedColumnSql,
-                    ("some SQL", $"{columnMapping} _{_nl}.{NameOf(RelationalPropertyBuilderExtensions.HasComputedColumnSql)}(""some SQL"")")
+                    ("some SQL", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasComputedColumnSql)}(""some SQL"")")
                 },
                 {
                     RelationalAnnotationNames.DefaultValue,
@@ -255,14 +252,14 @@ Namespace Migrations.Design
                 },
                 {
                     RelationalAnnotationNames.IsFixedLength,
-                    (True, $"{columnMapping} _{_nl}.{NameOf(RelationalPropertyBuilderExtensions.IsFixedLength)}(True)")
+                    (True, $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.IsFixedLength)}(True)")
                 },
                 {
                     RelationalAnnotationNames.Comment,
-                    ("My Comment", $"{columnMapping} _{_nl}.{NameOf(RelationalPropertyBuilderExtensions.HasComment)}(""My Comment"")")
+                    ("My Comment", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasComment)}(""My Comment"")")
                 },
                 {RelationalAnnotationNames.Collation,
-                    ("Some Collation", $"{columnMapping} _{_nl}.{NameOf(RelationalPropertyBuilderExtensions.UseCollation)}(""Some Collation"")")
+                    ("Some Collation", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.UseCollation)}(""Some Collation"")")
                 }
             }
 
@@ -282,19 +279,19 @@ Namespace Migrations.Design
             generationDefault As String,
             test As Action(Of TestVisualBasicSnapshotGenerator, IMutableAnnotatable, IndentedStringBuilder))
 
-            Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
+            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
                 TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
-            Dim sqlServerAnnotationCodeGenerator1 As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
+            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
+                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
 
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
             Dim generator As New TestVisualBasicSnapshotGenerator(
                 codeHelper,
-                sqlServerTypeMappingSource1,
-                sqlServerAnnotationCodeGenerator1)
+                sqlServerTypeMappingSource,
+                sqlServerAnnotationCodeGenerator)
 
             Dim coreAnnotations = GetType(CoreAnnotationNames).GetFields().
                                     Where(Function(f) f.FieldType = GetType(String)).ToList()
@@ -313,12 +310,12 @@ Namespace Migrations.Design
                 Dim annotationName As String = CStr(field.GetValue(Nothing))
 
                 If Not invalidAnnotations.Contains(annotationName) Then
-                    Dim modelBuilder1 = RelationalTestHelpers.Instance.CreateConventionBuilder()
-                    Dim metadataItem = createMetadataItem(modelBuilder1)
+                    Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+                    Dim metadataItem = createMetadataItem(modelBuilder)
                     metadataItem.SetAnnotation(annotationName, If(validAnnotations.ContainsKey(annotationName), validAnnotations(annotationName).Value _
                 , Nothing))
 
-                    modelBuilder1.FinalizeModel()
+                    modelBuilder.FinalizeModel()
 
                     Dim sb As New IndentedStringBuilder
 
@@ -358,6 +355,10 @@ Namespace Migrations.Design
 
             Public Overridable Sub TestGeneratePropertyAnnotations(prop As IProperty, stringBuilder As IndentedStringBuilder)
                 GeneratePropertyAnnotations(prop, stringBuilder)
+            End Sub
+
+            Public Overridable Sub TestGenerateSequence(builderName As String, sequence As ISequence, stringBuilder As IndentedStringBuilder)
+                GenerateSequence(builderName, sequence, stringBuilder)
             End Sub
         End Class
 
@@ -569,7 +570,6 @@ Namespace Global.MyNamespace
 
                     b.ToTable(""T1"")
                 End Sub)
-
         End Sub
     End Class
 End Namespace
@@ -597,14 +597,15 @@ End Namespace
             Assert.NotNull(contextTypeAttribute)
             Assert.Equal(GetType(MyContext), contextTypeAttribute.ContextType)
 
-            Dim migr = CType(Activator.CreateInstance(migrationType), Migration)
+            Dim Migration = CType(Activator.CreateInstance(migrationType), Migration)
 
-            Assert.Equal("20150511161616_MyMigration", migr.GetId())
-            Dim AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA = migr.TargetModel.GetEntityTypes()
-            Assert.Equal(4, migr.UpOperations.Count)
-            Assert.Empty(migr.DownOperations)
-            Assert.Single(migr.TargetModel.GetEntityTypes())
+            Assert.Equal("20150511161616_MyMigration", Migration.GetId())
+
+            Assert.Equal(4, Migration.UpOperations.Count)
+            Assert.Empty(Migration.DownOperations)
+            Assert.Single(Migration.TargetModel.GetEntityTypes())
         End Sub
+
         Private Enum RawEnum
             A
             B
@@ -770,10 +771,11 @@ End Namespace
             modelBuilder.FinalizeModel()
 
             Dim modelSnapshotCode = generator.GenerateSnapshot(
-            "MyNamespace",
-            GetType(MyContext),
-            "MySnapshot",
-            modelBuilder.Model)
+                "MyNamespace",
+                GetType(MyContext),
+                "MySnapshot",
+                modelBuilder.Model
+            )
 
             Dim snapshot = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot")
             Dim entityType = snapshot.Model.GetEntityTypes().Single()
@@ -877,7 +879,7 @@ End Namespace
 
             Dim assembly = build.BuildInMemory()
 
-            Dim snapshotType = assembly.[GetType](modelSnapshotTypeName, throwOnError:=True, ignoreCase:=False)
+            Dim snapshotType = assembly.GetType(modelSnapshotTypeName, throwOnError:=True, ignoreCase:=False)
 
             Dim contextTypeAttribute = snapshotType.GetCustomAttribute(Of DbContextAttribute)()
             Assert.NotNull(contextTypeAttribute)
@@ -958,6 +960,109 @@ End Namespace
                 Array.Empty(Of MigrationOperation)())
 
             Assert.Contains("Imports System.Text.RegularExpressions", migration)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Data_seedings_With_HasData_is_generated_correctly()
+            Dim Generator = CreateMigrationsCodeGenerator()
+
+            Dim MyModelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+
+            MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
+                                                       eb.HasData({
+                                                            New SimpleEntity With {
+                                                                .Id = 1,
+                                                                .Name = "Name1"
+                                                            },
+                                                            New SimpleEntity With {
+                                                                .Id = 2,
+                                                                .Name = "Name2"
+                                                            }})
+                                                   End Sub)
+
+            Dim MyModel = MyModelBuilder.FinalizeModel
+
+            Dim SnapshotCode = Generator.GenerateSnapshot(
+                "MyNamespace",
+                GetType(MyContext),
+                "MySnapshot",
+                MyModel
+            )
+
+            Dim migrationMetadataCode = Generator.GenerateMetadata(
+                "MyNamespace",
+                GetType(MyContext),
+                "MyMigration",
+                "20210515113700_MyMigration",
+                MyModel
+            )
+
+            Dim expectedCode =
+"                   b.HasData({
+                        New With {
+                            .Id = 1,
+                            .Name = ""Name1""
+                         },
+                        New With {
+                            .Id = 2,
+                            .Name = ""Name2""
+                         }
+                    })"
+
+            Assert.Contains(expectedCode, SnapshotCode)
+            Assert.Contains(expectedCode, migrationMetadataCode)
+        End Sub
+
+        Private Class SimpleEntity
+            Property Id As Integer
+            Property Name As String
+        End Class
+
+        <ConditionalFact>
+        Public Sub Sequence_is_generated_correctly()
+
+            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+
+            modelBuilder.HasSequence(Of Integer)("OrderNumbers", "Shared").
+                StartsAt(1000).
+                IncrementsBy(5).
+                HasMin(500).
+                HasMax(10_000).
+                IsCyclic()
+
+            Dim MyModel = modelBuilder.FinalizeModel()
+
+            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
+               TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
+
+            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
+                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
+
+            Dim generator As New TestVisualBasicSnapshotGenerator(codeHelper,
+                                                                  sqlServerTypeMappingSource,
+                                                                  sqlServerAnnotationCodeGenerator)
+
+            Dim sb As New IndentedStringBuilder
+
+            For Each sequence In MyModel.GetSequences()
+                generator.TestGenerateSequence("MyModelBuilder", sequence, sb)
+            Next
+
+            Dim expected As String =
+"
+MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
+    StartsAt(1000L).
+    IncrementsBy(5).
+    HasMin(500L).
+    HasMax(10000L).
+    IsCyclic()
+"
+
+            Assert.Equal(expected, sb.ToString())
+
         End Sub
 
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator

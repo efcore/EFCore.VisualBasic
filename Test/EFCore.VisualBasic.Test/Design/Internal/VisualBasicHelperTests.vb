@@ -420,6 +420,30 @@ string with """,
         End Sub
 
         <ConditionalFact>
+        Public Sub Fragment_vertical_MethodCallCodeFragment_works()
+            Dim method As New MethodCallCodeFragment("Test", True, 42)
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, True)
+
+            Assert.Equal(
+".
+Test(True, 42)", result)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Fragment_vertical_MethodCallCodeFragment_works_when_chaining()
+            Dim method = New MethodCallCodeFragment("Test").Chain("Test")
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, True)
+
+            Assert.Equal(
+".
+Test().
+Test()", result)
+
+        End Sub
+
+        <ConditionalFact>
         Public Sub Really_unknown_literal_with_no_mapping_support()
             Dim typeMapping = CreateTypeMappingSource(Of SimpleTestType)(Nothing)
 

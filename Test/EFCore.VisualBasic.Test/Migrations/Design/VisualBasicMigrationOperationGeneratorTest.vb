@@ -1155,8 +1155,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .Id = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1205,8 +1204,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .PostId = table.Column(Of Integer)(name:=""Post Id"", type:=""int"", unicode:=False, fixedLength:=True, maxLength:=30, precision:=20, scale:=10, rowVersion:=True, nullable:=True, defaultValue:=1, comment:=""My Comment"", collation:=""Some Collation"")
     },
     constraints:=Sub(table)
@@ -1248,8 +1246,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .Id = table.Column(Of Integer)(nullable:=False, defaultValueSql:=""1"")
     },
     constraints:=Sub(table)
@@ -1283,8 +1280,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .Id = table.Column(Of Integer)(nullable:=False, computedColumnSql:=""1"", stored:=True)
     },
     constraints:=Sub(table)
@@ -1325,8 +1321,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .BlogId = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1381,8 +1376,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .BlogId = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1443,8 +1437,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .BlogId1 = table.Column(Of Integer)(nullable:=False),
         .BlogId2 = table.Column(Of Integer)(nullable:=False)
     },
@@ -1488,8 +1481,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .Id = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1532,8 +1524,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .Id = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1578,8 +1569,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .Id1 = table.Column(Of Integer)(nullable:=False),
         .Id2 = table.Column(Of Integer)(nullable:=False)
     },
@@ -1618,8 +1608,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1663,8 +1652,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1714,8 +1702,7 @@ mb.Sql(""-- close to me"")"
             Dim expectedCode =
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId1 = table.Column(Of Integer)(nullable:=False),
         .AltId2 = table.Column(Of Integer)(nullable:=False)
     },
@@ -1757,8 +1744,7 @@ mb.Sql(""-- close to me"")"
             Test(operation,
 "mb.CreateTable(
     name:=""Post"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId1 = table.Column(Of Integer)(nullable:=False),
         .AltId2 = table.Column(Of Integer)(nullable:=False)
     },
@@ -1800,8 +1786,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId1 = table.Column(Of Integer)(nullable:=False),
         .AltId2 = table.Column(Of Integer)(nullable:=False)
     },
@@ -1836,8 +1821,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId1 = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
@@ -1866,8 +1850,7 @@ mb.Sql(""-- close to me"")"
 "mb.CreateTable(
     name:=""Post"",
     schema:=""dbo"",
-    columns:=Function(table) New With
-    {
+    columns:=Function(table) New With {
         .AltId1 = table.Column(Of Integer)(nullable:=False, comment:=""My Column Comment"")
     },
     constraints:=Sub(table)

@@ -777,13 +777,18 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Fragment(frag As MethodCallCodeFragment) As String Implements IVisualBasicHelper.Fragment
+        Public Overridable Function Fragment(frag As MethodCallCodeFragment, Optional vertical As Boolean = False) As String Implements IVisualBasicHelper.Fragment
+
             Dim builder As New StringBuilder
 
             Dim current = frag
             While current IsNot Nothing
                 builder.
-                    Append(".").
+                    Append(".")
+
+                If vertical Then builder.AppendLine()
+
+                builder.
                     Append(current.Method).
                     Append("(")
 

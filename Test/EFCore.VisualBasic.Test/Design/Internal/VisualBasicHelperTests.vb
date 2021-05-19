@@ -142,8 +142,8 @@ string with """,
         <UseCulture("de-DE")>
         Public Sub Literal_works_when_DateTimeOffset()
             Literal_works(
-            New DateTimeOffset(New DateTime(2014, 5, 28, 19, 43, 47, 500), New TimeSpan(-7, 0, 0)),
-            "New DateTimeOffset(New DateTime(2014, 5, 28, 19, 43, 47, 500, DateTimeKind.Unspecified), New TimeSpan(0, -7, 0, 0, 0))")
+            New DateTimeOffset(New Date(2014, 5, 28, 19, 43, 47, 500), New TimeSpan(-7, 0, 0)),
+            "New DateTimeOffset(New Date(2014, 5, 28, 19, 43, 47, 500, DateTimeKind.Unspecified), New TimeSpan(0, -7, 0, 0, 0))")
         End Sub
 
         <ConditionalFact>

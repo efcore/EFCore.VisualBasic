@@ -134,16 +134,16 @@ string with """,
         <ConditionalFact>
         Public Sub Literal_works_when_DateTime()
             Literal_works(
-                    New DateTime(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local),
-                    "New DateTime(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local)")
+                    New Date(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local),
+                    "New Date(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local)")
         End Sub
 
         <ConditionalFact>
         <UseCulture("de-DE")>
         Public Sub Literal_works_when_DateTimeOffset()
             Literal_works(
-            New DateTimeOffset(New DateTime(2014, 5, 28, 19, 43, 47, 500), New TimeSpan(-7, 0, 0)),
-            "New DateTimeOffset(New DateTime(2014, 5, 28, 19, 43, 47, 500, DateTimeKind.Unspecified), New TimeSpan(0, -7, 0, 0, 0))")
+            New DateTimeOffset(New Date(2014, 5, 28, 19, 43, 47, 500), New TimeSpan(-7, 0, 0)),
+            "New DateTimeOffset(New Date(2014, 5, 28, 19, 43, 47, 500, DateTimeKind.Unspecified), New TimeSpan(0, -7, 0, 0, 0))")
         End Sub
 
         <ConditionalFact>

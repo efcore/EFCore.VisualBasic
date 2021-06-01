@@ -655,8 +655,8 @@ Namespace Scaffolding.Internal
                 parameters &= $", {_code.Literal(seq.Schema)}"
             End If
 
-            _sb.AppendLine()
-            _sb.Append($"modelBuilder.{methodName}({parameters})")
+            _sb.AppendLine().
+                Append($"modelBuilder.{methodName}({parameters})")
 
             Dim lines As New List(Of String)
 
@@ -681,12 +681,13 @@ Namespace Scaffolding.Internal
             End If
 
             If lines.Count = 1 Then
-                _sb.Append(lines(0))
+                _sb.Append(".").
+                    Append(lines(0))
             Else
                 Using _sb.Indent()
                     For Each line In lines
-                        _sb.AppendLine(".")
-                        _sb.Append(line)
+                        _sb.AppendLine(".").
+                            Append(line)
                     Next
                 End Using
             End If

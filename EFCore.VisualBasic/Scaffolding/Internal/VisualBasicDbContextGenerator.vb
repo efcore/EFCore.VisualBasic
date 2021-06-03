@@ -218,23 +218,26 @@ Namespace Scaffolding.Internal
 
             Dim lines As New List(Of String)
 
-            lines.AddRange(
-                _annotationCodeGenerator.GenerateFluentApiCalls(model, annotations).
-                    Select(Function(m) _code.Fragment(m)).
-                    Concat(GenerateAnnotations(annotations.Values)))
+            lines.AddRange(_annotationCodeGenerator.GenerateFluentApiCalls(model, annotations).
+                                Select(Function(m) _code.Fragment(m)).
+                                Concat(GenerateAnnotations(annotations.Values)))
 
             If lines.Any() Then
                 Using _sb.Indent()
-                    _sb.AppendLine()
-                    _sb.Append("modelBuilder" & lines(0))
+                    _sb.Append("modelBuilder")
 
-                    Using _sb.Indent()
-                        For Each line In lines.Skip(1)
-                            _sb.AppendLine()
-                            _sb.Append(line)
-                        Next
-                    End Using
+                    If lines.Count = 1 Then
+                        _sb.Append(lines(0))
+                    Else
+                        Using _sb.Indent()
+                            For Each line In lines
+                                _sb.AppendLine(".").
+                                    Append(line.TrimStart("."c))
+                            Next
+                        End Using
+                    End If
                 End Using
+                _sb.AppendLine()
             End If
 
             Using _sb.Indent()
@@ -333,11 +336,9 @@ Namespace Scaffolding.Internal
         Private Sub AppendMultiLineFluentApi(entityType As IEntityType, lines As IList(Of String))
             If lines.Count <= 0 Then Exit Sub
 
-            If lines.Count > 1 Then
-                For i = 1 To lines.Count - 1
-                    lines(i) = If(lines(i).StartsWith(".", StringComparison.InvariantCulture), lines(i).Remove(0, 1), lines(i))
-                Next
-            End If
+            For i = 1 To lines.Count - 1
+                lines(i) = lines(i).TrimStart("."c)
+            Next
 
             InitializeEntityTypeBuilder(entityType)
 
@@ -347,16 +348,16 @@ Namespace Scaffolding.Internal
 
                 Using _sb.Indent()
                     For Each line In lines.Skip(1)
-                        _sb.AppendLine(".")
-                        _sb.Append(line)
+                        _sb.AppendLine(".").
+                            Append(line)
                     Next
                 End Using
                 _sb.AppendLine()
             End Using
         End Sub
 
-        Private Sub GenerateKey(akey As IKey, entityType As IEntityType, useDataAnnotations As Boolean)
-            If akey Is Nothing Then
+        Private Sub GenerateKey(aKey As IKey, entityType As IEntityType, useDataAnnotations As Boolean)
+            If aKey Is Nothing Then
                 If Not useDataAnnotations Then
                     Dim line As New List(Of String) From {
                         $".{NameOf(EntityTypeBuilder.HasNoKey)}()"}
@@ -368,19 +369,19 @@ Namespace Scaffolding.Internal
             End If
 
             Dim annotations = _annotationCodeGenerator.
-                FilterIgnoredAnnotations(akey.GetAnnotations()).
+                FilterIgnoredAnnotations(aKey.GetAnnotations()).
                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(akey, annotations)
+            _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(aKey, annotations)
 
-            Dim explicitName As Boolean = akey.GetName() <> akey.GetDefaultName()
+            Dim explicitName As Boolean = aKey.GetName() <> aKey.GetDefaultName()
             annotations.Remove(RelationalAnnotationNames.Name)
 
-            If akey.Properties.Count = 1 AndAlso annotations.Count = 0 Then
-                If TypeOf akey Is Key Then
-                    Dim concreteKey = DirectCast(akey, Key)
+            If aKey.Properties.Count = 1 AndAlso annotations.Count = 0 Then
+                If TypeOf aKey Is Key Then
+                    Dim concreteKey = DirectCast(aKey, Key)
 
-                    If akey.Properties.SequenceEqual(
+                    If aKey.Properties.SequenceEqual(
                            KeyDiscoveryConvention.DiscoverKeyProperties(
                                concreteKey.DeclaringEntityType,
                                concreteKey.DeclaringEntityType.GetProperties())) Then
@@ -394,19 +395,18 @@ Namespace Scaffolding.Internal
             End If
 
             Dim lines As New List(Of String) From {
-                $".{NameOf(EntityTypeBuilder.HasKey)}({_code.Lambda(akey.Properties, "e")})"}
+                $".{NameOf(EntityTypeBuilder.HasKey)}({_code.Lambda(aKey.Properties, "e")})"}
 
             If explicitName Then
-                lines.Add(
-        $".{NameOf(RelationalKeyBuilderExtensions.HasName)}({_code.Literal(akey.GetName())})")
+                lines.Add($".{NameOf(RelationalKeyBuilderExtensions.HasName)}({_code.Literal(aKey.GetName())})")
             End If
 
             lines.AddRange(
-                _annotationCodeGenerator.GenerateFluentApiCalls(akey, annotations).
+                _annotationCodeGenerator.GenerateFluentApiCalls(aKey, annotations).
                     Select(Function(m) _code.Fragment(m)).
                     Concat(GenerateAnnotations(annotations.Values)))
 
-            AppendMultiLineFluentApi(akey.DeclaringEntityType, lines)
+            AppendMultiLineFluentApi(aKey.DeclaringEntityType, lines)
         End Sub
 
         Private Sub GenerateTableName(entityType As IEntityType)

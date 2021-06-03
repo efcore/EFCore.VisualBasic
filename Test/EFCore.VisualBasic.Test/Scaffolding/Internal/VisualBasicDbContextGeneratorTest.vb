@@ -514,6 +514,32 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub modelBuilder_annotation_generated_correctly()
+            Test(
+                Sub(modelBuilder) modelBuilder.HasAnnotation("TestAnnotation1", 1),
+                New ModelCodeGenerationOptions,
+                Sub(code) Assert.Contains("modelBuilder.HasAnnotation(""TestAnnotation1"", 1)", code.ContextFile.Code),
+                Sub(model)
+                    Assert.Equal(1, model.FindAnnotation("TestAnnotation1").Value)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub modelBuilder_annotations_generated_correctly()
+            Test(
+                Sub(modelBuilder) modelBuilder.HasAnnotation("TestAnnotation1", 1).HasAnnotation("TestAnnotation2", CByte(2)),
+                New ModelCodeGenerationOptions,
+                Sub(code) Assert.Contains(
+"modelBuilder.
+                HasAnnotation(""TestAnnotation1"", 1).
+                HasAnnotation(""TestAnnotation2"", CByte(2))", code.ContextFile.Code),
+                Sub(model)
+                    Assert.Equal(1, model.FindAnnotation("TestAnnotation1").Value)
+                    Assert.Equal(CByte(2), model.FindAnnotation("TestAnnotation2").Value)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Sequence_works()
             Test(
                 Sub(modelBuilder) modelBuilder.HasSequence(Of Integer)("OrderNumbers").

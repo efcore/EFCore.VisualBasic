@@ -540,6 +540,33 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub Sequence_works()
+            Test(
+                Sub(modelBuilder) modelBuilder.HasSequence(Of Integer)("OrderNumbers").
+                                               StartsAt(250).
+                                               IncrementsBy(5).
+                                               HasMin(100).
+                                               HasMax(1_000_000).
+                                               IsCyclic(True),
+                New ModelCodeGenerationOptions,
+                Sub(code) Assert.Contains(
+"modelBuilder.HasSequence(Of Integer)(""OrderNumbers"").
+                StartsAt(250).
+                IncrementsBy(5).
+                HasMin(100).
+                HasMax(1000000).
+                IsCyclic()", code.ContextFile.Code),
+                Sub(model)
+                    Dim MySequence = model.FindSequence("OrderNumbers")
+                    Assert.Equal(250, MySequence.StartValue)
+                    Assert.Equal(5, MySequence.IncrementBy)
+                    Assert.Equal(100, MySequence.MinValue)
+                    Assert.Equal(1_000_000, MySequence.MaxValue)
+                    Assert.True(MySequence.IsCyclic)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Entity_with_indexes_and_use_data_annotations_false_always_generates_fluent_API()
 
             Dim expectedcode =

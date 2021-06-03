@@ -655,43 +655,42 @@ Namespace Scaffolding.Internal
                 parameters &= $", {_code.Literal(seq.Schema)}"
             End If
 
-            Dim lines As New List(Of String) From {
-                $"modelBuilder.{methodName}({parameters})"}
+            _sb.AppendLine().
+                Append($"modelBuilder.{methodName}({parameters})")
+
+            Dim lines As New List(Of String)
 
             If seq.StartValue <> Sequence.DefaultStartValue Then
-                lines.Add($".{NameOf(SequenceBuilder.StartsAt)}({seq.StartValue})")
+                lines.Add($"{NameOf(SequenceBuilder.StartsAt)}({seq.StartValue})")
             End If
 
             If seq.IncrementBy <> Sequence.DefaultIncrementBy Then
-                lines.Add($".{NameOf(SequenceBuilder.IncrementsBy)}({seq.IncrementBy})")
+                lines.Add($"{NameOf(SequenceBuilder.IncrementsBy)}({seq.IncrementBy})")
             End If
 
-            If seq.MinValue <> Sequence.DefaultMinValue Then
-                lines.Add($".{NameOf(SequenceBuilder.HasMin)}({seq.MinValue})")
+            If Not seq.MinValue.Equals(Sequence.DefaultMinValue) Then
+                lines.Add($"{NameOf(SequenceBuilder.HasMin)}({seq.MinValue})")
             End If
 
-            If seq.MaxValue <> Sequence.DefaultMaxValue Then
-                lines.Add($".{NameOf(SequenceBuilder.HasMax)}({seq.MaxValue})")
+            If Not seq.MaxValue.Equals(Sequence.DefaultMaxValue) Then
+                lines.Add($"{NameOf(SequenceBuilder.HasMax)}({seq.MaxValue})")
             End If
 
             If seq.IsCyclic <> Sequence.DefaultIsCyclic Then
-                lines.Add($".{NameOf(SequenceBuilder.IsCyclic)}()")
+                lines.Add($"{NameOf(SequenceBuilder.IsCyclic)}()")
             End If
 
-            If lines.Count = 2 Then
-                lines = New List(Of String) From {
-                    lines(0) + lines(1)}
+            If lines.Count = 1 Then
+                _sb.Append(".").
+                    Append(lines(0))
+            Else
+                Using _sb.Indent()
+                    For Each line In lines
+                        _sb.AppendLine(".").
+                            Append(line)
+                    Next
+                End Using
             End If
-
-            _sb.AppendLine()
-            _sb.Append(lines(0))
-
-            Using _sb.Indent()
-                For Each line In lines.Skip(1)
-                    _sb.AppendLine()
-                    _sb.Append(line)
-                Next
-            End Using
 
             _sb.AppendLine()
         End Sub

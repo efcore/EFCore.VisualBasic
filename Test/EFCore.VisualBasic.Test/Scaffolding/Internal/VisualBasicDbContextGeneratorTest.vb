@@ -18,9 +18,7 @@ Namespace Scaffolding.Internal
         Public Sub Empty_model()
 
             Dim expectedCode As String =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -70,9 +68,7 @@ End Namespace
         Public Sub SuppressConnectionStringWarning_works()
 
             Dim expectedCode As String =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -122,9 +118,7 @@ End Namespace
         Public Sub SuppressOnConfiguring_works()
 
             Dim expectedcode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -163,6 +157,7 @@ End Namespace
                 End Sub,
                 Nothing)
         End Sub
+
         <ConditionalFact>
         Public Sub Required_options_to_GenerateModel_are_not_null()
             Dim services = New ServiceCollection
@@ -218,6 +213,7 @@ End Namespace
                         })
                     End Function).Message)
         End Sub
+
         <ConditionalFact>
         Public Sub Plugins_work()
             Dim services = New ServiceCollection
@@ -570,9 +566,7 @@ End Namespace
         Public Sub Entity_with_indexes_and_use_data_annotations_false_always_generates_fluent_API()
 
             Dim expectedcode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -647,9 +641,7 @@ End Namespace
         Public Sub Entity_with_indexes_and_use_data_annotations_true_generates_fluent_API_only_for_indexes_with_annotations()
 
             Dim expectedCode As String =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -723,9 +715,7 @@ End Namespace
         Public Sub Entity_lambda_uses_correct_identifiers()
 
             Dim expectedCode As String =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -812,9 +802,7 @@ End Namespace
         Public Sub Column_type_is_not_scaffolded_as_annotation()
 
             Dim expectedCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace

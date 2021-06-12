@@ -49,8 +49,6 @@ Namespace Scaffolding.Internal
 
             _sb = New IndentedStringBuilder
 
-            _sb.AppendLine("Imports System") 'Guid default values require new Guid() which requires this import
-            _sb.AppendLine("Imports Microsoft.VisualBasic") 'Require for vbCrLf, vbCr, vbLf
             _sb.AppendLine("Imports Microsoft.EntityFrameworkCore")
             _sb.AppendLine("Imports Microsoft.EntityFrameworkCore.Metadata")
 

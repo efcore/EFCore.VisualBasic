@@ -20,10 +20,10 @@ Module Module1
         '
         '-- Northwind --
         'Reverse Engineering, using Fluent API
-        'Scaffold-DbContext 'Data Source=northwind.db' Microsoft.EntityFrameworkCore.Sqlite -OutputDir Scaffolding\northwind -ContextDir Scaffolding\Northwind\Context
+        'Scaffold-DbContext 'Data Source=northwind.db' Microsoft.EntityFrameworkCore.Sqlite -OutputDir Scaffolding\Northwind -ContextDir Scaffolding\Northwind\Context
         '
         'Reverse Engineering, using Data Annotations
-        'Scaffold-DbContext 'Data Source=northwind.db' Microsoft.EntityFrameworkCore.Sqlite -OutputDir Scaffolding\northwind -ContextDir Scaffolding\northwind\Context -DataAnnotations
+        'Scaffold-DbContext 'Data Source=northwind.db' Microsoft.EntityFrameworkCore.Sqlite -OutputDir Scaffolding\Northwind -ContextDir Scaffolding\Northwind\Context -DataAnnotations
         '
 
         Using dbContext As New SchoolContext()

@@ -11,11 +11,10 @@ Imports Microsoft.Extensions.DependencyInjection
 
 Friend Module VisualBasicModelCodeGeneratorTestBase
 
-    Sub Test(
-            buildModel As Action(Of ModelBuilder),
-            options As ModelCodeGenerationOptions,
-            assertScaffold As Action(Of ScaffoldedModel),
-            assertModel As Action(Of IModel))
+    Sub Test(buildModel As Action(Of ModelBuilder),
+             options As ModelCodeGenerationOptions,
+             assertScaffold As Action(Of ScaffoldedModel),
+             assertModel As Action(Of IModel))
 
         Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(skipValidation:=True)
         mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)

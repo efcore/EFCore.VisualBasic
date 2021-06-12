@@ -264,6 +264,7 @@ string with """,
         <Theory()>
         <InlineData(GetType(Integer), "Integer")>
         <InlineData(GetType(Integer?), "Integer?")>
+        <InlineData(GetType(Date), "Date")>
         Public Sub Reference_works(type As Type, expected As String)
             Assert.Equal(expected, New VisualBasicHelper(TypeMappingSource).Reference(type))
         End Sub

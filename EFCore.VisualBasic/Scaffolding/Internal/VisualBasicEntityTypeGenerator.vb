@@ -36,13 +36,13 @@ Namespace Scaffolding.Internal
             NotNull(modelNamespace, NameOf(modelNamespace))
 
             _sb = New IndentedStringBuilder
+
+            Dim HasAnImportedNamespace = False
+
             _useDataAnnotations = useDataAnnotations
 
-            _sb.AppendLine("Imports System")
-            _sb.AppendLine("Imports Microsoft.VisualBasic") 'Require for vbCrLf, vbCr, vbLf
-            _sb.AppendLine("Imports System.Collections.Generic")
-
             If _useDataAnnotations Then
+                HasAnImportedNamespace = True
                 _sb.AppendLine("Imports System.ComponentModel.DataAnnotations")
                 _sb.AppendLine("Imports System.ComponentModel.DataAnnotations.Schema")
                 _sb.AppendLine("Imports Microsoft.EntityFrameworkCore") ' For attributes coming out of Abstractions
@@ -54,12 +54,13 @@ Namespace Scaffolding.Internal
                             Distinct().
                             OrderBy(Function(x) x, New NamespaceComparer)
                 _sb.AppendLine($"Imports {ns}")
+                HasAnImportedNamespace = True
             Next
+
+            If HasAnImportedNamespace Then _sb.AppendLine()
 
             modelNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, modelNamespace)
             Dim addANamespace = Not String.IsNullOrWhiteSpace(modelNamespace)
-
-            _sb.AppendLine()
 
             If addANamespace Then
                 _sb.AppendLine($"Namespace {_code.Namespace(modelNamespace)}")

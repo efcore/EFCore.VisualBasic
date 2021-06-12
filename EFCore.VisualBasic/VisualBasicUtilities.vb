@@ -161,7 +161,7 @@ Public Module VisualBasicUtilities
             "Xor"
         }
 
-    Public ReadOnly _builtInTypes As IReadOnlyDictionary(Of Type, String) = New Dictionary(Of Type, String) From
+    Friend ReadOnly _builtInTypes As IReadOnlyDictionary(Of Type, String) = New Dictionary(Of Type, String) From
         {
             {GetType(Boolean), "Boolean"},
             {GetType(Byte), "Byte"},
@@ -177,6 +177,7 @@ Public Module VisualBasicUtilities
             {GetType(Single), "Single"},
             {GetType(Double), "Double"},
             {GetType(String), "String"},
+            {GetType(Date), "Date"},
             {GetType(Object), "Object"}
         }
 

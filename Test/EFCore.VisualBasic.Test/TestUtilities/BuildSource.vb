@@ -49,9 +49,7 @@ Public Class BuildSource
                 assemblyName:=projectName,
                 syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
                 references:=refs,
-                New VisualBasicCompilationOptions(
-                   outputKind:=OutputKind.DynamicallyLinkedLibrary,
-                   rootNamespace:=_RootNamespace))
+                CreateVisualBasicCompilationOptions())
 
         Dim targetPath = Path.Combine(If(TargetDir, Path.GetTempPath()), projectName & ".dll")
 
@@ -78,9 +76,7 @@ Public Class BuildSource
                 assemblyName:=projectName,
                 syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
                 references:=refs,
-                New VisualBasicCompilationOptions(
-                   outputKind:=OutputKind.DynamicallyLinkedLibrary,
-                   rootNamespace:=_RootNamespace))
+                CreateVisualBasicCompilationOptions())
 
         Dim asm As Assembly
 
@@ -96,4 +92,16 @@ Public Class BuildSource
 
         Return asm
     End Function
+
+    Private Function CreateVisualBasicCompilationOptions() As VisualBasicCompilationOptions
+        Return New VisualBasicCompilationOptions(
+                   outputKind:=OutputKind.DynamicallyLinkedLibrary,
+                   rootNamespace:=_RootNamespace,
+                   globalImports:=GlobalImport.Parse({"Microsoft.VisualBasic",
+                                                      "System",
+                                                      "System.Collections",
+                                                      "System.Collections.Generic",
+                                                      "System.Linq"}))
+    End Function
+
 End Class

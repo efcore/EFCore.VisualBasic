@@ -10,10 +10,7 @@ Namespace Scaffolding.Internal
         Public Sub KeylessAttribute_is_generated_for_key_less_entity()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -24,9 +21,7 @@ Namespace TestNamespace
 End Namespace
 "
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -85,10 +80,7 @@ New ModelCodeGenerationOptions With
         Public Sub TableAttribute_is_generated_for_custom_name()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -129,10 +121,7 @@ End Namespace
         Public Sub TableAttribute_is_not_generated_for_default_schema()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -174,10 +163,7 @@ End Namespace
         Public Sub TableAttribute_is_generated_for_non_default_schema()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -220,10 +206,7 @@ End Namespace
         Public Sub TableAttribute_is_not_generated_for_views()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -257,10 +240,7 @@ End Namespace
         Public Sub IndexAttribute_is_generated_for_multiple_indexes_with_name_unique()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -317,10 +297,7 @@ End Namespace
         Public Sub Entity_with_indexes_generates_IndexAttribute_only_for_indexes_without_annotations()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -337,9 +314,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -415,10 +390,7 @@ End Namespace
         Public Sub KeyAttribute_is_generated_for_single_property_and_no_fluent_api()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -431,9 +403,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -500,10 +470,7 @@ End Namespace
         Public Sub KeyAttribute_is_generated_on_multiple_properties_but_configuring_Imports_fluent_api_for_composite_key()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -518,9 +485,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -591,10 +556,7 @@ End Namespace
         Public Sub RequiredAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -631,10 +593,7 @@ End Namespace
         Public Sub RequiredAttribute_is_not_generated_for_key_property()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -669,10 +628,7 @@ End Namespace
         Public Sub ColumnAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -694,9 +650,7 @@ Namespace TestNamespace
 End Namespace
 "
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -773,10 +727,7 @@ End Namespace
         Public Sub MaxLengthAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -821,10 +772,7 @@ End Namespace
         Public Sub Comments_are_generated()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -867,10 +815,7 @@ End Namespace
         Public Sub Comments_complex_are_generated()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -923,10 +868,7 @@ With XML content <br/>")
         Public Sub Properties_names_are_escaped_for_reserved_keywords()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -967,10 +909,7 @@ End Namespace
         Public Sub Properties_are_sorted_in_order_of_definition_in_table()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1011,10 +950,7 @@ End Namespace
         Public Sub Navigation_properties_are_sorted_after_properties_and_collection_are_initialized_in_ctor()
 
             Dim expectedCodePost =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1037,10 +973,7 @@ End Namespace
 "
 
             Dim expectedCodePerson =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1104,10 +1037,7 @@ End Namespace
         Public Sub ForeignKeyAttribute_is_generated_for_composite_fk()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1126,9 +1056,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -1216,10 +1144,7 @@ New ModelCodeGenerationOptions With
         Public Sub ForeignKeyAttribute_InversePropertyAttribute_is_not_generated_for_alternate_key()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1236,9 +1161,7 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports System
-Imports Microsoft.VisualBasic
-Imports Microsoft.EntityFrameworkCore
+$"Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
@@ -1332,10 +1255,7 @@ End Namespace
         Public Sub InverseProperty_when_navigation_property_with_same_type_and_navigation_name()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1390,10 +1310,7 @@ New ModelCodeGenerationOptions With
         Public Sub InverseProperty_when_navigation_property_with_same_type_and_property_name()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1447,10 +1364,7 @@ End Namespace
         Public Sub InverseProperty_when_navigation_property_with_same_type_and_other_navigation_name()
 
             Dim expectedCode =
-"Imports System
-Imports Microsoft.VisualBasic
-Imports System.Collections.Generic
-Imports System.ComponentModel.DataAnnotations
+"Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 

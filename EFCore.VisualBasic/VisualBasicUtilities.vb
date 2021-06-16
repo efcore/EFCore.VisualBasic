@@ -161,7 +161,7 @@ Public Module VisualBasicUtilities
             "Xor"
         }
 
-    Friend ReadOnly _builtInTypes As IReadOnlyDictionary(Of Type, String) = New Dictionary(Of Type, String) From
+    Friend ReadOnly _builtInTypeNames As IReadOnlyDictionary(Of Type, String) = New Dictionary(Of Type, String) From
         {
             {GetType(Boolean), "Boolean"},
             {GetType(Byte), "Byte"},
@@ -261,6 +261,7 @@ Public Module VisualBasicUtilities
     End Function
 
 #Region "Guards"
+    <DebuggerStepThrough>
     Public Function NotNull(Of T)(value As T, parameterName As String) As T
         If value Is Nothing Then
             Throw New ArgumentNullException(parameterName)
@@ -269,6 +270,7 @@ Public Module VisualBasicUtilities
         Return value
     End Function
 
+    <DebuggerStepThrough>
     Public Function NotEmpty(Of T)(value As IReadOnlyList(Of T), parameterName As String) As IReadOnlyList(Of T)
 
         NotNull(value, parameterName)
@@ -280,6 +282,7 @@ Public Module VisualBasicUtilities
         Return value
     End Function
 
+    <DebuggerStepThrough>
     Public Function NotEmpty(value As String, parameterName As String) As String
 
         NotNull(value, parameterName)

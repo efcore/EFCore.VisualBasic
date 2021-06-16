@@ -33,8 +33,8 @@ Namespace Scaffolding.Internal
                                               useDataAnnotations As Boolean) As String
 
             NotNull(entityType, NameOf(entityType))
-            NotNull(modelNamespace, NameOf(modelNamespace))
 
+            _useDataAnnotations = useDataAnnotations
             _sb = New IndentedStringBuilder
 
             Dim HasAnImportedNamespace = False
@@ -217,6 +217,8 @@ Namespace Scaffolding.Internal
             GenerateRequiredAttribute(prop)
             GenerateColumnAttribute(prop)
             GenerateMaxLengthAttribute(prop)
+            GenerateUnicodeAttribute(prop)
+            GeneratePrecisionAttribute(prop)
 
             Dim annotations = _annotationCodeGenerator _
                 .FilterIgnoredAnnotations(prop.GetAnnotations()) _
@@ -278,6 +280,38 @@ Namespace Scaffolding.Internal
 
                 _sb.AppendLine(lengthAttribute.ToString())
             End If
+        End Sub
+
+        Private Sub GenerateUnicodeAttribute(prop As IProperty)
+            If prop.ClrType <> GetType(String) Then
+                Return
+            End If
+
+            Dim unicode = prop.IsUnicode()
+            If unicode.HasValue Then
+                Dim uniAttribute As AttributeWriter = New AttributeWriter(NameOf(UnicodeAttribute))
+                If Not unicode.Value Then
+                    uniAttribute.AddParameter(_code.Literal(False))
+                End If
+                _sb.AppendLine(uniAttribute.ToString())
+            End If
+        End Sub
+
+        Private Sub GeneratePrecisionAttribute(prop As IProperty)
+
+            Dim precision = prop.GetPrecision()
+            If precision.HasValue Then
+                Dim precAttribute As AttributeWriter = New AttributeWriter(NameOf(PrecisionAttribute))
+                precAttribute.AddParameter(_code.Literal(precision.Value))
+
+                Dim scale = prop.GetScale()
+                If scale.HasValue Then
+                    precAttribute.AddParameter(_code.Literal(scale.Value))
+                End If
+
+                _sb.AppendLine(precAttribute.ToString())
+            End If
+
         End Sub
 
         Protected Overridable Sub GenerateNavigationProperties(entityType As IEntityType)
@@ -366,17 +400,20 @@ Namespace Scaffolding.Internal
 
                 _attributeName = attributeName
             End Sub
+
             Public Sub AddParameter(parameter As String)
                 NotEmpty(parameter, NameOf(parameter))
 
                 _parameters.Add(parameter)
             End Sub
+
             Public Overrides Function ToString() As String
                 Return "<" &
                         If(_parameters.Count = 0, StripAttribute(_attributeName),
                             StripAttribute(_attributeName) & "(" & String.Join(", ", _parameters) & ")") &
                         ">"
             End Function
+
             Private Shared Function StripAttribute(attributeName As String) As String
                 Return If(attributeName.EndsWith("Attribute", StringComparison.Ordinal),
                             attributeName.Substring(0, attributeName.Length - 9),

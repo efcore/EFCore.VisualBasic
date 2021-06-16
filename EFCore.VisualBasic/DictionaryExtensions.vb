@@ -1,4 +1,5 @@
-﻿Imports System.Runtime.CompilerServices
+﻿Imports System.Diagnostics.CodeAnalysis
+Imports System.Runtime.CompilerServices
 
 <DebuggerStepThrough>
 Friend Module DictionaryExtensions
@@ -19,6 +20,23 @@ Friend Module DictionaryExtensions
                                           key As TKey) As TValue
         Dim value As TValue = Nothing
         Return If(Not source.TryGetValue(key, value), Nothing, value)
+    End Function
+
+    <Extension()>
+    Public Function TryGetAndRemove(Of TKey, TValue, TReturn)(source As IDictionary(Of TKey, TValue),
+                                                              key As TKey,
+                                                              <NotNullWhen(True)> ByRef annotationValue As TReturn) As Boolean
+        Dim value As TValue = Nothing
+        If source.TryGetValue(key, value) Then
+            If value IsNot Nothing Then
+                source.Remove(key)
+                annotationValue = CType(CObj(value), TReturn)
+                Return True
+            End If
+        End If
+
+        annotationValue = Nothing
+        Return False
     End Function
 
     <Extension()>

@@ -181,11 +181,10 @@ mb.Sql(""-- close to me"")"
         Public Sub AddForeignKeyOperation_required_args()
             Dim operation = New AddForeignKeyOperation() With
             {
-                .Table = "Post",
                 .Name = "FK_Post_Blog_BlogId",
+                .Table = "Post",
                 .Columns = {"BlogId"},
-                .PrincipalTable = "Blog",
-                .PrincipalColumns = {"Id"}
+                .PrincipalTable = "Blog"
             }
 
             Dim expectedCode =
@@ -193,16 +192,16 @@ mb.Sql(""-- close to me"")"
     name:=""FK_Post_Blog_BlogId"",
     table:=""Post"",
     column:=""BlogId"",
-    principalTable:=""Blog"",
-    principalColumn:=""Id"")"
+    principalTable:=""Blog"")"
 
             Test(operation,
              expectedCode,
              Sub(o)
-                 Assert.Equal("Post", o.Table)
                  Assert.Equal("FK_Post_Blog_BlogId", o.Name)
+                 Assert.Equal("Post", o.Table)
                  Assert.Equal({"BlogId"}, o.Columns)
                  Assert.Equal("Blog", o.PrincipalTable)
+                 Assert.Null(o.PrincipalColumns)
              End Sub)
 
         End Sub
@@ -1314,8 +1313,7 @@ mb.Sql(""-- close to me"")"
                  .Name = "FK_Post_Blog_BlogId",
                  .Table = "Post",
                  .Columns = {"BlogId"},
-                 .PrincipalTable = "Blog",
-                 .PrincipalColumns = {"Id"}
+                 .PrincipalTable = "Blog"
             })
 
             Dim expectedCode =
@@ -1328,8 +1326,7 @@ mb.Sql(""-- close to me"")"
         table.ForeignKey(
             name:=""FK_Post_Blog_BlogId"",
             column:=Function(e) e.BlogId,
-            principalTable:=""Blog"",
-            principalColumn:=""Id"")
+            principalTable:=""Blog"")
     End Sub)"
 
             Test(operation,
@@ -1460,6 +1457,51 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Blog", fk.PrincipalTable)
                  Assert.Equal({"Id1", "Id2"}, fk.PrincipalColumns)
              End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub CreateTableOperation_ForeignKeys_composite_no_principal_columns()
+
+            Dim operation = New CreateTableOperation With {.Name = "Post"}
+
+            operation.Columns.AddRange(
+                {
+                    New AddColumnOperation With {.Name = "BlogId1", .ClrType = GetType(Integer)},
+                    New AddColumnOperation With {.Name = "BlogId2", .ClrType = GetType(Integer)}
+                })
+
+            operation.ForeignKeys.Add(New AddForeignKeyOperation With {
+                            .Name = "FK_Post_Blog_BlogId1_BlogId2",
+                            .Table = "Post",
+                            .Columns = {"BlogId1", "BlogId2"},
+                            .PrincipalTable = "Blog"
+                        })
+
+            Dim expectedCode =
+"mb.CreateTable(
+    name:=""Post"",
+    columns:=Function(table) New With {
+        .BlogId1 = table.Column(Of Integer)(nullable:=False),
+        .BlogId2 = table.Column(Of Integer)(nullable:=False)
+    },
+    constraints:=Sub(table)
+        table.ForeignKey(
+            name:=""FK_Post_Blog_BlogId1_BlogId2"",
+            column:=Function(e) New With {e.BlogId1, e.BlogId2},
+            principalTable:=""Blog"")
+    End Sub)"
+
+            Test(
+                operation,
+                expectedCode,
+                Sub(o)
+                    Assert.Single(o.ForeignKeys)
+
+                    Dim fk = o.ForeignKeys.First()
+                    Assert.Equal("Post", fk.Table)
+                    Assert.Equal({"BlogId1", "BlogId2"}, fk.Columns.ToArray())
+                    Assert.Equal("Blog", fk.PrincipalTable)
+                End Sub)
         End Sub
 
         <ConditionalFact>
@@ -1954,22 +1996,18 @@ mb.Sql(""-- close to me"")"
 
         <ConditionalFact>
         Public Sub DropIndexOperation_required_args()
-            Dim operation = New DropIndexOperation() With
-        {
-            .Name = "IX_Post_Title",
-            .Table = "Post"
-        }
+            Dim operation = New DropIndexOperation() With {
+            .Name = "IX_Post_Title"
+            }
 
             Dim expectedCode =
 "mb.DropIndex(
-    name:=""IX_Post_Title"",
-    table:=""Post"")"
+    name:=""IX_Post_Title"")"
 
             Test(operation,
              expectedCode,
              Sub(o)
                  Assert.Equal("IX_Post_Title", o.Name)
-                 Assert.Equal("Post", o.Table)
              End Sub)
         End Sub
 
@@ -2267,21 +2305,18 @@ mb.Sql(""-- close to me"")"
             Dim operation = New RenameIndexOperation() With
         {
             .Name = "IX_Post_Title",
-            .Table = "Post",
             .NewName = "IX_Post_PostTitle"
         }
 
             Dim expectedCode =
 "mb.RenameIndex(
     name:=""IX_Post_Title"",
-    table:=""Post"",
     newName:=""IX_Post_PostTitle"")"
 
             Test(operation,
              expectedCode,
              Sub(o)
                  Assert.Equal("IX_Post_Title", o.Name)
-                 Assert.Equal("Post", o.Table)
                  Assert.Equal("IX_Post_PostTitle", o.NewName)
              End Sub)
         End Sub
@@ -3351,21 +3386,23 @@ mb.Sql(""-- close to me"")"
                     BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
                     BuildReference.ByName("NetTopologySuite")
                 },
-                .Sources =
-                {
-                    "
-                        Imports Microsoft.VisualBasic
-                        Imports Microsoft.EntityFrameworkCore.Migrations
-                        Imports NetTopologySuite.Geometries
+                .Sources = New Dictionary(Of String, String) From {
+                    {
+                        "Migration.vb",
+                        "
+                            Imports Microsoft.VisualBasic
+                            Imports Microsoft.EntityFrameworkCore.Migrations
+                            Imports NetTopologySuite.Geometries
 
-                         Public Class OperationsFactory
+                             Public Class OperationsFactory
 
-                            Public Shared Sub Create(mb As MigrationBuilder)
-                                " & code & "
-                            End Sub
+                                Public Shared Sub Create(mb As MigrationBuilder)
+                                    " & code & "
+                                End Sub
 
-                         End Class
-                    "
+                             End Class
+                        "
+                    }
                 }
             }
 

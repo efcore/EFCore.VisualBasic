@@ -15,17 +15,15 @@ Public Class BuildSource
     Public Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From
         {
             BuildReference.ByName("System.Runtime"),
-            BuildReference.ByName("netstandard"),
             BuildReference.ByName("System.Collections"),
             BuildReference.ByName("System.ComponentModel.Annotations"),
             BuildReference.ByName("System.Data.Common"),
             BuildReference.ByName("System.Linq.Expressions"),
-            BuildReference.ByName("System.Runtime"),
             BuildReference.ByName("System.Text.RegularExpressions")
         }
 
     Public Property TargetDir As String
-    Public Property Sources As ICollection(Of String) = New List(Of String)
+    Public Property Sources As New Dictionary(Of String, String)
 
     Private _RootNamespace As String = Nothing
 
@@ -47,7 +45,7 @@ Public Class BuildSource
 
         Dim compilation = VisualBasicCompilation.Create(
                 assemblyName:=projectName,
-                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
+                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s.Value).WithFilePath(s.Key)),
                 references:=refs,
                 CreateVisualBasicCompilationOptions())
 
@@ -57,7 +55,8 @@ Public Class BuildSource
             Dim result = compilation.Emit(fStream)
             If Not result.Success Then
                 Throw New InvalidOperationException(
-                        $"Build failed. Diagnostics: {String.Join(Environment.NewLine, result.Diagnostics)}")
+                        $"Build failed:
+{String.Join(Environment.NewLine, result.Diagnostics)}")
             End If
         End Using
 
@@ -74,7 +73,7 @@ Public Class BuildSource
 
         Dim compilation = VisualBasicCompilation.Create(
                 assemblyName:=projectName,
-                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s)),
+                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s.Value).WithFilePath(s.Key)),
                 references:=refs,
                 CreateVisualBasicCompilationOptions())
 
@@ -84,7 +83,8 @@ Public Class BuildSource
             Dim result = compilation.Emit(memStream)
             If Not result.Success Then
                 Throw New InvalidOperationException(
-                        $"Build failed. Diagnostics: {String.Join(Environment.NewLine, result.Diagnostics)}")
+                        $"Build failed:
+{String.Join(Environment.NewLine, result.Diagnostics)}")
             End If
 
             asm = Assembly.Load(memStream.ToArray())

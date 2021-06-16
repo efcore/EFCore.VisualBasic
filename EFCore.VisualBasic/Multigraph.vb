@@ -272,7 +272,7 @@ Namespace Utilities
             If result.Sum(Function(b) b.Count) <> _vertices.Count Then
                 Dim predecessorNumber As Integer = Nothing
                 Dim currentCycleVertex As TVertex = _vertices.First(
-                                    Function(v) If(predecessorCounts.TryGetValue(v, predecessorNumber), predecessorNumber <> 0, False))
+                                    Function(v) predecessorCounts.TryGetValue(v, predecessorNumber) AndAlso predecessorNumber <> 0)
                 Dim cyclicWalk As List(Of TVertex) = New List(Of TVertex) From {
                     currentCycleVertex}
                 Dim finished As Boolean = False

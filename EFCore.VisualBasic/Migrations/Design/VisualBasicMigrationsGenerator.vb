@@ -77,7 +77,6 @@ Namespace Migrations.Design
                                                     upOperations As IReadOnlyList(Of MigrationOperation),
                                                     downOperations As IReadOnlyList(Of MigrationOperation)) As String
 
-            NotEmpty(migrationNamespace, NameOf(migrationNamespace))
             NotEmpty(migrationName, NameOf(migrationName))
             NotNull(upOperations, NameOf(upOperations))
             NotNull(downOperations, NameOf(downOperations))
@@ -94,47 +93,55 @@ Namespace Migrations.Design
                     AppendLine(n)
             Next
 
-            builder.
+            If Not String.IsNullOrEmpty(migrationNamespace) Then
+                builder.
                 AppendLine().
                 Append("Namespace ").
                 Append("Global.").
-                AppendLine(VBCode.Namespace(migrationNamespace))
+                AppendLine(VBCode.Namespace(migrationNamespace)).
+                IncrementIndent()
+            End If
+
+            builder.
+                Append("Partial Public Class ").
+                Append(VBCode.Identifier(migrationName)).
+                AppendLine()
+
             Using builder.Indent()
                 builder.
-                    Append("Partial Public Class ").
-                    Append(VBCode.Identifier(migrationName)).
-                    AppendLine()
+                            AppendLine("Inherits Migration").
+                            AppendLine()
+            End Using
+            Using builder.Indent()
+                builder.AppendLine("Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)")
                 Using builder.Indent()
-                    builder.
-                        AppendLine("Inherits Migration").
-                        AppendLine()
-                End Using
-                Using builder.Indent()
-                    builder.AppendLine("Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)")
-                    Using builder.Indent()
-                        VisualBasicMigrationOperationGenerator.
-                            Generate("migrationBuilder", upOperations, builder)
-                    End Using
-
-                    builder.
-                        AppendLine().
-                        AppendLine("End Sub").
-                        AppendLine().
-                        AppendLine("Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)")
-                    Using builder.Indent()
-                        VisualBasicMigrationOperationGenerator.
-                            Generate("migrationBuilder", downOperations, builder)
-                    End Using
-
-                    builder.
-                        AppendLine().
-                        AppendLine("End Sub")
+                    VisualBasicMigrationOperationGenerator.
+                        Generate("migrationBuilder", upOperations, builder)
                 End Using
 
-                builder.AppendLine("End Class")
+                builder.
+                    AppendLine().
+                    AppendLine("End Sub").
+                    AppendLine().
+                    AppendLine("Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)")
+                Using builder.Indent()
+                    VisualBasicMigrationOperationGenerator.
+                        Generate("migrationBuilder", downOperations, builder)
+                End Using
+
+                builder.
+                    AppendLine().
+                    AppendLine("End Sub")
             End Using
 
-            builder.AppendLine("End Namespace")
+            builder.AppendLine("End Class")
+
+            If Not String.IsNullOrEmpty(migrationNamespace) Then
+                builder.
+                    DecrementIndent.
+                    AppendLine("End Namespace")
+            End If
+
             Return builder.ToString()
         End Function
 
@@ -157,7 +164,6 @@ Namespace Migrations.Design
                                                    migrationId As String,
                                                    targetModel As IModel) As String
 
-            NotEmpty(migrationNamespace, NameOf(migrationNamespace))
             NotNull(contextType, NameOf(contextType))
             NotEmpty(migrationName, NameOf(migrationName))
             NotEmpty(migrationId, NameOf(migrationId))
@@ -185,40 +191,45 @@ Namespace Migrations.Design
                     AppendLine(n)
             Next
 
-            builder.
+            If Not String.IsNullOrEmpty(migrationNamespace) Then
+                builder.
                 AppendLine().
                     Append("Namespace ").
                     Append("Global.").
-                    AppendLine(VBCode.Namespace(migrationNamespace))
+                    AppendLine(VBCode.Namespace(migrationNamespace)).
+                    IncrementIndent()
+            End If
+
+            builder.
+                Append("<DbContext(GetType(").
+                Append(VBCode.Reference(contextType)).
+                AppendLine("))>").
+                Append("<Migration(").
+                Append(VBCode.Literal(migrationId)).
+                AppendLine(")>").
+                Append("Partial Class ").
+                AppendLine(VBCode.Identifier(migrationName))
 
             Using builder.Indent()
                 builder.
-                    Append("<DbContext(GetType(").
-                    Append(VBCode.Reference(contextType)).
-                    AppendLine("))>").
-                    Append("<Migration(").
-                    Append(VBCode.Literal(migrationId)).
-                    AppendLine(")>").
-                    Append("Partial Class ").
-                    AppendLine(VBCode.Identifier(migrationName))
+                    AppendLine("Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)")
 
                 Using builder.Indent()
-                    builder.
-                        AppendLine("Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)")
-
-                    Using builder.Indent()
-                        ' TODO: Optimize.This Is repeated below
-                        VisualBasicSnapshotGenerator.
-                            Generate("modelBuilder", targetModel, builder)
-                    End Using
-
-                    builder.AppendLine("End Sub")
+                    ' TODO: Optimize.This Is repeated below
+                    VisualBasicSnapshotGenerator.
+                        Generate("modelBuilder", targetModel, builder)
                 End Using
 
-                builder.AppendLine("End Class")
+                builder.AppendLine("End Sub")
             End Using
 
-            builder.AppendLine("End Namespace")
+            builder.AppendLine("End Class")
+
+            If Not String.IsNullOrEmpty(migrationNamespace) Then
+                builder.
+                    DecrementIndent().
+                    AppendLine("End Namespace")
+            End If
 
             Return builder.ToString()
         End Function
@@ -236,7 +247,6 @@ Namespace Migrations.Design
                                                    modelSnapshotName As String,
                                                    model As IModel) As String
 
-            NotEmpty(modelSnapshotNamespace, NameOf(modelSnapshotNamespace))
             NotNull(contextType, NameOf(contextType))
             NotEmpty(modelSnapshotName, NameOf(modelSnapshotName))
             NotNull(model, NameOf(model))
@@ -250,7 +260,7 @@ Namespace Migrations.Design
                 "Microsoft.EntityFrameworkCore.Migrations"
             }
 
-            If (Not String.IsNullOrEmpty(contextType.Namespace)) Then
+            If Not String.IsNullOrEmpty(contextType.Namespace) Then
                 namespaces.Add(contextType.Namespace)
             End If
 
@@ -263,38 +273,43 @@ Namespace Migrations.Design
                     AppendLine(n)
             Next
 
-            builder.
+            If Not String.IsNullOrEmpty(modelSnapshotNamespace) Then
+                builder.
                 AppendLine().
                 Append("Namespace ").
                 Append("Global.").
-                AppendLine(VBCode.Namespace(modelSnapshotNamespace))
+                AppendLine(VBCode.Namespace(modelSnapshotNamespace)).
+                IncrementIndent()
+            End If
+
+            builder.
+                Append("<DbContext(GetType(").
+                Append(VBCode.Reference(contextType)).
+                AppendLine("))>").
+                Append("Partial Class ").
+                AppendLine(VBCode.Identifier(modelSnapshotName))
 
             Using builder.Indent()
                 builder.
-                    Append("<DbContext(GetType(").
-                    Append(VBCode.Reference(contextType)).
-                    AppendLine("))>").
-                    Append("Partial Class ").
-                    AppendLine(VBCode.Identifier(modelSnapshotName))
+                    AppendLine("Inherits ModelSnapshot").
+                    AppendLine().
+                    AppendLine("Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)")
 
                 Using builder.Indent()
-                    builder.
-                        AppendLine("Inherits ModelSnapshot").
-                        AppendLine().
-                        AppendLine("Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)")
-
-                    Using builder.Indent()
-                        VisualBasicSnapshotGenerator.
-                            Generate("modelBuilder", model, builder)
-                    End Using
-
-                    builder.AppendLine("End Sub")
+                    VisualBasicSnapshotGenerator.
+                        Generate("modelBuilder", model, builder)
                 End Using
 
-                builder.AppendLine("End Class")
+                builder.AppendLine("End Sub")
             End Using
 
-            builder.AppendLine("End Namespace")
+            builder.AppendLine("End Class")
+
+            If Not String.IsNullOrEmpty(modelSnapshotNamespace) Then
+                builder.
+                    DecrementIndent().
+                    AppendLine("End Namespace")
+            End If
 
             Return builder.ToString()
         End Function

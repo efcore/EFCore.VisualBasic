@@ -2,9 +2,10 @@
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Diagnostics.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
-Imports Microsoft.EntityFrameworkCore.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.Extensions.Logging
 
 Namespace TestUtilities.FakeProvider
@@ -23,16 +24,26 @@ Namespace TestUtilities.FakeProvider
                         New DiagnosticListener("FakeDiagnosticListener"),
                         New TestRelationalLoggingDefinitions,
                         New NullDbContextLogger),
-                    New DiagnosticsLogger(Of DbLoggerCategory.Database.Connection)(
+                    New RelationalConnectionDiagnosticsLogger(
                         New LoggerFactory,
                         New LoggingOptions,
                         New DiagnosticListener("FakeDiagnosticListener"),
                         New TestRelationalLoggingDefinitions,
-                        New NullDbContextLogger),
+                        New NullDbContextLogger,
+                        CreateOptions()),
                     New NamedConnectionStringResolver(If(options, CreateOptions())),
-                    New RelationalTransactionFactory(New RelationalTransactionFactoryDependencies()),
-                    New CurrentDbContext(New FakeDbContext())))
+                    New RelationalTransactionFactory(
+                        New RelationalTransactionFactoryDependencies(
+                            New RelationalSqlGenerationHelper(
+                                New RelationalSqlGenerationHelperDependencies))),
+                    New CurrentDbContext(New FakeDbContext()),
+                    New RelationalCommandBuilderFactory(
+                        New RelationalCommandBuilderDependencies(
+                            New TestRelationalTypeMappingSource(
+                                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
+                                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())))))
         End Sub
+
         Private Class FakeDbContext
             Inherits DbContext
         End Class

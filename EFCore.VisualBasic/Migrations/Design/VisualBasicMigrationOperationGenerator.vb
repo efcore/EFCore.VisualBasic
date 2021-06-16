@@ -314,12 +314,14 @@ Namespace Migrations.Design
                     Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
-                    builder.AppendLine(",").
+                    builder.
+                        AppendLine(",").
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
-                builder.AppendLine(",").
+                builder.
+                    AppendLine(",").
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
                     AppendLine(",")
@@ -1172,7 +1174,9 @@ Namespace Migrations.Design
                                 Append("name:=").
                                 Append(VBCode.Literal(foreignKey.Name)).
                                 AppendLine(",").
-                                Append(If(foreignKey.Columns.Length = 1, "column:=", "columns:=")).
+                                Append(If(foreignKey.Columns.Length = 1 OrElse foreignKey.PrincipalColumns Is Nothing,
+                                            "column:=",
+                                            "columns:=")).
                                 Append(VBCode.Lambda(foreignKey.Columns.Select(Function(c) map(c)).ToList()))
 
                             If foreignKey.PrincipalSchema IsNot Nothing Then
@@ -1185,17 +1189,20 @@ Namespace Migrations.Design
                             builder.
                                 AppendLine(",").
                                 Append("principalTable:=").
-                                Append(VBCode.Literal(foreignKey.PrincipalTable)).
-                                AppendLine(",")
+                                Append(VBCode.Literal(foreignKey.PrincipalTable))
 
-                            If foreignKey.PrincipalColumns.Length = 1 Then
-                                builder.
+                            If foreignKey.PrincipalColumns IsNot Nothing Then
+                                builder.AppendLine(",")
+
+                                If foreignKey.PrincipalColumns.Length = 1 Then
+                                    builder.
                                     Append("principalColumn:=").
                                     Append(VBCode.Literal(foreignKey.PrincipalColumns(0)))
-                            Else
-                                builder.
+                                Else
+                                    builder.
                                     Append("principalColumns:=").
                                     Append(VBCode.Literal(foreignKey.PrincipalColumns))
+                                End If
                             End If
 
                             If foreignKey.OnUpdate <> ReferentialAction.NoAction Then
@@ -1329,11 +1336,14 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
-                builder.
+                If operation.Table IsNot Nothing Then
+                    builder.
                     AppendLine(",").
                     Append("table:=").
-                    Append(VBCode.Literal(operation.Table)).
-                    Append(")")
+                    Append(VBCode.Literal(operation.Table))
+                End If
+
+                builder.Append(")")
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1409,14 +1419,14 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
-                Append("name:=").
-                Append(VBCode.Literal(operation.Name))
+                    Append("name:=").
+                    Append(VBCode.Literal(operation.Name))
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                    AppendLine(",").
-                    Append("schema:=").
-                    Append(VBCode.Literal(operation.Schema))
+                        AppendLine(",").
+                        Append("schema:=").
+                        Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.Append(")")
@@ -1585,10 +1595,14 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
+                If operation.Table IsNot Nothing Then
+                    builder.
+                        AppendLine(",").
+                        Append("table:=").
+                        Append(VBCode.Literal(operation.Table))
+                End If
+
                 builder.
-                    AppendLine(",").
-                    Append("table:=").
-                    Append(VBCode.Literal(operation.Table)).
                     AppendLine(",").
                     Append("newName:=").
                     Append(VBCode.Literal(operation.NewName)).

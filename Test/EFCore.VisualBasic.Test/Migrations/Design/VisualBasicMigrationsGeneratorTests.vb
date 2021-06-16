@@ -8,6 +8,7 @@ Imports EntityFrameworkCore.VisualBasic.TestUtilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Design
+Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Builders
@@ -56,9 +57,12 @@ Namespace Migrations.Design
                 CoreAnnotationNames.Unicode,
                 CoreAnnotationNames.ProductVersion,
                 CoreAnnotationNames.ValueGeneratorFactory,
+                CoreAnnotationNames.ValueGeneratorFactoryType,
                 CoreAnnotationNames.OwnedTypes,
                 CoreAnnotationNames.ValueConverter,
+                CoreAnnotationNames.ValueConverterType,
                 CoreAnnotationNames.ValueComparer,
+                CoreAnnotationNames.ValueComparerType,
                 CoreAnnotationNames.KeyValueComparer,
                 CoreAnnotationNames.StructuralValueComparer,
                 CoreAnnotationNames.BeforeSaveBehavior,
@@ -72,19 +76,33 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.ViewColumnMappings,
                 RelationalAnnotationNames.SqlQueryColumnMappings,
                 RelationalAnnotationNames.FunctionColumnMappings,
+                RelationalAnnotationNames.DefaultColumnMappings,
+                RelationalAnnotationNames.TableMappings,
+                RelationalAnnotationNames.ViewMappings,
+                RelationalAnnotationNames.FunctionMappings,
+                RelationalAnnotationNames.SqlQueryMappings,
+                RelationalAnnotationNames.DefaultMappings,
+                RelationalAnnotationNames.ForeignKeyMappings,
+                RelationalAnnotationNames.TableIndexMappings,
+                RelationalAnnotationNames.UniqueConstraintMappings,
                 RelationalAnnotationNames.RelationalOverrides,
                 RelationalAnnotationNames.DefaultValueSql,
                 RelationalAnnotationNames.ComputedColumnSql,
                 RelationalAnnotationNames.DefaultValue,
                 RelationalAnnotationNames.Name,
+                RelationalAnnotationNames.SequencePrefix,
                 RelationalAnnotationNames.Sequences,
                 RelationalAnnotationNames.CheckConstraints,
                 RelationalAnnotationNames.DefaultSchema,
                 RelationalAnnotationNames.Filter,
+                RelationalAnnotationNames.DbFunction,
                 RelationalAnnotationNames.DbFunctions,
                 RelationalAnnotationNames.MaxIdentifierLength,
                 RelationalAnnotationNames.IsFixedLength,
-                RelationalAnnotationNames.Collation}
+                RelationalAnnotationNames.Collation,
+                RelationalAnnotationNames.IsStored,
+                RelationalAnnotationNames.RelationalModel,
+                RelationalAnnotationNames.ModelDependencies}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -147,21 +165,26 @@ Namespace Migrations.Design
                         _nl)
                 },
                 {
-                    RelationalAnnotationNames.FunctionName,
-                    (Nothing, "")
+                    RelationalAnnotationNames.FunctionName, (Nothing,
+                        _nl &
+                        "modelBuilder" &
+                        $".{NameOf(RelationalEntityTypeBuilderExtensions.ToFunction)}(Nothing)" &
+                        _nl)
                 },
                 {
-                    RelationalAnnotationNames.SqlQuery,
-                    (Nothing, "")
+                    RelationalAnnotationNames.SqlQuery, (Nothing,
+                        _nl &
+                        "modelBuilder" &
+                        $".{NameOf(RelationalEntityTypeBuilderExtensions.ToSqlQuery)}(Nothing)" &
+                        _nl)
                 }
             }
 #Enable Warning BC40008 ' Type or member is obsolete
 
             MissingAnnotationCheck(Function(b) b.Entity(Of WithAnnotations)().Metadata,
                                    notForEntityType, forEntityType,
-                                   _toTable,
+                                   Function(a) _toTable,
                                    Sub(g, m, b) g.TestGenerateEntityTypeAnnotations("modelBuilder", CType(m, IEntityType), b))
-
         End Sub
 
         <ConditionalFact>
@@ -169,12 +192,10 @@ Namespace Migrations.Design
 
             ' Only add the annotation here if it will never be present on IProperty
 
-#Disable Warning BC40008 ' Type or member is obsolete
+#Disable Warning BC40000, BC40008 ' Type or member is obsolete
             Dim notForProperty As New HashSet(Of String) From {
                 CoreAnnotationNames.ProductVersion,
                 CoreAnnotationNames.OwnedTypes,
-                CoreAnnotationNames.ConstructorBinding,
-                CoreAnnotationNames.ServiceOnlyConstructorBinding,
                 CoreAnnotationNames.NavigationAccessMode,
                 CoreAnnotationNames.EagerLoaded,
                 CoreAnnotationNames.QueryFilter,
@@ -186,25 +207,41 @@ Namespace Migrations.Design
                 CoreAnnotationNames.AmbiguousNavigations,
                 CoreAnnotationNames.DuplicateServiceProperties,
                 RelationalAnnotationNames.TableName,
+                RelationalAnnotationNames.IsTableExcludedFromMigrations,
                 RelationalAnnotationNames.ViewName,
                 RelationalAnnotationNames.Schema,
                 RelationalAnnotationNames.ViewSchema,
+                RelationalAnnotationNames.ViewDefinitionSql,
+                RelationalAnnotationNames.FunctionName,
+                RelationalAnnotationNames.SqlQuery,
                 RelationalAnnotationNames.DefaultSchema,
                 RelationalAnnotationNames.DefaultMappings,
+                RelationalAnnotationNames.TableColumnMappings,
+                RelationalAnnotationNames.ViewColumnMappings,
+                RelationalAnnotationNames.SqlQueryColumnMappings,
+                RelationalAnnotationNames.FunctionColumnMappings,
+                RelationalAnnotationNames.DefaultColumnMappings,
                 RelationalAnnotationNames.TableMappings,
                 RelationalAnnotationNames.ViewMappings,
+                RelationalAnnotationNames.FunctionMappings,
                 RelationalAnnotationNames.SqlQueryMappings,
+                RelationalAnnotationNames.ForeignKeyMappings,
+                RelationalAnnotationNames.TableIndexMappings,
+                RelationalAnnotationNames.UniqueConstraintMappings,
                 RelationalAnnotationNames.Name,
                 RelationalAnnotationNames.Sequences,
+                RelationalAnnotationNames.SequencePrefix,
                 RelationalAnnotationNames.CheckConstraints,
                 RelationalAnnotationNames.Filter,
+                RelationalAnnotationNames.DbFunction,
                 RelationalAnnotationNames.DbFunctions,
-                RelationalAnnotationNames.MaxIdentifierLength}
-#Enable Warning BC40008 ' Type or member is obsolete
+                RelationalAnnotationNames.MaxIdentifierLength,
+                RelationalAnnotationNames.RelationalModel,
+                RelationalAnnotationNames.ModelDependencies}
+#Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
             Dim columnMapping As String =
                 $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"
-
 
             ' Add a line here if the code generator is supposed to handle this annotation
             ' Note that other tests should be added to check code is generated correctly
@@ -217,6 +254,10 @@ Namespace Migrations.Design
                 {
                     CoreAnnotationNames.Precision,
                     (4, $".{_nl}{NameOf(PropertyBuilder.HasPrecision)}(4){columnMapping}")
+                },
+                {
+                    CoreAnnotationNames.Scale,
+                    (Nothing, $"{columnMapping}")
                 },
                 {
                     CoreAnnotationNames.Unicode,
@@ -252,14 +293,19 @@ Namespace Migrations.Design
                 },
                 {
                     RelationalAnnotationNames.IsFixedLength,
-                    (True, $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.IsFixedLength)}(True)")
+                    (True, $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.IsFixedLength)}()")
                 },
                 {
                     RelationalAnnotationNames.Comment,
                     ("My Comment", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasComment)}(""My Comment"")")
                 },
-                {RelationalAnnotationNames.Collation,
+                {
+                    RelationalAnnotationNames.Collation,
                     ("Some Collation", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.UseCollation)}(""Some Collation"")")
+                },
+                {
+                    RelationalAnnotationNames.IsStored,
+                    (Nothing, $"{columnMapping}.{_nl}HasAnnotation(""{RelationalAnnotationNames.IsStored}"", Nothing)")
                 }
             }
 
@@ -268,7 +314,7 @@ Namespace Migrations.Design
                                                  Metadata,
                                    notForProperty,
                                    forProperty,
-                                   columnMapping,
+                                   Function(a) columnMapping,
                                    Sub(g, m, b) g.TestGeneratePropertyAnnotations(CType(m, IProperty), b))
         End Sub
 
@@ -276,7 +322,7 @@ Namespace Migrations.Design
             createMetadataItem As Func(Of ModelBuilder, IMutableAnnotatable),
             invalidAnnotations As HashSet(Of String),
             validAnnotations As Dictionary(Of String, (Value As Object, Expected As String)),
-            generationDefault As String,
+            generationDefault As Func(Of String, String),
             test As Action(Of TestVisualBasicSnapshotGenerator, IMutableAnnotatable, IndentedStringBuilder))
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
@@ -312,10 +358,11 @@ Namespace Migrations.Design
                 If Not invalidAnnotations.Contains(annotationName) Then
                     Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
                     Dim metadataItem = createMetadataItem(modelBuilder)
-                    metadataItem.SetAnnotation(annotationName, If(validAnnotations.ContainsKey(annotationName), validAnnotations(annotationName).Value _
-                , Nothing))
+                    metadataItem.SetAnnotation(annotationName, If(validAnnotations.ContainsKey(annotationName),
+                                                                    validAnnotations(annotationName).Value,
+                                                                    Nothing))
 
-                    modelBuilder.FinalizeModel()
+                    modelBuilder.FinalizeModel(designTime:=True)
 
                     Dim sb As New IndentedStringBuilder
 
@@ -329,7 +376,7 @@ Namespace Migrations.Design
                     Try
                         Assert.Equal(If(validAnnotations.ContainsKey(annotationName),
                                             validAnnotations(annotationName).Expected,
-                                            generationDefault),
+                                            generationDefault(annotationName)),
                                      sb.ToString())
 
                     Catch e As Exception
@@ -397,12 +444,12 @@ Namespace Migrations.Design
                                                         eb.Property(Of RawEnum)("EnumDiscriminator").HasConversion(Of Integer)()
                                                     End Sub)
 
-            modelBuilder.FinalizeModel()
+            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
             Dim modelSnapshotCode = generator.GenerateSnapshot("MyNamespace",
                                                                 GetType(MyContext),
                                                                 "MySnapshot",
-                                                                modelBuilder.Model)
+                                                                finalizedModel)
 
             Dim snapshotModel = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot").Model
 
@@ -435,7 +482,7 @@ Namespace Migrations.Design
 
             Dim sb As New IndentedStringBuilder
 
-            generator.TestGeneratePropertyAnnotations(prop, sb)
+            generator.TestGeneratePropertyAnnotations(DirectCast(prop, IProperty), sb)
 
             Assert.Equal(expected & "." & _nl & "HasMaxLength(1000)", sb.ToString())
         End Sub
@@ -517,9 +564,9 @@ End Namespace
                     migrationCode,
                     ignoreLineEndingDifferences:=True)
 
-            Dim modelBuilder1 As New ModelBuilder
+            Dim modelBuilder1 = SqlServerTestHelpers.Instance.CreateConventionBuilder(configure:=Sub(c) c.RemoveAllConventions())
             modelBuilder1.HasAnnotation("Some:EnumValue", RegexOptions.Multiline)
-            modelBuilder1.HasAnnotation(RelationalAnnotationNames.DbFunctions, New Object)
+            modelBuilder1.HasAnnotation(RelationalAnnotationNames.DbFunctions, New SortedDictionary(Of String, IDbFunction)())
             modelBuilder1.Entity("T1", Sub(eb)
                                            eb.Property(Of Integer)("Id")
                                            eb.Property(Of String)("C2").IsRequired()
@@ -527,12 +574,16 @@ End Namespace
                                            eb.HasKey("Id")
                                        End Sub)
 
+            modelBuilder1.HasAnnotation(CoreAnnotationNames.ProductVersion, Nothing)
+
+            Dim finalizedModel = modelBuilder1.FinalizeModel(designTime:=True)
+
             Dim migrationMetadataCode = generator.GenerateMetadata(
                     "MyNamespace",
                     GetType(MyContext),
                     "MyMigration",
                     "20150511161616_MyMigration",
-                    modelBuilder1.Model)
+                    finalizedModel)
 
             Assert.Equal(
 "' <auto-generated />
@@ -576,14 +627,16 @@ End Namespace
 
             Dim build = New BuildSource With {
                 .References = {
-                        BuildReference.ByName("netstandard"),
-                        BuildReference.ByName("System.Runtime"),
                         BuildReference.ByName("EntityFrameworkCore.VisualBasic.Test"),
                         BuildReference.ByName("Microsoft.EntityFrameworkCore"),
                         BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
+                        BuildReference.ByName("System.Runtime"),
                         BuildReference.ByName("System.Text.RegularExpressions")
                 },
-                .Sources = {migrationCode, migrationMetadataCode}
+                .Sources = New Dictionary(Of String, String) From {
+                    {"Migration.vb", migrationCode},
+                    {"MigrationSnapshot.vb", migrationMetadataCode}
+                }
             }
 
             Dim asm = build.BuildInMemory()
@@ -624,7 +677,7 @@ End Namespace
         Public Sub Snapshots_compile()
             Dim generator = CreateMigrationsCodeGenerator()
 
-            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder(skipValidation:=True)
+            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
 
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
             modelBuilder.Entity(Of EntityWithConstructorBinding)(
@@ -651,13 +704,13 @@ End Namespace
 
             entityType.SetPrimaryKey(property2)
 
-            modelBuilder.FinalizeModel()
+            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
             Dim modelSnapshotCode = generator.GenerateSnapshot(
                 "MyNamespace",
                 GetType(MyContext),
                 "MySnapshot",
-                model1)
+                finalizedModel)
 
             Assert.Equal(
 "' <auto-generated />
@@ -764,19 +817,18 @@ End Namespace
                 eb.HasKey(Function(e) e.Boolean)
             End Sub)
 
-            modelBuilder.FinalizeModel()
+            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
             Dim modelSnapshotCode = generator.GenerateSnapshot(
                 "MyNamespace",
                 GetType(MyContext),
                 "MySnapshot",
-                modelBuilder.Model
-            )
+                finalizedModel)
 
             Dim snapshot = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot")
             Dim entityType = snapshot.Model.GetEntityTypes().Single()
-            Assert.Equal(GetType(EntityWithEveryPrimitive).FullName, entityType.DisplayName())
 
+            Assert.Equal(GetType(EntityWithEveryPrimitive).FullName & " (Dictionary<string, object>)", entityType.DisplayName())
 
             For Each prop In modelBuilder.Model.GetEntityTypes().Single().GetProperties()
                 Dim expected = prop.GetDefaultValue()
@@ -861,17 +913,18 @@ End Namespace
         End Enum
 
         Private Function CompileModelSnapshot(modelSnapshotCode As String, modelSnapshotTypeName As String) As ModelSnapshot
-            Dim build As New BuildSource With
-                {.References =
+            Dim build As New BuildSource With {
+                .References =
                             {
-                                BuildReference.ByName("netstandard"),
+                                BuildReference.ByName("System"),
                                 BuildReference.ByName("System.Runtime"),
                                 BuildReference.ByName("EntityFrameworkCore.VisualBasic.Test"),
                                 BuildReference.ByName("Microsoft.EntityFrameworkCore"),
                                 BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
                                 BuildReference.ByName("System.Text.RegularExpressions")
                             },
-                 .Sources = {modelSnapshotCode}}
+                 .Sources = New Dictionary(Of String, String) From {{"MigrationSnapshot.vb", modelSnapshotCode}}
+            }
 
             Dim assembly = build.BuildInMemory()
 
@@ -976,13 +1029,13 @@ End Namespace
                                                             }})
                                                    End Sub)
 
-            Dim MyModel = MyModelBuilder.FinalizeModel
+            Dim finalizedModel = MyModelBuilder.FinalizeModel(designTime:=True)
 
             Dim SnapshotCode = Generator.GenerateSnapshot(
                 "MyNamespace",
                 GetType(MyContext),
                 "MySnapshot",
-                MyModel
+                finalizedModel
             )
 
             Dim migrationMetadataCode = Generator.GenerateMetadata(
@@ -990,7 +1043,7 @@ End Namespace
                 GetType(MyContext),
                 "MyMigration",
                 "20210515113700_MyMigration",
-                MyModel
+                finalizedModel
             )
 
             Dim expectedCode =
@@ -1063,14 +1116,18 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
 
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator
 
-            Return New ServiceCollection().
-                        AddEntityFrameworkSqlServer().
-                        AddEntityFrameworkDesignTimeServices().
-                        AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
-                        AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)().
-                        BuildServiceProvider().
-                        GetRequiredService(Of IMigrationsCodeGenerator)()
+            Dim testAssembly As Assembly = GetType(VisualBasicMigrationsGeneratorTests).Assembly
+            Dim reporter As New TestOperationReporter
 
+            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
+                CreateServiceCollection(SqlServerTestHelpers.Instance.CreateContext())
+
+            Dim vbServices = New EFCoreVisualBasicServices
+            vbServices.ConfigureDesignTimeServices(services)
+
+            Return services.
+                BuildServiceProvider().
+                GetRequiredService(Of IMigrationsCodeGenerator)()
         End Function
 
     End Class

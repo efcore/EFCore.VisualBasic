@@ -57,10 +57,6 @@ Namespace Scaffolding.Internal
                 Throw New ArgumentException(CoreStrings.ArgumentPropertyNull(NameOf(options.ConnectionString), NameOf(options)), NameOf(options))
             End If
 
-            If options.ModelNamespace Is Nothing Then
-                Throw New ArgumentException(CoreStrings.ArgumentPropertyNull(NameOf(options.ModelNamespace), NameOf(options)), NameOf(options))
-            End If
-
             Dim generatedCode = _VBDbContextGenerator.
                                     WriteCode(
                                         model,

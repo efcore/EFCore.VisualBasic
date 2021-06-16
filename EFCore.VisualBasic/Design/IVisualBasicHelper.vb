@@ -21,8 +21,12 @@ Namespace Design
         ''' </summary>
         ''' <param name="name"> The base identifier name. </param>
         ''' <param name="scope"> A list of in-scope identifiers. </param>
+        ''' <param name="capitalize">
+        '''     <see langword="True"/> if the first letter should be converted to uppercase;
+        '''     <see langword="False"/> if the first letter should be converted to lowercase;
+        ''' </param>
         ''' <returns> The identifier. </returns>
-        Function Identifier(name As String, Optional scope As ICollection(Of String) = Nothing) As String
+        Function Identifier(name As String, Optional scope As ICollection(Of String) = Nothing, Optional capitalize As Boolean? = Nothing) As String
 
         ''' <summary>
         '''     Generates a property accessor lambda.
@@ -192,6 +196,13 @@ Namespace Design
         ''' <param name="value"> The value. </param>
         ''' <returns> The literal. </returns>
         Function Literal(value As UShort) As String
+
+        ''' <summary>
+        '''     Generates a <see cref="Type"/> literal.
+        ''' </summary>
+        ''' <param name="value"> The value. </param>
+        ''' <returns> The literal. </returns>
+        Function Literal(value As Type) As String
 
         ''' <summary>
         '''     Generates an object array literal.

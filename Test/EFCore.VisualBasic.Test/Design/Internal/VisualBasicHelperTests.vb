@@ -261,7 +261,7 @@ string with """,
             Literal_works(value, expected)
         End Sub
 
-        <Theory()>
+        <ConditionalTheory()>
         <InlineData(GetType(Integer), "Integer")>
         <InlineData(GetType(Integer?), "Integer?")>
         <InlineData(GetType(Date), "Date")>
@@ -314,6 +314,11 @@ string with """,
             Reference_works(GetType(Nested.DoubleNested), "VisualBasicHelperTests.Nested.DoubleNested")
         End Sub
 
+        <ConditionalFact>
+        Public Sub NestedGenericOfNestedDoubleNested_Reference_works()
+            Reference_works(GetType(NestedGeneric(Of Nested.DoubleNested)), "VisualBasicHelperTests.NestedGeneric(Of VisualBasicHelperTests.Nested.DoubleNested)")
+        End Sub
+
         Private Class Nested
             Public Class DoubleNested
             End Class
@@ -321,6 +326,7 @@ string with """,
 
         Private Class NestedGeneric(Of T)
         End Class
+
         Private Enum SomeEnum
             DefaultValue
         End Enum

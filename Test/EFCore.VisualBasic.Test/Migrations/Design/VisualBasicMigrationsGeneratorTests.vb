@@ -360,6 +360,10 @@ Namespace Migrations.Design
             Public Overridable Sub TestGenerateSequence(builderName As String, sequence As ISequence, stringBuilder As IndentedStringBuilder)
                 GenerateSequence(builderName, sequence, stringBuilder)
             End Sub
+
+            Public Overridable Sub TestGenerateIndexes(builderName As String, indexes As IEnumerable(Of IIndex), stringBuilder As IndentedStringBuilder)
+                GenerateIndexes(builderName, indexes, stringBuilder)
+            End Sub
         End Class
 
         Private Class WithAnnotations
@@ -1059,6 +1063,55 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
 
             Assert.Equal(expected, sb.ToString())
 
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Index_is_generated_correctly()
+
+            Dim MyModelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+
+            MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
+                                                       eb.HasIndex(Function(e) New With {e.Id, e.Name}).
+                                                          HasDatabaseName("Index1").
+                                                          IsUnique()
+
+                                                       eb.HasIndex({"Name"}, "Index2").
+                                                          HasFilter("[Name] IS NOT NULL").
+                                                          HasAnnotation("MyAnnotation", "ABC")
+                                                   End Sub)
+
+            Dim MyModel = MyModelBuilder.FinalizeModel()
+            Dim k = MyModel.FindEntityType(GetType(SimpleEntity))
+
+            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
+               TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
+
+            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
+                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
+
+            Dim Generator As New TestVisualBasicSnapshotGenerator(codeHelper,
+                                                                  sqlServerTypeMappingSource,
+                                                                  sqlServerAnnotationCodeGenerator)
+
+            Dim sb As New IndentedStringBuilder
+
+            Generator.TestGenerateIndexes("MyModelBuilder", MyModel.FindEntityType(GetType(SimpleEntity)).GetIndexes, sb)
+
+            Dim expected As String =
+"
+MyModelBuilder.HasIndex(""Id"", ""Name"").
+    IsUnique().
+    HasDatabaseName(""Index1"")
+
+MyModelBuilder.HasIndex({""Name""}, ""Index2"").
+    HasFilter(""[Name] IS NOT NULL"").
+    HasAnnotation(""MyAnnotation"", ""ABC"")
+"
+
+            Assert.Equal(expected, sb.ToString())
         End Sub
 
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator

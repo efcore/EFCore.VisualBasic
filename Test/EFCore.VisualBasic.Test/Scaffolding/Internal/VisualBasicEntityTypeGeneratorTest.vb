@@ -98,7 +98,7 @@ End Namespace
                         "Vista",
                         Sub(b)
                             b.ToTable("Vistas") ' Default name is "Vista" in the absence of pluralizer
-                            b.[Property](Of Integer)("Id")
+                            b.Property(Of Integer)("Id")
                             b.HasKey("Id")
                         End Sub)
                 End Sub,
@@ -140,7 +140,7 @@ End Namespace
                         "Vista",
                         Sub(b)
                             b.ToTable("Vista", "dbo") ' Default name is "Vista" in the absence of pluralizer
-                            b.[Property](Of Integer)("Id")
+                            b.Property(Of Integer)("Id")
                             b.HasKey("Id")
                         End Sub)
                 End Sub,
@@ -183,7 +183,7 @@ End Namespace
                         "Vista",
                         Sub(b)
                             b.ToTable("Vista", "custom")
-                            b.[Property](Of Integer)("Id")
+                            b.Property(Of Integer)("Id")
                             b.HasKey("Id")
                         End Sub)
                 End Sub,

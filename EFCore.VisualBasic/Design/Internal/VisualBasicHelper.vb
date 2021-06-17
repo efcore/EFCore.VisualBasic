@@ -797,18 +797,18 @@ Namespace Design.Internal
 
         Private Function Fragment(frag As NestedClosureCodeFragment) As String
             If frag.MethodCalls.Count = 1 Then
-                Return $"Function({frag.Parameter}) {frag.Parameter}{Fragment(frag.MethodCalls(0))}"
+                Return $"Sub({frag.Parameter}) {frag.Parameter}{Fragment(frag.MethodCalls(0))}"
             End If
 
             Dim builder = New IndentedStringBuilder()
-            builder.AppendLine($"Function({frag.Parameter})")
+            builder.AppendLine($"Sub({frag.Parameter})")
             Using builder.Indent()
                 For Each methodCall In frag.MethodCalls
                     builder.AppendLine(frag.Parameter & Fragment(methodCall))
                 Next
             End Using
 
-            builder.AppendLine("End Function")
+            builder.AppendLine("End Sub")
 
             Return builder.ToString()
         End Function

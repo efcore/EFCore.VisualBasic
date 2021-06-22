@@ -106,21 +106,9 @@ Namespace Migrations.Design
                 GenerateSequence(builderName, sequence, stringBuilder)
             Next
 
-            GenerateEntityTypes(builderName, Sort(model.GetEntityTypes()), stringBuilder)
+            GenerateEntityTypes(builderName, model.GetEntityTypesInHierarchicalOrder(), stringBuilder)
 
         End Sub
-
-        Private Shared Function Sort(entityTypes As IEnumerable(Of IEntityType)) As IReadOnlyList(Of IEntityType)
-
-            Dim entityTypeGraph As New Multigraph(Of IEntityType, Integer)
-            entityTypeGraph.AddVertices(entityTypes)
-
-            For Each entityType In entityTypes.Where(Function(et) et.BaseType IsNot Nothing)
-                entityTypeGraph.AddEdge(entityType.BaseType, entityType, 0)
-            Next
-
-            Return entityTypeGraph.TopologicalSort()
-        End Function
 
         ''' <summary>
         '''     Generates code for <see cref="IEntityType" /> objects.
@@ -221,7 +209,11 @@ Namespace Migrations.Design
 
                     GenerateProperties(builderName, entityType.GetDeclaredProperties(), stringBuilder)
 
-                    GenerateKeys(builderName, entityType.GetDeclaredKeys(), entityType.FindDeclaredPrimaryKey(), stringBuilder)
+                    GenerateKeys(
+                        builderName,
+                        entityType.GetDeclaredKeys(),
+                        If(entityType.BaseType Is Nothing, entityType.FindPrimaryKey(), Nothing),
+                        stringBuilder)
 
                     GenerateIndexes(builderName, entityType.GetDeclaredIndexes(), stringBuilder)
 
@@ -579,16 +571,17 @@ Namespace Migrations.Design
 
             ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
             ' providers, generating them as raw annotations instead.
-            Dim ambiguousAnnotations = RemoveAmbiguousFluentApiAnnotations(
-                annotations,
-                Function(name)
-                    Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
-                End Function
-            )
+            Dim ambiguousAnnotations =
+                RemoveAmbiguousFluentApiAnnotations(
+                    annotations,
+                    Function(name)
+                        Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
+                    End Function
+                )
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls([property], annotations)
                 stringBuilder.
@@ -662,8 +655,7 @@ Namespace Migrations.Design
                 GenerateKeyAnnotations(key, stringBuilder)
             End Using
 
-            stringBuilder.
-                AppendLine()
+            stringBuilder.AppendLine()
         End Sub
 
         ''' <summary>
@@ -809,28 +801,43 @@ Namespace Migrations.Design
 
             If tableNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim tableName = If(CStr(tableNameAnnotation?.Value), entityType.GetTableName())
-                If tableName IsNot Nothing Then
+
+                If tableName IsNot Nothing OrElse tableNameAnnotation IsNot Nothing Then
+                    Dim schemaAnnotation = annotations.Find(RelationalAnnotationNames.Schema)
+
                     stringBuilder.
                         AppendLine().
                         Append(builderName).
-                        Append(".ToTable(").
-                        Append(VBCode.Literal(tableName))
+                        Append(".ToTable(")
+
+                    If tableName Is Nothing AndAlso schemaAnnotation Is Nothing Then
+                        stringBuilder.
+                            Append("DirectCast(").
+                            Append(VBCode.UnknownLiteral(tableName)).
+                            Append(", String)")
+                    Else
+                        stringBuilder.Append(VBCode.UnknownLiteral(tableName))
+                    End If
 
                     If tableNameAnnotation IsNot Nothing Then
                         annotations.Remove(tableNameAnnotation.Name)
                     End If
 
-                    Dim schemaAnnotation = annotations.Find(RelationalAnnotationNames.Schema)
+                    Dim isExcludedAnnotation = annotations.Find(RelationalAnnotationNames.IsTableExcludedFromMigrations)
+                    If schemaAnnotation IsNot Nothing Then
+                        stringBuilder.Append(", ")
 
-                    If schemaAnnotation?.Value IsNot Nothing Then
-                        stringBuilder.
-                            Append(", ").
-                            Append(VBCode.Literal(CStr(schemaAnnotation.Value)))
-
-                        annotations.Remove(schemaAnnotation.Name)
+                        Dim isExcludedAnnotationValue = CType(isExcludedAnnotation?.Value, Boolean?)
+                        If schemaAnnotation.Value Is Nothing AndAlso (Not isExcludedAnnotationValue.HasValue OrElse Not isExcludedAnnotationValue.Value) Then
+                            stringBuilder.
+                                Append("DirectCast(").
+                                Append(VBCode.UnknownLiteral(schemaAnnotation.Value)).
+                                Append(", String)")
+                        Else
+                            stringBuilder.Append(VBCode.UnknownLiteral(schemaAnnotation.Value))
+                        End If
                     End If
 
-                    Dim isExcludedAnnotation = annotations.Find(RelationalAnnotationNames.IsTableExcludedFromMigrations)
                     If isExcludedAnnotation IsNot Nothing Then
                         If CType(isExcludedAnnotation.Value, Boolean?) = True Then
                             If entityType.IsOwned() Then
@@ -848,15 +855,18 @@ Namespace Migrations.Design
                 End If
             End If
 
+            annotations.Remove(RelationalAnnotationNames.Schema)
+
             Dim viewNameAnnotation = annotations.Find(RelationalAnnotationNames.ViewName)
             If viewNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim viewName = If(CStr(viewNameAnnotation?.Value), entityType.GetViewName())
-                If viewName IsNot Nothing Then
+
+                If viewName IsNot Nothing OrElse viewNameAnnotation IsNot Nothing Then
                     stringBuilder.
                         AppendLine().
                         Append(builderName).
                         Append(".ToView(").
-                        Append(VBCode.Literal(viewName))
+                        Append(VBCode.UnknownLiteral(viewName))
 
                     If viewNameAnnotation IsNot Nothing Then
                         annotations.Remove(viewNameAnnotation.Name)
@@ -875,21 +885,43 @@ Namespace Migrations.Design
                 End If
             End If
 
+            annotations.Remove(RelationalAnnotationNames.ViewSchema)
+            annotations.Remove(RelationalAnnotationNames.ViewDefinitionSql)
+
             Dim functionNameAnnotation = annotations.Find(RelationalAnnotationNames.FunctionName)
             If functionNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim functionName = If(CStr(functionNameAnnotation?.Value), entityType.GetFunctionName())
-                If functionName IsNot Nothing Then
+
+                If functionName IsNot Nothing OrElse functionNameAnnotation IsNot Nothing Then
                     stringBuilder.
                         AppendLine().
                         Append(builderName).
                         Append(".ToFunction(").
-                        Append(VBCode.Literal(functionName))
+                        Append(VBCode.UnknownLiteral(functionName)).
+                        AppendLine(")")
 
                     If functionNameAnnotation IsNot Nothing Then
                         annotations.Remove(functionNameAnnotation.Name)
                     End If
+                End If
+            End If
 
-                    stringBuilder.AppendLine(")")
+            Dim sqlQueryAnnotation = annotations.Find(RelationalAnnotationNames.SqlQuery)
+
+            If sqlQueryAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
+                Dim SqlQuery = If(CStr(sqlQueryAnnotation?.Value), entityType.GetSqlQuery())
+
+                If SqlQuery IsNot Nothing OrElse sqlQueryAnnotation IsNot Nothing Then
+                    stringBuilder.
+                        AppendLine().
+                        Append(builderName).
+                        Append(".ToSqlQuery(").
+                        Append(VBCode.UnknownLiteral(SqlQuery)).
+                        AppendLine(")")
+
+                    If sqlQueryAnnotation IsNot Nothing Then
+                        annotations.Remove(sqlQueryAnnotation.Name)
+                    End If
                 End If
             End If
 
@@ -905,6 +937,7 @@ Namespace Migrations.Design
 
                 If discriminatorPropertyAnnotation?.Value IsNot Nothing Then
                     Dim discriminatorProperty = entityType.FindProperty(CStr(discriminatorPropertyAnnotation.Value))
+
                     Dim propertyClrType = If(FindValueConverter(discriminatorProperty)?.
                                                     ProviderClrType.
                                                     MakeNullable(discriminatorProperty.IsNullable),
@@ -934,7 +967,7 @@ Namespace Migrations.Design
 
                 If discriminatorValueAnnotation?.Value IsNot Nothing Then
                     Dim value = discriminatorValueAnnotation.Value
-                    Dim discriminatorProperty = entityType.GetDiscriminatorProperty()
+                    Dim discriminatorProperty = entityType.FindDiscriminatorProperty()
 
                     If discriminatorProperty IsNot Nothing Then
                         Dim valueConverter = FindValueConverter(discriminatorProperty)
@@ -969,8 +1002,7 @@ Namespace Migrations.Design
 
                     GenerateAnnotations(annotations.Values, stringBuilder)
 
-                    stringBuilder.
-                        AppendLine()
+                    stringBuilder.AppendLine()
                 End Using
             End If
 
@@ -1487,8 +1519,8 @@ Namespace Migrations.Design
             NotNull([property], NameOf([property]))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim defaultValue = [property].GetDefaultValue()
-            If defaultValue Is Nothing Then Exit Sub
+            Dim defaultValue As Object = Nothing
+            If Not [property].TryGetDefaultValue(defaultValue) Then Exit Sub
 
             stringBuilder.
                 AppendLine(".").

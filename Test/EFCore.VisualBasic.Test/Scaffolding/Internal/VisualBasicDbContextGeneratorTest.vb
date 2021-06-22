@@ -1,13 +1,10 @@
-﻿
-Imports EntityFrameworkCore.VisualBasic.Design
-Imports Microsoft.EntityFrameworkCore
+﻿Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
-Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 
@@ -160,32 +157,11 @@ End Namespace
 
         <ConditionalFact>
         Public Sub Required_options_to_GenerateModel_are_not_null()
-            Dim services = New ServiceCollection
-            services.AddEntityFrameworkDesignTimeServices()
 
-            Dim SqlServerDesignTimeServices = New SqlServerDesignTimeServices
-            SqlServerDesignTimeServices.ConfigureDesignTimeServices(services)
-
-            services.AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)()
-
-            Dim vbServices = New EFCoreVisualBasicServices
-            vbServices.ConfigureDesignTimeServices(services)
-
-            Dim generator = services _
-                .BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
-
-            Assert.StartsWith(
-                CoreStrings.ArgumentPropertyNull(NameOf(ModelCodeGenerationOptions.ModelNamespace), "options"),
-                Assert.Throws(Of ArgumentException)(
-                    Function()
-                        Return generator.GenerateModel(
-                            New Model(),
-                            New ModelCodeGenerationOptions With {
-                                .ModelNamespace = Nothing,
-                                .ContextName = "TestDbContext",
-                                .ConnectionString = "Initial Catalog=TestDatabase"
-                            })
-                    End Function).Message)
+            Dim generator = CreateServices().
+                AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)().
+                BuildServiceProvider().
+                GetRequiredService(Of IModelCodeGenerator)()
 
             Assert.StartsWith(
                 CoreStrings.ArgumentPropertyNull(NameOf(ModelCodeGenerationOptions.ContextName), "options"),
@@ -194,7 +170,6 @@ End Namespace
                         Return generator.GenerateModel(
                         New Model(),
                         New ModelCodeGenerationOptions With {
-                            .ModelNamespace = "TestNamespace",
                             .ContextName = Nothing,
                             .ConnectionString = "Initial Catalog=TestDatabase"
                         })
@@ -207,7 +182,6 @@ End Namespace
                         Return generator.GenerateModel(
                         New Model(),
                         New ModelCodeGenerationOptions With {
-                            .ModelNamespace = "TestNamespace",
                             .ContextName = "TestDbContext",
                             .ConnectionString = Nothing
                         })
@@ -216,19 +190,11 @@ End Namespace
 
         <ConditionalFact>
         Public Sub Plugins_work()
-            Dim services = New ServiceCollection
-            services.AddEntityFrameworkDesignTimeServices()
 
-            Dim SqlServerDesignTimeServices As New SqlServerDesignTimeServices
-            SqlServerDesignTimeServices.ConfigureDesignTimeServices(services)
-
-            services.AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)()
-
-            Dim vbServices = New EFCoreVisualBasicServices
-            vbServices.ConfigureDesignTimeServices(services)
-
-            Dim generator = services.
-                BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
+            Dim generator = CreateServices().
+                AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)().
+                BuildServiceProvider().
+                GetRequiredService(Of IModelCodeGenerator)()
 
             Dim scaffoldedModel = generator.GenerateModel(
                 New Model(),
@@ -240,7 +206,7 @@ End Namespace
                 })
 
             Assert.Contains(
-                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", Function(x) x.SetProviderOption()).SetContextOption()",
+                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).SetContextOption()",
                 scaffoldedModel.ContextFile.Code)
         End Sub
 
@@ -864,6 +830,26 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub Is_fixed_length_annotation_should_be_scaffolded_without_optional_parameter()
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity(
+                        "Employee",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of String)("Name").HasMaxLength(5).IsFixedLength()
+                        End Sub)
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = False
+                },
+                Sub(code) Assert.Contains(".
+                        IsFixedLength()", code.ContextFile.Code),
+                Sub(model) Assert.Equal(True, model.FindEntityType("TestNamespace.Employee").GetProperty("Name").IsFixedLength())
+                )
+        End Sub
+
+        <ConditionalFact>
         Public Sub Root_namespace_is_removed_from_files_namespace()
 
             Test(
@@ -981,6 +967,63 @@ End Namespace
                     Assert.Contains("Namespace [Integer]", code.AdditionalFiles(0).Code)
                 End Sub,
                 Sub(model)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Global_namespace_works()
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("MyEntity")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .ModelNamespace = String.Empty
+                },
+                Sub(code)
+                    Assert.DoesNotContain("namespace ", code.ContextFile.Code)
+                    Assert.DoesNotContain("namespace ", Assert.Single(code.AdditionalFiles).Code)
+                End Sub,
+                Sub(Model)
+                    Assert.NotNull(Model.FindEntityType("MyEntity"))
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Global_namespace_works_just_context()
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("MyEntity")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .ModelNamespace = "TestNamespace",
+                    .ContextNamespace = String.Empty
+                },
+                Sub(code)
+                    Assert.Contains("Imports TestNamespace", code.ContextFile.Code)
+                    Assert.DoesNotContain("Namespace ", code.ContextFile.Code)
+                    Assert.Contains("Namespace TestNamespace", Assert.Single(code.AdditionalFiles).Code)
+                End Sub,
+                Sub(Model)
+                    Assert.NotNull(Model.FindEntityType("TestNamespace.MyEntity"))
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Global_namespace_works_just_model()
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity("MyEntity")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .ModelNamespace = String.Empty,
+                    .ContextNamespace = "TestNamespace"
+                },
+                Sub(code)
+                    Assert.Contains("Namespace TestNamespace", code.ContextFile.Code)
+                    Assert.DoesNotContain("Namespace ", Assert.Single(code.AdditionalFiles).Code)
+                End Sub,
+                Sub(Model)
+                    Assert.NotNull(Model.FindEntityType("MyEntity"))
                 End Sub)
         End Sub
 

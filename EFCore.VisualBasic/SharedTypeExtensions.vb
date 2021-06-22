@@ -1,7 +1,7 @@
 ﻿Imports System.Reflection
 Imports System.Runtime.CompilerServices
 
-'<DebuggerStepThrough>
+<DebuggerStepThrough>
 Friend Module SharedTypeExtensions
 
     <Extension()>
@@ -10,20 +10,32 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
-    Function IsNullableType(type As Type) As Boolean
-        Dim typeInfo = type.GetTypeInfo()
-        Return Not typeInfo.IsValueType OrElse
-               typeInfo.IsGenericType AndAlso typeInfo.GetGenericTypeDefinition() = GetType(Nullable(Of ))
+    Public Function IsNullableValueType(type As Type) As Boolean
+        Return type.IsGenericType AndAlso type.GetGenericTypeDefinition() = GetType(Nullable(Of))
+    End Function
+
+    <Extension>
+    Public Function IsNullableType(type As Type) As Boolean
+        Return Not type.IsValueType OrElse type.IsNullableValueType()
     End Function
 
     <Extension()>
     Function IsValidEntityType(type As Type) As Boolean
-        Return type.GetTypeInfo().IsClass
+        Return type.IsClass
     End Function
 
     <Extension()>
     Function MakeNullable(type As Type) As Type
         Return If(type.IsNullableType(), type, GetType(Nullable(Of )).MakeGenericType(type))
+    End Function
+
+    <Extension()>
+    Public Function IsPropertyBagType(type As Type) As Boolean
+        If type.IsGenericTypeDefinition Then Return False
+
+        Dim types = GetGenericTypeImplementations(type, GetType(IDictionary(Of ,)))
+        Return types.Any(Function(t) t.GetGenericArguments()(0) = GetType(String) AndAlso
+                                     t.GetGenericArguments()(1) = GetType(Object))
     End Function
 
     <Extension()>
@@ -39,6 +51,15 @@ Friend Module SharedTypeExtensions
 
     End Function
 
+    <Extension()>
+    Public Function IsNumeric(type As Type) As Boolean
+        type = type.UnwrapNullableType()
+
+        Return type.IsInteger() OrElse
+               type = GetType(Decimal) OrElse
+               type = GetType(Single) OrElse
+               type = GetType(Double)
+    End Function
 
     <Extension()>
     Function IsInteger(type As Type) As Boolean
@@ -55,6 +76,35 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
+    Public Function IsSignedInteger(type As Type) As Boolean
+        Return type = GetType(Integer) OrElse
+               type = GetType(Long) OrElse
+               type = GetType(Short) OrElse
+               type = GetType(SByte)
+    End Function
+
+    <Extension()>
+    Public Function IsTupleType(type As Type) As Boolean
+        If type = GetType(Tuple) Then Return True
+
+        If type.IsGenericType Then
+            Dim genericDefinition = type.GetGenericTypeDefinition()
+            If genericDefinition = GetType(Tuple(Of)) OrElse
+               genericDefinition = GetType(Tuple(Of ,)) OrElse
+               genericDefinition = GetType(Tuple(Of ,,)) OrElse
+               genericDefinition = GetType(Tuple(Of ,,,)) OrElse
+               genericDefinition = GetType(Tuple(Of ,,,,)) OrElse
+               genericDefinition = GetType(Tuple(Of ,,,,,)) OrElse
+               genericDefinition = GetType(Tuple(Of ,,,,,,)) OrElse
+               genericDefinition = GetType(Tuple(Of ,,,,,,,)) Then
+                Return True
+            End If
+        End If
+
+        Return False
+    End Function
+
+    <Extension()>
     Function GetAnyProperty(type As Type, name As String) As PropertyInfo
         Dim props = type.GetRuntimeProperties().Where(Function(p) p.Name = name).ToList()
         If props.Count > 1 Then
@@ -65,22 +115,25 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
-    Function IsInstantiable(type As Type) As Boolean
-        Return IsInstantiable(type.GetTypeInfo())
-    End Function
+    Public Function GetRequiredMethod(type As Type, name As String, ParamArray parameters As Type()) As MethodInfo
+        Dim method = type.GetTypeInfo().GetMethod(name, parameters)
 
-    Private Function IsInstantiable(type As TypeInfo) As Boolean
-        Return Not type.IsAbstract AndAlso Not type.IsInterface AndAlso (Not type.IsGenericType OrElse Not type.IsGenericTypeDefinition)
+        If method Is Nothing AndAlso parameters.Length = 0 Then
+            method = type.GetMethod(name)
+        End If
+
+        If method Is Nothing Then
+            Throw New InvalidOperationException
+        End If
+
+        Return method
     End Function
 
     <Extension()>
-    Function IsNumeric(type As Type) As Boolean
-        type = type.UnwrapNullableType()
-
-        Return type.IsInteger() OrElse
-               type = GetType(Decimal) OrElse
-               type = GetType(Single) OrElse
-               type = GetType(Double)
+    Function IsInstantiable(type As Type) As Boolean
+        Return Not type.IsAbstract AndAlso
+               Not type.IsInterface AndAlso
+               (Not type.IsGenericType OrElse Not type.IsGenericTypeDefinition)
     End Function
 
     <Extension()>
@@ -99,7 +152,7 @@ Friend Module SharedTypeExtensions
     Function GetSequenceType(type As Type) As Type
         Dim sequenceType = TryGetSequenceType(type)
         If sequenceType Is Nothing Then
-            Throw New ArgumentException()
+            Throw New ArgumentException($"The type {type.Name} does not represent a sequence")
         End If
 
         Return sequenceType
@@ -111,70 +164,110 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
-    Function TryGetElementType(type As Type, interfaceOrBaseType As Type) As Type
-        If Not type.GetTypeInfo().IsGenericTypeDefinition Then
-            Dim types = GetGenericTypeImplementations(type, interfaceOrBaseType).ToList()
-            Return If(types.Count = 1, types(0).GetTypeInfo().GenericTypeArguments.FirstOrDefault(), Nothing)
+    Public Function TryGetElementType(type As Type, interfaceOrBaseType As Type) As Type
+        If type.IsGenericTypeDefinition Then
+            Return Nothing
         End If
 
-        Return Nothing
+        Dim types = GetGenericTypeImplementations(type, interfaceOrBaseType)
+
+        Dim singleImplementation As Type = Nothing
+        For Each implementation In types
+            If singleImplementation Is Nothing Then
+                singleImplementation = implementation
+            Else
+                singleImplementation = Nothing
+                Exit For
+            End If
+        Next
+
+        Return singleImplementation?.GenericTypeArguments.FirstOrDefault()
     End Function
 
     <Extension()>
-    Function GetGenericTypeImplementations(type As Type, interfaceOrBaseType As Type) As IEnumerable(Of Type)
+    Public Iterator Function GetGenericTypeImplementations(type As Type, interfaceOrBaseType As Type) As IEnumerable(Of Type)
         Dim typeInfo = type.GetTypeInfo()
         If Not typeInfo.IsGenericTypeDefinition Then
-            Return (If(interfaceOrBaseType.GetTypeInfo().IsInterface, typeInfo.ImplementedInterfaces, type.GetBaseTypes())).Union({type}).Where(Function(t) t.GetTypeInfo().IsGenericType AndAlso t.GetGenericTypeDefinition() = interfaceOrBaseType)
-        End If
+            Dim baseTypes = If(interfaceOrBaseType.GetTypeInfo().IsInterface,
+                                typeInfo.ImplementedInterfaces,
+                                type.GetBaseTypes())
 
-        Return Enumerable.Empty(Of Type)()
+            For Each baseType In baseTypes
+                If baseType.IsGenericType AndAlso
+                   baseType.GetGenericTypeDefinition() = interfaceOrBaseType Then
+                    Yield baseType
+                End If
+            Next
+
+            If type.IsGenericType AndAlso
+               type.GetGenericTypeDefinition() = interfaceOrBaseType Then
+                Yield type
+            End If
+        End If
     End Function
 
     <Extension()>
     Iterator Function GetBaseTypes(type As Type) As IEnumerable(Of Type)
-        type = type.GetTypeInfo().BaseType
-        While type IsNot Nothing
-            Yield type
-            type = type.GetTypeInfo().BaseType
+        Dim currentType = type.BaseType
+        While currentType IsNot Nothing
+            Yield currentType
+            currentType = currentType.BaseType
         End While
     End Function
 
     <Extension()>
     Iterator Function GetTypesInHierarchy(type As Type) As IEnumerable(Of Type)
-        While type IsNot Nothing
-            Yield type
-            type = type.GetTypeInfo().BaseType
+        Dim currentType = type
+        While currentType IsNot Nothing
+            Yield currentType
+            currentType = currentType.BaseType
         End While
     End Function
 
     <Extension()>
     Function GetDeclaredConstructor(type As Type, types As Type()) As ConstructorInfo
-        types = If(types, Array.Empty(Of Type))
-        Return type.GetTypeInfo().DeclaredConstructors.SingleOrDefault(Function(c) Not c.IsStatic AndAlso c.GetParameters().[Select](Function(p) p.ParameterType).SequenceEqual(types))
+        types = If(types, Array.Empty(Of Type)())
+        Return type.GetTypeInfo().DeclaredConstructors.SingleOrDefault(
+            Function(c)
+                Return Not c.IsStatic AndAlso
+                       c.GetParameters().Select(Function(p) p.ParameterType).SequenceEqual(types)
+            End Function)
     End Function
 
     <Extension()>
     Iterator Function GetPropertiesInHierarchy(type As Type, name As String) As IEnumerable(Of PropertyInfo)
+        Dim currentType = type
         Do
-            Dim typeInfo = type.GetTypeInfo()
-            Dim propertyInfo = typeInfo.GetDeclaredProperty(name)
-            If propertyInfo IsNot Nothing AndAlso Not (If(propertyInfo.GetMethod, propertyInfo.SetMethod)).IsStatic Then
-                Yield propertyInfo
-            End If
+            Dim typeInfo = currentType.GetTypeInfo()
+            For Each propertyInfo In typeInfo.DeclaredProperties
+                If propertyInfo.Name.Equals(name, StringComparison.Ordinal) AndAlso
+                   Not (If(propertyInfo.GetMethod, propertyInfo.SetMethod)).IsStatic Then
+                    Yield propertyInfo
+                End If
+            Next
 
-            type = typeInfo.BaseType
-        Loop While type IsNot Nothing
+            currentType = typeInfo.BaseType
+        Loop While currentType IsNot Nothing
     End Function
 
     <Extension()>
-    Iterator Function GetMembersInHierarchy(type As Type, name As String) As IEnumerable(Of MemberInfo)
-        For Each propertyInfo In type.GetRuntimeProperties().Where(Function(pi) pi.Name = name AndAlso Not (If(pi.GetMethod, pi.SetMethod)).IsStatic)
-            Yield propertyInfo
-        Next
+    Public Iterator Function GetMembersInHierarchy(type As Type) As IEnumerable(Of MemberInfo)
+        Dim currentType = type
 
-        For Each fieldInfo In type.GetRuntimeFields().Where(Function(f) f.Name = name AndAlso Not f.IsStatic)
-            Yield fieldInfo
-        Next
+        Do
+            ' Do the whole hierarchy for properties first since looking for fields is slower.
+            For Each propertyInfo In currentType.GetRuntimeProperties().
+                                        Where(Function(pi) Not If(pi.GetMethod, pi.SetMethod).IsStatic)
+                Yield propertyInfo
+            Next
+
+            For Each fieldInfo In currentType.GetRuntimeFields().
+                                    Where(Function(f) Not f.IsStatic)
+                Yield fieldInfo
+            Next
+
+            currentType = currentType.BaseType
+        Loop While currentType IsNot Nothing
     End Function
 
 
@@ -205,10 +298,10 @@ Friend Module SharedTypeExtensions
         Return If(_commonTypeDictionary.TryGetValue(type, value), value, Activator.CreateInstance(type))
     End Function
 
-
     <Extension()>
     Function GetConstructibleTypes(assembly As Assembly) As IEnumerable(Of TypeInfo)
-        Return assembly.GetLoadableDefinedTypes().Where(Function(t) Not t.IsAbstract AndAlso Not t.IsGenericTypeDefinition)
+        Return assembly.GetLoadableDefinedTypes().
+                            Where(Function(t) Not t.IsAbstract AndAlso Not t.IsGenericTypeDefinition)
     End Function
 
     <Extension()>
@@ -216,7 +309,8 @@ Friend Module SharedTypeExtensions
         Try
             Return assembly.DefinedTypes
         Catch ex As ReflectionTypeLoadException
-            Return ex.Types.Where(Function(t) t IsNot Nothing).[Select](Function(t) IntrospectionExtensions.GetTypeInfo(t))
+            Return ex.Types.Where(Function(t) t IsNot Nothing).
+                            Select(Function(t) IntrospectionExtensions.GetTypeInfo(t))
         End Try
     End Function
 
@@ -226,7 +320,7 @@ Friend Module SharedTypeExtensions
             Return
         End If
 
-        Yield type.[Namespace]
+        Yield type.Namespace
 
         If type.IsGenericType Then
             For Each typeArgument In type.GenericTypeArguments

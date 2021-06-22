@@ -24,6 +24,7 @@ Namespace Scaffolding.Internal
 
         Private _sb As IndentedStringBuilder
         Private _entityTypeBuilderInitialized As Boolean
+        Private _useDataAnnotations As Boolean
 
         Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
                        providerConfigurationCodeGenerator As IProviderConfigurationCodeGenerator,
@@ -47,6 +48,8 @@ Namespace Scaffolding.Internal
 
             NotNull(model, NameOf(model))
 
+            _useDataAnnotations = useDataAnnotations
+
             _sb = New IndentedStringBuilder
 
             _sb.AppendLine("Imports Microsoft.EntityFrameworkCore")
@@ -55,20 +58,22 @@ Namespace Scaffolding.Internal
             Dim finalContextNamespace As String = If(contextNamespace, modelNamespace)
             Dim trimmedFinalContextNamespace = finalContextNamespace
 
-            If Not String.IsNullOrWhiteSpace(rootNamespace) Then
-                If Not modelNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
-                    modelNamespace = rootNamespace & "." & modelNamespace
+            If finalContextNamespace IsNot Nothing Then
+                If Not String.IsNullOrWhiteSpace(rootNamespace) Then
+                    If Not modelNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
+                        modelNamespace = rootNamespace & "." & modelNamespace
+                    End If
+                    If finalContextNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
+                        trimmedFinalContextNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, finalContextNamespace)
+                    Else
+                        finalContextNamespace = rootNamespace & "." & finalContextNamespace
+                    End If
                 End If
-                If finalContextNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
-                    trimmedFinalContextNamespace = RemoveRootNamespaceFromNamespace(rootNamespace, finalContextNamespace)
-                Else
-                    finalContextNamespace = rootNamespace & "." & finalContextNamespace
-                End If
-            End If
 
-            If Not finalContextNamespace.Equals(modelNamespace, StringComparison.OrdinalIgnoreCase) Then
-                If Not String.IsNullOrWhiteSpace(modelNamespace) Then
-                    _sb.AppendLine($"Imports {_code.Namespace(modelNamespace)}")
+                If Not finalContextNamespace.Equals(modelNamespace, StringComparison.OrdinalIgnoreCase) Then
+                    If Not String.IsNullOrWhiteSpace(modelNamespace) Then
+                        _sb.AppendLine($"Imports {_code.Namespace(modelNamespace)}")
+                    End If
                 End If
             End If
 
@@ -85,7 +90,6 @@ Namespace Scaffolding.Internal
                 model,
                 contextName,
                 connectionString,
-                useDataAnnotations,
                 suppressConnectionStringWarning,
                 suppressOnConfiguring)
 
@@ -101,7 +105,6 @@ Namespace Scaffolding.Internal
             model As IModel,
             contextName As String,
             connectionString As String,
-            useDataAnnotations As Boolean,
             suppressConnectionStringWarning As Boolean,
             suppressOnConfiguring As Boolean)
 
@@ -124,7 +127,7 @@ Namespace Scaffolding.Internal
                     GenerateOnConfiguring(connectionString, suppressConnectionStringWarning)
                 End If
 
-                GenerateOnModelCreating(model, useDataAnnotations)
+                GenerateOnModelCreating(model)
             End Using
 
             _sb.AppendLine()
@@ -159,11 +162,13 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Sub GenerateEntityTypeErrors(model As IModel)
-            For Each entityTypeError In model.GetEntityTypeErrors()
+
+            Dim errors = model.GetEntityTypeErrors()
+            For Each entityTypeError In errors
                 _sb.AppendLine($"' {entityTypeError.Value} Please see the warning messages.")
             Next
 
-            If model.GetEntityTypeErrors().Count > 0 Then
+            If errors.Count > 0 Then
                 _sb.AppendLine()
             End If
         End Sub
@@ -198,8 +203,7 @@ Namespace Scaffolding.Internal
             _sb.AppendLine()
         End Sub
 
-        Protected Overridable Sub GenerateOnModelCreating(model As IModel,
-                                                          useDataAnnotations As Boolean)
+        Protected Overridable Sub GenerateOnModelCreating(model As IModel)
             NotNull(model, NameOf(model))
 
             _sb.AppendLine("Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)")
@@ -242,7 +246,7 @@ Namespace Scaffolding.Internal
                 For Each entityType In model.GetEntityTypes()
                     _entityTypeBuilderInitialized = False
 
-                    GenerateEntityType(entityType, useDataAnnotations)
+                    GenerateEntityType(entityType)
 
                     If _entityTypeBuilderInitialized Then
                         _sb.AppendLine("End Sub)")
@@ -275,9 +279,9 @@ Namespace Scaffolding.Internal
             _entityTypeBuilderInitialized = True
         End Sub
 
-        Private Sub GenerateEntityType(entityType As IEntityType, useDataAnnotations As Boolean)
+        Private Sub GenerateEntityType(entityType As IEntityType)
 
-            GenerateKey(entityType.FindPrimaryKey(), entityType, useDataAnnotations)
+            GenerateKey(entityType.FindPrimaryKey(), entityType)
 
             Dim annotations = _annotationCodeGenerator.
                               FilterIgnoredAnnotations(entityType.GetAnnotations()).
@@ -292,13 +296,13 @@ Namespace Scaffolding.Internal
             annotations.Remove(ScaffoldingAnnotationNames.DbSetName)
             annotations.Remove(RelationalAnnotationNames.ViewDefinitionSql)
 
-            If useDataAnnotations Then
+            If _useDataAnnotations Then
                 ' Strip out any annotations handled as attributes - these are already handled when generating
                 ' the entity's properties
                 Call _annotationCodeGenerator.GenerateDataAnnotationAttributes(entityType, annotations)
             End If
 
-            If Not useDataAnnotations OrElse entityType.GetViewName() IsNot Nothing Then
+            If Not _useDataAnnotations OrElse entityType.GetViewName() IsNot Nothing Then
                 GenerateTableName(entityType)
             End If
 
@@ -317,17 +321,17 @@ Namespace Scaffolding.Internal
                     .ToDictionary(Function(a) a.Name, Function(a) a)
                 _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(index, indexAnnotations)
 
-                If Not useDataAnnotations OrElse indexAnnotations.Count > 0 Then
+                If Not _useDataAnnotations OrElse indexAnnotations.Count > 0 Then
                     GenerateIndex(index)
                 End If
             Next
 
             For Each prop In entityType.GetProperties()
-                GenerateProperty(prop, useDataAnnotations)
+                GenerateProperty(prop)
             Next
 
             For Each foreignKey In entityType.GetForeignKeys()
-                GenerateRelationship(foreignKey, useDataAnnotations)
+                GenerateRelationship(foreignKey)
             Next
         End Sub
 
@@ -354,9 +358,9 @@ Namespace Scaffolding.Internal
             End Using
         End Sub
 
-        Private Sub GenerateKey(aKey As IKey, entityType As IEntityType, useDataAnnotations As Boolean)
-            If aKey Is Nothing Then
-                If Not useDataAnnotations Then
+        Private Sub GenerateKey(key As IKey, entityType As IEntityType)
+            If key Is Nothing Then
+                If Not _useDataAnnotations Then
                     Dim line As New List(Of String) From {
                         $".{NameOf(EntityTypeBuilder.HasNoKey)}()"}
 
@@ -367,44 +371,44 @@ Namespace Scaffolding.Internal
             End If
 
             Dim annotations = _annotationCodeGenerator.
-                FilterIgnoredAnnotations(aKey.GetAnnotations()).
+                FilterIgnoredAnnotations(key.GetAnnotations()).
                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(aKey, annotations)
+            _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(key, annotations)
 
-            Dim explicitName As Boolean = aKey.GetName() <> aKey.GetDefaultName()
+            Dim explicitName As Boolean = key.GetName() <> key.GetDefaultName()
             annotations.Remove(RelationalAnnotationNames.Name)
 
-            If aKey.Properties.Count = 1 AndAlso annotations.Count = 0 Then
-                If TypeOf aKey Is Key Then
-                    Dim concreteKey = DirectCast(aKey, Key)
+            If key.Properties.Count = 1 AndAlso annotations.Count = 0 Then
+                If TypeOf key Is IConventionKey Then
+                    Dim conventionKey = DirectCast(key, IConventionKey)
 
-                    If aKey.Properties.SequenceEqual(
+                    If conventionKey.Properties.SequenceEqual(
                            KeyDiscoveryConvention.DiscoverKeyProperties(
-                               concreteKey.DeclaringEntityType,
-                               concreteKey.DeclaringEntityType.GetProperties())) Then
+                               conventionKey.DeclaringEntityType,
+                               conventionKey.DeclaringEntityType.GetProperties())) Then
                         Exit Sub
                     End If
                 End If
 
-                If Not explicitName AndAlso useDataAnnotations Then
+                If Not explicitName AndAlso _useDataAnnotations Then
                     Exit Sub
                 End If
             End If
 
             Dim lines As New List(Of String) From {
-                $".{NameOf(EntityTypeBuilder.HasKey)}({_code.Lambda(aKey.Properties, "e")})"}
+                $".{NameOf(EntityTypeBuilder.HasKey)}({_code.Lambda(key.Properties, "e")})"}
 
             If explicitName Then
-                lines.Add($".{NameOf(RelationalKeyBuilderExtensions.HasName)}({_code.Literal(aKey.GetName())})")
+                lines.Add($".{NameOf(RelationalKeyBuilderExtensions.HasName)}({_code.Literal(key.GetName())})")
             End If
 
             lines.AddRange(
-                _annotationCodeGenerator.GenerateFluentApiCalls(aKey, annotations).
+                _annotationCodeGenerator.GenerateFluentApiCalls(key, annotations).
                     Select(Function(m) _code.Fragment(m)).
                     Concat(GenerateAnnotations(annotations.Values)))
 
-            AppendMultiLineFluentApi(aKey.DeclaringEntityType, lines)
+            AppendMultiLineFluentApi(key.DeclaringEntityType, lines)
         End Sub
 
         Private Sub GenerateTableName(entityType As IEntityType)
@@ -472,7 +476,7 @@ Namespace Scaffolding.Internal
             AppendMultiLineFluentApi(index.DeclaringEntityType, lines)
         End Sub
 
-        Private Sub GenerateProperty(prop As IProperty, useDataAnnotations As Boolean)
+        Private Sub GenerateProperty(prop As IProperty)
             Dim lines As New List(Of String) From {
                 $".{NameOf(EntityTypeBuilder.Property)}({_code.Lambda({prop.Name}, "e")})"}
 
@@ -483,7 +487,7 @@ Namespace Scaffolding.Internal
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(prop, annotations)
             annotations.Remove(ScaffoldingAnnotationNames.ColumnOrdinal)
 
-            If useDataAnnotations Then
+            If _useDataAnnotations Then
                 ' Strip out any annotations handled as attributes - these are already handled when generating
                 ' the entity's properties
                 ' Only relational ones need to be removed here. Core ones are already removed by FilterIgnoredAnnotations
@@ -520,13 +524,15 @@ Namespace Scaffolding.Internal
                 End If
             End If
 
-            Dim defaultValue = prop.GetDefaultValue()
-            If defaultValue Is DBNull.Value Then
-                lines.Add($".{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)}()")
-                annotations.Remove(RelationalAnnotationNames.DefaultValue)
-            ElseIf defaultValue IsNot Nothing Then
-                lines.Add($".{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)}({_code.UnknownLiteral(defaultValue)})")
-                annotations.Remove(RelationalAnnotationNames.DefaultValue)
+            Dim defaultValue As Object = prop.GetDefaultValue()
+            If prop.TryGetDefaultValue(defaultValue) Then
+                If defaultValue Is DBNull.Value Then
+                    lines.Add($".{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)}()")
+                    annotations.Remove(RelationalAnnotationNames.DefaultValue)
+                ElseIf defaultValue IsNot Nothing Then
+                    lines.Add($".{NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)}({_code.UnknownLiteral(defaultValue)})")
+                    annotations.Remove(RelationalAnnotationNames.DefaultValue)
+                End If
             End If
 
             Dim valueGenerated1 = prop.ValueGenerated
@@ -585,7 +591,7 @@ Namespace Scaffolding.Internal
             AppendMultiLineFluentApi(prop.DeclaringEntityType, lines)
         End Sub
 
-        Private Sub GenerateRelationship(foreignKey As IForeignKey, useDataAnnotations As Boolean)
+        Private Sub GenerateRelationship(foreignKey As IForeignKey)
 
             Dim canUseDataAnnotations As Boolean = True
 
@@ -635,7 +641,7 @@ Namespace Scaffolding.Internal
                     Select(Function(m) _code.Fragment(m)).
                     Concat(GenerateAnnotations(annotations.Values)))
 
-            If Not useDataAnnotations OrElse Not canUseDataAnnotations Then
+            If Not _useDataAnnotations OrElse Not canUseDataAnnotations Then
                 AppendMultiLineFluentApi(foreignKey.DeclaringEntityType, lines)
             End If
         End Sub

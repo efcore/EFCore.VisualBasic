@@ -18,12 +18,12 @@ Namespace Design.Internal
     Public Class VisualBasicHelper
         Implements IVisualBasicHelper
 
-        Private ReadOnly _relationalTypeMappingSource As IRelationalTypeMappingSource
+        Private ReadOnly _typeMappingSource As ITypeMappingSource
 
-        Sub New(RelationalTypeMappingSource As IRelationalTypeMappingSource)
-            NotNull(RelationalTypeMappingSource, NameOf(RelationalTypeMappingSource))
+        Sub New(typeMappingSource As ITypeMappingSource)
+            NotNull(typeMappingSource, NameOf(typeMappingSource))
 
-            _relationalTypeMappingSource = RelationalTypeMappingSource
+            _typeMappingSource = typeMappingSource
         End Sub
 
         Private Shared ReadOnly _literalFuncs As IReadOnlyDictionary(Of Type, Func(Of VisualBasicHelper, Object, String)) =
@@ -51,7 +51,8 @@ Namespace Design.Internal
             {GetType(UInteger), Function(c, v) c.Literal(CUInt(v))},
             {GetType(ULong), Function(c, v) c.Literal(CULng(v))},
             {GetType(UShort), Function(c, v) c.Literal(CUShort(v))},
-            {GetType(BigInteger), Function(c, v) c.Literal(DirectCast(v, BigInteger))}
+            {GetType(BigInteger), Function(c, v) c.Literal(DirectCast(v, BigInteger))},
+            {GetType(Type), Function(c, v) c.Literal(DirectCast(v, Type))}
         }
 
         ''' <summary>
@@ -71,7 +72,7 @@ Namespace Design.Internal
                 builder.
                 Append("New With {").
                 AppendJoin(", ", properties.Select(Function(p) "e." & p)).
-                Append("}")
+                Append("}"c)
             End If
 
             Return builder.ToString()
@@ -85,7 +86,6 @@ Namespace Design.Internal
             Return Lambda(properties.Select(Function(p) p.Name).ToList(), lambdaIdentifier)
         End Function
 
-
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
@@ -95,51 +95,8 @@ Namespace Design.Internal
         End Function
 
         Private Function Reference(type As Type, useFullName As Boolean) As String
-
             NotNull(type, NameOf(type))
-
-            Dim builtInType As String = Nothing
-            If _builtInTypes.TryGetValue(type, builtInType) Then
-                Return builtInType
-            End If
-
-            If type.IsConstructedGenericType AndAlso type.GetGenericTypeDefinition() = GetType(Nullable(Of )) Then
-                Return Reference(type.UnwrapNullableType()) & "?"
-            End If
-
-            Dim builder As New StringBuilder()
-
-            If type.IsArray Then
-                builder.
-                Append(Reference(type.GetElementType())).
-                Append("(")
-
-                Dim rank = type.GetArrayRank()
-                For i = 1 To rank - 1
-                    builder.Append(",")
-                Next
-
-                builder.Append(")")
-
-                Return builder.ToString()
-            End If
-
-            If type.IsNested Then
-                Debug.Assert(type.DeclaringType IsNot Nothing, "DeclaringType is null")
-                builder.
-                    Append(Reference(type.DeclaringType)).
-                    Append(".")
-            End If
-
-            Dim typeName = If(useFullName, type.DisplayName(), type.ShortDisplayName())
-
-            If IsVisualBasicKeyword(typeName) Then
-                builder.Append($"[{typeName}]")
-            Else
-                builder.Append(typeName)
-            End If
-
-            Return builder.ToString()
+            Return type.DisplayName(fullName:=useFullName, compilable:=True)
         End Function
 
 
@@ -147,7 +104,9 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Identifier(name As String, Optional scope As ICollection(Of String) = Nothing) As String Implements IVisualBasicHelper.Identifier
+        Public Overridable Function Identifier(name As String,
+                                               Optional scope As ICollection(Of String) = Nothing,
+                                               Optional capitalize As Boolean? = Nothing) As String Implements IVisualBasicHelper.Identifier
             Dim builder = New StringBuilder()
             Dim partStart = 0
 
@@ -169,6 +128,10 @@ Namespace Design.Internal
                 builder.Insert(0, "_")
             End If
 
+            If capitalize IsNot Nothing Then
+                ChangeFirstLetterCase(builder, capitalize.Value)
+            End If
+
             Dim baseIdentifier = builder.ToString()
             If scope IsNot Nothing Then
                 Dim uniqueIdentifier = baseIdentifier
@@ -186,6 +149,22 @@ Namespace Design.Internal
             End If
 
             Return baseIdentifier
+        End Function
+
+        Private Shared Function ChangeFirstLetterCase(builder As StringBuilder, capitalize As Boolean) As StringBuilder
+            If builder.Length = 0 Then
+                Return builder
+            End If
+
+            Dim first = builder(0)
+            If Char.IsUpper(first) = capitalize Then
+                Return builder
+            End If
+
+            builder.Remove(0, 1).
+                Insert(0, If(capitalize, Char.ToUpperInvariant(first), Char.ToLowerInvariant(first)))
+
+            Return builder
         End Function
 
         ''' <summary>
@@ -420,6 +399,16 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
+        Public Overridable Function Literal(value As Type) As String Implements IVisualBasicHelper.Literal
+            Return $"GetType({Reference(value)})"
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
         Public Overridable Function Literal(Of T As Structure)(value As T?) As String Implements IVisualBasicHelper.Literal
             Return UnknownLiteral(value)
         End Function
@@ -462,7 +451,7 @@ Namespace Design.Internal
                     builder.Append("() ")
                 End If
 
-                builder.Append("{")
+                builder.Append("{"c)
 
                 If vertical Then
                     builder.AppendLine()
@@ -474,12 +463,12 @@ Namespace Design.Internal
                     If first Then
                         first = False
                     Else
-                        builder.Append(",")
+                        builder.Append(","c)
 
                         If vertical Then
                             builder.AppendLine()
                         Else
-                            builder.Append(" ")
+                            builder.Append(" "c)
                         End If
                     End If
 
@@ -491,7 +480,7 @@ Namespace Design.Internal
                     builder.DecrementIndent()
                 End If
 
-                builder.Append("}")
+                builder.Append("}"c)
             End If
 
             Return builder.ToString()
@@ -514,7 +503,7 @@ Namespace Design.Internal
                         builder.AppendLine(",")
                     End If
 
-                    builder.Append("{")
+                    builder.Append("{"c)
 
                     For j = 0 To valueCount - 1
                         If j <> 0 Then
@@ -524,13 +513,13 @@ Namespace Design.Internal
                         builder.Append(UnknownLiteral(values(i, j)))
                     Next
 
-                    builder.Append("}")
+                    builder.Append("}"c)
                 Next
             End Using
 
             builder.
             AppendLine().
-            Append("}")
+            Append("}"c)
 
             Return builder.ToString()
         End Function
@@ -624,11 +613,15 @@ Namespace Design.Internal
                 Return Literal(CType(value, [Enum]))
             End If
 
+            If TypeOf value Is Type Then
+                Return Literal(DirectCast(value, Type))
+            End If
+
             If TypeOf value Is Array Then
                 Return ArrayLitetal(LiteralType.GetElementType(), DirectCast(value, Array))
             End If
 
-            Dim mapping = _relationalTypeMappingSource.FindMapping(LiteralType)
+            Dim mapping = _typeMappingSource.FindMapping(LiteralType)
             If mapping IsNot Nothing Then
                 Dim builder As New StringBuilder
                 Dim expression = mapping.GenerateCodeLiteral(value)
@@ -670,7 +663,7 @@ Namespace Design.Internal
 
                     builder.Append(", ").
                         Append(Reference(exp.Type, useFullName:=True)).
-                        Append(")")
+                        Append(")"c)
 
                     Return b
 
@@ -784,17 +777,17 @@ Namespace Design.Internal
             Dim current = frag
             While current IsNot Nothing
                 builder.
-                    Append(".")
+                    Append("."c)
 
                 If vertical Then builder.AppendLine()
 
                 builder.
                     Append(current.Method).
-                    Append("(")
+                    Append("("c)
 
                 builder.AppendJoin(", ", current.Arguments.Select(Function(Arg) UnknownLiteral(Arg)))
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 current = current.ChainedCall
             End While
@@ -803,7 +796,21 @@ Namespace Design.Internal
         End Function
 
         Private Function Fragment(frag As NestedClosureCodeFragment) As String
-            Return $"Function({frag.Parameter}) {frag.Parameter & Fragment(frag.MethodCall)}"
+            If frag.MethodCalls.Count = 1 Then
+                Return $"Sub({frag.Parameter}) {frag.Parameter}{Fragment(frag.MethodCalls(0))}"
+            End If
+
+            Dim builder = New IndentedStringBuilder()
+            builder.AppendLine($"Sub({frag.Parameter})")
+            Using builder.Indent()
+                For Each methodCall In frag.MethodCalls
+                    builder.AppendLine(frag.Parameter & Fragment(methodCall))
+                Next
+            End Using
+
+            builder.AppendLine("End Sub")
+
+            Return builder.ToString()
         End Function
 
     End Class

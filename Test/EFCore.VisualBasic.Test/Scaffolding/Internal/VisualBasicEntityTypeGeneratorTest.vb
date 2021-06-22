@@ -769,6 +769,112 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub UnicodeAttribute_is_generated_for_property()
+
+            Dim expectedCode =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Public Partial Class Entity
+        <Key>
+        Public Property Id As Integer
+        <StringLength(34)>
+        <Unicode>
+        Public Property A As String
+        <StringLength(34)>
+        <Unicode(False)>
+        Public Property B As String
+        <StringLength(34)>
+        Public Property C As String
+    End Class
+End Namespace
+"
+
+            Test(
+                Function(modelBuilder)
+                    Return modelBuilder.Entity(
+                        "Entity",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of String)("A").HasMaxLength(34).IsUnicode()
+                            x.Property(Of String)("B").HasMaxLength(34).IsUnicode(False)
+                            x.Property(Of String)("C").HasMaxLength(34)
+                        End Sub)
+                End Function,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "Entity.vb"))
+                End Sub,
+                Sub(model)
+                    Dim entitType = model.FindEntityType("TestNamespace.Entity")
+                    Assert.True(entitType.GetProperty("A").IsUnicode())
+                    Assert.False(entitType.GetProperty("B").IsUnicode())
+                    Assert.Null(entitType.GetProperty("C").IsUnicode())
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub PrecisionAttribute_is_generated_for_property()
+
+            Dim expectedCode =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Public Partial Class Entity
+        <Key>
+        Public Property Id As Integer
+        <Precision(10)>
+        Public Property A As Decimal
+        <Precision(14, 3)>
+        Public Property B As Decimal
+        <Precision(5)>
+        Public Property C As Date
+        <Precision(3)>
+        Public Property D As DateTimeOffset
+    End Class
+End Namespace
+"
+
+            Test(
+                   Function(modelBuilder)
+                       Return modelBuilder _
+     .Entity(
+         "Entity",
+         Sub(x)
+             x.Property(Of Integer)("Id")
+             x.Property(Of Decimal)("A").HasPrecision(10)
+             x.Property(Of Decimal)("B").HasPrecision(14, 3)
+             x.Property(Of Date)("C").HasPrecision(5)
+             x.Property(Of DateTimeOffset)("D").HasPrecision(3)
+         End Sub)
+                   End Function,
+New ModelCodeGenerationOptions With
+{
+                .UseDataAnnotations = True},
+                   Sub(code)
+                       AssertFileContents(
+                           expectedCode,
+                           code.AdditionalFiles.Single(Function(f) f.Path = "Entity.vb"))
+                   End Sub,
+                   Sub(model)
+                       Dim entitType = model.FindEntityType("TestNamespace.Entity")
+                       Assert.Equal(10, entitType.GetProperty("A").GetPrecision())
+                       Assert.Equal(14, entitType.GetProperty("B").GetPrecision())
+                       Assert.Equal(3, entitType.GetProperty("B").GetScale())
+                       Assert.Equal(5, entitType.GetProperty("C").GetPrecision())
+                       Assert.Equal(3, entitType.GetProperty("D").GetPrecision())
+                   End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Comments_are_generated()
 
             Dim expectedCode =

@@ -1,8 +1,9 @@
 ﻿
 Imports System.IO
 Imports EntityFrameworkCore.VisualBasic.Design
-Imports EntityFrameworkCore.VisualBasic.Design.Internal
+Imports EntityFrameworkCore.VisualBasic.TestUtilities
 Imports Microsoft.EntityFrameworkCore.Design
+Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Microsoft.Extensions.DependencyInjection
@@ -27,11 +28,8 @@ Namespace Scaffolding.Internal
 
             modelBuilder.Entity("TestEntity").[Property](Of Integer)("Id").HasAnnotation(ScaffoldingAnnotationNames.ColumnOrdinal, 0)
 
-            Dim model1 = CType(modelBuilder.Model, Model)
-            Dim finalizedModel = model1.ConventionDispatcher.OnModelFinalizing(model1.Builder)?.Metadata
-
             Dim result = generator.GenerateModel(
-                finalizedModel,
+                modelBuilder.FinalizeModel(designTime:=True),
                 New ModelCodeGenerationOptions With
                 {
                     .ModelNamespace = "TestNamespace",
@@ -50,15 +48,20 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Shared Function CreateGenerator() As IModelCodeGenerator
-            Return (New ServiceCollection).
-                        AddEntityFrameworkSqlServer().
-                        AddEntityFrameworkDesignTimeServices().
-                        AddSingleton(Of IAnnotationCodeGenerator, AnnotationCodeGenerator)().
-                        AddSingleton(Of IProviderConfigurationCodeGenerator, TestProviderCodeGenerator)().
-                        AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)().
-                        AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)().
-                        BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
+            Dim testAssembly As Reflection.Assembly = GetType(VisualBasicModelGeneratorTest).Assembly
+            Dim reporter As New TestOperationReporter
 
+            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
+                CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer").
+                AddSingleton(Of IAnnotationCodeGenerator, AnnotationCodeGenerator)().
+                AddSingleton(Of IProviderConfigurationCodeGenerator, TestProviderCodeGenerator)()
+
+            Dim vbServices = New EFCoreVisualBasicServices
+            vbServices.ConfigureDesignTimeServices(services)
+
+            Return services.
+                BuildServiceProvider().
+                GetRequiredService(Of IModelCodeGenerator)()
         End Function
     End Class
 

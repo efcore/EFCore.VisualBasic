@@ -261,7 +261,7 @@ string with """,
             Literal_works(value, expected)
         End Sub
 
-        <Theory()>
+        <ConditionalTheory()>
         <InlineData(GetType(Integer), "Integer")>
         <InlineData(GetType(Integer?), "Integer?")>
         <InlineData(GetType(Date), "Date")>
@@ -314,6 +314,11 @@ string with """,
             Reference_works(GetType(Nested.DoubleNested), "VisualBasicHelperTests.Nested.DoubleNested")
         End Sub
 
+        <ConditionalFact>
+        Public Sub NestedGenericOfNestedDoubleNested_Reference_works()
+            Reference_works(GetType(NestedGeneric(Of Nested.DoubleNested)), "VisualBasicHelperTests.NestedGeneric(Of VisualBasicHelperTests.Nested.DoubleNested)")
+        End Sub
+
         Private Class Nested
             Public Class DoubleNested
             End Class
@@ -321,6 +326,7 @@ string with """,
 
         Private Class NestedGeneric(Of T)
         End Class
+
         Private Enum SomeEnum
             DefaultValue
         End Enum
@@ -417,7 +423,28 @@ string with """,
 
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
-            Assert.Equal(".Test(Function(x) x.Test())", result)
+            Assert.Equal(".Test(Sub(x) x.Test())", result)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Fragment_MethodCallCodeFragment_works_when_nested_closure_with_multiple_method_calls()
+            Dim method As New MethodCallCodeFragment("Test",
+                          New NestedClosureCodeFragment("tb",
+                            {New MethodCallCodeFragment("Test"),
+                             New MethodCallCodeFragment("Test2", True, 42),
+                             New MethodCallCodeFragment("Test3",
+                                New NestedClosureCodeFragment("ttb", New MethodCallCodeFragment("Test")))
+                            }))
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
+
+            Assert.Equal(
+".Test(Sub(tb)
+    tb.Test()
+    tb.Test2(True, 42)
+    tb.Test3(Sub(ttb) ttb.Test())
+End Sub
+)", result)
         End Sub
 
         <ConditionalFact>

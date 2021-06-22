@@ -11,7 +11,6 @@ namespace EFCore.Design.Tests.Shared
         public TestTypeMappingPlugin(Func<T, Expression> literalExpressionFunc)
         {
             _literalExpressionFunc = literalExpressionFunc;
-            Console.Error.WriteLine("Coucou");
         }
 
         public RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)

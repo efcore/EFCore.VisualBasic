@@ -240,7 +240,7 @@ End Namespace
                 })
 
             Assert.Contains(
-                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", Function(x) x.SetProviderOption()).SetContextOption()",
+                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).SetContextOption()",
                 scaffoldedModel.ContextFile.Code)
         End Sub
 

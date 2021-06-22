@@ -173,8 +173,8 @@ Namespace Design.Internal
             If scope IsNot Nothing Then
                 Dim uniqueIdentifier = baseIdentifier
                 Dim qualifier = 0
-                While scope.Contains(uniqueIdentifier)
-                    uniqueIdentifier = baseIdentifier + qualifier.ToString(CultureInfo.InvariantCulture)
+                While scope.Contains(uniqueIdentifier, StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase:=True))
+                    uniqueIdentifier = baseIdentifier & qualifier.ToString(CultureInfo.InvariantCulture)
                     qualifier += 1
                 End While
                 scope.Add(uniqueIdentifier)
@@ -803,7 +803,7 @@ Namespace Design.Internal
         End Function
 
         Private Function Fragment(frag As NestedClosureCodeFragment) As String
-            Return $"Function({frag.Parameter}) {frag.Parameter & Fragment(frag.MethodCall)}"
+            Return $"Sub({frag.Parameter}) {frag.Parameter & Fragment(frag.MethodCall)}"
         End Function
 
     End Class

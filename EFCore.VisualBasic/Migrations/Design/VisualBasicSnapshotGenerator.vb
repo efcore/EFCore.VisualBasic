@@ -1048,11 +1048,18 @@ Namespace Migrations.Design
             stringBuilder.
                 Append(builderName).
                 Append(".HasCheckConstraint(").
-                Append(VBCode.Literal(checkConstraint.Name)).
+                Append(VBCode.Literal(checkConstraint.ModelName)).
                 Append(", ").
-                Append(VBCode.Literal(checkConstraint.Sql)).
-                AppendLine(")")
+                Append(VBCode.Literal(checkConstraint.Sql))
 
+            If checkConstraint.Name <> If(checkConstraint.GetDefaultName(), checkConstraint.ModelName) Then
+                stringBuilder.
+                    Append(", Sub(c) c.HasName(").
+                    Append(VBCode.Literal(checkConstraint.Name)).
+                    Append(")")
+            End If
+
+            stringBuilder.AppendLine(")")
         End Sub
 
         ''' <summary>

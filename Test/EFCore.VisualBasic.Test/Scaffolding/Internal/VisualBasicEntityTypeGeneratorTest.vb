@@ -1,10 +1,18 @@
 ﻿Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Design
+Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
+Imports Microsoft.Extensions.DependencyInjection
+Imports Microsoft.Extensions.DependencyInjection.Extensions
 Imports Xunit
 
 Namespace Scaffolding.Internal
     Public Class VisualBasicEntityTypeGeneratorTest
+        Inherits VisualBasicModelCodeGeneratorTestBase
 
         <ConditionalFact>
         Public Sub KeylessAttribute_is_generated_for_key_less_entity()
@@ -364,10 +372,8 @@ End Namespace
                             x.Property(Of Integer)("B")
                             x.Property(Of Integer)("C")
                             x.HasKey("Id")
-                            x.HasIndex({"A", "B"}, "IndexOnAAndB") _
-                                .IsUnique()
-                            x.HasIndex({"B", "C"}, "IndexOnBAndC") _
-                                .HasFilter("Filter SQL")
+                            x.HasIndex({"A", "B"}, "IndexOnAAndB").IsUnique()
+                            x.HasIndex({"B", "C"}, "IndexOnBAndC").HasFilter("Filter SQL")
                         End Sub
                     )
                 End Function,
@@ -1534,12 +1540,259 @@ End Namespace
                 End Sub)
         End Sub
 
-        Private Shared Sub AssertFileContents(
-            expectedCode As String,
-            file As ScaffoldedFile)
+        <ConditionalFact>
+        Public Sub Entity_with_custom_annotation()
 
-            Assert.Equal(expectedCode, file.Code, ignoreLineEndingDifferences:=True)
+            Dim expectedCode =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    <CustomEntityDataAnnotation(""first argument"")>
+    Public Partial Class EntityWithAnnotation
+        <Key>
+        Public Property Id As Integer
+    End Class
+End Namespace
+"
+
+            Dim expectedDbContextCode =
+ $"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property EntityWithAnnotation As DbSet(Of EntityWithAnnotation)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of EntityWithAnnotation)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
         End Sub
     End Class
+End Namespace
+"
 
+            Test(
+                Function(modelBuilder)
+                    Return modelBuilder.Entity(
+                        "EntityWithAnnotation",
+                        Sub(x)
+                            x.HasAnnotation("Custom:EntityAnnotation", "first argument")
+                            x.Property(Of Integer)("Id")
+                            x.HasKey("Id")
+                        End Sub)
+                End Function,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(expectedCode,
+                                       code.AdditionalFiles.Single(Function(f) f.Path = "EntityWithAnnotation.vb"))
+
+                    AssertFileContents(expectedDbContextCode,
+                                       code.ContextFile)
+                End Sub,
+                assertModel:=Nothing,
+                skipBuild:=True)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Entity_property_with_custom_annotation()
+
+
+            Dim expectedCode =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Public Partial Class EntityWithPropertyAnnotation
+        <Key>
+        <CustomPropertyDataAnnotation(""first argument"")>
+        Public Property Id As Integer
+    End Class
+End Namespace
+"
+
+            Dim expectedDbContextCode =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property EntityWithPropertyAnnotation As DbSet(Of EntityWithPropertyAnnotation)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of EntityWithPropertyAnnotation)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Function(modelBuilder)
+                    Return modelBuilder.Entity(
+                        "EntityWithPropertyAnnotation",
+                        Sub(x)
+                            x.Property(Of Integer)("Id").
+                                HasAnnotation("Custom:PropertyAnnotation", "first argument")
+                            x.HasKey("Id")
+                        End Sub)
+                End Function,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "EntityWithPropertyAnnotation.vb"))
+
+                    AssertFileContents(expectedDbContextCode,
+                                       code.ContextFile)
+                End Sub,
+                assertModel:=Nothing,
+                skipBuild:=True)
+        End Sub
+
+        Protected Overrides Sub AddModelServices(services As IServiceCollection)
+            services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, ModelAnnotationProvider)())
+        End Sub
+
+        Protected Overrides Sub AddScaffoldingServices(services As IServiceCollection)
+            services.Replace(ServiceDescriptor.Singleton(Of IAnnotationCodeGenerator, ModelAnnotationCodeGenerator)())
+        End Sub
+
+        Public Class ModelAnnotationProvider
+            Inherits SqlServerAnnotationProvider
+
+            Public Sub New(dependencies As RelationalAnnotationProviderDependencies)
+                MyBase.New(dependencies)
+            End Sub
+
+            Public Overrides Iterator Function [For](table As ITable, designTime As Boolean) As IEnumerable(Of IAnnotation)
+                For Each annotation In MyBase.For(table, designTime)
+                    Yield annotation
+                Next
+
+                Dim entityType1 = table.EntityTypeMappings.First().EntityType
+
+                For Each annotation In entityType1.GetAnnotations().Where(Function(a) a.Name = "Custom:EntityAnnotation")
+                    Yield annotation
+                Next
+            End Function
+
+            Public Overrides Iterator Function [For](column As IColumn, designTime As Boolean) As IEnumerable(Of IAnnotation)
+                For Each annotation In MyBase.For(column, designTime)
+                    Yield annotation
+                Next
+
+                Dim properties = column.PropertyMappings.Select(Function(m) m.Property)
+                Dim annotations = properties.SelectMany(Function(p) p.GetAnnotations()).GroupBy(Function(a) a.Name).Select(Function(g) g.First())
+
+                For Each annotation In annotations.Where(Function(a) a.Name = "Custom:PropertyAnnotation")
+                    Yield annotation
+                Next
+            End Function
+        End Class
+
+        Public Class ModelAnnotationCodeGenerator
+            Inherits SqlServerAnnotationCodeGenerator
+
+            Public Sub New(dependencies As AnnotationCodeGeneratorDependencies)
+                MyBase.New(dependencies)
+            End Sub
+
+            Protected Overrides Function GenerateDataAnnotation(entityType As IEntityType, annotation As IAnnotation) As AttributeCodeFragment
+                Select Case annotation.Name
+                    Case = "Custom:EntityAnnotation"
+                        Return New AttributeCodeFragment(GetType(CustomEntityDataAnnotationAttribute),
+                                                         TryCast(annotation.Value, String))
+                    Case Else
+                        Return MyBase.GenerateDataAnnotation(entityType, annotation)
+                End Select
+            End Function
+
+            Protected Overrides Function GenerateDataAnnotation([property] As IProperty, annotation As IAnnotation) As AttributeCodeFragment
+                Select Case annotation.Name
+                    Case = "Custom:PropertyAnnotation"
+                        Return New AttributeCodeFragment(GetType(CustomPropertyDataAnnotationAttribute),
+                                                         TryCast(annotation.Value, String))
+                    Case Else
+                        Return MyBase.GenerateDataAnnotation([property], annotation)
+                End Select
+            End Function
+        End Class
+
+        <AttributeUsage(AttributeTargets.Class)>
+        Public Class CustomEntityDataAnnotationAttribute
+            Inherits Attribute
+
+            Public Sub New(argument As String)
+                Me.Argument = argument
+            End Sub
+
+            Public Overridable ReadOnly Property Argument As String
+        End Class
+
+        <AttributeUsage(AttributeTargets.Property Or AttributeTargets.Field)>
+        Public Class CustomPropertyDataAnnotationAttribute
+            Inherits Attribute
+
+            Public Sub New(argument As String)
+                Me.Argument = argument
+            End Sub
+
+            Public Overridable ReadOnly Property Argument As String
+        End Class
+    End Class
 End Namespace

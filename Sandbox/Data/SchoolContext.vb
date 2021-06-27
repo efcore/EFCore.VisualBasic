@@ -24,7 +24,6 @@ Namespace Data
             mb.Entity(Of Student)().ToTable("Student")
         End Sub
 
-
     End Class
 
 End Namespace

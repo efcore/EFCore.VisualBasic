@@ -26,6 +26,11 @@ Module Module1
         'Scaffold-DbContext 'Data Source=northwind.db' Microsoft.EntityFrameworkCore.Sqlite -OutputDir Scaffolding\Northwind -ContextDir Scaffolding\Northwind\Context -DataAnnotations
         '
 
+        '-------------------------------------
+        'Compiled Models
+        '-------------------------------------
+        'dotnet ef dbContext optimize --output-dir MyCompiledModels --namespace MyCompiledModels --project Sandbox --context northwindContext
+
         Using dbContext As New SchoolContext()
             dbContext.Students.Add(
                 New Student With {

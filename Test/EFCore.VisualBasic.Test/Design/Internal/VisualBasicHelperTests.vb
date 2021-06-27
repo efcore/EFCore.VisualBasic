@@ -1,7 +1,7 @@
 ﻿Imports System.Linq.Expressions
 Imports System.Numerics
 Imports EFCore.Design.Tests.Shared
-Imports EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities.Xunit
+Imports EntityFrameworkCore.VisualBasic.TestUtilities.Xunit
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal

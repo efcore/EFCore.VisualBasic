@@ -723,9 +723,9 @@ Namespace Migrations.Design
                     Append(String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name))))
             Else
                 stringBuilder.
-                    Append("{ ").
+                    Append("{").
                     Append(String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                    Append(" }, ").
+                    Append("}, ").
                     Append(VBCode.Literal(index.Name))
             End If
 
@@ -735,8 +735,9 @@ Namespace Migrations.Design
             Using stringBuilder.Indent()
                 If index.IsUnique Then
                     stringBuilder.
+                        Append("."c).
                         AppendLine().
-                        Append(".IsUnique()")
+                        Append("IsUnique()")
                 End If
 
                 GenerateIndexAnnotations(index, stringBuilder)

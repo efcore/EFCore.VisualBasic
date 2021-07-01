@@ -1,7 +1,7 @@
 ﻿Imports System.Linq.Expressions
 Imports System.Numerics
 Imports EFCore.Design.Tests.Shared
-Imports EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities.Xunit
+Imports EntityFrameworkCore.VisualBasic.TestUtilities.Xunit
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal
@@ -127,7 +127,7 @@ Namespace Design.Internal
             Literal_works(
 "multi-line
 string with """,
-"""multi-line"" & " & If(Environment.Newline = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
+"""multi-line"" & " & If(Environment.NewLine = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
         End Sub
 
         <UseCulture("de-DE")>
@@ -343,6 +343,13 @@ string with """,
         <InlineData("$", "_")>
         Public Sub Identifier_works(input As String, expected As String)
             Assert.Equal(expected, New VisualBasicHelper(TypeMappingSource).Identifier(input))
+        End Sub
+
+        <ConditionalTheory>
+        <InlineData("var", {"var", "var0", "Var1", "VAR2"}, "var3")>
+        <InlineData("var9", {"var9"}, "var90")>
+        Public Sub Identifier_with_scope_works(input As String, scope As String(), expected As String)
+            Assert.Equal(expected, New VisualBasicHelper(TypeMappingSource).Identifier(input, New List(Of String)(scope)))
         End Sub
 
         <ConditionalTheory>
@@ -655,7 +662,7 @@ Test()", result)
         Public Sub Literal_with_static_property()
             Dim typeMapping = CreateTypeMappingSource(Of SimpleTestType)(
                             Function(v)
-                                Return Expression.[Property](Nothing, GetType(SimpleTestType).
+                                Return Expression.Property(Nothing, GetType(SimpleTestType).
                                                   GetProperty(NameOf(SimpleTestType.SomeStaticProperty)))
                             End Function)
 
@@ -667,7 +674,7 @@ Test()", result)
         Public Sub Literal_with_instance_property()
             Dim typeMapping = CreateTypeMappingSource(Of SimpleTestType)(
                                     Function(v)
-                                        Return Expression.[Property](
+                                        Return Expression.Property(
                                              Expression.[New](GetType(SimpleTestType)),
                                              GetType(SimpleTestType).GetProperty(NameOf(SimpleTestType.SomeInstanceProperty)))
                                     End Function)

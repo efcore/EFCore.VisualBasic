@@ -116,6 +116,7 @@ Namespace Scaffolding.Internal
                 For Each argument In attribute.Arguments
                     attributeWriter1.AddParameter(_code.UnknownLiteral(argument))
                 Next
+                _sb.AppendLine(attributeWriter1.ToString())
             Next
         End Sub
 
@@ -230,6 +231,7 @@ Namespace Scaffolding.Internal
                 For Each argument In attribute.Arguments
                     attributeWriter1.AddParameter(_code.UnknownLiteral(argument))
                 Next
+                _sb.AppendLine(attributeWriter1.ToString())
             Next
         End Sub
 

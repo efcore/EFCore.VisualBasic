@@ -1133,7 +1133,7 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
                                                           HasAnnotation("MyAnnotation", "ABC")
                                                    End Sub)
 
-            Dim MyModel = MyModelBuilder.FinalizeModel()
+            Dim MyModel = MyModelBuilder.FinalizeModel(designTime:=True)
             Dim k = MyModel.FindEntityType(GetType(SimpleEntity))
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(

@@ -1,7 +1,7 @@
 ﻿Imports System.Linq.Expressions
 Imports System.Numerics
 Imports EFCore.Design.Tests.Shared
-Imports EntityFrameworkCore.VisualBasic.Microsoft.EntityFrameworkCore.TestUtilities.Xunit
+Imports EntityFrameworkCore.VisualBasic.TestUtilities.Xunit
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal
@@ -127,7 +127,7 @@ Namespace Design.Internal
             Literal_works(
 "multi-line
 string with """,
-"""multi-line"" & " & If(Environment.Newline = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
+"""multi-line"" & " & If(Environment.NewLine = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
         End Sub
 
         <UseCulture("de-DE")>

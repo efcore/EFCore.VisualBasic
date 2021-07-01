@@ -136,8 +136,8 @@ Namespace Design.Internal
             If scope IsNot Nothing Then
                 Dim uniqueIdentifier = baseIdentifier
                 Dim qualifier = 0
-                While scope.Contains(uniqueIdentifier)
-                    uniqueIdentifier = baseIdentifier + qualifier.ToString(CultureInfo.InvariantCulture)
+                While scope.Contains(uniqueIdentifier, StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase:=True))
+                    uniqueIdentifier = baseIdentifier & qualifier.ToString(CultureInfo.InvariantCulture)
                     qualifier += 1
                 End While
                 scope.Add(uniqueIdentifier)

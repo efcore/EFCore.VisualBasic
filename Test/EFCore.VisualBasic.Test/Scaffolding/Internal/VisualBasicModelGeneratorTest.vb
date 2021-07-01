@@ -26,7 +26,7 @@ Namespace Scaffolding.Internal
             Dim generator = CreateGenerator()
             Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder()
 
-            modelBuilder.Entity("TestEntity").[Property](Of Integer)("Id").HasAnnotation(ScaffoldingAnnotationNames.ColumnOrdinal, 0)
+            modelBuilder.Entity("TestEntity").Property(Of Integer)("Id").HasAnnotation(ScaffoldingAnnotationNames.ColumnOrdinal, 0)
 
             Dim result = generator.GenerateModel(
                 modelBuilder.FinalizeModel(designTime:=True),

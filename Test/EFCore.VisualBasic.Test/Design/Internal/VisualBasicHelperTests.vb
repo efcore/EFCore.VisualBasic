@@ -346,6 +346,13 @@ string with """,
         End Sub
 
         <ConditionalTheory>
+        <InlineData("var", {"var", "var0", "Var1", "VAR2"}, "var3")>
+        <InlineData("var9", {"var9"}, "var90")>
+        Public Sub Identifier_with_scope_works(input As String, scope As String(), expected As String)
+            Assert.Equal(expected, New VisualBasicHelper(TypeMappingSource).Identifier(input, New List(Of String)(scope)))
+        End Sub
+
+        <ConditionalTheory>
         <InlineData({"WebApplication1", "Migration"}, "WebApplication1.Migration")>
         <InlineData({"WebApplication1.Migration"}, "WebApplication1.Migration")>
         <InlineData({"ef-xplat.Namespace"}, "efxplat.[Namespace]")>
@@ -655,7 +662,7 @@ Test()", result)
         Public Sub Literal_with_static_property()
             Dim typeMapping = CreateTypeMappingSource(Of SimpleTestType)(
                             Function(v)
-                                Return Expression.[Property](Nothing, GetType(SimpleTestType).
+                                Return Expression.Property(Nothing, GetType(SimpleTestType).
                                                   GetProperty(NameOf(SimpleTestType.SomeStaticProperty)))
                             End Function)
 
@@ -667,7 +674,7 @@ Test()", result)
         Public Sub Literal_with_instance_property()
             Dim typeMapping = CreateTypeMappingSource(Of SimpleTestType)(
                                     Function(v)
-                                        Return Expression.[Property](
+                                        Return Expression.Property(
                                              Expression.[New](GetType(SimpleTestType)),
                                              GetType(SimpleTestType).GetProperty(NameOf(SimpleTestType.SomeInstanceProperty)))
                                     End Function)

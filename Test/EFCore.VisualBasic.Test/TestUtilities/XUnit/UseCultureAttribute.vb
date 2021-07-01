@@ -2,7 +2,7 @@
 Imports System.Reflection
 Imports Xunit.Sdk
 
-Namespace Microsoft.EntityFrameworkCore.TestUtilities.Xunit
+Namespace TestUtilities.Xunit
 
     <AttributeUsage(AttributeTargets.[Class] Or AttributeTargets.Method)>
     Public Class UseCultureAttribute

@@ -13,6 +13,7 @@ Imports Xunit
 
 Namespace Scaffolding.Internal
     Public Class VisualBasicDbContextGeneratorTest
+        Inherits VisualBasicModelCodeGeneratorTestBase
 
         <ConditionalFact>
         Public Sub Empty_model()
@@ -994,13 +995,6 @@ End Namespace
                 Return New MethodCallCodeFragment("SetContextOption")
             End Function
         End Class
-
-        Private Shared Sub AssertFileContents(
-            expectedCode As String,
-            file As ScaffoldedFile)
-
-            Assert.Equal(expectedCode, file.Code, ignoreLineEndingDifferences:=True)
-        End Sub
 
     End Class
 

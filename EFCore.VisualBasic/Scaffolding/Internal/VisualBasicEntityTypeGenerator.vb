@@ -106,16 +106,18 @@ Namespace Scaffolding.Internal
             GenerateTableAttribute(entityType)
             GenerateIndexAttributes(entityType)
 
-            Dim annotations = _annotationCodeGenerator _
-                .FilterIgnoredAnnotations(entityType.GetAnnotations()) _
-                .ToDictionary(Function(a) a.Name, Function(a) a)
+            Dim annotations = _annotationCodeGenerator.
+                                FilterIgnoredAnnotations(entityType.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(entityType, annotations)
 
             For Each attribute In _annotationCodeGenerator.GenerateDataAnnotationAttributes(entityType, annotations)
-                Dim attributeWriter1 As AttributeWriter = New AttributeWriter(attribute.Type.Name)
+                Dim attributeWriter1 As New AttributeWriter(attribute.Type.Name)
                 For Each argument In attribute.Arguments
                     attributeWriter1.AddParameter(_code.UnknownLiteral(argument))
                 Next
+                _sb.AppendLine(attributeWriter1.ToString())
             Next
         End Sub
 
@@ -218,16 +220,18 @@ Namespace Scaffolding.Internal
             GenerateColumnAttribute(prop)
             GenerateMaxLengthAttribute(prop)
 
-            Dim annotations = _annotationCodeGenerator _
-                .FilterIgnoredAnnotations(prop.GetAnnotations()) _
-                .ToDictionary(Function(a) a.Name, Function(a) a)
+            Dim annotations = _annotationCodeGenerator.
+                                FilterIgnoredAnnotations(prop.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(prop, annotations)
 
             For Each attribute In _annotationCodeGenerator.GenerateDataAnnotationAttributes(prop, annotations)
-                Dim attributeWriter1 As AttributeWriter = New AttributeWriter(attribute.Type.Name)
+                Dim attributeWriter1 As New AttributeWriter(attribute.Type.Name)
                 For Each argument In attribute.Arguments
                     attributeWriter1.AddParameter(_code.UnknownLiteral(argument))
                 Next
+                _sb.AppendLine(attributeWriter1.ToString())
             Next
         End Sub
 

@@ -25,7 +25,7 @@ Friend Class SqlServerTestHelpers
 
     Public Overrides ReadOnly Property LoggingDefinitions As LoggingDefinitions = New SqlServerLoggingDefinitions
 
-    'TODO Temporary, wiil be in TestHelpers in efcore 5.0.9
+    'TODO Temporary, will be in TestHelpers in efcore 5.0.9
     Public Overloads Function CreateConventionBuilder(
             Optional skipValidation As Boolean = False,
             Optional customServices As IServiceCollection = Nothing) As ModelBuilder

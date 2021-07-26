@@ -810,12 +810,15 @@ Namespace Migrations.Design
 
             If tableNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim tableName = If(CStr(tableNameAnnotation?.Value), entityType.GetTableName())
-                If tableName IsNot Nothing Then
+
+                If tableName IsNot Nothing OrElse
+                   tableNameAnnotation IsNot Nothing Then
+
                     stringBuilder.
                         AppendLine().
                         Append(builderName).
                         Append(".ToTable(").
-                        Append(VBCode.Literal(tableName))
+                        Append(VBCode.UnknownLiteral(tableName))
 
                     If tableNameAnnotation IsNot Nothing Then
                         annotations.Remove(tableNameAnnotation.Name)

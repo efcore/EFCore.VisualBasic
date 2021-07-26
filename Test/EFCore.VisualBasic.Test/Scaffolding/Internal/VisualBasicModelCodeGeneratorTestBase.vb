@@ -1,6 +1,4 @@
 ﻿Imports EntityFrameworkCore.VisualBasic.Design
-Imports EntityFrameworkCore.VisualBasic.Design.Internal
-Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -8,15 +6,21 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
 Imports Microsoft.Extensions.DependencyInjection
+Imports Xunit
 
-Friend Module VisualBasicModelCodeGeneratorTestBase
+Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
 
     Sub Test(buildModel As Action(Of ModelBuilder),
              options As ModelCodeGenerationOptions,
              assertScaffold As Action(Of ScaffoldedModel),
-             assertModel As Action(Of IModel))
+             assertModel As Action(Of IModel),
+             Optional skipBuild As Boolean = False)
 
-        Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(skipValidation:=True)
+        Dim designServices = New ServiceCollection()
+        AddModelServices(designServices)
+
+        Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(skipValidation:=True, customServices:=designServices)
+
         mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
         buildModel(mb)
 
@@ -24,15 +28,20 @@ Friend Module VisualBasicModelCodeGeneratorTestBase
 
         Dim model = mb.FinalizeModel()
 
-        Dim services = New ServiceCollection
-        services.AddEntityFrameworkDesignTimeServices()
-        services.AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
-        services.AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()
+        Dim Services = New ServiceCollection()
+        Services.AddEntityFrameworkDesignTimeServices()
 
-        Dim sqlSrvD = New SqlServerDesignTimeServices
-        sqlSrvD.ConfigureDesignTimeServices(services)
+        Dim vbServices = New EFCoreVisualBasicServices
+        vbServices.ConfigureDesignTimeServices(Services)
 
-        Dim generator = services.BuildServiceProvider().GetRequiredService(Of IModelCodeGenerator)()
+        With New SqlServerDesignTimeServices()
+            .ConfigureDesignTimeServices(Services)
+        End With
+        AddScaffoldingServices(Services)
+
+        Dim generator = Services.
+                            BuildServiceProvider().
+                            GetRequiredService(Of IModelCodeGenerator)()
 
         options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
         options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
@@ -60,21 +69,34 @@ Friend Module VisualBasicModelCodeGeneratorTestBase
                 BuildReference.ByName("System.Data.Common"),
                 BuildReference.ByName("System.Collections")
             },
-            .Sources = New List(Of String)({scaffoldedModel.ContextFile.Code}.
-                                                Concat(scaffoldedModel.
-                                                AdditionalFiles.
-                                                Select(Function(f) f.Code)))
+            .Sources = {scaffoldedModel.ContextFile}.
+                            Concat(scaffoldedModel.AdditionalFiles).
+                            Select(Function(f) f.Code).
+                            ToList
         }
 
-        Dim assembly = build.BuildInMemory()
-        Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
+        If Not skipBuild Then
+            Dim assembly = build.BuildInMemory()
+            Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
 
-        Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
+            Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
 
-        If assertModel IsNot Nothing Then
-            Dim compiledModel = context.Model
-            assertModel(compiledModel)
+            If assertModel IsNot Nothing Then
+                Dim compiledModel = context.Model
+                assertModel(compiledModel)
+            End If
         End If
     End Sub
 
-End Module
+    Protected Overridable Sub AddModelServices(services As IServiceCollection)
+    End Sub
+
+    Protected Overridable Sub AddScaffoldingServices(services As IServiceCollection)
+    End Sub
+
+    Protected Shared Sub AssertFileContents(expectedCode As String,
+                                            file As ScaffoldedFile)
+
+        Assert.Equal(expectedCode, file.Code, ignoreLineEndingDifferences:=True)
+    End Sub
+End Class

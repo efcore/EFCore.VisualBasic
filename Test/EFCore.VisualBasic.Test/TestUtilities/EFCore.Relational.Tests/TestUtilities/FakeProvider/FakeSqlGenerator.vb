@@ -10,21 +10,21 @@ Namespace TestUtilities.FakeProvider
         End Sub
         Public Overrides Function AppendInsertOperation(
             commandStringBuilder As StringBuilder,
-            command As ModificationCommand,
+            command As IReadOnlyModificationCommand,
             commandPosition As Integer) As ResultSetMapping
             AppendInsertOperationCalls += 1
             Return MyBase.AppendInsertOperation(commandStringBuilder, command, commandPosition)
         End Function
         Public Overrides Function AppendUpdateOperation(
             commandStringBuilder As StringBuilder,
-            command As ModificationCommand,
+            command As IReadOnlyModificationCommand,
             commandPosition As Integer) As ResultSetMapping
             AppendUpdateOperationCalls += 1
             Return MyBase.AppendUpdateOperation(commandStringBuilder, command, commandPosition)
         End Function
         Public Overrides Function AppendDeleteOperation(
             commandStringBuilder As StringBuilder,
-            command As ModificationCommand,
+            command As IReadOnlyModificationCommand,
             commandPosition As Integer) As ResultSetMapping
             AppendDeleteOperationCalls += 1
             Return MyBase.AppendDeleteOperation(commandStringBuilder, command, commandPosition)
@@ -38,11 +38,10 @@ Namespace TestUtilities.FakeProvider
             AppendBatchHeaderCalls += 1
             MyBase.AppendBatchHeader(commandStringBuilder)
         End Sub
-        Protected Overrides Sub AppendIdentityWhereCondition(commandStringBuilder As StringBuilder, columnModification1 As ColumnModification)
-            Call commandStringBuilder _
-                            .Append(SqlGenerationHelper.DelimitIdentifier(columnModification1.ColumnName)) _
-                            .Append(" = ") _
-                            .Append("provider_specific_identity()")
+        Protected Overrides Sub AppendIdentityWhereCondition(commandStringBuilder As StringBuilder, columnModification1 As IColumnModification)
+            Call commandStringBuilder.Append(SqlGenerationHelper.DelimitIdentifier(columnModification1.ColumnName)).
+                                      Append(" = ").
+                                      Append("provider_specific_identity()")
         End Sub
         Protected Overrides Function AppendSelectAffectedCountCommand(
             commandStringBuilder As StringBuilder,

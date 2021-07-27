@@ -1704,15 +1704,312 @@ End Namespace
                 skipBuild:=True)
         End Sub
 
+        <ConditionalFact>
+        Public Sub Scaffold_skip_navigations_default()
+
+            Dim expectedDbContextCode =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Blog As DbSet(Of Blog)
+        Public Overridable Property Post As DbSet(Of Post)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of Blog)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                    entity.HasMany(Function(d) d.Posts).
+                        WithMany(Function(p) p.Blogs).
+                        UsingEntity(Of Dictionary(Of String, Object))(
+                            ""BlogPost"",
+                            Function(l)
+                                Return l.HasOne(Of Post)().WithMany().
+                                    HasForeignKey(""BlogsId"")
+                            End Function,
+                            Function(r)
+                                Return r.HasOne(Of Blog)().WithMany().
+                                    HasForeignKey(""PostsId"")
+                            End Function,
+                            Sub(j)
+                                j.HasKey(""BlogsId"", ""PostsId"")
+                                j.ToTable(""BlogPost"")
+                                j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
+                            End Sub)
+                End Sub)
+
+            modelBuilder.Entity(Of Post)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Dim expectedEntityCode1 =
+"Namespace TestNamespace
+    Public Partial Class Blog
+        Public Property Id As Integer
+
+        Public Overridable Property Posts As ICollection(Of Post)
+    End Class
+End Namespace
+"
+
+            Dim expectedEntityCode2 =
+"Namespace TestNamespace
+    Public Partial Class Post
+        Public Property Id As Integer
+
+        Public Overridable Property Blogs As ICollection(Of Blog)
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.
+                        Entity("Blog",
+                            Sub(x) x.Property(Of Integer)("Id")).
+                        Entity("Post",
+                            Sub(x) x.Property(Of Integer)("Id")).
+                        Entity("BlogPost",
+                               Sub(x)
+                               End Sub).
+                        Entity("Blog").
+                        HasMany("Post", "Posts").
+                        WithMany("Blogs").
+                        UsingEntity("BlogPost")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = False
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedDbContextCode,
+                        code.ContextFile)
+
+                    AssertFileContents(
+                        expectedEntityCode1,
+                        code.AdditionalFiles.Single(Function(e) e.Path = "Blog.vb"))
+
+                    AssertFileContents(
+                        expectedEntityCode2,
+                        code.AdditionalFiles.Single(Function(e) e.Path = "Post.vb"))
+
+                    Assert.Equal(2, code.AdditionalFiles.Count)
+                End Sub,
+                Sub(model)
+                    Dim blogType = model.FindEntityType("TestNamespace.Blog")
+                    Assert.Empty(blogType.GetNavigations())
+                    Dim postsNavigation = Assert.Single(blogType.GetSkipNavigations())
+                    Assert.Equal("Posts", postsNavigation.Name)
+
+                    Dim postType = model.FindEntityType("TestNamespace.Post")
+                    Assert.Empty(postType.GetNavigations())
+                    Dim blogsNavigation = Assert.Single(postType.GetSkipNavigations())
+                    Assert.Equal("Blogs", blogsNavigation.Name)
+
+                    Assert.Equal(postsNavigation, blogsNavigation.Inverse)
+                    Assert.Equal(blogsNavigation, postsNavigation.Inverse)
+
+                    Dim joinEntityType = blogsNavigation.ForeignKey.DeclaringEntityType
+                    Assert.Equal("BlogPost", joinEntityType.Name)
+                    Assert.Equal(GetType(Dictionary(Of String, Object)), joinEntityType.ClrType)
+                    Assert.Single(joinEntityType.GetIndexes())
+                    Assert.Equal(2, joinEntityType.GetForeignKeys().Count())
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Scaffold_skip_navigations_default_data_annotations()
+
+            Dim expectedDbContextCode =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Blog As DbSet(Of Blog)
+        Public Overridable Property Post As DbSet(Of Post)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of Blog)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                    entity.HasMany(Function(d) d.Posts).
+                        WithMany(Function(p) p.Blogs).
+                        UsingEntity(Of Dictionary(Of String, Object))(
+                            ""BlogPost"",
+                            Function(l)
+                                Return l.HasOne(Of Post)().WithMany().
+                                    HasForeignKey(""BlogsId"")
+                            End Function,
+                            Function(r)
+                                Return r.HasOne(Of Blog)().WithMany().
+                                    HasForeignKey(""PostsId"")
+                            End Function,
+                            Sub(j)
+                                j.HasKey(""BlogsId"", ""PostsId"")
+                                j.ToTable(""BlogPost"")
+                                j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
+                            End Sub)
+                End Sub)
+
+            modelBuilder.Entity(Of Post)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Dim expectedEntity1Code =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Public Partial Class Blog
+        <Key>
+        Public Property Id As Integer
+
+        <ForeignKey(""BlogsId"")>
+        <InverseProperty(NameOf(Post.Blogs))>
+        Public Overridable Property Posts As ICollection(Of Post)
+    End Class
+End Namespace
+"
+
+            Dim expectedEntity2Code =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Public Partial Class Post
+        <Key>
+        Public Property Id As Integer
+
+        <ForeignKey(""PostsId"")>
+        <InverseProperty(NameOf(Blog.Posts))>
+        Public Overridable Property Blogs As ICollection(Of Blog)
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.
+                        Entity("Blog",
+                            Function(x) x.Property(Of Integer)("Id")).
+                        Entity("Post",
+                            Function(x) x.Property(Of Integer)("Id")).
+                        Entity("BlogPost", Sub(x)
+                                           End Sub).
+                        Entity("Blog").
+                        HasMany("Post", "Posts").
+                        WithMany("Blogs").
+                        UsingEntity("BlogPost")
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedDbContextCode,
+                        code.ContextFile)
+
+                    AssertFileContents(
+                        expectedEntity1Code,
+                        code.AdditionalFiles.Single(Function(e) e.Path = "Blog.vb"))
+
+                    AssertFileContents(
+                        expectedEntity2Code,
+                        code.AdditionalFiles.Single(Function(e) e.Path = "Post.vb"))
+
+                    Assert.Equal(2, code.AdditionalFiles.Count)
+                End Sub,
+                Sub(model)
+                    Dim blogType = model.FindEntityType("TestNamespace.Blog")
+                    Assert.Empty(blogType.GetNavigations())
+                    Dim postsNavigation = Assert.Single(blogType.GetSkipNavigations())
+                    Assert.Equal("Posts", postsNavigation.Name)
+
+                    Dim postType = model.FindEntityType("TestNamespace.Post")
+                    Assert.Empty(postType.GetNavigations())
+                    Dim blogsNavigation = Assert.Single(postType.GetSkipNavigations())
+                    Assert.Equal("Blogs", blogsNavigation.Name)
+
+                    Assert.Equal(postsNavigation, blogsNavigation.Inverse)
+                    Assert.Equal(blogsNavigation, postsNavigation.Inverse)
+
+                    Dim joinEntityType = blogsNavigation.ForeignKey.DeclaringEntityType
+                    Assert.Equal("BlogPost", joinEntityType.Name)
+                    Assert.Equal(GetType(Dictionary(Of String, Object)), joinEntityType.ClrType)
+                    Assert.Single(joinEntityType.GetIndexes())
+                    Assert.Equal(2, joinEntityType.GetForeignKeys().Count())
+                End Sub)
+        End Sub
+
         Protected Overrides Sub AddModelServices(services As IServiceCollection)
-            services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, ModelAnnotationProvider)())
+            services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, TestModelAnnotationProvider)())
         End Sub
 
         Protected Overrides Sub AddScaffoldingServices(services As IServiceCollection)
-            services.Replace(ServiceDescriptor.Singleton(Of IAnnotationCodeGenerator, ModelAnnotationCodeGenerator)())
+            services.Replace(ServiceDescriptor.Singleton(Of IAnnotationCodeGenerator, TestModelAnnotationCodeGenerator)())
         End Sub
 
-        Public Class ModelAnnotationProvider
+        Private Class TestModelAnnotationProvider
             Inherits SqlServerAnnotationProvider
 
             Public Sub New(dependencies As RelationalAnnotationProviderDependencies)
@@ -1745,7 +2042,7 @@ End Namespace
             End Function
         End Class
 
-        Public Class ModelAnnotationCodeGenerator
+        Private Class TestModelAnnotationCodeGenerator
             Inherits SqlServerAnnotationCodeGenerator
 
             Public Sub New(dependencies As AnnotationCodeGeneratorDependencies)

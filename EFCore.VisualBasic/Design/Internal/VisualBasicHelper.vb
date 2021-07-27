@@ -770,46 +770,127 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Fragment(frag As MethodCallCodeFragment, Optional vertical As Boolean = False) As String Implements IVisualBasicHelper.Fragment
+        Public Function Fragment(frag As MethodCallCodeFragment,
+                          Optional instanceIdentifier As String = Nothing,
+                          Optional typeQualified As Boolean = False,
+                          Optional startWithDot As Boolean = True) As String Implements IVisualBasicHelper.Fragment
 
-            Dim builder As New StringBuilder
+            Return Fragment(frag, typeQualified, instanceIdentifier, startWithDot)
+        End Function
 
+        Private Function Fragment(frag As MethodCallCodeFragment,
+                                  typeQualified As Boolean,
+                                  instanceIdentifier As String,
+                                  Optional startWithDot As Boolean = True) As String
+
+            Dim builder As New IndentedStringBuilder
             Dim current = frag
-            While current IsNot Nothing
-                builder.
-                    Append("."c)
 
-                If vertical Then builder.AppendLine()
+            If typeQualified Then
+                If instanceIdentifier Is Nothing OrElse
+                   frag.MethodInfo Is Nothing OrElse
+                   frag.ChainedCall IsNot Nothing Then
+
+                    Throw New ArgumentException(DesignStrings.CannotGenerateTypeQualifiedMethodCall)
+                End If
+
+                builder.
+                    Append(frag.DeclaringType).
+                    Append(".").
+                    Append(frag.Method).
+                    Append("(").
+                    Append(instanceIdentifier)
+
+                For i = 0 To frag.Arguments.Count - 1
+                    builder.Append(", ")
+                    Argument(frag.Arguments(i), builder)
+                Next
+
+                builder.Append(")")
+
+                Return builder.ToString()
+            End If
+
+            Dim IsFirstLine As Boolean = True
+            Dim DotAlreadyAdded = False
+
+            ' Non-type-qualified fragment
+            If instanceIdentifier IsNot Nothing Then
+
+                builder.Append(instanceIdentifier)
+
+                If current.ChainedCall IsNot Nothing Then
+                    builder.
+                        AppendLine("."c).
+                        IncrementIndent()
+                    IsFirstLine = False
+                    DotAlreadyAdded = True
+                End If
+            End If
+
+            While True
+                If IsFirstLine Then
+                    If startWithDot Then
+                        builder.Append("."c)
+                    End If
+                    IsFirstLine = False
+                    Else
+                        If Not DotAlreadyAdded Then
+                        builder.AppendLine("."c)
+                    Else
+                        DotAlreadyAdded = False
+                    End If
+                End If
 
                 builder.
                     Append(current.Method).
                     Append("("c)
 
-                builder.AppendJoin(", ", current.Arguments.Select(Function(Arg) UnknownLiteral(Arg)))
+                For i = 0 To current.Arguments.Count - 1
+                    If i > 0 Then
+                        builder.Append(", ")
+                    End If
+
+                    Argument(current.Arguments(i), builder)
+                Next
 
                 builder.Append(")"c)
+
+                If current.ChainedCall Is Nothing Then Exit While
 
                 current = current.ChainedCall
             End While
 
             Return builder.ToString()
+
         End Function
 
+        Private Sub Argument(argument As Object, builder As IndentedStringBuilder)
+            If TypeOf argument Is NestedClosureCodeFragment Then
+                Dim nestedFragment = DirectCast(argument, NestedClosureCodeFragment)
+                builder.AppendLines(Fragment(nestedFragment), skipFinalNewline:=True)
+            Else
+                builder.Append(UnknownLiteral(argument))
+            End If
+        End Sub
+
         Private Function Fragment(frag As NestedClosureCodeFragment) As String
+
             If frag.MethodCalls.Count = 1 Then
-                Return $"Sub({frag.Parameter}) {frag.Parameter}{Fragment(frag.MethodCalls(0))}"
+                Return $"Sub({frag.Parameter}) {Fragment(frag.MethodCalls(0), typeQualified:=False, frag.Parameter)}"
             End If
 
             Dim builder = New IndentedStringBuilder()
             builder.AppendLine($"Sub({frag.Parameter})")
+
             Using builder.Indent()
-                For Each methodCall In frag.MethodCalls
-                    builder.AppendLine(frag.Parameter & Fragment(methodCall))
-                Next
-            End Using
+                    For Each methodCall In frag.MethodCalls
+                        builder.AppendLines(Fragment(methodCall, typeQualified:=False, frag.Parameter))
+                    Next
+                End Using
 
-            builder.AppendLine("End Sub")
-
+            builder.Append("End Sub")
+            Dim s = builder.ToString()
             Return builder.ToString()
         End Function
 

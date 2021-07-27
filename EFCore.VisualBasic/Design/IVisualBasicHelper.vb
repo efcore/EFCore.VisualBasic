@@ -13,8 +13,16 @@ Namespace Design
         '''     Generates a method call code fragment.
         ''' </summary>
         ''' <param name="frag"> The method call. </param>
+        ''' <param name="instanceIdentifier"> An identifier on which the method call will be generated. </param>
+        ''' <param name="typeQualified">
+        '''     <see langword="True" /> if the method call should be type-qualified, <see langword="False" /> for instance/extension syntax.
+        ''' </param>
+        ''' <param name="startWithDot"> </param>
         ''' <returns> The fragment. </returns>
-        Function Fragment(frag As MethodCallCodeFragment, Optional vertical As Boolean = False) As String
+        Function Fragment(frag As MethodCallCodeFragment,
+                          Optional instanceIdentifier As String = Nothing,
+                          Optional typeQualified As Boolean = False,
+                          Optional startWithDot As Boolean = True) As String
 
         ''' <summary>
         '''     Generates a valid Visual Basic identifier from the specified string unique to the scope.

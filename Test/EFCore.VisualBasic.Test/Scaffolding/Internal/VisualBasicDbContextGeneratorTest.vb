@@ -1,11 +1,16 @@
-﻿Imports Microsoft.EntityFrameworkCore
+﻿Imports System.Reflection
+Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
+Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
 Imports Microsoft.Extensions.DependencyInjection
+Imports Microsoft.Extensions.DependencyInjection.Extensions
 Imports Xunit
 
 Namespace Scaffolding.Internal
@@ -161,7 +166,7 @@ End Namespace
 
             Dim generator = CreateServices().
                 AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)().
-                BuildServiceProvider().
+                BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IModelCodeGenerator)()
 
             Assert.StartsWith(
@@ -194,7 +199,7 @@ End Namespace
 
             Dim generator = CreateServices().
                 AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)().
-                BuildServiceProvider().
+                BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IModelCodeGenerator)()
 
             Dim scaffoldedModel = generator.GenerateModel(
@@ -207,7 +212,9 @@ End Namespace
                 })
 
             Assert.Contains(
-                "optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).SetContextOption()",
+"optionsBuilder.
+                    UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).
+                    SetContextOption()",
                 scaffoldedModel.ContextFile.Code)
         End Sub
 
@@ -1028,17 +1035,137 @@ End Namespace
                 End Sub)
         End Sub
 
+        <ConditionalFact>
+        Public Sub Fluent_calls_in_custom_namespaces_work()
+
+            Dim expectedcode =
+"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports CustomTestNamespace
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.TestFluentApiCall()
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+            Test(
+                Sub(ModelBuilder) CustomTestNamespace.TestModelBuilderExtensions.TestFluentApiCall(ModelBuilder),
+                New ModelCodeGenerationOptions With {
+                    .SuppressOnConfiguring = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedcode,
+                        code.ContextFile)
+
+                    Assert.Empty(code.AdditionalFiles)
+                End Sub,
+                Sub(Model)
+                    Assert.Empty(Model.GetEntityTypes())
+                End Sub,
+                skipBuild:=True)
+        End Sub
+
+        Protected Overrides Sub AddModelServices(services As IServiceCollection)
+            services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, TestModelAnnotationProvider)())
+        End Sub
+
+        Protected Overrides Sub AddScaffoldingServices(services As IServiceCollection)
+            services.Replace(ServiceDescriptor.Singleton(Of IAnnotationCodeGenerator, TestModelAnnotationCodeGenerator)())
+        End Sub
+
+        Private Class TestModelAnnotationProvider
+            Inherits SqlServerAnnotationProvider
+
+            Public Sub New(dependencies As RelationalAnnotationProviderDependencies)
+                MyBase.New(dependencies)
+            End Sub
+
+            Public Overrides Iterator Function [For](database As IRelationalModel, designTime As Boolean) As IEnumerable(Of IAnnotation)
+                For Each annotation In MyBase.For(database, designTime)
+                    Yield annotation
+                Next
+
+                If TypeOf database("Test:TestModelAnnotation") Is String Then
+                    Dim annotationValue = database.Item("Test:TestModelAnnotation")
+                    Yield New Annotation("Test:TestModelAnnotation", annotationValue)
+                End If
+            End Function
+        End Class
+
+        Private Class TestModelAnnotationCodeGenerator
+            Inherits SqlServerAnnotationCodeGenerator
+
+            Private Shared ReadOnly _testFluentApiCallMethodInfo As MethodInfo =
+                GetType(CustomTestNamespace.TestModelBuilderExtensions).GetRuntimeMethod(
+                    NameOf(CustomTestNamespace.TestModelBuilderExtensions.TestFluentApiCall), {GetType(ModelBuilder)})
+
+            Public Sub New(dependencies As AnnotationCodeGeneratorDependencies)
+                MyBase.New(dependencies)
+            End Sub
+
+            Protected Overrides Function GenerateFluentApi(model As IModel, annotation As IAnnotation) As MethodCallCodeFragment
+                Select Case annotation.Name
+                    Case "Test:TestModelAnnotation" : Return New MethodCallCodeFragment(_testFluentApiCallMethodInfo)
+                    Case Else : Return MyBase.GenerateFluentApi(model, annotation)
+                End Select
+            End Function
+        End Class
+
         Private Class TestCodeGeneratorPlugin
             Inherits ProviderCodeGeneratorPlugin
 
+            Private Shared ReadOnly _setProviderOptionMethodInfo As MethodInfo =
+                GetType(TestCodeGeneratorPlugin).
+                    GetRuntimeMethod(NameOf(SetProviderOption), {GetType(SqlServerDbContextOptionsBuilder)})
+
+            Private Shared ReadOnly _setContextOptionMethodInfo As MethodInfo =
+                GetType(TestCodeGeneratorPlugin).
+                    GetRuntimeMethod(NameOf(SetContextOption), {GetType(DbContextOptionsBuilder)})
+
             Public Overrides Function GenerateProviderOptions() As MethodCallCodeFragment
-                Return New MethodCallCodeFragment("SetProviderOption")
+                Return New MethodCallCodeFragment(_setProviderOptionMethodInfo)
             End Function
+
             Public Overrides Function GenerateContextOptions() As MethodCallCodeFragment
-                Return New MethodCallCodeFragment("SetContextOption")
+                Return New MethodCallCodeFragment(_setContextOptionMethodInfo)
+            End Function
+
+            Public Shared Function SetProviderOption(optionsBuilder As SqlServerDbContextOptionsBuilder) As SqlServerDbContextOptionsBuilder
+                Throw New NotSupportedException()
+            End Function
+
+            Public Shared Function SetContextOption(optionsBuilder As DbContextOptionsBuilder) As SqlServerDbContextOptionsBuilder
+                Throw New NotSupportedException()
             End Function
         End Class
 
     End Class
 
+End Namespace
+
+Namespace Global.CustomTestNamespace
+    Friend Module TestModelBuilderExtensions
+        Public Function TestFluentApiCall(modelBuilder As ModelBuilder) As ModelBuilder
+            modelBuilder.Model.SetAnnotation("Test:TestModelAnnotation", "foo")
+            Return modelBuilder
+        End Function
+    End Module
 End Namespace

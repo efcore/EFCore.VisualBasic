@@ -1,5 +1,4 @@
-﻿Imports Microsoft.EntityFrameworkCore.Design
-Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 
 Namespace Design

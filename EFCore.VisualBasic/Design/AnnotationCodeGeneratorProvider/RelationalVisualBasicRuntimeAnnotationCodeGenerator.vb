@@ -1,12 +1,11 @@
 ﻿Imports System.Reflection
-Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 
-Namespace Global.EntityFrameworkCore.VisualBasic.CompiledModels
+Namespace Design.AnnotationCodeGeneratorProvider
 
     ''' <summary>
     '''     <para>

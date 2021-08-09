@@ -1,3 +1,7 @@
-﻿Imports Microsoft.EntityFrameworkCore.Design
+﻿Imports EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider
+Imports Microsoft.EntityFrameworkCore.Design
 
 <Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.EFCoreVisualBasicServices, EntityFrameworkCore.VisualBasic")>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.EFCoreVisualBasicServicesInMemory, EntityFrameworkCore.VisualBasic", EFCoreVisualBasicServicesInMemory.ForProvider)>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.EFCoreVisualBasicServicesSqlite, EntityFrameworkCore.VisualBasic", EFCoreVisualBasicServicesSqlite.ForProvider)>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.EFCoreVisualBasicServicesSqlServer, EntityFrameworkCore.VisualBasic", EFCoreVisualBasicServicesSqlServer.ForProvider)>

@@ -1,14 +1,16 @@
-﻿Imports EntityFrameworkCore.VisualBasic.Design
-Imports Microsoft.EntityFrameworkCore
+﻿Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
 Imports Microsoft.Extensions.DependencyInjection
 
+Namespace Design.AnnotationCodeGeneratorProvider
 
-Namespace Global.EntityFrameworkCore.VisualBasic.CompiledModels
+    <VisualBasicDesignTimeProviderServices(EFCoreVisualBasicServicesSqlServer.ForProvider)>
     Public Class EFCoreVisualBasicServicesSqlServer
         Implements IDesignTimeServices
+
+        Public Const ForProvider = "Microsoft.EntityFrameworkCore.SqlServer"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqlServerVisualBasicRuntimeAnnotationCodeGenerator)

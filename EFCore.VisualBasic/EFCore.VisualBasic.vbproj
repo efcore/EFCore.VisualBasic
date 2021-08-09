@@ -50,6 +50,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>all</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="6.0.0-preview.7.21325.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-preview.7.21325.1" />
   </ItemGroup>
 
 </Project>

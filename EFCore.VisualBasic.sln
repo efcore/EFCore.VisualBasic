@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Design.Tests.Shared"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6E650A1B-2917-4775-9008-80EBE29734C8}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EFCore.VisualBasic.CompiledModels", "EFCore.VisualBasic.CompiledModels\EFCore.VisualBasic.CompiledModels.vbproj", "{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,18 +72,6 @@ Global
 		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x64.Build.0 = Release|Any CPU
 		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x86.Build.0 = Release|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Debug|x64.Build.0 = Debug|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Debug|x86.Build.0 = Debug|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Release|x64.ActiveCfg = Release|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Release|x64.Build.0 = Release|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Release|x86.ActiveCfg = Release|Any CPU
-		{B53AD6F7-8911-405D-9EDE-C0D671EBB0C5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

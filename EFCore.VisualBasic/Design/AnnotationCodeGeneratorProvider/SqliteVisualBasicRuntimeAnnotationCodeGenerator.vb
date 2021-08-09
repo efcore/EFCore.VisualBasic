@@ -1,20 +1,7 @@
-﻿Imports Microsoft.EntityFrameworkCore.Design
-Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Sqlite.Metadata.Internal
-Imports Microsoft.Extensions.DependencyInjection
 
 Namespace Design.AnnotationCodeGeneratorProvider
-
-    <VisualBasicDesignTimeProviderServices(EFCoreVisualBasicServicesSqlite.ForProvider)>
-    Public Class EFCoreVisualBasicServicesSqlite
-        Implements IDesignTimeServices
-
-        Public Const ForProvider = "Microsoft.EntityFrameworkCore.Sqlite"
-
-        Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
-            services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqliteVisualBasicRuntimeAnnotationCodeGenerator)
-        End Sub
-    End Class
 
     ''' <summary>
     '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

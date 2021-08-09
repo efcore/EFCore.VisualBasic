@@ -1,18 +1,4 @@
-﻿Imports Microsoft.EntityFrameworkCore.Design
-Imports Microsoft.Extensions.DependencyInjection
-
-Namespace Design.AnnotationCodeGeneratorProvider
-
-    <VisualBasicDesignTimeProviderServices(EFCoreVisualBasicServicesInMemory.ForProvider)>
-    Public Class EFCoreVisualBasicServicesInMemory
-        Implements IDesignTimeServices
-
-        Public Const ForProvider = "Microsoft.EntityFrameworkCore.InMemory"
-
-        Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
-            services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, InMemoryVisualBasicRuntimeAnnotationCodeGenerator)
-        End Sub
-    End Class
+﻿Namespace Design.AnnotationCodeGeneratorProvider
 
     ''' <summary>
     '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

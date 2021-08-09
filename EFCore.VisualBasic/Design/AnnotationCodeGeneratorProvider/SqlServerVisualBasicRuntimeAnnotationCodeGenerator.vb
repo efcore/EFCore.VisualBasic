@@ -1,21 +1,8 @@
 ﻿Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
-Imports Microsoft.Extensions.DependencyInjection
 
 Namespace Design.AnnotationCodeGeneratorProvider
-
-    <VisualBasicDesignTimeProviderServices(EFCoreVisualBasicServicesSqlServer.ForProvider)>
-    Public Class EFCoreVisualBasicServicesSqlServer
-        Implements IDesignTimeServices
-
-        Public Const ForProvider = "Microsoft.EntityFrameworkCore.SqlServer"
-
-        Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
-            services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqlServerVisualBasicRuntimeAnnotationCodeGenerator)
-        End Sub
-    End Class
 
     ''' <summary>
     '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to

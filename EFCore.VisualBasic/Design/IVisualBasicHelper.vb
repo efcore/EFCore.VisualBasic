@@ -209,8 +209,9 @@ Namespace Design
         '''     Generates a <see cref="Type"/> literal.
         ''' </summary>
         ''' <param name="value"> The value. </param>
+        ''' <param name="fullName"> Whether the type should be namespace-qualified. </param>
         ''' <returns> The literal. </returns>
-        Function Literal(value As Type) As String
+        Function Literal(value As Type, Optional fullName As Boolean? = Nothing) As String
 
         ''' <summary>
         '''     Generates an object array literal.
@@ -231,8 +232,9 @@ Namespace Design
         '''     Generates a Visual Basic type reference.
         ''' </summary>
         ''' <param name="type"> The type to reference. </param>
+        ''' <param name="fullName"> Whether the type should be namespace-qualified. </param>
         ''' <returns> The reference. </returns>
-        Function Reference(type As Type) As String
+        Function Reference(type As Type, Optional fullName As Boolean? = Nothing) As String
 
         ''' <summary>
         '''     Generates a literal for a type Not known at compile time.

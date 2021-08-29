@@ -75,6 +75,22 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             MyBase.Generate(aKey, parameters)
         End Sub
+
+        ''' <inheritdoc />
+        Public Overrides Sub Generate(entityType As IEntityType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            If Not parameters.IsRuntime Then
+                Dim annotations = parameters.Annotations
+                annotations.Remove(SqlServerAnnotationNames.TemporalHistoryTableName)
+                annotations.Remove(SqlServerAnnotationNames.TemporalHistoryTableSchema)
+                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodEndColumnName)
+                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodEndPropertyName)
+                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodStartColumnName)
+                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodStartPropertyName)
+            End If
+
+            MyBase.Generate(entityType, parameters)
+        End Sub
+
     End Class
 
 End Namespace

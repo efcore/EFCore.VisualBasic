@@ -28,6 +28,22 @@ Imports NetTopologySuite.Geometries
 Imports Newtonsoft.Json.Linq
 Imports Xunit
 
+Namespace Global
+    Public Class GlobalNamespaceContext
+        Inherits EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest.ContextBase
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            MyBase.OnModelCreating(modelBuilder)
+
+            modelBuilder.Entity("1",
+                Sub(e)
+                    e.Property(Of Integer)("Id")
+                    e.HasKey("Id")
+                End Sub)
+        End Sub
+    End Class
+End Namespace
+
 Namespace Scaffolding.Internal
 
     Public Class VisualBasicRuntimeModelCodeGeneratorTest
@@ -47,17 +63,17 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As EmptyContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New EmptyContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New EmptyContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -114,19 +130,6 @@ End Namespace
                     Assert.NotNull(Model.FindEntityType("1"))
                 End Sub)
         End Sub
-
-        Public Class GlobalNamespaceContext
-            Inherits ContextBase
-
-            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-                MyBase.OnModelCreating(modelBuilder)
-
-                modelBuilder.Entity("1", Sub(e)
-                                             e.Property(Of Integer)("Id")
-                                             e.HasKey("Id")
-                                         End Sub)
-            End Sub
-        End Class
 
         <ConditionalFact>
         Public Sub Throws_for_constructor_binding()
@@ -443,17 +446,17 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As BigContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New BigContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New BigContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -1658,10 +1661,11 @@ End Namespace
 
                         eb.Navigation(Function(e) e.Dependent).AutoInclude()
 
-                        eb.OwnsMany(GetType(OwnedType).FullName, "ManyOwned", Sub(ob)
-                                                                                  ob.IsMemoryOptimized()
-                                                                                  ob.ToTable("ManyOwned", excludedFromMigrations:=True)
-                                                                              End Sub)
+                        eb.OwnsMany(GetType(OwnedType).FullName, "ManyOwned",
+                                    Sub(ob)
+                                        ob.IsMemoryOptimized()
+                                        ob.ToTable("ManyOwned", Sub(t) t.ExcludeFromMigrations())
+                                    End Sub)
 
                         eb.HasMany(Function(e) e.Principals).
                            WithMany(Function(e) DirectCast(e.Deriveds, ICollection(Of PrincipalDerived(Of DependentBase(Of Byte?))))).
@@ -1805,17 +1809,17 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As DbFunctionContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New DbFunctionContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New DbFunctionContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -1846,6 +1850,11 @@ Namespace TestNamespace
             DataEntityType.CreateAnnotations(data)
             ObjectEntityType.CreateAnnotations([object])
 
+            Dim type = Me.AddTypeMappingConfiguration(
+                GetType(String),
+                maxLength:=256)
+            type.AddAnnotation("Relational:IsFixedLength", True)
+
             Dim functions As New SortedDictionary(Of String, IDbFunction)()
             Dim getCount As New RuntimeDbFunction(
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetCount(System.Guid?,string)",
@@ -1873,7 +1882,7 @@ Namespace TestNamespace
                 "condition",
                 GetType(String),
                 False,
-                "nvarchar(max)")
+                "nchar(256)")
 
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetCount(System.Guid?,string)") = getCount
 
@@ -1933,7 +1942,7 @@ Namespace TestNamespace
                 "aDate",
                 GetType(String),
                 False,
-                "nvarchar(max)")
+                "nchar(256)")
 
             isDateShared.AddAnnotation("MyGuid", New Guid("00000000-0000-0000-0000-000000000000"))
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.IsDateShared(string)") = isDateShared
@@ -2086,12 +2095,12 @@ End Namespace
                     Dim getCountParameter2 = getCount.Parameters(1)
                     Assert.Same(getCount, getCountParameter2.Function)
                     Assert.Equal("condition", getCountParameter2.Name)
-                    Assert.Equal("nvarchar(max)", getCountParameter2.StoreType)
+                    Assert.Equal("nchar(256)", getCountParameter2.StoreType)
                     Assert.False(getCountParameter2.PropagatesNullability)
                     Assert.Equal(GetType(String), getCountParameter2.ClrType)
-                    Assert.Equal("nvarchar(max)", getCountParameter2.TypeMapping.StoreType)
+                    Assert.Equal("nchar(256)", getCountParameter2.TypeMapping.StoreType)
                     Assert.Equal("condition", getCountParameter2.StoreFunctionParameter.Name)
-                    Assert.Equal("nvarchar(max)", getCountParameter2.StoreFunctionParameter.Type)
+                    Assert.Equal("nchar(256)", getCountParameter2.StoreFunctionParameter.Type)
                     Assert.NotNull(getCountParameter2.ToString())
 
                     Dim isDate = model.FindDbFunction(GetType(DbFunctionContext).GetMethod("IsDateShared"))
@@ -2115,12 +2124,12 @@ End Namespace
                     Dim isDateParameter = isDate.Parameters(0)
                     Assert.Same(isDate, isDateParameter.Function)
                     Assert.Equal("date", isDateParameter.Name)
-                    Assert.Equal("nvarchar(max)", isDateParameter.StoreType)
+                    Assert.Equal("nchar(256)", isDateParameter.StoreType)
                     Assert.False(isDateParameter.PropagatesNullability)
                     Assert.Equal(GetType(String), isDateParameter.ClrType)
-                    Assert.Equal("nvarchar(max)", isDateParameter.TypeMapping.StoreType)
+                    Assert.Equal("nchar(256)", isDateParameter.TypeMapping.StoreType)
                     Assert.Equal("date", isDateParameter.StoreFunctionParameter.Name)
-                    Assert.Equal("nvarchar(max)", isDateParameter.StoreFunctionParameter.Type)
+                    Assert.Equal("nchar(256)", isDateParameter.StoreFunctionParameter.Type)
 
                     Dim getData = model.FindDbFunction(GetType(DbFunctionContext).GetMethod("GetData", {GetType(Integer())}))
 
@@ -2238,6 +2247,10 @@ End Namespace
                 Return FromExpression(Function() GetData())
             End Function
 
+            Protected Overrides Sub ConfigureConventions(configurationBuilder As ModelConfigurationBuilder)
+                configurationBuilder.DefaultTypeMapping(Of String)().HasMaxLength(256).IsFixedLength()
+            End Sub
+
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
@@ -2287,17 +2300,17 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As SequencesContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New SequencesContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New SequencesContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -2484,17 +2497,17 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As ConstraintsContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New ConstraintsContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New ConstraintsContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -2627,17 +2640,17 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
         Inherits RuntimeModel
 
         Private Shared _Instance As SqliteContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New SqliteContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New SqliteContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -2797,17 +2810,17 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As CosmosContextModel
-        Public Shared ReadOnly Property Instance As IModel
-            Get
-                If _Instance Is Nothing Then
-                    _Instance = New CosmosContextModel()
-                    _Instance.Initialize()
-                    _Instance.Customize()
-                End If
 
-                Return _Instance
-            End Get
-        End Property
+        Shared Sub New()
+            Dim model As New CosmosContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Public Shared Function Instance() As IModel
+            Return _Instance
+        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -3132,7 +3145,7 @@ End Namespace
             options.ContextType = context.GetType()
 
             Dim generator = Services.
-                                BuildServiceProvider().
+                                BuildServiceProvider(validateScopes:=True).
                                 GetRequiredService(Of ICompiledModelCodeGeneratorSelector)().
                                 Select(options)
 

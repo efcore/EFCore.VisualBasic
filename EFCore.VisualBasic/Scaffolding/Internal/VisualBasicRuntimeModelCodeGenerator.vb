@@ -130,10 +130,11 @@ Namespace Scaffolding.Internal
 
             Dim mainBuilder = New IndentedStringBuilder()
             Dim namespaces = New SortedSet(Of String)(New NamespaceComparer()) From {
-                contextType.Namespace,
                 GetType(RuntimeModel).Namespace,
                 GetType(DbContextAttribute).Namespace
             }
+
+            AddNamespace(contextType, namespaces)
 
             If Not String.IsNullOrEmpty([namespace]) Then
                 mainBuilder.
@@ -152,26 +153,21 @@ Namespace Scaffolding.Internal
 
             Using mainBuilder.Indent()
                 mainBuilder.
-                    Append("Inherits ").
-                    AppendLine(NameOf(RuntimeModel)).
+                    Append("Inherits ").AppendLine(NameOf(RuntimeModel)).
                     AppendLine().
-                    Append("Private Shared ").
-                    Append("_Instance As ").
-                    AppendLine(className).
-                    AppendLine("Public Shared ReadOnly Property Instance As IModel").
+                    Append("Private Shared ").Append("_Instance As ").AppendLine(className).
+                    AppendLine().
+                    AppendLine("Shared Sub New()").
                     AppendLines(
-"    Get
-        If _Instance Is Nothing Then
-            _Instance = New " & className & "()
-            _Instance.Initialize()
-            _Instance.Customize()
-        End If
-
-        Return _Instance
-    End Get
-End Property")
-
-                mainBuilder.
+$"    Dim model As New {className}()
+    model.Initialize()
+    model.Customize()
+    _Instance = model").
+                    AppendLine("End Sub").
+                    AppendLine().
+                    AppendLine("Public Shared Function Instance() As IModel").
+                    AppendLine("    Return _Instance").
+                    AppendLine("End Function").
                     AppendLine().
                     AppendLine("Partial Private Sub Initialize()").
                     AppendLine("End Sub").
@@ -354,16 +350,20 @@ End Property")
                         mainBuilder.AppendLine()
                     End If
 
-                    CreateAnnotations(
-                        model,
-                        AddressOf _annotationCodeGenerator.Generate,
-                        New VisualBasicRuntimeAnnotationCodeGeneratorParameters(
+                    Dim parameters As New VisualBasicRuntimeAnnotationCodeGeneratorParameters(
                             "Me",
                             className,
                             mainBuilder,
                             methodBuilder,
                             namespaces,
-                            variables))
+                            variables)
+
+                    For Each typeConfiguration In model.GetTypeMappingConfigurations()
+                        Create(typeConfiguration, parameters)
+                    Next
+
+                    CreateAnnotations(model, AddressOf _annotationCodeGenerator.Generate, parameters)
+
                 End Using
 
                 mainBuilder.
@@ -387,6 +387,75 @@ End Property")
 
             Return GenerateHeader(namespaces, [namespace]) & mainBuilder.ToString
         End Function
+
+        Private Sub Create(typeConfiguration As ITypeMappingConfiguration,
+                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim variableName = _code.Identifier("type", parameters.ScopeVariables, capitalize:=False)
+
+            Dim mainBuilder = parameters.MainBuilder
+            mainBuilder.Append("Dim ").Append(variableName).Append(" = ").Append(parameters.TargetName).AppendLine(".AddTypeMappingConfiguration(").
+            IncrementIndent().
+            Append(_code.Literal(typeConfiguration.ClrType))
+
+            AddNamespace(typeConfiguration.ClrType, parameters.Namespaces)
+
+            If typeConfiguration.GetMaxLength().HasValue Then
+                mainBuilder.AppendLine(",").
+                Append("maxLength:=").
+                Append(_code.Literal(typeConfiguration.GetMaxLength()))
+            End If
+
+            If typeConfiguration.IsUnicode().HasValue Then
+                mainBuilder.AppendLine(",").
+                Append("unicode:=").
+                Append(_code.Literal(typeConfiguration.IsUnicode()))
+            End If
+
+            If typeConfiguration.GetPrecision().HasValue Then
+                mainBuilder.AppendLine(",").
+                Append("precision:=").
+                Append(_code.Literal(typeConfiguration.GetPrecision()))
+            End If
+
+            If typeConfiguration.GetScale().HasValue Then
+                mainBuilder.AppendLine(",").
+                Append("scale:=").
+                Append(_code.Literal(typeConfiguration.GetScale()))
+            End If
+
+            Dim providerClrType = typeConfiguration.GetProviderClrType()
+            If providerClrType IsNot Nothing Then
+                AddNamespace(providerClrType, parameters.Namespaces)
+
+                mainBuilder.AppendLine(",").
+                Append("providerPropertyType:=").
+                Append(_code.Literal(providerClrType))
+            End If
+
+            Dim valueConverterType = CType(typeConfiguration(CoreAnnotationNames.ValueConverterType), Type)
+            If valueConverterType IsNot Nothing Then
+                AddNamespace(valueConverterType, parameters.Namespaces)
+
+                mainBuilder.AppendLine(",").
+                Append("valueConverter:=New ").
+                Append(_code.Reference(valueConverterType)).
+                Append("()")
+            End If
+
+            mainBuilder.
+                AppendLine(")").
+                DecrementIndent()
+
+            CreateAnnotations(
+                typeConfiguration,
+                AddressOf _annotationCodeGenerator.Generate,
+                parameters.Cloner.
+                           WithTargetName(variableName).
+                           Clone())
+
+            mainBuilder.AppendLine()
+        End Sub
 
         Private Function GenerateEntityType(entityType As IEntityType, [namespace] As String, className As String) As String
             Dim mainBuilder As New IndentedStringBuilder()
@@ -469,11 +538,11 @@ End Property")
                     namespaces,
                     variables)
 
-                Create(entityType, parameters, className)
+                Create(entityType, parameters)
 
                 Dim propertyVariables As New Dictionary(Of IProperty, String)
                 For Each prop In entityType.GetDeclaredProperties()
-                    Create(prop, propertyVariables, parameters, className)
+                    Create(prop, propertyVariables, parameters)
                 Next
 
                 For Each prop In entityType.GetDeclaredServiceProperties()
@@ -498,8 +567,7 @@ End Property")
         End Sub
 
         Private Sub Create(entityType As IEntityType,
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters,
-                           className As String)
+                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim runTimeEntityType = TryCast(entityType, IRuntimeEntityType)
 
@@ -511,7 +579,7 @@ End Property")
                         TypeOf runTimeEntityType.ServiceOnlyConstructorBinding Is FactoryMethodBinding)) Then
 
                 Throw New InvalidOperationException(DesignStrings.CompiledModelConstructorBinding(
-                    runTimeEntityType.ShortName(), "Customize()", className))
+                    runTimeEntityType.ShortName(), "Customize()", parameters.ClassName))
             End If
 
             If runTimeEntityType.GetQueryFilter() IsNot Nothing Then
@@ -591,8 +659,7 @@ End Property")
 
         Private Sub Create(prop As IProperty,
                            propertyVariables As Dictionary(Of IProperty, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters,
-                           className As String)
+                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim valueGeneratorFactoryType = TryCast(prop(CoreAnnotationNames.ValueGeneratorFactoryType), Type)
 
@@ -626,16 +693,12 @@ End Property")
                 If conventionProperty.GetTypeMappingConfigurationSource() IsNot Nothing Then
                     Throw New InvalidOperationException(
                     DesignStrings.CompiledModelTypeMapping(
-                        prop.DeclaringEntityType.ShortName(), prop.Name, "Customize()", className))
+                        prop.DeclaringEntityType.ShortName(), prop.Name, "Customize()", parameters.ClassName))
                 End If
             End If
 
             Dim variableName = _code.Identifier(prop.Name, parameters.ScopeVariables, capitalize:=False)
             propertyVariables(prop) = variableName
-
-            If prop.ClrType.Namespace IsNot Nothing Then
-                parameters.Namespaces.Add(prop.ClrType.Namespace)
-            End If
 
             Dim mainBuilder = parameters.MainBuilder
 
@@ -685,28 +748,28 @@ End Property")
                     Append(_code.Literal(CType(prop.GetAfterSaveBehavior(), [Enum])))
             End If
 
-            If prop.GetMaxLength() IsNot Nothing Then
+            If prop.GetMaxLength().HasValue Then
                 mainBuilder.
                     AppendLine(",").
                     Append("maxLength:=").
                     Append(_code.Literal(prop.GetMaxLength()))
             End If
 
-            If prop.IsUnicode() IsNot Nothing Then
+            If prop.IsUnicode().HasValue Then
                 mainBuilder.
                     AppendLine(",").
                     Append("unicode:=").
                     Append(_code.Literal(prop.IsUnicode()))
             End If
 
-            If prop.GetPrecision() IsNot Nothing Then
+            If prop.GetPrecision().HasValue Then
                 mainBuilder.
                     AppendLine(",").
                     Append("precision:=").
                     Append(_code.Literal(prop.GetPrecision()))
             End If
 
-            If prop.GetScale() IsNot Nothing Then
+            If prop.GetScale().HasValue Then
                 mainBuilder.
                     AppendLine(",").
                     Append("scale:=").
@@ -717,9 +780,7 @@ End Property")
 
             If providerClrType IsNot Nothing Then
 
-                If providerClrType.Namespace IsNot Nothing Then
-                    parameters.Namespaces.Add(providerClrType.Namespace)
-                End If
+                AddNamespace(providerClrType, parameters.Namespaces)
 
                 mainBuilder.
                     AppendLine(",").
@@ -728,9 +789,8 @@ End Property")
             End If
 
             If valueGeneratorFactoryType IsNot Nothing Then
-                If valueGeneratorFactoryType.Namespace IsNot Nothing Then
-                    parameters.Namespaces.Add(valueGeneratorFactoryType.Namespace)
-                End If
+
+                AddNamespace(valueGeneratorFactoryType, parameters.Namespaces)
 
                 mainBuilder.
                     AppendLine(",").
@@ -740,9 +800,8 @@ End Property")
             End If
 
             If valueConverterType IsNot Nothing Then
-                If valueConverterType.Namespace IsNot Nothing Then
-                    parameters.Namespaces.Add(valueConverterType.Namespace)
-                End If
+
+                AddNamespace(valueConverterType, parameters.Namespaces)
 
                 mainBuilder.
                             AppendLine(",").
@@ -752,9 +811,8 @@ End Property")
             End If
 
             If valueComparerType IsNot Nothing Then
-                If valueComparerType.Namespace IsNot Nothing Then
-                    parameters.Namespaces.Add(valueComparerType.Namespace)
-                End If
+
+                AddNamespace(valueComparerType, parameters.Namespaces)
 
                 mainBuilder.
                     AppendLine(",").
@@ -794,9 +852,7 @@ End Property")
 
             If propertyInfo IsNot Nothing Then
 
-                If propertyInfo.DeclaringType?.Namespace IsNot Nothing Then
-                    parameters.Namespaces.Add(propertyInfo.DeclaringType.Namespace)
-                End If
+                AddNamespace(propertyInfo.DeclaringType, parameters.Namespaces)
 
                 mainBuilder.
                     AppendLine(",").
@@ -822,9 +878,7 @@ End Property")
 
             If fieldInfo IsNot Nothing Then
 
-                If fieldInfo.DeclaringType?.Namespace IsNot Nothing Then
-                    parameters.Namespaces.Add(fieldInfo.DeclaringType.Namespace)
-                End If
+                AddNamespace(fieldInfo.DeclaringType, parameters.Namespaces)
 
                 mainBuilder.
                     AppendLine(",").
@@ -1360,7 +1414,7 @@ End Property")
         End Sub
 
         Private Shared Sub AddNamespace(type As Type, namespaces As ISet(Of String))
-            If type.[Namespace] IsNot Nothing Then
+            If Not String.IsNullOrEmpty(type.Namespace) Then
                 namespaces.Add(type.[Namespace])
             End If
 

@@ -28,11 +28,11 @@ Namespace Design
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
 
             With parameters.Annotations
-                If parameters.IsRuntime Then
+                If Not parameters.IsRuntime Then
+                    .Remove(CoreAnnotationNames.PropertyAccessMode)
+                Else
                     .Remove(CoreAnnotationNames.ModelDependencies)
                     .Remove(CoreAnnotationNames.ReadOnlyModel)
-                Else
-                    .Remove(CoreAnnotationNames.PropertyAccessMode)
                 End If
             End With
 
@@ -59,22 +59,11 @@ Namespace Design
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
 
             If Not parameters.IsRuntime Then
-                With parameters.Annotations
-                    .Remove(CoreAnnotationNames.PropertyAccessMode)
-                    .Remove(CoreAnnotationNames.BeforeSaveBehavior)
-                    .Remove(CoreAnnotationNames.AfterSaveBehavior)
-                    .Remove(CoreAnnotationNames.MaxLength)
-                    .Remove(CoreAnnotationNames.Unicode)
-                    .Remove(CoreAnnotationNames.Precision)
-                    .Remove(CoreAnnotationNames.Scale)
-                    .Remove(CoreAnnotationNames.ProviderClrType)
-                    .Remove(CoreAnnotationNames.ValueGeneratorFactory)
-                    .Remove(CoreAnnotationNames.ValueGeneratorFactoryType)
-                    .Remove(CoreAnnotationNames.ValueConverter)
-                    .Remove(CoreAnnotationNames.ValueConverterType)
-                    .Remove(CoreAnnotationNames.ValueComparer)
-                    .Remove(CoreAnnotationNames.ValueComparerType)
-                End With
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
             End If
 
             GenerateSimpleAnnotations(parameters)
@@ -85,7 +74,11 @@ Namespace Design
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
 
             If Not parameters.IsRuntime Then
-                parameters.Annotations.Remove(CoreAnnotationNames.PropertyAccessMode)
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
             End If
 
             GenerateSimpleAnnotations(parameters)
@@ -95,12 +88,28 @@ Namespace Design
         Public Overridable Sub Generate(key As IKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
 
+            If Not parameters.IsRuntime Then
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
+
             GenerateSimpleAnnotations(parameters)
         End Sub
 
         ''' <inheritdoc/>
         Public Overridable Sub Generate(foreignKey As IForeignKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
+
+            If Not parameters.IsRuntime Then
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
 
             GenerateSimpleAnnotations(parameters)
         End Sub
@@ -110,10 +119,11 @@ Namespace Design
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
 
             If Not parameters.IsRuntime Then
-                With parameters.Annotations
-                    .Remove(CoreAnnotationNames.PropertyAccessMode)
-                    .Remove(CoreAnnotationNames.EagerLoaded)
-                End With
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
             End If
 
             GenerateSimpleAnnotations(parameters)
@@ -124,10 +134,11 @@ Namespace Design
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
 
             If Not parameters.IsRuntime Then
-                With parameters.Annotations
-                    .Remove(CoreAnnotationNames.PropertyAccessMode)
-                    .Remove(CoreAnnotationNames.EagerLoaded)
-                End With
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
             End If
 
             GenerateSimpleAnnotations(parameters)
@@ -136,6 +147,29 @@ Namespace Design
         ''' <inheritdoc/>
         Public Overridable Sub Generate(index As IIndex, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
+
+            If Not parameters.IsRuntime Then
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
+
+            GenerateSimpleAnnotations(parameters)
+        End Sub
+
+        ''' <inheritdoc />
+        Public Overridable Sub Generate(typeConfiguration As ITypeMappingConfiguration, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
+            Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
+
+            If Not parameters.IsRuntime Then
+                For Each annotation In parameters.Annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
+                        parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
 
             GenerateSimpleAnnotations(parameters)
         End Sub

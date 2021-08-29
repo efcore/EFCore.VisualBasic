@@ -67,5 +67,12 @@ Namespace Design
         ''' <param name="index"> The index to which the annotations are applied. </param>
         ''' <param name="parameters"> Additional parameters used during code generation. </param>
         Sub Generate(index As IIndex, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="typeConfiguration"> The scalar type configuration to which the annotations are applied. </param>
+        ''' <param name="parameters"> Additional parameters used during code generation. </param>
+        Sub Generate(typeConfiguration As ITypeMappingConfiguration, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
     End Interface
 End Namespace

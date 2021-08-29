@@ -1,7 +1,9 @@
 ﻿
 Imports System.IO
+Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.TestUtilities
+Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
@@ -60,7 +62,7 @@ Namespace Scaffolding.Internal
             vbServices.ConfigureDesignTimeServices(services)
 
             Return services.
-                BuildServiceProvider().
+                BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IModelCodeGenerator)()
         End Function
     End Class
@@ -74,10 +76,30 @@ Namespace Scaffolding.Internal
         connectionString As String,
         providerOptions As MethodCallCodeFragment) As MethodCallCodeFragment
             Return New MethodCallCodeFragment(
-                        "UseTestProvider",
-                        If(providerOptions Is Nothing, New Object() {connectionString} _
-                            , New Object() {connectionString, New NestedClosureCodeFragment("x", providerOptions)}))
+                        _useTestProviderMethodInfo,
+                        If(providerOptions Is Nothing,
+                            New Object() {connectionString},
+                            New Object() {connectionString, New NestedClosureCodeFragment("x", providerOptions)}))
         End Function
+
+        Private Shared ReadOnly _useTestProviderMethodInfo As MethodInfo = GetRequiredRuntimeMethod(GetType(TestProviderCodeGenerator),
+                                                                                                    NameOf(UseTestProvider),
+                                                                                                    GetType(DbContextOptionsBuilder),
+                                                                                                    GetType(String),
+                                                                                                    GetType(Action(Of Object)))
+
+        Public Shared Sub UseTestProvider(optionsBuilder As DbContextOptionsBuilder,
+                                          connectionString As String,
+                                          Optional optionsAction As Action(Of Object) = Nothing)
+            Throw New NotSupportedException()
+        End Sub
+
+        Private Shared Function GetRequiredRuntimeMethod(type As Type, name As String, ParamArray parameters As Type()) As MethodInfo
+            Dim r = type.GetTypeInfo().GetRuntimeMethod(name, parameters)
+            If r Is Nothing Then Throw New InvalidOperationException($"Could Not find method '{name}' on type '{type}'")
+            Return r
+        End Function
+
     End Class
 
 End Namespace

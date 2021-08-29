@@ -1,7 +1,4 @@
-﻿' Copyright (c) .NET Foundation. All rights reserved.
-' Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-Imports System.ComponentModel.DataAnnotations
+﻿Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
@@ -93,6 +90,7 @@ Namespace Scaffolding.Internal
                 GenerateConstructor(entityType)
                 GenerateProperties(entityType)
                 GenerateNavigationProperties(entityType)
+                GenerateSkipNavigationProperties(entityType)
             End Using
 
             _sb.AppendLine("End Class")
@@ -325,7 +323,7 @@ Namespace Scaffolding.Internal
                                     ThenBy(Function(n) If(n.IsCollection, 1, 0)).
                                     ToList()
 
-            If sortedNavigations.Any() Then
+            If sortedNavigations.Count > 0 Then
                 _sb.AppendLine()
 
                 For Each navigation In sortedNavigations
@@ -340,6 +338,67 @@ Namespace Scaffolding.Internal
             End If
         End Sub
 
+        Private Sub GenerateNavigationDataAnnotations(navigation As ISkipNavigation)
+            GenerateForeignKeyAttribute(navigation)
+            GenerateInversePropertyAttribute(navigation)
+        End Sub
+
+        Private Sub GenerateForeignKeyAttribute(navigation As ISkipNavigation)
+            If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
+                Dim ForeignKeyAttribute As New AttributeWriter(NameOf(ForeignKeyAttribute))
+                ForeignKeyAttribute.AddParameter(
+                    _code.Literal(
+                        String.Join(",", navigation.ForeignKey.Properties.Select(Function(p) p.Name))))
+                _sb.AppendLine(ForeignKeyAttribute.ToString())
+            End If
+        End Sub
+
+        Private Sub GenerateInversePropertyAttribute(navigation As ISkipNavigation)
+            If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
+                Dim inverseNavigation = navigation.Inverse
+
+                If inverseNavigation IsNot Nothing Then
+                    Dim InversePropertyAttribute As New AttributeWriter(NameOf(InversePropertyAttribute))
+
+                    InversePropertyAttribute.AddParameter(
+                        If(Not navigation.DeclaringEntityType.
+                                          GetPropertiesAndNavigations().
+                                          Any(Function(m) m.Name = inverseNavigation.DeclaringEntityType.Name),
+                           $"NameOf({inverseNavigation.DeclaringEntityType.Name}.{inverseNavigation.Name})",
+                           _code.Literal(inverseNavigation.Name)))
+
+                    _sb.AppendLine(InversePropertyAttribute.ToString())
+                End If
+            End If
+        End Sub
+
+        ''' <summary>
+        '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
+        '''     the same compatibility standards as public APIs. It may be changed Or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution And knowing that
+        '''     doing so can result in application failures when updating to a New Entity Framework Core release.
+        ''' </summary>
+        Protected Overridable Sub GenerateSkipNavigationProperties(entityType As IEntityType)
+            NotNull(entityType, NameOf(entityType))
+
+            Dim skipNavigations = entityType.GetSkipNavigations().ToList()
+
+            If skipNavigations.Count > 0 then
+                _sb.AppendLine()
+
+                For Each navigation In skipNavigations
+                    If _useDataAnnotations then
+                        GenerateNavigationDataAnnotations(navigation)
+                    End If
+
+                    Dim referencedTypeName = navigation.TargetEntityType.Name
+                    Dim navigationType = If(navigation.IsCollection, $"ICollection(Of {referencedTypeName})", referencedTypeName)
+
+                    _sb.AppendLine($"Public Overridable Property {navigation.Name} As {navigationType}")
+                Next
+            End If
+        End Sub
+
         Private Sub GenerateNavigationDataAnnotations(navigation As INavigation)
             GenerateForeignKeyAttribute(navigation)
             GenerateInversePropertyAttribute(navigation)
@@ -348,14 +407,14 @@ Namespace Scaffolding.Internal
         Private Sub GenerateForeignKeyAttribute(navigation As INavigation)
             If navigation.IsOnDependent Then
                 If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
-                    Dim foreignKeyAttribute1 As AttributeWriter = New AttributeWriter(NameOf(ForeignKeyAttribute))
+                    Dim foreignKeyAttribute1 As New AttributeWriter(NameOf(ForeignKeyAttribute))
 
                     If navigation.ForeignKey.Properties.Count > 1 Then
                         foreignKeyAttribute1.AddParameter(_code.Literal(
                             String.Join(",", navigation.ForeignKey.Properties.
                                              Select(Function(p) p.Name))))
                     Else
-                        foreignKeyAttribute1.AddParameter($"NameOf({navigation.ForeignKey.Properties.First().Name})")
+                        foreignKeyAttribute1.AddParameter($"NameOf({navigation.ForeignKey.Properties(0).Name})")
                     End If
 
                     _sb.AppendLine(foreignKeyAttribute1.ToString())

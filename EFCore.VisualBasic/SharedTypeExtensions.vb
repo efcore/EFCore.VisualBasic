@@ -207,6 +207,13 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
+    Public Function GetRequiredRuntimeMethod(type As Type, name As String, ParamArray parameters As Type()) As MethodInfo
+        Dim r = type.GetTypeInfo().GetRuntimeMethod(name, parameters)
+        If r Is Nothing Then Throw New InvalidOperationException($"Could Not find method '{name}' on type '{type}'")
+        Return r
+    End Function
+
+    <Extension()>
     Iterator Function GetBaseTypes(type As Type) As IEnumerable(Of Type)
         Dim currentType = type.BaseType
         While currentType IsNot Nothing

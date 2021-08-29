@@ -1,6 +1,5 @@
-﻿Imports System.Collections.Immutable
+﻿Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design
-Imports EntityFrameworkCore.VisualBasic.Utilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
@@ -18,6 +17,9 @@ Namespace Migrations.Design
     '''     Used to generate Visual Basic code for creating an <see cref="IModel" />.
     ''' </summary>
     Public Class VisualBasicSnapshotGenerator
+
+        Private Shared ReadOnly _hasAnnotationMethodInfo As MethodInfo =
+            GetType(ModelBuilder).GetRequiredRuntimeMethod(NameOf(ModelBuilder.HasAnnotation), GetType(String), GetType(String))
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
@@ -51,14 +53,14 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for creating an <see cref="IModel" />.
         ''' </summary>
-        ''' <param name="builderName"> The <see cref="ModelBuilder" /> variable name. </param>
+        ''' <param name="modelBuilderName"> The <see cref="ModelBuilder" /> variable name. </param>
         ''' <param name="model"> The model. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Public Overridable Sub Generate(builderName As String,
+        Public Overridable Sub Generate(modelBuilderName As String,
                                         model As IModel,
                                         stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(builderName, NameOf(builderName))
+            NotEmpty(modelBuilderName, NameOf(modelBuilderName))
             NotNull(model, NameOf(model))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -66,67 +68,37 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(model.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            Dim productVersion = model.GetProductVersion()
-
-            If annotations.Any() OrElse productVersion IsNot Nothing Then
-                stringBuilder.Append(builderName)
-
-                Using stringBuilder.Indent()
-
-                    ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
-                    ' providers, generating them as raw annotations instead.
-                    Dim ambiguousAnnotations =
-                        RemoveAmbiguousFluentApiAnnotations(
-                            annotations,
-                            Function(name)
-                                Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
-                            End Function)
-
-                    For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(model, annotations)
-                        stringBuilder.AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-                    Next
-
-                    Dim remainingAnnotations As IEnumerable(Of IAnnotation) = annotations.Values
-                    If productVersion IsNot Nothing Then
-                        remainingAnnotations = remainingAnnotations.Append(New Annotation(CoreAnnotationNames.ProductVersion, productVersion))
-                    End If
-
-                    GenerateAnnotations(remainingAnnotations.Concat(ambiguousAnnotations), stringBuilder)
-                End Using
-
-                stringBuilder.AppendLine()
-
+            If TypeOf model.GetProductVersion() Is String Then
+                Dim productVersion = model.GetProductVersion()
+                annotations(CoreAnnotationNames.ProductVersion) = New Annotation(CoreAnnotationNames.ProductVersion, productVersion)
             End If
 
+            GenerateAnnotations(modelBuilderName, model, stringBuilder, annotations, inChainedCall:=False, leadingNewline:=False)
+
             For Each sequence In model.GetSequences()
-                GenerateSequence(builderName, sequence, stringBuilder)
+                GenerateSequence(modelBuilderName, sequence, stringBuilder)
             Next
 
-            GenerateEntityTypes(builderName, model.GetEntityTypesInHierarchicalOrder(), stringBuilder)
-
+            GenerateEntityTypes(modelBuilderName, model.GetEntityTypesInHierarchicalOrder(), stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IEntityType" /> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityTypes"> The entity types. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateEntityTypes(builderName As String,
-                                                      entityTypes As IReadOnlyList(Of IEntityType),
+        Protected Overridable Sub GenerateEntityTypes(modelBuilderName As String,
+                                                      entityTypes As IEnumerable(Of IEntityType),
                                                       stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(builderName, NameOf(builderName))
+            NotEmpty(modelBuilderName, NameOf(modelBuilderName))
             NotNull(entityTypes, NameOf(entityTypes))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             For Each entityType In entityTypes.Where(Function(e) e.FindOwnership() Is Nothing)
                 stringBuilder.AppendLine()
-                GenerateEntityType(builderName, entityType, stringBuilder)
+                GenerateEntityType(modelBuilderName, entityType, stringBuilder)
             Next
 
             For Each entityType In entityTypes.Where(
@@ -134,7 +106,7 @@ Namespace Migrations.Design
                             (e.GetDeclaredForeignKeys().Any() OrElse e.GetDeclaredReferencingForeignKeys().Any(Function(fk) fk.IsOwnership)))
 
                 stringBuilder.AppendLine()
-                GenerateEntityTypeRelationships(builderName, entityType, stringBuilder)
+                GenerateEntityTypeRelationships(modelBuilderName, entityType, stringBuilder)
             Next
 
             For Each entityType In entityTypes.Where(
@@ -142,7 +114,7 @@ Namespace Migrations.Design
                             e.GetDeclaredNavigations().Any(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership))
 
                 stringBuilder.AppendLine()
-                GenerateEntityTypeNavigations(builderName, entityType, stringBuilder)
+                GenerateEntityTypeNavigations(modelBuilderName, entityType, stringBuilder)
             Next
 
         End Sub
@@ -150,14 +122,14 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IEntityType" />.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateEntityType(builderName As String,
+        Protected Overridable Sub GenerateEntityType(modelBuilderName As String,
                                                      entityType As IEntityType,
                                                      stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(builderName, NameOf(builderName))
+            NotEmpty(modelBuilderName, NameOf(modelBuilderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -176,7 +148,7 @@ Namespace Migrations.Design
             End If
 
             stringBuilder.
-                Append(builderName).
+                Append(modelBuilderName).
                 Append(If(ownerNavigation IsNot Nothing, If(ownership.IsUnique, ".OwnsOne(", ".OwnsMany("), ".Entity(")).
                 Append(VBCode.Literal(entityTypeName))
 
@@ -186,47 +158,38 @@ Namespace Migrations.Design
                     Append(VBCode.Literal(ownerNavigation))
             End If
 
-            If builderName.StartsWith("b", StringComparison.Ordinal) Then
-                Dim counter = 1
-                If builderName.Length > 1 AndAlso Integer.TryParse(builderName.Substring(1, builderName.Length - 1), counter) Then
-                    counter += 1
-                End If
-
-                builderName = "b" & (If(counter = 0, "", counter.ToString()))
-            Else
-                builderName = "b"
-            End If
+            Dim entityTypeBuilderName = GenerateEntityTypeBuilderName(modelBuilderName)
 
             Using stringBuilder.Indent()
                 stringBuilder.
                     AppendLine(",").
                     Append("Sub(").
-                    Append(builderName).
+                    Append(entityTypeBuilderName).
                     AppendLine(")")
 
                 Using stringBuilder.Indent()
-                    GenerateBaseType(builderName, entityType.BaseType, stringBuilder)
+                    GenerateBaseType(entityTypeBuilderName, entityType.BaseType, stringBuilder)
 
-                    GenerateProperties(builderName, entityType.GetDeclaredProperties(), stringBuilder)
+                    GenerateProperties(entityTypeBuilderName, entityType.GetDeclaredProperties(), stringBuilder)
 
                     GenerateKeys(
-                        builderName,
+                        entityTypeBuilderName,
                         entityType.GetDeclaredKeys(),
                         If(entityType.BaseType Is Nothing, entityType.FindPrimaryKey(), Nothing),
                         stringBuilder)
 
-                    GenerateIndexes(builderName, entityType.GetDeclaredIndexes(), stringBuilder)
+                    GenerateIndexes(entityTypeBuilderName, entityType.GetDeclaredIndexes(), stringBuilder)
 
-                    GenerateEntityTypeAnnotations(builderName, entityType, stringBuilder)
+                    GenerateEntityTypeAnnotations(entityTypeBuilderName, entityType, stringBuilder)
 
-                    GenerateCheckConstraints(builderName, entityType, stringBuilder)
+                    GenerateCheckConstraints(entityTypeBuilderName, entityType, stringBuilder)
 
                     If ownerNavigation IsNot Nothing Then
-                        GenerateRelationships(builderName, entityType, stringBuilder)
-                        GenerateNavigations(builderName, entityType.GetDeclaredNavigations().Where(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership), stringBuilder)
+                        GenerateRelationships(entityTypeBuilderName, entityType, stringBuilder)
+                        GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().Where(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership), stringBuilder)
                     End If
 
-                    GenerateData(builderName, entityType.GetProperties(), entityType.GetSeedData(providerValues:=True), stringBuilder)
+                    GenerateData(entityTypeBuilderName, entityType.GetProperties(), entityType.GetSeedData(providerValues:=True), stringBuilder)
                 End Using
 
                 stringBuilder.
@@ -234,39 +197,57 @@ Namespace Migrations.Design
             End Using
         End Sub
 
+        Private Function GenerateEntityTypeBuilderName(modelBuilderName As String) As String
+            If modelBuilderName.StartsWith("b", StringComparison.Ordinal) Then
+                Dim counter = 1
+                If modelBuilderName.Length > 1 AndAlso
+                   Integer.TryParse(modelBuilderName.Substring(1, modelBuilderName.Length - 1), counter) Then
+                    counter += 1
+                End If
+
+                Return "b" & If(counter = 0, "", counter.ToString())
+            End If
+
+            Return "b"
+        End Function
+
         ''' <summary>
         '''     Generates code for owned entity types.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="ownerships"> The foreign keys identifying each entity type. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateOwnedTypes(builderName As String,
+        Protected Overridable Sub GenerateOwnedTypes(entityTypeBuilderName As String,
                                                      ownerships As IEnumerable(Of IForeignKey),
                                                      stringBuilder As IndentedStringBuilder)
 
-            For Each ownership In ownerships
-                stringBuilder.AppendLine()
-                GenerateOwnedType(builderName, ownership, stringBuilder)
-            Next
-        End Sub
-
-        ''' <summary>
-        '''     Generates code for an owned entity types.
-        ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
-        ''' <param name="ownerships"> The foreign keys identifying each entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateOwnedType(builderName As String,
-                                                    ownerships As IEnumerable(Of IForeignKey),
-                                                    stringBuilder As IndentedStringBuilder)
-
-            NotNull(builderName, NameOf(builderName))
+            NotEmpty(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(ownerships, NameOf(ownerships))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             For Each ownership In ownerships
                 stringBuilder.AppendLine()
-                GenerateOwnedType(builderName, ownership, stringBuilder)
+                GenerateOwnedType(entityTypeBuilderName, ownership, stringBuilder)
+            Next
+        End Sub
+
+        ''' <summary>
+        '''     Generates code for an owned entity types.
+        ''' </summary>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
+        ''' <param name="ownerships"> The foreign keys identifying each entity type. </param>
+        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        Protected Overridable Sub GenerateOwnedType(entityTypeBuilderName As String,
+                                                    ownerships As IEnumerable(Of IForeignKey),
+                                                    stringBuilder As IndentedStringBuilder)
+
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
+            NotNull(ownerships, NameOf(ownerships))
+            NotNull(stringBuilder, NameOf(stringBuilder))
+
+            For Each ownership In ownerships
+                stringBuilder.AppendLine()
+                GenerateOwnedType(entityTypeBuilderName, ownership, stringBuilder)
             Next
 
         End Sub
@@ -274,37 +255,37 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an owned entity types.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="ownership"> The foreign key identifying the entity type. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateOwnedType(builderName As String,
+        Protected Overridable Sub GenerateOwnedType(entityTypeBuilderName As String,
                                                     ownership As IForeignKey,
                                                     stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(ownership, NameOf(ownership))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            GenerateEntityType(builderName, ownership.DeclaringEntityType, stringBuilder)
+            GenerateEntityType(entityTypeBuilderName, ownership.DeclaringEntityType, stringBuilder)
         End Sub
 
 
         ''' <summary>
         '''     Generates code for the relationships of an <see cref="IEntityType"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateEntityTypeRelationships(builderName As String,
+        Protected Overridable Sub GenerateEntityTypeRelationships(modelBuilderName As String,
                                                                   entityType As IEntityType,
                                                                   stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(builderName, NameOf(builderName))
+            NotEmpty(modelBuilderName, NameOf(modelBuilderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             stringBuilder.
-                Append(builderName).
+                Append(modelBuilderName).
                 Append(".Entity(").
                 Append(VBCode.Literal(entityType.Name)).
                 AppendLine(",")
@@ -323,42 +304,42 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the relationships of an <see cref="IEntityType"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateRelationships(builderName As String,
+        Protected Overridable Sub GenerateRelationships(entityTypeBuilderName As String,
                                                         entityType As IEntityType,
                                                         stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(builderName, NameOf(builderName))
+            NotEmpty(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            GenerateForeignKeys(builderName, entityType.GetDeclaredForeignKeys(), stringBuilder)
+            GenerateForeignKeys(entityTypeBuilderName, entityType.GetDeclaredForeignKeys(), stringBuilder)
 
-            GenerateOwnedTypes(builderName, entityType.GetDeclaredReferencingForeignKeys().Where(Function(fk) fk.IsOwnership), stringBuilder)
+            GenerateOwnedTypes(entityTypeBuilderName, entityType.GetDeclaredReferencingForeignKeys().Where(Function(fk) fk.IsOwnership), stringBuilder)
 
-            GenerateNavigations(builderName, entityType.GetDeclaredNavigations().
+            GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().
                                              Where(Function(n) n.IsOnDependent OrElse (Not n.IsOnDependent AndAlso n.ForeignKey.IsOwnership)), stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the base type of an <see cref="IEntityType"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="baseType"> The base entity type. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateBaseType(builderName As String,
+        Protected Overridable Sub GenerateBaseType(entityTypeBuilderName As String,
                                                    baseType As IEntityType,
                                                    stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             If baseType IsNot Nothing Then
                 stringBuilder.
                     AppendLine().
-                    Append(builderName).
+                    Append(entityTypeBuilderName).
                     Append(".HasBaseType(").
                     Append(VBCode.Literal(baseType.Name)).
                     AppendLine(")")
@@ -368,16 +349,16 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref= "ISequence"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
         ''' <param name="sequence"> The sequence. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateSequence(builderName As String,
+        Protected Overridable Sub GenerateSequence(modelBuilderName As String,
                                                    sequence As ISequence,
                                                    stringBuilder As IndentedStringBuilder)
 
             stringBuilder.
                 AppendLine().
-                Append(builderName).
+                Append(modelBuilderName).
                 Append(".HasSequence")
 
             If sequence.Type <> Internal.Sequence.DefaultClrType Then
@@ -448,104 +429,102 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IProperty"/> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="properties"> The properties. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateProperties(builderName As String,
+        Protected Overridable Sub GenerateProperties(entityTypeBuilderName As String,
                                                      properties As IEnumerable(Of IProperty),
                                                      stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(properties, NameOf(properties))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim firstProperty = True
+            Dim first = True
             For Each [property] In properties
-                If Not firstProperty Then
-                    stringBuilder.AppendLine()
+                If first Then
+                    first = False
                 Else
-                    firstProperty = False
+                    stringBuilder.AppendLine()
                 End If
-
-                GenerateProperty(builderName, [property], stringBuilder)
-                stringBuilder.AppendLine()
+                GenerateProperty(entityTypeBuilderName, [property], stringBuilder)
             Next
         End Sub
 
         ''' <summary>
         '''     Generates code for an <see cref="IProperty"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="property"> The property. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateProperty(builderName As String,
+        Protected Overridable Sub GenerateProperty(entityTypeBuilderName As String,
                                                    [property] As IProperty,
                                                    stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull([property], NameOf([property]))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             Dim clrType = If(FindValueConverter([property])?.ProviderClrType.MakeNullable([property].IsNullable), [property].ClrType)
 
+            Dim propertyBuilderName = $"{entityTypeBuilderName}.Property(Of {VBCode.Reference(clrType)})({VBCode.Literal([property].Name)})"
+
             stringBuilder.
-            Append(builderName).
-            Append(".Property(Of ").
-            Append(VBCode.Reference(clrType)).
-            Append(")(").
-            Append(VBCode.Literal([property].Name)).
-            Append(")")
+                Append(propertyBuilderName)
 
-            Using stringBuilder.Indent()
-                If [property].IsConcurrencyToken Then
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
+
+            If [property].IsConcurrencyToken Then
+                stringBuilder.
+                    AppendLine(".").
+                    Append("IsConcurrencyToken()")
+            End If
+
+            If [property].IsNullable <> (clrType.IsNullableType() AndAlso Not [property].IsPrimaryKey()) Then
+                stringBuilder.
+                    AppendLine(".").
+                    Append("IsRequired()")
+            End If
+
+            Select Case [property].ValueGenerated
+                Case ValueGenerated.Never
+
+                Case ValueGenerated.OnAdd
                     stringBuilder.
                         AppendLine(".").
-                        Append("IsConcurrencyToken()")
-                End If
+                        Append("ValueGeneratedOnAdd()")
 
-                If [property].IsNullable <> (clrType.IsNullableType() AndAlso Not [property].IsPrimaryKey()) Then
+                Case ValueGenerated.OnUpdate
                     stringBuilder.
                         AppendLine(".").
-                        Append("IsRequired()")
-                End If
+                        Append("ValueGeneratedOnUpdate()")
 
-                Select Case [property].ValueGenerated
-                    Case ValueGenerated.Never
+                Case ValueGenerated.OnUpdateSometimes
+                    stringBuilder.
+                        AppendLine(".").
+                        Append("ValueGeneratedOnUpdateSometimes()")
 
-                    Case ValueGenerated.OnAdd
-                        stringBuilder.
-                            AppendLine(".").
-                            Append("ValueGeneratedOnAdd()")
+                Case Else
+                    stringBuilder.
+                        AppendLine(".").
+                        Append("ValueGeneratedOnAddOrUpdate()")
+            End Select
 
-                    Case ValueGenerated.OnUpdate
-                        stringBuilder.
-                           AppendLine(".").
-                           Append("ValueGeneratedOnUpdate()")
-
-                    Case ValueGenerated.OnUpdateSometimes
-                        stringBuilder.
-                           AppendLine(".").
-                           Append("ValueGeneratedOnUpdateSometimes()")
-
-                    Case Else
-                        stringBuilder.
-                           AppendLine(".").
-                           Append("ValueGeneratedOnAddOrUpdate()")
-                End Select
-
-                GeneratePropertyAnnotations([property], stringBuilder)
-            End Using
-
+            GeneratePropertyAnnotations(propertyBuilderName, [property], stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on an <see cref="IProperty"/>.
         ''' </summary>
+        ''' <param name="propertyBuilderName"> The name of the builder variable. </param>
         ''' <param name="property"> The property. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GeneratePropertyAnnotations([property] As IProperty,
+        Protected Overridable Sub GeneratePropertyAnnotations(propertyBuilderName As String,
+                                                              [property] As IProperty,
                                                               stringBuilder As IndentedStringBuilder)
 
+            NotNull(propertyBuilderName, NameOf(propertyBuilderName))
             NotNull([property], NameOf([property]))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -569,26 +548,7 @@ Namespace Migrations.Design
             GenerateFluentApiForDefaultValue([property], stringBuilder)
             annotations.Remove(RelationalAnnotationNames.DefaultValue)
 
-            ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
-            ' providers, generating them as raw annotations instead.
-            Dim ambiguousAnnotations =
-                RemoveAmbiguousFluentApiAnnotations(
-                    annotations,
-                    Function(name)
-                        Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
-                            OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
-                            OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
-                            OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
-                            OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
-                    End Function
-                )
-
-            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls([property], annotations)
-                stringBuilder.
-                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-            Next
-
-            GenerateAnnotations(annotations.Values.Concat(ambiguousAnnotations), stringBuilder)
+            GenerateAnnotations(propertyBuilderName, [property], stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         Private Function FindValueConverter([property] As IProperty) As ValueConverter
@@ -600,20 +560,20 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IKey"/> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="keys"> The keys. </param>
         ''' <param name="primaryKey"> The primary key. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateKeys(builderName As String, keys As IEnumerable(Of IKey),
+        Protected Overridable Sub GenerateKeys(entityTypeBuilderName As String, keys As IEnumerable(Of IKey),
                                                primaryKey As IKey,
                                                stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(keys, NameOf(keys))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             If primaryKey IsNot Nothing Then
-                GenerateKey(builderName, primaryKey, stringBuilder, primary:=True)
+                GenerateKey(entityTypeBuilderName, primaryKey, stringBuilder, primary:=True)
             End If
 
             Dim IsOwned = primaryKey?.DeclaringEntityType.IsOwned()
@@ -623,7 +583,7 @@ Namespace Migrations.Design
                                                       (Not k.GetReferencingForeignKeys().Any() OrElse
                                                        k.GetAnnotations().Any(Function(a) a.Name <> RelationalAnnotationNames.UniqueConstraintMappings))
                                            End Function)
-                    GenerateKey(builderName, key, stringBuilder)
+                    GenerateKey(entityTypeBuilderName, key, stringBuilder)
                 Next
             End If
         End Sub
@@ -631,160 +591,143 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IKey"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="key"> The key. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
         ''' <param name="primary">A value indicating whether the key Is primary. </param>
-        Protected Overridable Sub GenerateKey(builderName As String,
+        Protected Overridable Sub GenerateKey(entityTypeBuilderName As String,
                                               key As IKey,
                                               stringBuilder As IndentedStringBuilder,
                                               Optional primary As Boolean = False)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(key, NameOf(key))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             stringBuilder.
                 AppendLine().
-                Append(builderName).
+                Append(entityTypeBuilderName).
                 Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
                 Append(String.Join(", ", key.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                 Append(")")
 
-            Using stringBuilder.Indent()
-                GenerateKeyAnnotations(key, stringBuilder)
-            End Using
-
-            stringBuilder.AppendLine()
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
+            GenerateKeyAnnotations(entityTypeBuilderName, key, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on a key.
         ''' </summary>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="key"> The key. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateKeyAnnotations(key As IKey,
+        Protected Overridable Sub GenerateKeyAnnotations(entityTypeBuilderName As String,
+                                                         key As IKey,
                                                          stringBuilder As IndentedStringBuilder)
+
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
+            NotNull(key, NameOf(key))
+            NotNull(stringBuilder, NameOf(stringBuilder))
 
             Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(key.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(key, annotations)
-                stringBuilder.
-                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-            Next
-
-            GenerateAnnotations(annotations.Values, stringBuilder)
+            GenerateAnnotations(entityTypeBuilderName, key, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IIndex"/> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="indexes"> The indexes. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateIndexes(builderName As String,
+        Protected Overridable Sub GenerateIndexes(entityTypeBuilderName As String,
                                                   indexes As IEnumerable(Of IIndex),
                                                   stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(indexes, NameOf(indexes))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             For Each index In indexes
                 stringBuilder.AppendLine()
-                GenerateIndex(builderName, index, stringBuilder)
+                GenerateIndex(entityTypeBuilderName, index, stringBuilder)
             Next
         End Sub
 
         ''' <summary>
         '''     Generates code an <see cref="IIndex"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="index"> The index. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateIndex(builderName As String,
+        Protected Overridable Sub GenerateIndex(entityTypeBuilderName As String,
                                                 index As IIndex,
                                                 stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(index, NameOf(index))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             ' Note - method names below are meant to be hard-coded
             ' because old snapshot files will fail if they are changed
-            stringBuilder.
-                Append(builderName).
-                Append(".HasIndex(")
 
-            If index.Name Is Nothing Then
-                stringBuilder.
-                    Append(String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name))))
-            Else
-                stringBuilder.
-                    Append("{").
-                    Append(String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                    Append("}, ").
-                    Append(VBCode.Literal(index.Name))
-            End If
+            Dim indexProperties = String.Join(", ", index.Properties.Select(Function(p) VBCode.Literal(p.Name)))
+            Dim indexBuilderName = $"{entityTypeBuilderName}.HasIndex(" &
+                If(index.Name Is Nothing,
+                    indexProperties, $"{{{indexProperties}}}, {VBCode.Literal(index.Name)}") &
+                ")"
 
             stringBuilder.
-                Append(")")
+                Append(indexBuilderName)
 
-            Using stringBuilder.Indent()
-                If index.IsUnique Then
-                    stringBuilder.
+            ' Note that GenerateIndexAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
+
+            If index.IsUnique Then
+                stringBuilder.
                         Append("."c).
                         AppendLine().
                         Append("IsUnique()")
-                End If
+            End If
 
-                GenerateIndexAnnotations(index, stringBuilder)
-            End Using
-
-            stringBuilder.
-                AppendLine()
-
+            GenerateIndexAnnotations(indexBuilderName, index, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on an index.
         ''' </summary>
+        ''' <param name="indexBuilderName"> The name of the builder variable. </param>
         ''' <param name="index"> The index. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateIndexAnnotations(index As IIndex,
+        Protected Overridable Sub GenerateIndexAnnotations(indexBuilderName As String,
+                                                           index As IIndex,
                                                            stringBuilder As IndentedStringBuilder)
+
+            NotNull(indexBuilderName, NameOf(indexBuilderName))
+            NotNull(index, NameOf(index))
+            NotNull(stringBuilder, NameOf(stringBuilder))
 
             Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(index.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
-            ' providers, generating them as raw annotations instead.
-            Dim ambiguousAnnotations = RemoveAmbiguousFluentApiAnnotations(
-                annotations,
-                Function(name) name.EndsWith(":Include", StringComparison.Ordinal))
-
-            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(index, annotations)
-                stringBuilder.
-                AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-            Next
-
-            GenerateAnnotations(annotations.Values.Concat(ambiguousAnnotations), stringBuilder)
+            GenerateAnnotations(indexBuilderName, index, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on an entity type.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateEntityTypeAnnotations(builderName As String,
+        Protected Overridable Sub GenerateEntityTypeAnnotations(entityTypeBuilderName As String,
                                                                 entityType As IEntityType,
                                                                 stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -808,10 +751,12 @@ Namespace Migrations.Design
 
                     stringBuilder.
                         AppendLine().
-                        Append(builderName).
+                        Append(entityTypeBuilderName).
                         Append(".ToTable(")
 
-                    If tableName Is Nothing AndAlso schemaAnnotation Is Nothing Then
+                    If tableName Is Nothing AndAlso
+                       (schemaAnnotation Is Nothing OrElse schemaAnnotation.Value Is Nothing) Then
+
                         stringBuilder.
                             Append("DirectCast(").
                             Append(VBCode.UnknownLiteral(tableName)).
@@ -825,7 +770,9 @@ Namespace Migrations.Design
                     End If
 
                     Dim isExcludedAnnotation = annotations.Find(RelationalAnnotationNames.IsTableExcludedFromMigrations)
-                    If schemaAnnotation IsNot Nothing Then
+                    If schemaAnnotation IsNot Nothing AndAlso
+                       (tableName IsNot Nothing OrElse schemaAnnotation.Value IsNot Nothing) Then
+
                         stringBuilder.Append(", ")
 
                         Dim isExcludedAnnotationValue = CType(isExcludedAnnotation?.Value, Boolean?)
@@ -841,12 +788,7 @@ Namespace Migrations.Design
 
                     If isExcludedAnnotation IsNot Nothing Then
                         If CType(isExcludedAnnotation.Value, Boolean?) = True Then
-                            If entityType.IsOwned() Then
-                                ' Issue #23173
-                                stringBuilder.Append(", excludedFromMigrations:=true")
-                            Else
-                                stringBuilder.Append(", Function(t) t.ExcludeFromMigrations()")
-                            End If
+                            stringBuilder.Append(", Function(t) t.ExcludeFromMigrations()")
                         End If
 
                         annotations.Remove(isExcludedAnnotation.Name)
@@ -865,7 +807,7 @@ Namespace Migrations.Design
                 If viewName IsNot Nothing OrElse viewNameAnnotation IsNot Nothing Then
                     stringBuilder.
                         AppendLine().
-                        Append(builderName).
+                        Append(entityTypeBuilderName).
                         Append(".ToView(").
                         Append(VBCode.UnknownLiteral(viewName))
 
@@ -896,7 +838,7 @@ Namespace Migrations.Design
                 If functionName IsNot Nothing OrElse functionNameAnnotation IsNot Nothing Then
                     stringBuilder.
                         AppendLine().
-                        Append(builderName).
+                        Append(entityTypeBuilderName).
                         Append(".ToFunction(").
                         Append(VBCode.UnknownLiteral(functionName)).
                         AppendLine(")")
@@ -915,7 +857,7 @@ Namespace Migrations.Design
                 If SqlQuery IsNot Nothing OrElse sqlQueryAnnotation IsNot Nothing Then
                     stringBuilder.
                         AppendLine().
-                        Append(builderName).
+                        Append(entityTypeBuilderName).
                         Append(".ToSqlQuery(").
                         Append(VBCode.UnknownLiteral(SqlQuery)).
                         AppendLine(")")
@@ -932,7 +874,7 @@ Namespace Migrations.Design
 
                 stringBuilder.
                     AppendLine().
-                    Append(builderName).
+                    Append(entityTypeBuilderName).
                     Append(".").
                     Append("HasDiscriminator")
 
@@ -988,38 +930,20 @@ Namespace Migrations.Design
                 stringBuilder.AppendLine()
             End If
 
-            Dim fluentApiCalls = AnnotationCodeGenerator.GenerateFluentApiCalls(entityType, annotations)
-            If fluentApiCalls.Count > 0 OrElse annotations.Count > 0 Then
-
-                stringBuilder.
-                    AppendLine().
-                    Append(builderName)
-
-                Using stringBuilder.Indent()
-                    For Each methodCallCodeFragment In fluentApiCalls
-                        stringBuilder.
-                            AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-                    Next
-
-                    GenerateAnnotations(annotations.Values, stringBuilder)
-
-                    stringBuilder.AppendLine()
-                End Using
-            End If
-
+            GenerateAnnotations(entityTypeBuilderName, entityType, stringBuilder, annotations, inChainedCall:=False)
         End Sub
 
         ''' <summary>
         '''     Generates code for <see cref= "ICheckConstraint"/> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateCheckConstraints(builderName As String,
+        Protected Overridable Sub GenerateCheckConstraints(entityTypeBuilderName As String,
                                                            entityType As IEntityType,
                                                            stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1028,26 +952,26 @@ Namespace Migrations.Design
             For Each checkConstraint In constraintsForEntity
                 stringBuilder.AppendLine()
 
-                GenerateCheckConstraint(builderName, checkConstraint, stringBuilder)
+                GenerateCheckConstraint(entityTypeBuilderName, checkConstraint, stringBuilder)
             Next
         End Sub
 
         ''' <summary>
         '''     Generates code for an <see cref= "ICheckConstraint"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="checkConstraint"> The check constraint. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateCheckConstraint(builderName As String,
+        Protected Overridable Sub GenerateCheckConstraint(entityTypeBuilderName As String,
                                                           checkConstraint As ICheckConstraint,
                                                           stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(checkConstraint, NameOf(checkConstraint))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             stringBuilder.
-                Append(builderName).
+                Append(entityTypeBuilderName).
                 Append(".HasCheckConstraint(").
                 Append(VBCode.Literal(checkConstraint.ModelName)).
                 Append(", ").
@@ -1066,14 +990,14 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IForeignKey"/> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="foreignKeys"> The foreign keys. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateForeignKeys(builderName As String,
+        Protected Overridable Sub GenerateForeignKeys(entityTypeBuilderName As String,
                                                       foreignKeys As IEnumerable(Of IForeignKey),
                                                       stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(foreignKeys, NameOf(foreignKeys))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1085,27 +1009,27 @@ Namespace Migrations.Design
                     stringBuilder.AppendLine()
                 End If
 
-                GenerateForeignKey(builderName, foreignKey, stringBuilder)
+                GenerateForeignKey(entityTypeBuilderName, foreignKey, stringBuilder)
             Next
         End Sub
 
         ''' <summary>
         '''     Generates code for an <see cref="IForeignKey"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="foreignKey"> The foreign key. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateForeignKey(builderName As String,
+        Protected Overridable Sub GenerateForeignKey(entityTypeBuilderName As String,
                                                      foreignKey As IForeignKey,
                                                      stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(foreignKey, NameOf(foreignKey))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             If Not foreignKey.IsOwnership Then
                 stringBuilder.
-                    Append(builderName).
+                    Append(entityTypeBuilderName).
                     Append(".HasOne(").
                     Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).
                     Append(", ").
@@ -1115,7 +1039,7 @@ Namespace Migrations.Design
                           )
             Else
                 stringBuilder.
-                    Append(builderName).
+                    Append(entityTypeBuilderName).
                     Append(".WithOwner(")
 
                 If foreignKey.DependentToPrincipal IsNot Nothing Then
@@ -1127,18 +1051,20 @@ Namespace Migrations.Design
             stringBuilder.
                 Append(")")
 
-            Using stringBuilder.Indent()
-                If foreignKey.IsUnique AndAlso Not foreignKey.IsOwnership Then
-                    stringBuilder.
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
+
+            If foreignKey.IsUnique AndAlso Not foreignKey.IsOwnership Then
+                stringBuilder.
                         AppendLine(".").
                         Append("WithOne(")
 
-                    If foreignKey.PrincipalToDependent IsNot Nothing Then
-                        stringBuilder.
-                            Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
-                    End If
-
+                If foreignKey.PrincipalToDependent IsNot Nothing Then
                     stringBuilder.
+                            Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
+                End If
+
+                stringBuilder.
                         AppendLine(").").
                         Append("HasForeignKey(").
                         Append(VBCode.Literal(foreignKey.DeclaringEntityType.Name)).
@@ -1146,77 +1072,75 @@ Namespace Migrations.Design
                         Append(String.Join(", ", foreignKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                         Append(")")
 
-                    GenerateForeignKeyAnnotations(foreignKey, stringBuilder)
-
-                    If foreignKey.PrincipalKey IsNot foreignKey.PrincipalEntityType.FindPrimaryKey() Then
-                        stringBuilder.
+                If foreignKey.PrincipalKey IsNot foreignKey.PrincipalEntityType.FindPrimaryKey() Then
+                    stringBuilder.
                             AppendLine(".").
                             Append("HasPrincipalKey(").
                             Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).
                             Append(", ").
                             Append(String.Join(", ", foreignKey.PrincipalKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                             Append(")")
-                    End If
+                End If
 
-                Else
-                    If Not foreignKey.IsOwnership Then
+            Else
+                If Not foreignKey.IsOwnership Then
 
-                        stringBuilder.
+                    stringBuilder.
                             AppendLine(".").
                             Append("WithMany(")
 
-                        If foreignKey.PrincipalToDependent IsNot Nothing Then
-                            stringBuilder.Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
-                        End If
-
-                        stringBuilder.Append(")")
+                    If foreignKey.PrincipalToDependent IsNot Nothing Then
+                        stringBuilder.Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
                     End If
 
-                    stringBuilder.
+                    stringBuilder.Append(")")
+                End If
+
+                stringBuilder.
                         AppendLine(".").
                         Append("HasForeignKey(").
                         Append(String.Join(", ", foreignKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                         Append(")")
 
-                    GenerateForeignKeyAnnotations(foreignKey, stringBuilder)
-
-                    If foreignKey.PrincipalKey IsNot foreignKey.PrincipalEntityType.FindPrimaryKey() Then
-                        stringBuilder.
+                If foreignKey.PrincipalKey IsNot foreignKey.PrincipalEntityType.FindPrimaryKey() Then
+                    stringBuilder.
                             AppendLine(".").
                             Append("HasPrincipalKey(").
                             Append(String.Join(", ", foreignKey.PrincipalKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
                             Append(")")
-                    End If
                 End If
+            End If
 
-                If Not foreignKey.IsOwnership Then
-                    If foreignKey.DeleteBehavior <> DeleteBehavior.ClientSetNull Then
-                        stringBuilder.
+            If Not foreignKey.IsOwnership Then
+                If foreignKey.DeleteBehavior <> DeleteBehavior.ClientSetNull Then
+                    stringBuilder.
                             AppendLine(".").
                             Append("OnDelete(").
                             Append(VBCode.Literal(DirectCast(foreignKey.DeleteBehavior, [Enum]))).
                             Append(")")
-                    End If
+                End If
 
-                    If foreignKey.IsRequired Then
-                        stringBuilder.
+                If foreignKey.IsRequired Then
+                    stringBuilder.
                             AppendLine(".").
                             Append("IsRequired()")
-                    End If
                 End If
-            End Using
+            End If
 
-            stringBuilder.AppendLine()
+            GenerateForeignKeyAnnotations(entityTypeBuilderName, foreignKey, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on a foreign key.
         ''' </summary>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="foreignKey"> The foreign key. </param>
         ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateForeignKeyAnnotations(foreignKey As IForeignKey,
+        Protected Overridable Sub GenerateForeignKeyAnnotations(entityTypeBuilderName As String,
+                                                                foreignKey As IForeignKey,
                                                                 stringBuilder As IndentedStringBuilder)
 
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(foreignKey, NameOf(foreignKey))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1224,30 +1148,25 @@ Namespace Migrations.Design
                 FilterIgnoredAnnotations(foreignKey.GetAnnotations()).
                     ToDictionary(Function(a) a.Name, Function(a) a)
 
-            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(foreignKey, annotations)
-                stringBuilder.
-                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-            Next
-
-            GenerateAnnotations(annotations.Values, stringBuilder)
+            GenerateAnnotations(entityTypeBuilderName, foreignKey, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for the navigations of an <see cref= "IEntityType"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
         ''' <param name="entityType"> The entity type. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateEntityTypeNavigations(builderName As String,
+        Protected Overridable Sub GenerateEntityTypeNavigations(modelBuilderName As String,
                                                                 entityType As IEntityType,
                                                                 stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(builderName, NameOf(builderName))
+            NotEmpty(modelBuilderName, NameOf(modelBuilderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             stringBuilder.
-                Append(builderName).
+                Append(modelBuilderName).
                 Append(".Entity(").
                 Append(VBCode.Literal(entityType.Name)).
                 AppendLine(",")
@@ -1269,14 +1188,14 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref= "INavigation"/> objects.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="navigations"> The navigations. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateNavigations(builderName As String,
+        Protected Overridable Sub GenerateNavigations(entityTypeBuilderName As String,
                                                       navigations As IEnumerable(Of INavigation),
                                                       stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(navigations, NameOf(navigations))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1288,54 +1207,56 @@ Namespace Migrations.Design
                     stringBuilder.AppendLine()
                 End If
 
-                GenerateNavigation(builderName, navigation, stringBuilder)
+                GenerateNavigation(entityTypeBuilderName, navigation, stringBuilder)
             Next
         End Sub
 
         ''' <summary>
         '''     Generates code for an <see cref= "INavigation"/>.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="navigation"> The navigation. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateNavigation(builderName As String,
+        Protected Overridable Sub GenerateNavigation(entityTypeBuilderName As String,
                                                      navigation As INavigation,
                                                      stringBuilder As IndentedStringBuilder)
 
-            NotNull(builderName, NameOf(builderName))
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(navigation, NameOf(navigation))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
             stringBuilder.
-                Append(builderName).
+                Append(entityTypeBuilderName).
                 Append(".Navigation(").
                 Append(VBCode.Literal(navigation.Name)).
                 Append(")")
 
-            Using stringBuilder.Indent()
-                If Not navigation.IsOnDependent AndAlso
-                   Not navigation.IsCollection AndAlso
-                   navigation.ForeignKey.IsRequiredDependent Then
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
 
-                    stringBuilder.
-                        AppendLine(".").
-                        Append("IsRequired()")
-                End If
+            If Not navigation.IsOnDependent AndAlso
+               Not navigation.IsCollection AndAlso
+               navigation.ForeignKey.IsRequiredDependent Then
 
-                GenerateNavigationAnnotations(navigation, stringBuilder)
-            End Using
+                stringBuilder.
+                    AppendLine(".").
+                    Append("IsRequired()")
+            End If
 
-            stringBuilder.AppendLine()
+            GenerateNavigationAnnotations(entityTypeBuilderName, navigation, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on a navigation.
         ''' </summary>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="navigation"> The navigation. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateNavigationAnnotations(navigation As INavigation,
+        Protected Overridable Sub GenerateNavigationAnnotations(entityTypeBuilderName As String,
+                                                                navigation As INavigation,
                                                                 stringBuilder As IndentedStringBuilder)
 
+            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
             NotNull(navigation, NameOf(navigation))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1343,56 +1264,17 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(navigation.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(navigation, annotations)
-                stringBuilder.
-                    AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
-            Next
-
-            GenerateAnnotations(annotations.Values, stringBuilder)
-        End Sub
-
-        ''' <summary>
-        '''     Generates code for annotations.
-        ''' </summary>
-        ''' <param name="annotations"> The annotations. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateAnnotations(annotations As IEnumerable(Of IAnnotation),
-                                                      stringBuilder As IndentedStringBuilder)
-
-            NotNull(annotations, NameOf(annotations))
-            NotNull(stringBuilder, NameOf(stringBuilder))
-
-            For Each annotation In annotations
-                stringBuilder.AppendLine(".")
-                GenerateAnnotation(annotation, stringBuilder)
-            Next
-        End Sub
-
-        ''' <summary>
-        '''     Generates code for an annotation.
-        ''' </summary>
-        ''' <param name="annotation"> The annotation. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateAnnotation(
-        annotation As IAnnotation,
-        stringBuilder As IndentedStringBuilder)
-
-            stringBuilder.
-            Append("HasAnnotation(").
-            Append(VBCode.Literal(annotation.Name)).
-            Append(", ").
-            Append(VBCode.UnknownLiteral(annotation.Value)).
-            Append(")")
+            GenerateAnnotations(entityTypeBuilderName, navigation, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for data seeding.
         ''' </summary>
-        ''' <param name="builderName"> The name of the builder variable. </param>
+        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
         ''' <param name="properties"> The properties to generate. </param>
         ''' <param name="data"> The data to be seeded. </param>
         ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateData(builderName As String,
+        Protected Overridable Sub GenerateData(entityTypeBuilderName As String,
                                                properties As IEnumerable(Of IProperty),
                                                data As IEnumerable(Of IDictionary(Of String, Object)),
                                                stringBuilder As IndentedStringBuilder)
@@ -1408,7 +1290,7 @@ Namespace Migrations.Design
 
             stringBuilder.
                 AppendLine().
-                Append(builderName).
+                Append(entityTypeBuilderName).
                 Append(".").
                 Append(NameOf(EntityTypeBuilder.HasData)).
                 AppendLine("({")
@@ -1553,25 +1435,70 @@ Namespace Migrations.Design
                 Append(")")
         End Sub
 
-        Private Shared Function RemoveAmbiguousFluentApiAnnotations(
-            annotations As Dictionary(Of String, IAnnotation),
-            annotationNameMatcher As Func(Of String, Boolean)) As IReadOnlyList(Of IAnnotation)
+        Private Sub GenerateAnnotations(builderName As String,
+                                        annotatable As IAnnotatable,
+                                        stringBuilder As IndentedStringBuilder,
+                                        annotations As Dictionary(Of String, IAnnotation),
+                                        inChainedCall As Boolean,
+                                        Optional leadingNewline As Boolean = True)
 
-            Dim ambiguousAnnotations As List(Of IAnnotation) = Nothing
+            Dim fluentApiCalls = AnnotationCodeGenerator.GenerateFluentApiCalls(annotatable, annotations)
 
-            For Each kpv As KeyValuePair(Of String, IAnnotation) In annotations
-                Dim name = kpv.Key
-                Dim Annotation = kpv.Value
+            Dim chainedCall As MethodCallCodeFragment = Nothing
+            Dim typeQualifiedCalls = New List(Of MethodCallCodeFragment)()
 
-                If annotationNameMatcher(name) Then
-                    annotations.Remove(name)
-                    ambiguousAnnotations = If(ambiguousAnnotations, New List(Of IAnnotation))
-                    ambiguousAnnotations.Add(Annotation)
+            ' Chain together all Fluent API calls which we can, And leave the others to be generated as type-qualified
+            For Each c In fluentApiCalls
+                If c.MethodInfo IsNot Nothing AndAlso
+                   c.MethodInfo.IsStatic AndAlso
+                   c.MethodInfo.DeclaringType Is Nothing OrElse c.MethodInfo.DeclaringType.Assembly <> GetType(RelationalModelBuilderExtensions).Assembly Then
+
+                    typeQualifiedCalls.Add(c)
+                Else
+                    chainedCall = If(chainedCall Is Nothing, c, chainedCall.Chain(c))
                 End If
             Next
 
-            Return If(DirectCast(ambiguousAnnotations, IReadOnlyList(Of IAnnotation)), ImmutableList(Of IAnnotation).Empty)
-        End Function
+            ' Append remaining raw annotations which did Not get generated as Fluent API calls
+            For Each annotation In annotations.Values.OrderBy(Function(a) a.Name)
+                Dim c = New MethodCallCodeFragment(_hasAnnotationMethodInfo, annotation.Name, annotation.Value)
+                chainedCall = If(chainedCall Is Nothing, c, chainedCall.Chain(c))
+            Next
+
+            ' First generate single Fluent API call chain
+            If chainedCall IsNot Nothing Then
+                If inChainedCall Then
+                    stringBuilder.
+                        AppendLine(".").
+                        AppendLines(VBCode.Fragment(chainedCall, startWithDot:=False), skipFinalNewline:=True)
+                Else
+                    If leadingNewline Then
+                        stringBuilder.AppendLine()
+                    End If
+
+                    stringBuilder.AppendLines(VBCode.Fragment(chainedCall, builderName), skipFinalNewline:=True)
+                    stringBuilder.AppendLine()
+                End If
+
+                leadingNewline = True
+            End If
+
+            If inChainedCall Then
+                stringBuilder.AppendLine()
+                stringBuilder.DecrementIndent()
+            End If
+
+            ' Then generate separate fully-qualified calls
+            If typeQualifiedCalls.Count > 0 Then
+                If leadingNewline Then
+                    stringBuilder.AppendLine()
+                End If
+
+                For Each c In typeQualifiedCalls
+                    stringBuilder.AppendLine(VBCode.Fragment(c, builderName, typeQualified:=True))
+                Next
+            End If
+        End Sub
 
     End Class
 

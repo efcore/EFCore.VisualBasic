@@ -31,7 +31,7 @@ Namespace Migrations.Design
     Public Class VisualBasicMigrationsGeneratorTests
 
         Private Shared ReadOnly _nl As String = Environment.NewLine
-        Private Shared ReadOnly _toTable As String = _nl & "modelBuilder.ToTable(""WithAnnotations"")" & _nl
+        Private Shared ReadOnly _toTable As String = _nl & "entityTypeBuilder.ToTable(""WithAnnotations"")"
 
         <ConditionalFact>
         Sub FileExtension_works()
@@ -58,7 +58,6 @@ Namespace Migrations.Design
                 CoreAnnotationNames.ProductVersion,
                 CoreAnnotationNames.ValueGeneratorFactory,
                 CoreAnnotationNames.ValueGeneratorFactoryType,
-                CoreAnnotationNames.OwnedTypes,
                 CoreAnnotationNames.ValueConverter,
                 CoreAnnotationNames.ValueConverterType,
                 CoreAnnotationNames.ValueComparer,
@@ -113,44 +112,38 @@ Namespace Migrations.Design
                 {
                     RelationalAnnotationNames.TableName, ("MyTable",
                         _nl &
-                        "modelBuilder." &
+                        "entityTypeBuilder." &
                          NameOf(RelationalEntityTypeBuilderExtensions.ToTable) &
-                         "(""MyTable"")" &
-                         _nl)
+                         "(""MyTable"")")
                 },
                 {
                     RelationalAnnotationNames.Schema, ("MySchema",
                         _nl &
-                        "modelBuilder." &
+                        "entityTypeBuilder." &
                         NameOf(RelationalEntityTypeBuilderExtensions.ToTable) &
-                        "(""WithAnnotations"", ""MySchema"")" & _nl)
+                        "(""WithAnnotations"", ""MySchema"")")
                 },
                 {
                     CoreAnnotationNames.DiscriminatorProperty, ("Id",
-                        _toTable &
+                        _toTable & _nl &
                          _nl &
-                         "modelBuilder.HasDiscriminator" &
-                         "(Of Integer)(""Id"")" &
-                         _nl)
+                         "entityTypeBuilder.HasDiscriminator" &
+                         "(Of Integer)(""Id"")")
                 },
                 {
                     CoreAnnotationNames.DiscriminatorValue, ("MyDiscriminatorValue",
-                        _toTable &
+                        _toTable & _nl &
                         _nl &
-                        "modelBuilder.HasDiscriminator" &
+                        "entityTypeBuilder.HasDiscriminator" &
                         "()." &
                         NameOf(DiscriminatorBuilder.HasValue) &
-                        "(""MyDiscriminatorValue"")" &
-                        _nl)
+                        "(""MyDiscriminatorValue"")")
                 },
                 {
                     RelationalAnnotationNames.Comment, ("My Comment",
-                        _toTable &
+                        _toTable & _nl &
                         _nl &
-                        "modelBuilder." &
-                        _nl &
-                        "    HasComment(""My Comment"")" &
-                        _nl)
+                        "entityTypeBuilder.HasComment(""My Comment"")")
                 },
                 {
                     CoreAnnotationNames.DefiningQuery,
@@ -159,24 +152,21 @@ Namespace Migrations.Design
                 {
                     RelationalAnnotationNames.ViewName, ("MyView",
                         _nl &
-                        "modelBuilder." &
+                        "entityTypeBuilder." &
                         NameOf(RelationalEntityTypeBuilderExtensions.ToView) &
-                        "(""MyView"")" &
-                        _nl)
+                        "(""MyView"")")
                 },
                 {
                     RelationalAnnotationNames.FunctionName, (Nothing,
                         _nl &
-                        "modelBuilder" &
-                        $".{NameOf(RelationalEntityTypeBuilderExtensions.ToFunction)}(Nothing)" &
-                        _nl)
+                        "entityTypeBuilder" &
+                        $".{NameOf(RelationalEntityTypeBuilderExtensions.ToFunction)}(Nothing)")
                 },
                 {
                     RelationalAnnotationNames.SqlQuery, (Nothing,
                         _nl &
-                        "modelBuilder" &
-                        $".{NameOf(RelationalEntityTypeBuilderExtensions.ToSqlQuery)}(Nothing)" &
-                        _nl)
+                        "entityTypeBuilder" &
+                        $".{NameOf(RelationalEntityTypeBuilderExtensions.ToSqlQuery)}(Nothing)")
                 }
             }
 #Enable Warning BC40008 ' Type or member is obsolete
@@ -184,7 +174,7 @@ Namespace Migrations.Design
             MissingAnnotationCheck(Function(b) b.Entity(Of WithAnnotations)().Metadata,
                                    notForEntityType, forEntityType,
                                    Function(a) _toTable,
-                                   Sub(g, m, b) g.TestGenerateEntityTypeAnnotations("modelBuilder", CType(m, IEntityType), b))
+                                   Sub(g, m, b) g.TestGenerateEntityTypeAnnotations("entityTypeBuilder", CType(m, IEntityType), b))
         End Sub
 
         <ConditionalFact>
@@ -195,7 +185,6 @@ Namespace Migrations.Design
 #Disable Warning BC40000, BC40008 ' Type or member is obsolete
             Dim notForProperty As New HashSet(Of String) From {
                 CoreAnnotationNames.ProductVersion,
-                CoreAnnotationNames.OwnedTypes,
                 CoreAnnotationNames.NavigationAccessMode,
                 CoreAnnotationNames.EagerLoaded,
                 CoreAnnotationNames.QueryFilter,
@@ -240,8 +229,7 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.ModelDependencies}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
-            Dim columnMapping As String =
-                $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"
+            Dim columnMapping = $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"
 
             ' Add a line here if the code generator is supposed to handle this annotation
             ' Note that other tests should be added to check code is generated correctly
@@ -315,7 +303,7 @@ Namespace Migrations.Design
                                    notForProperty,
                                    forProperty,
                                    Function(a) columnMapping,
-                                   Sub(g, m, b) g.TestGeneratePropertyAnnotations(CType(m, IProperty), b))
+                                   Sub(g, m, b) g.TestGeneratePropertyAnnotations("propertyBuilder", CType(m, IProperty), b))
         End Sub
 
         Private Shared Sub MissingAnnotationCheck(
@@ -374,9 +362,12 @@ Namespace Migrations.Design
                     End Try
 
                     Try
-                        Assert.Equal(If(validAnnotations.ContainsKey(annotationName),
+
+                        Dim expected = If(validAnnotations.ContainsKey(annotationName),
                                             validAnnotations(annotationName).Expected,
-                                            generationDefault(annotationName)),
+                                            generationDefault(annotationName))
+
+                        Assert.Equal(If(String.IsNullOrEmpty(expected), expected, $"{expected}{_nl}"),
                                      sb.ToString())
 
                     Catch e As Exception
@@ -400,8 +391,10 @@ Namespace Migrations.Design
                 GenerateEntityTypeAnnotations(builderName, entityType, stringBuilder)
             End Sub
 
-            Public Overridable Sub TestGeneratePropertyAnnotations(prop As IProperty, stringBuilder As IndentedStringBuilder)
-                GeneratePropertyAnnotations(prop, stringBuilder)
+            Public Overridable Sub TestGeneratePropertyAnnotations(builderName As String,
+                                                                   prop As IProperty,
+                                                                   stringBuilder As IndentedStringBuilder)
+                GeneratePropertyAnnotations("propertyBuilder", prop, stringBuilder)
             End Sub
 
             Public Overridable Sub TestGenerateSequence(builderName As String, sequence As ISequence, stringBuilder As IndentedStringBuilder)
@@ -486,7 +479,7 @@ Namespace Migrations.Design
 
             Dim sb As New IndentedStringBuilder
 
-            generator.TestGeneratePropertyAnnotations(DirectCast(prop, IProperty), sb)
+            generator.TestGeneratePropertyAnnotations("propertyBuilder", DirectCast(prop, IProperty), sb)
 
             Assert.Equal(expected & "." & _nl & "HasMaxLength(1000)", sb.ToString())
         End Sub
@@ -603,8 +596,7 @@ Namespace Global.MyNamespace
     <Migration(""20150511161616_MyMigration"")>
     Partial Class MyMigration
         Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)
-            modelBuilder.
-                HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
+            modelBuilder.HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
 
             modelBuilder.Entity(""T1"",
                 Sub(b)
@@ -731,8 +723,7 @@ Namespace Global.MyNamespace
         Inherits ModelSnapshot
 
         Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)
-            modelBuilder.
-                HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
+            modelBuilder.HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
 
             modelBuilder.Entity(""Cheese"",
                 Sub(b)
@@ -1179,7 +1170,7 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
             vbServices.ConfigureDesignTimeServices(services)
 
             Return services.
-                BuildServiceProvider().
+                BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IMigrationsCodeGenerator)()
         End Function
 

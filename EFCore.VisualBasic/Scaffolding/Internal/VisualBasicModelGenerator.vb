@@ -82,6 +82,9 @@ Namespace Scaffolding.Internal
             }
 
             For Each entityType In model.GetEntityTypes()
+
+                If VisualBasicDbContextGenerator.IsManyToManyJoinEntityType(entityType) Then Continue For
+
                 generatedCode = _VBEntityTypeGenerator.
                                     WriteCode(
                                         entityType,

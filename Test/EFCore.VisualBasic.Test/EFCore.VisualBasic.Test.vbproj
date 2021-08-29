@@ -19,14 +19,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.10.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-preview.7.21325.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-rc.2.21422.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>all</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-preview.7.21325.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="6.0.0-preview.7.21325.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-preview.7.21325.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0-preview.7.21326.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-rc.2.21422.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="6.0.0-rc.2.21422.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-rc.2.21422.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0-rc.2.21420.29" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.console" Version="2.4.1">

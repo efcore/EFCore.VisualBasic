@@ -221,7 +221,9 @@ $"    Dim model As New {className}()
                     Dim entityTypes = model.GetEntityTypesInHierarchicalOrder()
                     Dim variables As New HashSet(Of String)
 
+                    Dim anyEntityTypes = False
                     For Each entityType As IEntityType In entityTypes
+                        anyEntityTypes = True
                         Dim variableName = _code.Identifier(entityType.ShortName(), variables, capitalize:=False)
 
                         Dim firstChar = If(variableName(0) = "["c, variableName(1), variableName(0))
@@ -256,7 +258,7 @@ $"    Dim model As New {className}()
                             AppendLine(")")
                     Next
 
-                    If entityTypes.Count > 0 Then
+                    If anyEntityTypes Then
                         mainBuilder.AppendLine()
                     End If
 
@@ -346,7 +348,7 @@ $"    Dim model As New {className}()
                             AppendLine(")")
                     Next
 
-                    If entityTypes.Count > 0 Then
+                    If anyEntityTypes Then
                         mainBuilder.AppendLine()
                     End If
 

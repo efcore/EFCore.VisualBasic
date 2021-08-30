@@ -29,7 +29,14 @@ Namespace Design
 
             With parameters.Annotations
                 If Not parameters.IsRuntime Then
-                    .Remove(CoreAnnotationNames.PropertyAccessMode)
+                    For Each annotation In parameters.Annotations
+                        If CoreAnnotationNames.AllNames.Contains(annotation.Key) AndAlso
+                           annotation.Key <> CoreAnnotationNames.ProductVersion AndAlso
+                           annotation.Key <> CoreAnnotationNames.FullChangeTrackingNotificationsRequired Then
+
+                            .Remove(annotation.Key)
+                        End If
+                    Next
                 Else
                     .Remove(CoreAnnotationNames.ModelDependencies)
                     .Remove(CoreAnnotationNames.ReadOnlyModel)
@@ -48,6 +55,8 @@ Namespace Design
                     .Remove(CoreAnnotationNames.PropertyAccessMode)
                     .Remove(CoreAnnotationNames.NavigationAccessMode)
                     .Remove(CoreAnnotationNames.DiscriminatorProperty)
+                    .Remove(CoreAnnotationNames.AmbiguousNavigations)
+                    .Remove(CoreAnnotationNames.NavigationCandidates)
                 End With
             End If
 

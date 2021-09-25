@@ -90,15 +90,29 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Reference(type As Type) As String Implements IVisualBasicHelper.Reference
-            Return Reference(type, useFullName:=False)
-        End Function
-
-        Private Function Reference(type As Type, useFullName As Boolean) As String
+        Public Overridable Function Reference(type As Type, Optional fullName As Boolean? = Nothing) As String Implements IVisualBasicHelper.Reference
             NotNull(type, NameOf(type))
-            Return type.DisplayName(fullName:=useFullName, compilable:=True)
+            If Not fullName.HasValue Then
+                fullName = If(type.IsNested, ShouldUseFullName(type.DeclaringType), ShouldUseFullName(type))
+            End If
+            Return type.DisplayName(fullName:=fullName.Value, compilable:=True)
         End Function
 
+        ''' <summary>
+        '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
+        '''     directly from your code. This API may change Or be removed in future releases.
+        ''' </summary>
+        Public Overridable Function ShouldUseFullName(type As Type) As Boolean
+            Return ShouldUseFullName(type.Name)
+        End Function
+
+        ''' <summary>
+        '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
+        '''     directly from your code. This API may change Or be removed in future releases.
+        ''' </summary>
+        Public Overridable Function ShouldUseFullName(shortTypeName As String) As Boolean
+            Return False
+        End Function
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -399,8 +413,8 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Literal(value As Type) As String Implements IVisualBasicHelper.Literal
-            Return $"GetType({Reference(value)})"
+        Public Overridable Function Literal(value As Type, Optional fullName As Boolean? = Nothing) As String Implements IVisualBasicHelper.Literal
+            Return $"GetType({Reference(value, fullName)})"
         End Function
 
         ''' <summary>
@@ -662,7 +676,7 @@ Namespace Design.Internal
                     Dim b = HandleExpression(CType(exp, UnaryExpression).Operand, builder)
 
                     builder.Append(", ").
-                        Append(Reference(exp.Type, useFullName:=True)).
+                        Append(Reference(exp.Type, fullName:=True)).
                         Append(")"c)
 
                     Return b
@@ -670,7 +684,7 @@ Namespace Design.Internal
                 Case ExpressionType.New
                     builder.
                         Append("New ").
-                        Append(Reference(exp.Type, useFullName:=True))
+                        Append(Reference(exp.Type, fullName:=True))
 
                     Return HandleArguments(CType(exp, NewExpression).Arguments, builder)
 
@@ -678,7 +692,7 @@ Namespace Design.Internal
                     Dim callExpression = CType(exp, MethodCallExpression)
                     If callExpression.Method.IsStatic Then
                         builder.
-                          Append(Reference(callExpression.Method.DeclaringType, useFullName:=True))
+                          Append(Reference(callExpression.Method.DeclaringType, fullName:=True))
                     Else
                         If Not HandleExpression(callExpression.[Object], builder) Then
                             Return False
@@ -705,7 +719,7 @@ Namespace Design.Internal
                     Dim memberExpression1 = CType(exp, MemberExpression)
                     If memberExpression1.Expression Is Nothing Then
                         builder.
-                            Append(Reference(memberExpression1.Member.DeclaringType, useFullName:=True))
+                            Append(Reference(memberExpression1.Member.DeclaringType, fullName:=True))
                     Else
                         If Not HandleExpression(memberExpression1.Expression, builder) Then
                             Return False

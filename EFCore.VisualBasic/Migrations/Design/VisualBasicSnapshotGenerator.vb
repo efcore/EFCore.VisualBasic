@@ -144,8 +144,11 @@ Namespace Migrations.Design
             If ownerNavigation IsNot Nothing AndAlso
                entityType.HasSharedClrType AndAlso
                entityTypeName = GetOwnedName(ownership.PrincipalEntityType, entityType.ClrType.ShortDisplayName(), ownerNavigation) Then
+
                 entityTypeName = entityType.ClrType.DisplayName()
             End If
+
+            Dim entityTypeBuilderName = GenerateEntityTypeBuilderName(modelBuilderName)
 
             stringBuilder.
                 Append(modelBuilderName).
@@ -157,8 +160,6 @@ Namespace Migrations.Design
                     Append(", ").
                     Append(VBCode.Literal(ownerNavigation))
             End If
-
-            Dim entityTypeBuilderName = GenerateEntityTypeBuilderName(modelBuilderName)
 
             Using stringBuilder.Indent()
                 stringBuilder.
@@ -186,7 +187,9 @@ Namespace Migrations.Design
 
                     If ownerNavigation IsNot Nothing Then
                         GenerateRelationships(entityTypeBuilderName, entityType, stringBuilder)
-                        GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().Where(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership), stringBuilder)
+                        GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().
+                                                Where(Function(n) Not n.IsOnDependent AndAlso
+                                                                  Not n.ForeignKey.IsOwnership), stringBuilder)
                     End If
 
                     GenerateData(entityTypeBuilderName, entityType.GetProperties(), entityType.GetSeedData(providerValues:=True), stringBuilder)
@@ -788,7 +791,7 @@ Namespace Migrations.Design
 
                     If isExcludedAnnotation IsNot Nothing Then
                         If CType(isExcludedAnnotation.Value, Boolean?) = True Then
-                            stringBuilder.Append(", Function(t) t.ExcludeFromMigrations()")
+                            stringBuilder.Append(", Sub(t) t.ExcludeFromMigrations()")
                         End If
 
                         annotations.Remove(isExcludedAnnotation.Name)

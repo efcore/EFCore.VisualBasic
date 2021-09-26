@@ -445,6 +445,7 @@ Namespace Scaffolding.Internal
 
             Dim explicitSchema = schema IsNot Nothing AndAlso schema <> defaultSchema
             Dim explicitTable = explicitSchema OrElse tableName IsNot Nothing AndAlso tableName <> entityType.GetDbSetName()
+
             If explicitTable Then
                 Dim parameterString = _VBCode.Literal(tableName)
                 If explicitSchema Then
@@ -535,13 +536,13 @@ Namespace Scaffolding.Internal
 
                 Dim precision = prop.GetPrecision()
                 Dim scale = prop.GetScale()
-                If precision IsNot Nothing AndAlso scale IsNot Nothing AndAlso scale <> 0 Then
+                If precision.HasValue AndAlso scale.HasValue AndAlso scale <> 0 Then
                     lines.Add($"{NameOf(PropertyBuilder.HasPrecision)}({_VBCode.Literal(precision.Value)}, {_VBCode.Literal(scale.Value)})")
-                ElseIf precision IsNot Nothing Then
+                ElseIf precision.HasValue Then
                     lines.Add($"{NameOf(PropertyBuilder.HasPrecision)}({_VBCode.Literal(precision.Value)})")
                 End If
 
-                If prop.IsUnicode() IsNot Nothing Then
+                If prop.IsUnicode().HasValue Then
                     lines.Add($"{NameOf(PropertyBuilder.IsUnicode)}({(If(prop.IsUnicode() = False, "false", ""))})")
                 End If
             End If

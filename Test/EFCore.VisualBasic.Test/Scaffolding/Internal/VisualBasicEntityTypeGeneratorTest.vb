@@ -1309,8 +1309,8 @@ Namespace TestNamespace
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                     entity.HasOne(Function(d) d.BlogNavigation).
                         WithMany(Function(p) p.Posts).
-                        HasPrincipalKey(Function(e) New With {{e.Id1, e.Id2}}).
-                        HasForeignKey(Function(e) New With {{e.BlogId1, e.BlogId2}})
+                        HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}}).
+                        HasForeignKey(Function(d) New With {{d.BlogId1, d.BlogId2}})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)

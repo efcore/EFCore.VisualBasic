@@ -294,6 +294,16 @@ Public Module VisualBasicUtilities
         Return value
     End Function
 
+    <DebuggerStepThrough>
+    Public Function NullButNotEmpty(value As String, parameterName As String) As String
+        If value IsNot Nothing AndAlso value.Length = 0 Then
+            NotEmpty(parameterName, NameOf(parameterName))
+            Throw New ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName))
+        End If
+
+        Return value
+    End Function
+
     <Conditional("DEBUG")>
     Public Sub DebugAssert(<CA.DoesNotReturnIf(False)> condition As Boolean, message As String)
         If Not condition Then

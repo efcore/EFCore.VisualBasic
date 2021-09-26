@@ -1325,7 +1325,7 @@ mb.Sql(""-- close to me"")"
     constraints:=Sub(table)
         table.ForeignKey(
             name:=""FK_Post_Blog_BlogId"",
-            column:=Function(e) e.BlogId,
+            column:=Function(x) x.BlogId,
             principalTable:=""Blog"")
     End Sub)"
 
@@ -1379,7 +1379,7 @@ mb.Sql(""-- close to me"")"
     constraints:=Sub(table)
         table.ForeignKey(
             name:=""FK_Post_Blog_BlogId"",
-            column:=Function(e) e.BlogId,
+            column:=Function(x) x.BlogId,
             principalSchema:=""my"",
             principalTable:=""Blog"",
             principalColumn:=""Id"",
@@ -1441,7 +1441,7 @@ mb.Sql(""-- close to me"")"
     constraints:=Sub(table)
         table.ForeignKey(
             name:=""FK_Post_Blog_BlogId1_BlogId2"",
-            columns:=Function(e) New With {e.BlogId1, e.BlogId2},
+            columns:=Function(x) New With {x.BlogId1, x.BlogId2},
             principalTable:=""Blog"",
             principalColumns:={""Id1"", ""Id2""})
     End Sub)"
@@ -1487,7 +1487,7 @@ mb.Sql(""-- close to me"")"
     constraints:=Sub(table)
         table.ForeignKey(
             name:=""FK_Post_Blog_BlogId1_BlogId2"",
-            column:=Function(e) New With {e.BlogId1, e.BlogId2},
+            column:=Function(x) New With {x.BlogId1, x.BlogId2},
             principalTable:=""Blog"")
     End Sub)"
 
@@ -1527,7 +1527,7 @@ mb.Sql(""-- close to me"")"
         .Id = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
-        table.PrimaryKey(""PK_Post"", Function(e) e.Id)
+        table.PrimaryKey(""PK_Post"", Function(x) x.Id)
     End Sub)"
 
             Test(operation,
@@ -1570,7 +1570,7 @@ mb.Sql(""-- close to me"")"
         .Id = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
-        table.PrimaryKey(""PK_Post"", Function(e) e.Id)
+        table.PrimaryKey(""PK_Post"", Function(x) x.Id)
     End Sub)"
 
             Test(operation,
@@ -1616,7 +1616,7 @@ mb.Sql(""-- close to me"")"
         .Id2 = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
-        table.PrimaryKey(""PK_Post"", Function(e) New With {e.Id1, e.Id2})
+        table.PrimaryKey(""PK_Post"", Function(x) New With {x.Id1, x.Id2})
     End Sub)"
 
             Test(operation,
@@ -1654,7 +1654,7 @@ mb.Sql(""-- close to me"")"
         .AltId = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
-        table.UniqueConstraint(""AK_Post_AltId"", Function(e) e.AltId)
+        table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
     End Sub)"
 
             Test(operation,
@@ -1698,7 +1698,7 @@ mb.Sql(""-- close to me"")"
         .AltId = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
-        table.UniqueConstraint(""AK_Post_AltId"", Function(e) e.AltId)
+        table.UniqueConstraint(""AK_Post_AltId"", Function(x) x.AltId)
     End Sub)"
 
             Test(operation,
@@ -1749,7 +1749,7 @@ mb.Sql(""-- close to me"")"
         .AltId2 = table.Column(Of Integer)(nullable:=False)
     },
     constraints:=Sub(table)
-        table.UniqueConstraint(""AK_Post_AltId1_AltId2"", Function(e) New With {e.AltId1, e.AltId2})
+        table.UniqueConstraint(""AK_Post_AltId1_AltId2"", Function(x) New With {x.AltId1, x.AltId2})
     End Sub)"
 
             Test(operation,
@@ -2728,7 +2728,6 @@ mb.Sql(""-- close to me"")"
                         }
                 }
 
-
             Dim expectedCode =
 "mb.InsertData(
     schema:=""dbo"",
@@ -2760,6 +2759,7 @@ mb.Sql(""-- close to me"")"
             .Schema = "dbo",
             .Table = "People",
             .KeyColumns = {"First Name"},
+            .KeyColumnTypes = {"string"},
             .KeyValues = New Object(,) {
                 {"Hodor"},
                 {"Daenerys"},
@@ -2774,6 +2774,7 @@ mb.Sql(""-- close to me"")"
     schema:=""dbo"",
     table:=""People"",
     keyColumn:=""First Name"",
+    keyColumnType:=""string"",
     keyValues:=New Object() {
         ""Hodor"",
         ""Daenerys"",
@@ -2796,23 +2797,24 @@ mb.Sql(""-- close to me"")"
 
         <ConditionalFact>
         Public Sub DeleteDataOperation_all_args_composite()
-            Dim operation = New DeleteDataOperation() With
-        {
-            .Table = "People",
-            .KeyColumns = {"First Name", "Last Name"},
-            .KeyValues = New Object(,) {
-                {"Hodor", Nothing},
-                {"Daenerys", "Targaryen"},
-                {"John", "Snow"},
-                {"Arya", "Stark"},
-                {"Harry", "Strickland"}
+            Dim operation = New DeleteDataOperation() With {
+                .Table = "People",
+                .KeyColumns = {"First Name", "Last Name"},
+                .KeyColumnTypes = {"string", "string"},
+                .KeyValues = New Object(,) {
+                    {"Hodor", Nothing},
+                    {"Daenerys", "Targaryen"},
+                    {"John", "Snow"},
+                    {"Arya", "Stark"},
+                    {"Harry", "Strickland"}
+                }
             }
-        }
 
             Dim expectedCode =
 "mb.DeleteData(
     table:=""People"",
     keyColumns:={""First Name"", ""Last Name""},
+    keyColumnTypes:={""string"", ""string""},
     keyValues:=New Object(,) {
         {""Hodor"", Nothing},
         {""Daenerys"", ""Targaryen""},
@@ -2927,21 +2929,20 @@ mb.Sql(""-- close to me"")"
 
         <ConditionalFact>
         Public Sub UpdateDataOperation_all_args()
-            Dim operation = New UpdateDataOperation() With
-        {
-            .Schema = "dbo",
-            .Table = "People",
-            .KeyColumns = {"First Name"},
-            .KeyValues = New Object(,) {
-                {"Hodor"},
-                {"Daenerys"}
-            },
-            .Columns = {"Birthplace", "House Allegiance", "Culture"},
-            .Values = New Object(,) {
-                {"Winterfell", "Stark", "Northmen"},
-                {"Dragonstone", "Targaryen", "Valyrian"}
+            Dim operation = New UpdateDataOperation() With {
+                .Schema = "dbo",
+                .Table = "People",
+                .KeyColumns = {"First Name"},
+                .KeyValues = New Object(,) {
+                    {"Hodor"},
+                    {"Daenerys"}
+                },
+                .Columns = {"Birthplace", "House Allegiance", "Culture"},
+                .Values = New Object(,) {
+                    {"Winterfell", "Stark", "Northmen"},
+                    {"Dragonstone", "Targaryen", "Valyrian"}
+                }
             }
-        }
 
             Dim expectedCode =
 "mb.UpdateData(

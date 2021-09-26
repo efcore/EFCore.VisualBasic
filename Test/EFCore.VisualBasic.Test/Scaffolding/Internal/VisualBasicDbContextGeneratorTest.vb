@@ -749,8 +749,8 @@ Namespace TestNamespace
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                     entity.HasOne(Function(d) d.NavigationToPrincipal).
                         WithOne(Function(p) p.NavigationToDependent).
-                        HasPrincipalKey(Of PrincipalEntity)(Function(e) e.PrincipalId).
-                        HasForeignKey(Of DependentEntity)(Function(e) e.DependentId)
+                        HasPrincipalKey(Of PrincipalEntity)(Function(p) p.PrincipalId).
+                        HasForeignKey(Of DependentEntity)(Function(d) d.DependentId)
                 End Sub)
 
             modelBuilder.Entity(Of PrincipalEntity)(

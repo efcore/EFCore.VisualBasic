@@ -73,18 +73,24 @@ Namespace Migrations.Design
 
                 Using stringBuilder.Indent()
 
+                    Dim enabled As Boolean
+                    Dim useOldBehavior = AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue23456", enabled) AndAlso enabled
+
                     ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
                     ' providers, generating them as raw annotations instead.
-                    Dim ambiguousAnnotations =
-                        RemoveAmbiguousFluentApiAnnotations(
-                            annotations,
-                            Function(name)
-                                Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
-                                          OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
-                            End Function)
+                    Dim ambiguousAnnotations As IReadOnlyList(Of IAnnotation) = Array.Empty(Of IAnnotation)
+                    If Not useOldBehavior Then
+                        ambiguousAnnotations =
+                            RemoveAmbiguousFluentApiAnnotations(
+                                annotations,
+                                Function(name)
+                                    Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
+                                              OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
+                                              OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
+                                              OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
+                                              OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
+                                End Function)
+                    End If
 
                     For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(model, annotations)
                         stringBuilder.AppendLines(VBCode.Fragment(methodCallCodeFragment, vertical:=True), True)
@@ -136,13 +142,15 @@ Namespace Migrations.Design
             NotNull(entityTypes, NameOf(entityTypes))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            For Each entityType In entityTypes.Where(Function(e) e.FindOwnership() Is Nothing)
+            For Each entityType In entityTypes.Where(Function(e) Not e.HasDefiningNavigation() AndAlso
+                                                                 e.FindOwnership() Is Nothing)
                 stringBuilder.AppendLine()
                 GenerateEntityType(builderName, entityType, stringBuilder)
             Next
 
             For Each entityType In entityTypes.Where(
-                Function(e) e.FindOwnership() Is Nothing AndAlso
+                Function(e) Not e.HasDefiningNavigation() AndAlso
+                            e.FindOwnership() Is Nothing AndAlso
                             (e.GetDeclaredForeignKeys().Any() OrElse e.GetDeclaredReferencingForeignKeys().Any(Function(fk) fk.IsOwnership)))
 
                 stringBuilder.AppendLine()
@@ -150,7 +158,8 @@ Namespace Migrations.Design
             Next
 
             For Each entityType In entityTypes.Where(
-                Function(e) e.FindOwnership() Is Nothing AndAlso
+                Function(e) Not e.HasDefiningNavigation() AndAlso
+                            e.FindOwnership() Is Nothing AndAlso
                             e.GetDeclaredNavigations().Any(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership))
 
                 stringBuilder.AppendLine()
@@ -176,21 +185,10 @@ Namespace Migrations.Design
             Dim ownership = entityType.FindOwnership()
             Dim ownerNavigation = ownership?.PrincipalToDependent.Name
 
-            Dim GetOwnedName = Function(Type As ITypeBase, simpleName As String, ownershipNavigation As String) As String
-                                   Return Type.Name & "." & ownershipNavigation & "#" & simpleName
-                               End Function
-
-            Dim entityTypeName = entityType.Name
-            If ownerNavigation IsNot Nothing AndAlso
-               entityType.HasSharedClrType AndAlso
-               entityTypeName = GetOwnedName(ownership.PrincipalEntityType, entityType.ClrType.ShortDisplayName(), ownerNavigation) Then
-                entityTypeName = entityType.ClrType.DisplayName()
-            End If
-
             stringBuilder.
                 Append(builderName).
                 Append(If(ownerNavigation IsNot Nothing, If(ownership.IsUnique, ".OwnsOne(", ".OwnsMany("), ".Entity(")).
-                Append(VBCode.Literal(entityTypeName))
+                Append(VBCode.Literal(entityType.Name))
 
             If ownerNavigation IsNot Nothing Then
                 stringBuilder.
@@ -200,7 +198,7 @@ Namespace Migrations.Design
 
             If builderName.StartsWith("b", StringComparison.Ordinal) Then
                 Dim counter = 1
-                If builderName.Length > 1 AndAlso Integer.TryParse(builderName.Substring(1, builderName.Length - 1), counter) Then
+                If builderName.Length > 1 AndAlso Integer.TryParse(builderName.Substring(1), counter) Then
                     counter += 1
                 End If
 
@@ -231,7 +229,10 @@ Namespace Migrations.Design
 
                     If ownerNavigation IsNot Nothing Then
                         GenerateRelationships(builderName, entityType, stringBuilder)
-                        GenerateNavigations(builderName, entityType.GetDeclaredNavigations().Where(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership), stringBuilder)
+                        GenerateNavigations(
+                            builderName, entityType.GetDeclaredNavigations().
+                                            Where(Function(n) Not n.IsOnDependent AndAlso
+                                                              Not n.ForeignKey.IsOwnership), stringBuilder)
                     End If
 
                     GenerateData(builderName, entityType.GetProperties(), entityType.GetSeedData(providerValues:=True), stringBuilder)
@@ -469,10 +470,10 @@ Namespace Migrations.Design
 
             Dim firstProperty = True
             For Each [property] In properties
-                If Not firstProperty Then
-                    stringBuilder.AppendLine()
-                Else
+                If firstProperty Then
                     firstProperty = False
+                Else
+                    stringBuilder.AppendLine()
                 End If
 
                 GenerateProperty(builderName, [property], stringBuilder)
@@ -497,12 +498,12 @@ Namespace Migrations.Design
             Dim clrType = If(FindValueConverter([property])?.ProviderClrType.MakeNullable([property].IsNullable), [property].ClrType)
 
             stringBuilder.
-            Append(builderName).
-            Append(".Property(Of ").
-            Append(VBCode.Reference(clrType)).
-            Append(")(").
-            Append(VBCode.Literal([property].Name)).
-            Append(")")
+                Append(builderName).
+                Append(".Property(Of ").
+                Append(VBCode.Reference(clrType)).
+                Append(")(").
+                Append(VBCode.Literal([property].Name)).
+                Append(")")
 
             Using stringBuilder.Indent()
                 If [property].IsConcurrencyToken Then
@@ -577,18 +578,25 @@ Namespace Migrations.Design
             GenerateFluentApiForDefaultValue([property], stringBuilder)
             annotations.Remove(RelationalAnnotationNames.DefaultValue)
 
+            Dim enabled As Boolean
+            Dim useOldBehavior = AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue23456", enabled) AndAlso enabled
+
             ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
             ' providers, generating them as raw annotations instead.
-            Dim ambiguousAnnotations = RemoveAmbiguousFluentApiAnnotations(
-                annotations,
-                Function(name)
-                    Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
-                        OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
-                End Function
-            )
+            Dim ambiguousAnnotations As IReadOnlyList(Of IAnnotation) = Array.Empty(Of IAnnotation)
+
+            If Not useOldBehavior Then
+                ambiguousAnnotations = RemoveAmbiguousFluentApiAnnotations(
+                    annotations,
+                    Function(name)
+                        Return name.EndsWith(":ValueGenerationStrategy", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":IdentityIncrement", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":IdentitySeed", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":HiLoSequenceName", StringComparison.Ordinal) _
+                            OrElse name.EndsWith(":HiLoSequenceSchema", StringComparison.Ordinal)
+                    End Function
+                )
+            End If
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls([property], annotations)
                 stringBuilder.
@@ -764,15 +772,25 @@ Namespace Migrations.Design
         Protected Overridable Sub GenerateIndexAnnotations(index As IIndex,
                                                            stringBuilder As IndentedStringBuilder)
 
+            NotNull(index, NameOf(index))
+            NotNull(stringBuilder, NameOf(stringBuilder))
+
             Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(index.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
+            Dim enabled As Boolean
+            Dim useOldBehavior = AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue23456", enabled) AndAlso enabled
+
             ' Temporary patch: specifically exclude some annotations which are known to produce identical Fluent API calls across different
             ' providers, generating them as raw annotations instead.
-            Dim ambiguousAnnotations = RemoveAmbiguousFluentApiAnnotations(
+            Dim ambiguousAnnotations As IReadOnlyList(Of IAnnotation) = Array.Empty(Of IAnnotation)
+
+            If Not useOldBehavior Then
+                ambiguousAnnotations = RemoveAmbiguousFluentApiAnnotations(
                 annotations,
                 Function(name) name.EndsWith(":Include", StringComparison.Ordinal))
+            End If
 
             For Each methodCallCodeFragment In AnnotationCodeGenerator.GenerateFluentApiCalls(index, annotations)
                 stringBuilder.
@@ -841,7 +859,7 @@ Namespace Migrations.Design
                                 ' Issue #23173
                                 stringBuilder.Append(", excludedFromMigrations:=true")
                             Else
-                                stringBuilder.Append(", Function(t) t.ExcludeFromMigrations()")
+                                stringBuilder.Append(", Sub(t) t.ExcludeFromMigrations()")
                             End If
                         End If
 

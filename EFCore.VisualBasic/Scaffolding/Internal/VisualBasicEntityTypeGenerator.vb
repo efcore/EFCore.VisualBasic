@@ -53,6 +53,7 @@ Namespace Scaffolding.Internal
                             Where(Function(x) x <> "System" AndAlso x <> "System.Collections.Generic").
                             Distinct().
                             OrderBy(Function(x) x, New NamespaceComparer)
+
                 _sb.AppendLine($"Imports {ns}")
                 HasAnImportedNamespace = True
             Next
@@ -134,7 +135,9 @@ Namespace Scaffolding.Internal
 
             Dim schemaParameterNeeded As Boolean = schema IsNot Nothing AndAlso schema <> defaultSchema
             Dim isView As Boolean = entityType.GetViewName() IsNot Nothing
-            Dim tableAttributeNeeded = Not isView AndAlso (schemaParameterNeeded OrElse tableName IsNot Nothing AndAlso tableName <> entityType.GetDbSetName())
+            Dim tableAttributeNeeded = Not isView AndAlso
+                                       (schemaParameterNeeded OrElse tableName IsNot Nothing AndAlso tableName <> entityType.GetDbSetName())
+
             If tableAttributeNeeded Then
                 Dim tableAttribute1 As AttributeWriter = New AttributeWriter(NameOf(TableAttribute))
 
@@ -154,10 +157,12 @@ Namespace Scaffolding.Internal
             ' would be generated anyway by convention.
             For Each index In entityType.GetIndexes().Where(
                 Function(i) ConfigurationSource.Convention <> CType(i, IConventionIndex).GetConfigurationSource())
+
                 ' If there are annotations that cannot be represented using an IndexAttribute then use fluent API instead.
-                Dim annotations = _annotationCodeGenerator _
-                    .FilterIgnoredAnnotations(index.GetAnnotations()) _
-                    .ToDictionary(Function(a) a.Name, Function(a) a)
+                Dim annotations = _annotationCodeGenerator.
+                    FilterIgnoredAnnotations(index.GetAnnotations()).
+                    ToDictionary(Function(a) a.Name, Function(a) a)
+
                 _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(index, annotations)
 
                 If annotations.Count = 0 Then
@@ -265,8 +270,10 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Sub GenerateRequiredAttribute(prop As IProperty)
-            If Not prop.IsNullable _
-                AndAlso prop.ClrType.IsNullableType() AndAlso Not prop.IsPrimaryKey() Then
+            If Not prop.IsNullable AndAlso
+               prop.ClrType.IsNullableType() AndAlso
+               Not prop.IsPrimaryKey() Then
+
                 _sb.AppendLine(New AttributeWriter(NameOf(RequiredAttribute)).ToString())
             End If
         End Sub
@@ -276,7 +283,8 @@ Namespace Scaffolding.Internal
 
             If maxLength.HasValue Then
                 Dim lengthAttribute As AttributeWriter = New AttributeWriter(
-                If(prop.ClrType = GetType(String), NameOf(StringLengthAttribute), NameOf(MaxLengthAttribute)))
+                If(prop.ClrType = GetType(String), NameOf(StringLengthAttribute),
+                                                   NameOf(MaxLengthAttribute)))
 
                 lengthAttribute.AddParameter(_code.Literal(maxLength.Value))
 

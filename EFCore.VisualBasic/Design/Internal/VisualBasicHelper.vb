@@ -60,18 +60,27 @@ Namespace Design.Internal
         ''' </summary>
         Public Overridable Function Lambda(properties As IReadOnlyList(Of String), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
 
+            NotNull(properties, NameOf(properties))
+            NullButNotEmpty(lambdaIdentifier, NameOf(lambdaIdentifier))
+
+            lambdaIdentifier = If(lambdaIdentifier, "x")
+
             Dim builder = New StringBuilder()
-            builder.Append("Function(e) ")
+            builder.
+                Append("Function(").
+                Append(lambdaIdentifier).
+                Append(") ")
 
             If properties.Count = 1 Then
                 builder.
-                Append("e.").
-                Append(properties(0))
+                    Append(lambdaIdentifier).
+                    Append(".").
+                    Append(properties(0))
             Else
                 builder.
-                Append("New With {").
-                AppendJoin(", ", properties.Select(Function(p) "e." & p)).
-                Append("}")
+                    Append("New With {").
+                    AppendJoin(", ", properties.Select(Function(p) $"{lambdaIdentifier}.{p}")).
+                    Append("}")
             End If
 
             Return builder.ToString()
@@ -84,7 +93,6 @@ Namespace Design.Internal
         Public Overridable Function Lambda(properties As IEnumerable(Of IProperty), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
             Return Lambda(properties.Select(Function(p) p.Name).ToList(), lambdaIdentifier)
         End Function
-
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -125,7 +133,7 @@ Namespace Design.Internal
             End If
 
             If type.IsNested Then
-                Debug.Assert(type.DeclaringType IsNot Nothing, "DeclaringType is null")
+                DebugAssert(type.DeclaringType IsNot Nothing, "DeclaringType is null")
                 builder.
                     Append(Reference(type.DeclaringType)).
                     Append(".")
@@ -556,6 +564,10 @@ Namespace Design.Internal
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
         Protected Overridable Function GetSimpleEnumValue(type As Type, name As String) As String
+
+            NotNull(type, NameOf(type))
+            NotNull(name, NameOf(name))
+
             Return Reference(type) & "." & name
         End Function
 
@@ -566,6 +578,9 @@ Namespace Design.Internal
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
         Protected Overridable Function GetCompositeEnumValue(type As Type, flags As [Enum]) As String
+
+            NotNull(type, NameOf(type))
+            NotNull(flags, NameOf(flags))
 
             Dim allValues As New HashSet(Of [Enum])(GetFlags(flags))
 
@@ -609,7 +624,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function UnknownLiteral(value As Object) As String Implements IVisualBasicHelper.UnknownLiteral
-            If value Is Nothing OrElse value Is DBNull.Value Then
+            If value Is Nothing Then
                 Return "Nothing"
             End If
 

@@ -312,8 +312,8 @@ Namespace Migrations.Design
                 If Not invalidAnnotations.Contains(annotationName) Then
                     Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
                     Dim metadataItem = createMetadataItem(modelBuilder)
-                    metadataItem.SetAnnotation(annotationName, If(validAnnotations.ContainsKey(annotationName), validAnnotations(annotationName).Value _
-                , Nothing))
+                    metadataItem.SetAnnotation(annotationName, If(validAnnotations.ContainsKey(annotationName), validAnnotations(annotationName).Value,
+                                                                                                                Nothing))
 
                     modelBuilder.FinalizeModel()
 

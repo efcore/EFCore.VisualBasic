@@ -1838,6 +1838,20 @@ Namespace Migrations.Design
 
                 builder.AppendLine(",")
 
+                If operation.KeyColumnTypes IsNot Nothing Then
+                    If operation.KeyColumnTypes.Length = 1 Then
+                        builder.
+                            Append("keyColumnType:=").
+                            Append(VBCode.Literal(operation.KeyColumnTypes(0)))
+                    Else
+                        builder.
+                            Append("keyColumnTypes:=").
+                            Append(VBCode.Literal(operation.KeyColumnTypes))
+                    End If
+
+                    builder.AppendLine(",")
+                End If
+
                 If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
                     builder.
                         Append("keyValue:=").
@@ -2017,7 +2031,7 @@ Namespace Migrations.Design
         End Sub
 
         Private Shared Function ToOnedimensionalArray(values As Object(,), Optional firstDimension As Boolean = False) As Object()
-            Debug.Assert(
+            DebugAssert(
                 values.GetLength(If(firstDimension, 1, 0)) = 1,
                 $"Length of dimension {If(firstDimension, 1, 0)} is not 1.")
 

@@ -415,6 +415,7 @@ Namespace Scaffolding.Internal
 
             Dim explicitSchema As Boolean = schema1 IsNot Nothing AndAlso schema1 <> defaultSchema
             Dim explicitTable As Boolean = explicitSchema OrElse tableName1 IsNot Nothing AndAlso tableName1 <> entityType.GetDbSetName()
+
             If explicitTable Then
                 Dim parameterString = _code.Literal(tableName1)
                 If explicitSchema Then
@@ -509,13 +510,13 @@ Namespace Scaffolding.Internal
 
                 Dim precision = prop.GetPrecision()
                 Dim scale = prop.GetScale()
-                If precision IsNot Nothing AndAlso scale IsNot Nothing AndAlso scale <> 0 Then
+                If precision.HasValue AndAlso scale.HasValue AndAlso scale <> 0 Then
                     lines.Add($".{NameOf(PropertyBuilder.HasPrecision)}({_code.Literal(precision.Value)}, {_code.Literal(scale.Value)})")
-                ElseIf precision IsNot Nothing Then
+                ElseIf precision.HasValue Then
                     lines.Add($".{NameOf(PropertyBuilder.HasPrecision)}({_code.Literal(precision.Value)})")
                 End If
 
-                If prop.IsUnicode() IsNot Nothing Then
+                If prop.IsUnicode().HasValue Then
                     lines.Add($".{NameOf(PropertyBuilder.IsUnicode)}({(If(prop.IsUnicode() = False, "false", ""))})")
                 End If
             End If
@@ -615,9 +616,9 @@ Namespace Scaffolding.Internal
             End If
 
             lines.Add(
-            $".{NameOf(ReferenceReferenceBuilder.HasForeignKey)}" &
-            If(foreignKey.IsUnique, $"(Of {foreignKey.DeclaringEntityType.Name})", "") &
-            $"({_code.Lambda(foreignKey.Properties, "d")})")
+                $".{NameOf(ReferenceReferenceBuilder.HasForeignKey)}" &
+                If(foreignKey.IsUnique, $"(Of {foreignKey.DeclaringEntityType.Name})", "") &
+                $"({_code.Lambda(foreignKey.Properties, "d")})")
 
             Dim defaultOnDeleteAction = If(foreignKey.IsRequired, DeleteBehavior.Cascade, DeleteBehavior.ClientSetNull)
 

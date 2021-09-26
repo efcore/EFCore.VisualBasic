@@ -261,6 +261,7 @@ Public Module VisualBasicUtilities
     End Function
 
 #Region "Guards"
+    <DebuggerStepThrough>
     Public Function NotNull(Of T)(value As T, parameterName As String) As T
         If value Is Nothing Then
             Throw New ArgumentNullException(parameterName)
@@ -269,6 +270,7 @@ Public Module VisualBasicUtilities
         Return value
     End Function
 
+    <DebuggerStepThrough>
     Public Function NotEmpty(Of T)(value As IReadOnlyList(Of T), parameterName As String) As IReadOnlyList(Of T)
 
         NotNull(value, parameterName)
@@ -280,11 +282,22 @@ Public Module VisualBasicUtilities
         Return value
     End Function
 
+    <DebuggerStepThrough>
     Public Function NotEmpty(value As String, parameterName As String) As String
 
         NotNull(value, parameterName)
 
         If String.IsNullOrWhiteSpace(value) Then
+            Throw New ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName))
+        End If
+
+        Return value
+    End Function
+
+    <DebuggerStepThrough>
+    Public Function NullButNotEmpty(value As String, parameterName As String) As String
+        If value IsNot Nothing AndAlso value.Length = 0 Then
+            NotEmpty(parameterName, NameOf(parameterName))
             Throw New ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName))
         End If
 

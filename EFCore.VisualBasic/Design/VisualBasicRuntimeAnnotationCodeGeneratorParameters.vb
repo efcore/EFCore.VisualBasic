@@ -68,7 +68,7 @@ Namespace Design
         Public ReadOnly Property MethodBuilder As IndentedStringBuilder
 
         ''' <summary>
-        '''     A collection of namespaces for <see langword="Imports"/> generation.
+        '''     A collection of namespaces for <see langword="Imports" /> generation.
         ''' </summary>
         Public ReadOnly Property Namespaces As ISet(Of String)
 

@@ -147,7 +147,7 @@ Namespace Scaffolding.Internal
             Dim className = _code.Identifier(contextType.ShortDisplayName()) & ModelSuffix
             mainBuilder.Append("<DbContext(GetType(").
                         Append(_code.Reference(contextType)).AppendLine("))>").
-                        Append("Partial Class ").
+                        Append("Public Partial Class ").
                         AppendLine(className)
 
 
@@ -209,7 +209,7 @@ $"    Dim model As New {className}()
 
             Dim className = _code.Identifier(contextType.ShortDisplayName()) & ModelSuffix
             mainBuilder.
-                Append("Partial Class ").
+                Append("Public Partial Class ").
                 AppendLine(className).
                 AppendLine()
 
@@ -476,7 +476,7 @@ $"    Dim model As New {className}()
             End If
 
             mainBuilder.
-                Append("Partial Class ").
+                Append("Friend Partial Class ").
                 AppendLine(className).
                 AppendLine()
 
@@ -1402,17 +1402,21 @@ $"    Dim model As New {className}()
             process As Action(Of TAnnotatable, VisualBasicRuntimeAnnotationCodeGeneratorParameters),
             parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            process(annotatable,
-                   parameters.Cloner.
-                              WithAnnotations(annotatable.GetAnnotations().ToDictionary(Function(a) a.Name, Function(a) a.Value)).
-                              WithIsRuntime(False).
-                              Clone())
+            process(
+                annotatable,
+                parameters.
+                    Cloner.
+                    WithAnnotations(annotatable.GetAnnotations().ToDictionary(Function(a) a.Name, Function(a) a.Value)).
+                    WithIsRuntime(False).
+                    Clone())
 
-            process(annotatable,
-                    parameters.Cloner.
-                               WithAnnotations(annotatable.GetRuntimeAnnotations().ToDictionary(Function(a) a.Name, Function(a) a.Value)).
-                               WithIsRuntime(True).
-                               Clone())
+            process(
+                annotatable,
+                parameters.
+                    Cloner.
+                    WithAnnotations(annotatable.GetRuntimeAnnotations().ToDictionary(Function(a) a.Name, Function(a) a.Value)).
+                    WithIsRuntime(True).
+                    Clone())
         End Sub
 
         Private Shared Sub AddNamespace(type As Type, namespaces As ISet(Of String))

@@ -5,6 +5,7 @@ Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider
 Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
@@ -30,6 +31,7 @@ Imports NetTopologySuite
 Imports NetTopologySuite.Geometries
 Imports Newtonsoft.Json.Linq
 Imports Xunit
+Imports System.Data
 
 Namespace Global
     Public Class GlobalNamespaceContext
@@ -62,7 +64,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.EmptyContext))>
-    Partial Class EmptyContextModel
+    Public Partial Class EmptyContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As EmptyContextModel
@@ -93,7 +95,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class EmptyContextModel
+    Public Partial Class EmptyContextModel
 
         Private Sub Initialize()
         End Sub
@@ -404,7 +406,7 @@ End Namespace
                 modelBuilder.
                     HasDbFunction(GetType(FunctionTypeMappingContext).
                     GetMethod(NameOf(GetSqlFragmentShared))).
-                    Metadata.TypeMapping = New StringTypeMapping("varchar")
+                    Metadata.TypeMapping = New StringTypeMapping("varchar", DbType.AnsiString)
             End Sub
         End Class
 
@@ -430,7 +432,7 @@ End Namespace
                 modelBuilder.
                     HasDbFunction(GetType(FunctionParameterTypeMappingContext).
                     GetMethod(NameOf(GetSqlFragmentShared))).
-                    HasParameter("param").Metadata.TypeMapping = New StringTypeMapping("varchar")
+                    HasParameter("param").Metadata.TypeMapping = New StringTypeMapping("varchar", DbType.AnsiString)
             End Sub
         End Class
 
@@ -445,7 +447,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Internal
     <DbContext(GetType(DbContext))>
-    Partial Class DbContextModel
+    Public Partial Class DbContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As DbContextModel
@@ -476,7 +478,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Internal
-    Partial Class DbContextModel
+    Public Partial Class DbContextModel
 
         Private Sub Initialize()
             Dim index = IndexEntityType.Create(Me)
@@ -502,7 +504,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Internal
-    Partial Class IndexEntityType
+    Friend Partial Class IndexEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -544,7 +546,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Internal
-    Partial Class InternalEntityType
+    Friend Partial Class InternalEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -587,7 +589,7 @@ Imports Microsoft.EntityFrameworkCore.TestModels.AspNetIdentity
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 
 Namespace Internal
-    Partial Class IdentityUserEntityType
+    Friend Partial Class IdentityUserEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -729,7 +731,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Internal
-    Partial Class IdentityUser0EntityType
+    Friend Partial Class IdentityUser0EntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -813,7 +815,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.BigContext))>
-    Partial Class BigContextModel
+    Public Partial Class BigContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As BigContextModel
@@ -845,7 +847,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class BigContextModel
+    Public Partial Class BigContextModel
 
         Private Sub Initialize()
             Dim dependentBasebyte = DependentBasebyteEntityType.Create(Me)
@@ -885,6 +887,7 @@ End Namespace
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -892,7 +895,7 @@ Imports Microsoft.EntityFrameworkCore.ValueGeneration
 Imports NetTopologySuite.Geometries
 
 Namespace TestNamespace
-    Partial Class DependentBasebyteEntityType
+    Friend Partial Class DependentBasebyteEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -916,7 +919,7 @@ Namespace TestNamespace
 
             Dim enumDiscriminator = entityType.AddProperty(
                 "EnumDiscriminator",
-                GetType(VisualBasicRuntimeModelCodeGeneratorTest.Discriminator),
+                GetType(VisualBasicMigrationsGeneratorTests.Enum1),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
             enumDiscriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
@@ -978,7 +981,7 @@ Namespace TestNamespace
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("DiscriminatorValue", VisualBasicRuntimeModelCodeGeneratorTest.Discriminator.Base)
+            entityType.AddAnnotation("DiscriminatorValue", VisualBasicMigrationsGeneratorTests.Enum1.One)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", Nothing)
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
@@ -1007,7 +1010,7 @@ Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports NetTopologySuite.Geometries
 
 Namespace TestNamespace
-    Partial Class PrincipalBaseEntityType
+    Friend Partial Class PrincipalBaseEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1114,7 +1117,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Imports NetTopologySuite.Geometries
 
 Namespace TestNamespace
-    Partial Class OwnedTypeEntityType
+    Friend Partial Class OwnedTypeEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1199,7 +1202,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Imports NetTopologySuite.Geometries
 
 Namespace TestNamespace
-    Partial Class OwnedType0EntityType
+    Friend Partial Class OwnedType0EntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1284,7 +1287,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Imports NetTopologySuite.Geometries
 
 Namespace TestNamespace
-    Partial Class PrincipalBasePrincipalDerivedDependentBasebyteEntityType
+    Friend Partial Class PrincipalBasePrincipalDerivedDependentBasebyteEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1385,11 +1388,12 @@ End Namespace
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class DependentDerivedbyteEntityType
+    Friend Partial Class DependentDerivedbyteEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1420,7 +1424,7 @@ Namespace TestNamespace
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("DiscriminatorValue", VisualBasicRuntimeModelCodeGeneratorTest.Discriminator.Derived)
+            entityType.AddAnnotation("DiscriminatorValue", VisualBasicMigrationsGeneratorTests.Enum1.Two)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", Nothing)
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
@@ -1447,7 +1451,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class PrincipalDerivedDependentBasebyteEntityType
+    Friend Partial Class PrincipalDerivedDependentBasebyteEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1847,6 +1851,10 @@ End Namespace
                     Assert.Null(rowid(RelationalAnnotationNames.Comment))
                     Assert.Equal(CoreStrings.RuntimeModelMissingData,
                         Assert.Throws(Of InvalidOperationException)(Sub() rowid.GetComment()).Message)
+                    Assert.Null(rowid(RelationalAnnotationNames.ColumnOrder))
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() rowid.GetColumnOrder()).Message)
                     Assert.Null(rowid(RelationalAnnotationNames.Collation))
                     Assert.Equal(CoreStrings.RuntimeModelMissingData,
                         Assert.Throws(Of InvalidOperationException)(Sub() rowid.GetCollation()).Message)
@@ -1872,7 +1880,7 @@ End Namespace
                     Dim principalDiscriminator = dependentBase.FindDiscriminatorProperty()
                     Assert.IsType(Of DiscriminatorValueGenerator)(
                         principalDiscriminator.GetValueGeneratorFactory()(principalDiscriminator, dependentBase))
-                    Assert.Equal(Discriminator.Base, dependentBase.GetDiscriminatorValue())
+                    Assert.Equal(Enum1.One, dependentBase.GetDiscriminatorValue())
 
                     Dim dependentBaseForeignKey = dependentBase.GetForeignKeys().Single(Function(fk) fk IsNot dependentForeignKey)
                     Dim dependentForeignKeyProperty = dependentBaseForeignKey.Properties.Single()
@@ -1880,7 +1888,7 @@ End Namespace
                     Assert.Equal({dependentBaseForeignKey, dependentForeignKey}, dependentForeignKeyProperty.GetContainingForeignKeys())
 
                     Dim dependentDerived = dependentBase.GetDerivedTypes().Single()
-                    Assert.Equal(Discriminator.Derived, dependentDerived.GetDiscriminatorValue())
+                    Assert.Equal(Enum1.Two, dependentDerived.GetDiscriminatorValue())
 
                     Assert.Equal(2, dependentDerived.GetDeclaredProperties().Count())
 
@@ -2046,7 +2054,8 @@ End Namespace
                                 jb.Property(Of Byte())("rowid").
                                    IsRowVersion().
                                    HasComment("RowVersion").
-                                   UseCollation("ri")
+                                   UseCollation("ri").
+                                   HasColumnOrder(1)
                             End Sub)
 
                         eb.Navigation(Function(e) e.Principals).AutoInclude()
@@ -2067,9 +2076,9 @@ End Namespace
 
                         eb.ToTable("PrincipalDerived")
 
-                        eb.HasDiscriminator(Of Discriminator)("EnumDiscriminator").
-                           HasValue(Discriminator.Base).
-                           HasValue(Of DependentDerived(Of Byte?))(Discriminator.Derived)
+                        eb.HasDiscriminator(Of Enum1)("EnumDiscriminator").
+                           HasValue(Enum1.One).
+                           HasValue(Of DependentDerived(Of Byte?))(Enum1.Two)
                     End Sub)
 
                 modelBuilder.Entity(Of DependentDerived(Of Byte?))(
@@ -2135,11 +2144,6 @@ End Namespace
             Private Property Data As String
         End Class
 
-        Public Enum Discriminator
-            Base
-            Derived
-        End Enum
-
         Public Class OwnedType
             Implements INotifyPropertyChanged, INotifyPropertyChanging
 
@@ -2176,7 +2180,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.DbFunctionContext))>
-    Partial Class DbFunctionContextModel
+    Public Partial Class DbFunctionContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As DbFunctionContextModel
@@ -2212,7 +2216,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class DbFunctionContextModel
+    Public Partial Class DbFunctionContextModel
 
         Private Sub Initialize()
             Dim data = DataEntityType.Create(Me)
@@ -2343,7 +2347,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class DataEntityType
+    Friend Partial Class DataEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -2385,7 +2389,7 @@ Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class ObjectEntityType
+    Friend Partial Class ObjectEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -2667,7 +2671,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.SequencesContext))>
-    Partial Class SequencesContextModel
+    Public Partial Class SequencesContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As SequencesContextModel
@@ -2700,7 +2704,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class SequencesContextModel
+    Public Partial Class SequencesContextModel
 
         Private Sub Initialize()
             Dim data = DataEntityType.Create(Me)
@@ -2745,7 +2749,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class DataEntityType
+    Friend Partial Class DataEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -2864,7 +2868,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.ConstraintsContext))>
-    Partial Class ConstraintsContextModel
+    Public Partial Class ConstraintsContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As ConstraintsContextModel
@@ -2896,7 +2900,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class ConstraintsContextModel
+    Public Partial Class ConstraintsContextModel
 
         Private Sub Initialize()
             Dim data = DataEntityType.Create(Me)
@@ -2918,7 +2922,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class DataEntityType
+    Friend Partial Class DataEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -3007,7 +3011,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 
 Namespace Microsoft.EntityFrameworkCore.Metadata
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.SqliteContext))>
-    Partial Class SqliteContextModel
+    Public Partial Class SqliteContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As SqliteContextModel
@@ -3036,7 +3040,7 @@ End Namespace
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 
 Namespace Microsoft.EntityFrameworkCore.Metadata
-    Partial Class SqliteContextModel
+    Public Partial Class SqliteContextModel
 
         Private Sub Initialize()
             Dim data = DataEntityType.Create(Me)
@@ -3055,7 +3059,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports NetTopologySuite.Geometries
 
 Namespace Microsoft.EntityFrameworkCore.Metadata
-    Partial Class DataEntityType
+    Friend Partial Class DataEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -3177,7 +3181,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
     <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.CosmosContext))>
-    Partial Class CosmosContextModel
+    Public Partial Class CosmosContextModel
         Inherits RuntimeModel
 
         Private Shared _Instance As CosmosContextModel
@@ -3210,7 +3214,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Partial Class CosmosContextModel
+    Public Partial Class CosmosContextModel
 
         Private Sub Initialize()
             Dim data = DataEntityType.Create(Me)
@@ -3234,7 +3238,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Newtonsoft.Json.Linq
 
 Namespace TestNamespace
-    Partial Class DataEntityType
+    Friend Partial Class DataEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(

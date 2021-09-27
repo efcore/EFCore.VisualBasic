@@ -18,7 +18,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <summary>
         '''     Initializes a New instance of this class.
         ''' </summary>
-        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        ''' <param name="vbHelper">The Visual Basic helper.</param>
         Public Sub New(vbHelper As IVisualBasicHelper)
             MyBase.New(vbHelper)
         End Sub
@@ -182,19 +182,19 @@ Namespace Design.AnnotationCodeGeneratorProvider
                         Clone())
 
             mainBuilder.
-            Append(functionsVariable).
-            Append("(").
-            Append(code.Literal([function].ModelName)).
-            Append(") = ").
-            AppendLine(functionVariable).
-            AppendLine()
+                Append(functionsVariable).
+                Append("(").
+                Append(code.Literal([function].ModelName)).
+                Append(") = ").
+                AppendLine(functionVariable).
+                AppendLine()
         End Sub
 
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
-        ''' <param name="function"> The function to which the annotations are applied. </param>
-        ''' <param name="parameters"> Additional parameters used during code generation. </param>
+        ''' <param name="function">The function to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
         Public Overridable Overloads Sub Generate([Function] As IDbFunction, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
@@ -244,8 +244,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
-        ''' <param name="functionParameter"> The function parameter to which the annotations are applied. </param>
-        ''' <param name="parameters"> Additional parameters used during code generation. </param>
+        ''' <param name="functionParameter">The function parameter to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
         Public Overridable Overloads Sub Generate(functionParameter As IDbFunctionParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
@@ -330,8 +330,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
-        ''' <param name="sequence"> The sequence to which the annotations are applied. </param>
-        ''' <param name="parameters"> Additional parameters used during code generation. </param>
+        ''' <param name="sequence">The sequence to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
         Public Overridable Overloads Sub Generate(sequence As ISequence, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
@@ -367,8 +367,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
-        ''' <param name="constraint"> The check constraint to which the annotations are applied. </param>
-        ''' <param name="parameters"> Additional parameters used during code generation. </param>
+        ''' <param name="constraint">The check constraint to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
         Public Overridable Overloads Sub Generate(constraint As ICheckConstraint, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
@@ -384,6 +384,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 annotations.Remove(RelationalAnnotationNames.FunctionColumnMappings)
                 annotations.Remove(RelationalAnnotationNames.DefaultColumnMappings)
             Else
+                annotations.Remove(RelationalAnnotationNames.ColumnOrder)
                 annotations.Remove(RelationalAnnotationNames.Comment)
                 annotations.Remove(RelationalAnnotationNames.Collation)
 
@@ -472,8 +473,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
-        ''' <param name="overrides"> The property overrides to which the annotations are applied. </param>
-        ''' <param name="parameters"> Additional parameters used during code generation. </param>
+        ''' <param name="overrides">The property overrides to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
         Public Overridable Sub GenerateOverrides([Overrides] As IAnnotatable, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
@@ -525,19 +526,23 @@ Namespace Design.AnnotationCodeGeneratorProvider
         process As Action(Of TAnnotatable, VisualBasicRuntimeAnnotationCodeGeneratorParameters),
         parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            process(Annotatable,
-                    parameters.Cloner.
-                               WithAnnotations(Annotatable.GetAnnotations().
-                                                   ToDictionary(Function(a) a.Name, Function(a) a.Value)).
-                               WithIsRuntime(False).
-                               Clone())
+            process(
+                Annotatable,
+                parameters.
+                    Cloner.
+                    WithAnnotations(Annotatable.GetAnnotations().
+                                        ToDictionary(Function(a) a.Name, Function(a) a.Value)).
+                    WithIsRuntime(False).
+                    Clone())
 
-            process(Annotatable,
-                    parameters.Cloner.
-                              WithAnnotations(Annotatable.GetRuntimeAnnotations().
-                                                   ToDictionary(Function(a) a.Name, Function(a) a.Value)).
-                              WithIsRuntime(True).
-                              Clone())
+            process(
+                Annotatable,
+                parameters.
+                    Cloner.
+                    WithAnnotations(Annotatable.GetRuntimeAnnotations().
+                                        ToDictionary(Function(a) a.Name, Function(a) a.Value)).
+                    WithIsRuntime(True).
+                    Clone())
         End Sub
 
         Private Function Capitalize(str As String) As String

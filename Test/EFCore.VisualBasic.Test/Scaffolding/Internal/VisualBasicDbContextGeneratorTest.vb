@@ -722,8 +722,8 @@ Namespace TestNamespace
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                     entity.HasOne(Function(d) d.NavigationToPrincipal).
                         WithOne(Function(p) p.NavigationToDependent).
-                        HasPrincipalKey(Of PrincipalEntity)(Function(e) e.PrincipalId).
-                        HasForeignKey(Of DependentEntity)(Function(e) e.DependentId)
+                        HasPrincipalKey(Of PrincipalEntity)(Function(p) p.PrincipalId).
+                        HasForeignKey(Of DependentEntity)(Function(d) d.DependentId)
                 End Sub)
 
             modelBuilder.Entity(Of PrincipalEntity)(
@@ -754,10 +754,10 @@ End Namespace
                         "DependentEntity", Sub(b)
                                                b.Property(Of Integer)("Id")
                                                b.Property(Of Integer)("DependentId")
-                                               b.HasOne("PrincipalEntity", "NavigationToPrincipal") _
-                                                   .WithOne("NavigationToDependent") _
-                                                   .HasForeignKey("DependentEntity", "DependentId") _
-                                                   .HasPrincipalKey("PrincipalEntity", "PrincipalId")
+                                               b.HasOne("PrincipalEntity", "NavigationToPrincipal").
+                                                   WithOne("NavigationToDependent").
+                                                   HasForeignKey("DependentEntity", "DependentId").
+                                                   HasPrincipalKey("PrincipalEntity", "PrincipalId")
                                            End Sub)
                 End Sub,
                 New ModelCodeGenerationOptions With {
@@ -980,6 +980,45 @@ End Namespace
 
         <ConditionalFact>
         Public Sub Global_namespace_works()
+
+            Dim expectedcode =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Public Partial Class TestDbContext
+    Inherits DbContext
+
+    Public Sub New()
+    End Sub
+
+    Public Sub New(options As DbContextOptions(Of TestDbContext))
+        MyBase.New(options)
+    End Sub
+
+    Public Overridable Property MyEntity As DbSet(Of MyEntity)
+
+    Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+        If Not optionsBuilder.IsConfigured Then
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End If
+    End Sub
+
+    Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+        modelBuilder.Entity(Of MyEntity)(
+            Sub(entity)
+                entity.HasNoKey()
+            End Sub)
+
+        OnModelCreatingPartial(modelBuilder)
+    End Sub
+
+    Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+    End Sub
+End Class
+"
+
             Test(
                 Sub(modelBuilder)
                     modelBuilder.Entity("MyEntity")
@@ -988,7 +1027,7 @@ End Namespace
                     .ModelNamespace = String.Empty
                 },
                 Sub(code)
-                    Assert.DoesNotContain("namespace ", code.ContextFile.Code)
+                    AssertFileContents(expectedcode, code.ContextFile)
                     Assert.DoesNotContain("namespace ", Assert.Single(code.AdditionalFiles).Code)
                 End Sub,
                 Sub(Model)
@@ -1081,6 +1120,82 @@ End Namespace
                     Assert.Empty(Model.GetEntityTypes())
                 End Sub,
                 skipBuild:=True)
+        End Sub
+
+        <ConditionalFact(Skip:="issue #26007")>
+        Public Sub Temporal_table_works()
+
+            Dim expectedcode =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Customer As DbSet(Of Customer)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of Customer)(
+                Sub(entity)
+                    entity.ToTable(Sub(tb) tb.IsTemporal(
+						Sub(ttb)
+							ttb.
+								HasPeriodStart(""PeriodStart"").
+								HasColumnName(""PeriodStart"")
+							ttb.
+								HasPeriodEnd(""PeriodEnd"").
+								HasColumnName(""PeriodEnd"")
+						End Sub))
+
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.Entity(
+                        "Customer",
+                        Sub(e)
+                            e.Property(Of Integer)("Id")
+                            e.Property(Of String)("Name")
+                            e.HasKey("Id")
+                            e.ToTable(Sub(tb) tb.IsTemporal())
+                        End Sub)
+                End Sub,
+                New ModelCodeGenerationOptions with {.UseDataAnnotations = false},
+                Sub(code)
+                    AssertFileContents(
+                        expectedcode,
+                        code.ContextFile)
+                End Sub,
+                Sub(Model)
+                    'TODO
+                End Sub)
         End Sub
 
         Protected Overrides Sub AddModelServices(services As IServiceCollection)

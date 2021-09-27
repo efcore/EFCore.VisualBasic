@@ -6,7 +6,6 @@ Imports EntityFrameworkCore.VisualBasic.TestUtilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Design.Internal
-Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
@@ -28,7 +27,7 @@ Namespace Scaffolding.Internal
             Dim generator = CreateGenerator()
             Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder()
 
-            modelBuilder.Entity("TestEntity").Property(Of Integer)("Id").HasAnnotation(ScaffoldingAnnotationNames.ColumnOrdinal, 0)
+            modelBuilder.Entity("TestEntity").Property(Of Integer)("Id")
 
             Dim result = generator.GenerateModel(
                 modelBuilder.FinalizeModel(designTime:=True),

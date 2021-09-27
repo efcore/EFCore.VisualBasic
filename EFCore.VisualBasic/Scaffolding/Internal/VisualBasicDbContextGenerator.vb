@@ -445,6 +445,7 @@ Namespace Scaffolding.Internal
 
             Dim explicitSchema = schema IsNot Nothing AndAlso schema <> defaultSchema
             Dim explicitTable = explicitSchema OrElse tableName IsNot Nothing AndAlso tableName <> entityType.GetDbSetName()
+
             If explicitTable Then
                 Dim parameterString = _VBCode.Literal(tableName)
                 If explicitSchema Then
@@ -507,7 +508,7 @@ Namespace Scaffolding.Internal
                 ToDictionary(Function(a) a.Name, Function(a) a)
 
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(prop, annotations)
-            annotations.Remove(ScaffoldingAnnotationNames.ColumnOrdinal)
+            annotations.Remove(RelationalAnnotationNames.ColumnOrder)
 
             If _useDataAnnotations Then
                 ' Strip out any annotations handled as attributes - these are already handled when generating
@@ -535,13 +536,13 @@ Namespace Scaffolding.Internal
 
                 Dim precision = prop.GetPrecision()
                 Dim scale = prop.GetScale()
-                If precision IsNot Nothing AndAlso scale IsNot Nothing AndAlso scale <> 0 Then
+                If precision.HasValue AndAlso scale.HasValue AndAlso scale <> 0 Then
                     lines.Add($"{NameOf(PropertyBuilder.HasPrecision)}({_VBCode.Literal(precision.Value)}, {_VBCode.Literal(scale.Value)})")
-                ElseIf precision IsNot Nothing Then
+                ElseIf precision.HasValue Then
                     lines.Add($"{NameOf(PropertyBuilder.HasPrecision)}({_VBCode.Literal(precision.Value)})")
                 End If
 
-                If prop.IsUnicode() IsNot Nothing Then
+                If prop.IsUnicode().HasValue Then
                     lines.Add($"{NameOf(PropertyBuilder.IsUnicode)}({(If(prop.IsUnicode() = False, "false", ""))})")
                 End If
             End If
@@ -683,8 +684,8 @@ Namespace Scaffolding.Internal
                     Using _builder.Indent()
                         _builder.AppendLine($"{_VBCode.Literal(joinEntityType.Name)},")
 
-                        GenerateForeignKeyConfigurationLines(skipNavigation.ForeignKey, skipNavigation.TargetEntityType.Name, "l")
-                        GenerateForeignKeyConfigurationLines(inverse.ForeignKey, inverse.TargetEntityType.Name, "r")
+                        GenerateForeignKeyConfigurationLines(inverse.ForeignKey, inverse.ForeignKey.PrincipalEntityType.Name, "l")
+                        GenerateForeignKeyConfigurationLines(skipNavigation.ForeignKey, skipNavigation.ForeignKey.PrincipalEntityType.Name, "r")
 
                         _builder.AppendLine("Sub(j)")
 
@@ -764,7 +765,7 @@ Namespace Scaffolding.Internal
                                                             ToDictionary(Function(a) a.Name, Function(a) a)
 
                                 _annotationCodeGenerator.RemoveAnnotationsHandledByConventions([property], propertyAnnotations)
-                                propertyAnnotations.Remove(ScaffoldingAnnotationNames.ColumnOrdinal)
+                                propertyAnnotations.Remove(RelationalAnnotationNames.ColumnOrder)
 
                                 If [property].ClrType.IsValueType AndAlso
                                    [property].ClrType.IsNullableType() AndAlso
@@ -858,6 +859,7 @@ Namespace Scaffolding.Internal
                 _builder.AppendLine(".")
                 _builder.Append(line)
             Next
+
             _builder.AppendLine()
             lines.Clear()
         End Sub
@@ -992,8 +994,9 @@ Namespace Scaffolding.Internal
                 End If
             Next
 
-            lines.AddRange(annotations.Values.
-                                       Select(Function(a) $"HasAnnotation({_VBCode.Literal(a.Name)}, {_VBCode.UnknownLiteral(a.Value)})"))
+            lines.AddRange(
+                annotations.Values.
+                    Select(Function(a) $"HasAnnotation({_VBCode.Literal(a.Name)}, {_VBCode.UnknownLiteral(a.Value)})"))
         End Sub
 
         Friend Shared Function IsManyToManyJoinEntityType(entityType As IEntityType) As Boolean

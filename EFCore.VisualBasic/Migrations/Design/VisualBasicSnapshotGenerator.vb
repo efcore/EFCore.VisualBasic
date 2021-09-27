@@ -1,4 +1,5 @@
 ﻿Imports System.Reflection
+Imports System.Text
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
@@ -16,6 +17,10 @@ Namespace Migrations.Design
     ''' <summary>
     '''     Used to generate Visual Basic code for creating an <see cref="IModel" />.
     ''' </summary>
+    ''' <remarks>
+    '''     See <see href="https://aka.ms/efcore-docs-migrations">Database migrations</see>, And
+    '''     <see href="https://aka.ms/efcore-docs-design-time-services">EF Core design-time services</see> for more information.
+    ''' </remarks>
     Public Class VisualBasicSnapshotGenerator
 
         Private Shared ReadOnly _hasAnnotationMethodInfo As MethodInfo =
@@ -24,7 +29,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
         ''' </summary>
-        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        ''' <param name="vbHelper">The Visual Basic helper.</param>
         Public Sub New(annotationCodeGenerator As IAnnotationCodeGenerator,
                        relationalTypeMappingSource As IRelationalTypeMappingSource,
                        vbHelper As IVisualBasicHelper)
@@ -53,9 +58,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for creating an <see cref="IModel" />.
         ''' </summary>
-        ''' <param name="modelBuilderName"> The <see cref="ModelBuilder" /> variable name. </param>
-        ''' <param name="model"> The model. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="modelBuilderName">The <see cref="ModelBuilder" /> variable name.</param>
+        ''' <param name="model">The model.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Public Overridable Sub Generate(modelBuilderName As String,
                                         model As IModel,
                                         stringBuilder As IndentedStringBuilder)
@@ -85,9 +90,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IEntityType" /> objects.
         ''' </summary>
-        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityTypes"> The entity types. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="modelBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityTypes">The entity types.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateEntityTypes(modelBuilderName As String,
                                                       entityTypes As IEnumerable(Of IEntityType),
                                                       stringBuilder As IndentedStringBuilder)
@@ -122,9 +127,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IEntityType" />.
         ''' </summary>
-        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityType"> The entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="modelBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateEntityType(modelBuilderName As String,
                                                      entityType As IEntityType,
                                                      stringBuilder As IndentedStringBuilder)
@@ -144,8 +149,11 @@ Namespace Migrations.Design
             If ownerNavigation IsNot Nothing AndAlso
                entityType.HasSharedClrType AndAlso
                entityTypeName = GetOwnedName(ownership.PrincipalEntityType, entityType.ClrType.ShortDisplayName(), ownerNavigation) Then
+
                 entityTypeName = entityType.ClrType.DisplayName()
             End If
+
+            Dim entityTypeBuilderName = GenerateEntityTypeBuilderName(modelBuilderName)
 
             stringBuilder.
                 Append(modelBuilderName).
@@ -157,8 +165,6 @@ Namespace Migrations.Design
                     Append(", ").
                     Append(VBCode.Literal(ownerNavigation))
             End If
-
-            Dim entityTypeBuilderName = GenerateEntityTypeBuilderName(modelBuilderName)
 
             Using stringBuilder.Indent()
                 stringBuilder.
@@ -186,7 +192,9 @@ Namespace Migrations.Design
 
                     If ownerNavigation IsNot Nothing Then
                         GenerateRelationships(entityTypeBuilderName, entityType, stringBuilder)
-                        GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().Where(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership), stringBuilder)
+                        GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().
+                                                Where(Function(n) Not n.IsOnDependent AndAlso
+                                                                  Not n.ForeignKey.IsOwnership), stringBuilder)
                     End If
 
                     GenerateData(entityTypeBuilderName, entityType.GetProperties(), entityType.GetSeedData(providerValues:=True), stringBuilder)
@@ -214,9 +222,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for owned entity types.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="ownerships"> The foreign keys identifying each entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="ownerships">The foreign keys identifying each entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateOwnedTypes(entityTypeBuilderName As String,
                                                      ownerships As IEnumerable(Of IForeignKey),
                                                      stringBuilder As IndentedStringBuilder)
@@ -234,9 +242,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an owned entity types.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="ownerships"> The foreign keys identifying each entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="ownerships">The foreign keys identifying each entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateOwnedType(entityTypeBuilderName As String,
                                                     ownerships As IEnumerable(Of IForeignKey),
                                                     stringBuilder As IndentedStringBuilder)
@@ -255,9 +263,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an owned entity types.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="ownership"> The foreign key identifying the entity type. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="ownership">The foreign key identifying the entity type.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateOwnedType(entityTypeBuilderName As String,
                                                     ownership As IForeignKey,
                                                     stringBuilder As IndentedStringBuilder)
@@ -273,9 +281,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the relationships of an <see cref="IEntityType"/>.
         ''' </summary>
-        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityType"> The entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="modelBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateEntityTypeRelationships(modelBuilderName As String,
                                                                   entityType As IEntityType,
                                                                   stringBuilder As IndentedStringBuilder)
@@ -304,9 +312,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the relationships of an <see cref="IEntityType"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityType"> The entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateRelationships(entityTypeBuilderName As String,
                                                         entityType As IEntityType,
                                                         stringBuilder As IndentedStringBuilder)
@@ -317,7 +325,8 @@ Namespace Migrations.Design
 
             GenerateForeignKeys(entityTypeBuilderName, entityType.GetDeclaredForeignKeys(), stringBuilder)
 
-            GenerateOwnedTypes(entityTypeBuilderName, entityType.GetDeclaredReferencingForeignKeys().Where(Function(fk) fk.IsOwnership), stringBuilder)
+            GenerateOwnedTypes(
+                entityTypeBuilderName, entityType.GetDeclaredReferencingForeignKeys().Where(Function(fk) fk.IsOwnership), stringBuilder)
 
             GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().
                                              Where(Function(n) n.IsOnDependent OrElse (Not n.IsOnDependent AndAlso n.ForeignKey.IsOwnership)), stringBuilder)
@@ -326,9 +335,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the base type of an <see cref="IEntityType"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="baseType"> The base entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="baseType">The base entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateBaseType(entityTypeBuilderName As String,
                                                    baseType As IEntityType,
                                                    stringBuilder As IndentedStringBuilder)
@@ -349,9 +358,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref= "ISequence"/>.
         ''' </summary>
-        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
-        ''' <param name="sequence"> The sequence. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="modelBuilderName">The name of the builder variable.</param>
+        ''' <param name="sequence">The sequence.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateSequence(modelBuilderName As String,
                                                    sequence As ISequence,
                                                    stringBuilder As IndentedStringBuilder)
@@ -429,9 +438,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IProperty"/> objects.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="properties"> The properties. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="properties">The properties.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateProperties(entityTypeBuilderName As String,
                                                      properties As IEnumerable(Of IProperty),
                                                      stringBuilder As IndentedStringBuilder)
@@ -454,9 +463,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IProperty"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="property"> The property. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="property">The property.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateProperty(entityTypeBuilderName As String,
                                                    [property] As IProperty,
                                                    stringBuilder As IndentedStringBuilder)
@@ -517,9 +526,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the annotations on an <see cref="IProperty"/>.
         ''' </summary>
-        ''' <param name="propertyBuilderName"> The name of the builder variable. </param>
-        ''' <param name="property"> The property. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="propertyBuilderName">The name of the builder variable.</param>
+        ''' <param name="property">The property.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GeneratePropertyAnnotations(propertyBuilderName As String,
                                                               [property] As IProperty,
                                                               stringBuilder As IndentedStringBuilder)
@@ -560,10 +569,10 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IKey"/> objects.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="keys"> The keys. </param>
-        ''' <param name="primaryKey"> The primary key. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="keys">The keys.</param>
+        ''' <param name="primaryKey">The primary key.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateKeys(entityTypeBuilderName As String, keys As IEnumerable(Of IKey),
                                                primaryKey As IKey,
                                                stringBuilder As IndentedStringBuilder)
@@ -591,10 +600,10 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IKey"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="key"> The key. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        ''' <param name="primary">A value indicating whether the key Is primary. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="key">The key.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        ''' <param name="primary">A value indicating whether the key Is primary.</param>
         Protected Overridable Sub GenerateKey(entityTypeBuilderName As String,
                                               key As IKey,
                                               stringBuilder As IndentedStringBuilder,
@@ -604,29 +613,34 @@ Namespace Migrations.Design
             NotNull(key, NameOf(key))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
+            Dim keyBuilderName =
+                New StringBuilder().
+                    Append(entityTypeBuilderName).
+                    Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
+                    Append(String.Join(", ", key.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
+                    Append(")").
+                    ToString()
+
             stringBuilder.
                 AppendLine().
-                Append(entityTypeBuilderName).
-                Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
-                Append(String.Join(", ", key.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                Append(")")
+                Append(keyBuilderName)
 
             ' Note that GenerateAnnotations below does the corresponding decrement
             stringBuilder.IncrementIndent()
-            GenerateKeyAnnotations(entityTypeBuilderName, key, stringBuilder)
+            GenerateKeyAnnotations(keyBuilderName, key, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on a key.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="key"> The key. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateKeyAnnotations(entityTypeBuilderName As String,
+        ''' <param name="keyBuilderName">The name of the builder variable.</param>
+        ''' <param name="key">The key.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
+        Protected Overridable Sub GenerateKeyAnnotations(keyBuilderName As String,
                                                          key As IKey,
                                                          stringBuilder As IndentedStringBuilder)
 
-            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
+            NotNull(keyBuilderName, NameOf(keyBuilderName))
             NotNull(key, NameOf(key))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -634,15 +648,15 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(key.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            GenerateAnnotations(entityTypeBuilderName, key, stringBuilder, annotations, inChainedCall:=True)
+            GenerateAnnotations(keyBuilderName, key, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IIndex"/> objects.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="indexes"> The indexes. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="indexes">The indexes.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateIndexes(entityTypeBuilderName As String,
                                                   indexes As IEnumerable(Of IIndex),
                                                   stringBuilder As IndentedStringBuilder)
@@ -660,9 +674,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code an <see cref="IIndex"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="index"> The index. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="index">The index.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateIndex(entityTypeBuilderName As String,
                                                 index As IIndex,
                                                 stringBuilder As IndentedStringBuilder)
@@ -699,9 +713,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the annotations on an index.
         ''' </summary>
-        ''' <param name="indexBuilderName"> The name of the builder variable. </param>
-        ''' <param name="index"> The index. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="indexBuilderName">The name of the builder variable.</param>
+        ''' <param name="index">The index.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateIndexAnnotations(indexBuilderName As String,
                                                            index As IIndex,
                                                            stringBuilder As IndentedStringBuilder)
@@ -720,9 +734,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for the annotations on an entity type.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityType"> The entity type. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateEntityTypeAnnotations(entityTypeBuilderName As String,
                                                                 entityType As IEntityType,
                                                                 stringBuilder As IndentedStringBuilder)
@@ -747,15 +761,17 @@ Namespace Migrations.Design
                 Dim tableName = If(CStr(tableNameAnnotation?.Value), entityType.GetTableName())
 
                 If tableName IsNot Nothing OrElse tableNameAnnotation IsNot Nothing Then
-                    Dim schemaAnnotation = annotations.Find(RelationalAnnotationNames.Schema)
 
                     stringBuilder.
                         AppendLine().
                         Append(entityTypeBuilderName).
                         Append(".ToTable(")
 
+                    Dim schemaAnnotation = annotations.Find(RelationalAnnotationNames.Schema)
+                    Dim schema = DirectCast(If(schemaAnnotation?.Value, entityType.GetSchema()), String)
+
                     If tableName Is Nothing AndAlso
-                       (schemaAnnotation Is Nothing OrElse schemaAnnotation.Value Is Nothing) Then
+                       (schemaAnnotation Is Nothing OrElse schema Is Nothing) Then
 
                         stringBuilder.
                             Append("DirectCast(").
@@ -770,25 +786,28 @@ Namespace Migrations.Design
                     End If
 
                     Dim isExcludedAnnotation = annotations.Find(RelationalAnnotationNames.IsTableExcludedFromMigrations)
-                    If schemaAnnotation IsNot Nothing AndAlso
-                       (tableName IsNot Nothing OrElse schemaAnnotation.Value IsNot Nothing) Then
+
+                    If schema IsNot Nothing OrElse
+                       (schemaAnnotation IsNot Nothing AndAlso tableName IsNot Nothing) Then
 
                         stringBuilder.Append(", ")
 
                         Dim isExcludedAnnotationValue = CType(isExcludedAnnotation?.Value, Boolean?)
-                        If schemaAnnotation.Value Is Nothing AndAlso (Not isExcludedAnnotationValue.HasValue OrElse Not isExcludedAnnotationValue.Value) Then
+                        If schema Is Nothing AndAlso
+                            (Not isExcludedAnnotationValue.HasValue OrElse Not isExcludedAnnotationValue.Value) Then
+
                             stringBuilder.
                                 Append("DirectCast(").
-                                Append(VBCode.UnknownLiteral(schemaAnnotation.Value)).
+                                Append(VBCode.UnknownLiteral(schema)).
                                 Append(", String)")
                         Else
-                            stringBuilder.Append(VBCode.UnknownLiteral(schemaAnnotation.Value))
+                            stringBuilder.Append(VBCode.UnknownLiteral(schema))
                         End If
                     End If
 
                     If isExcludedAnnotation IsNot Nothing Then
                         If CType(isExcludedAnnotation.Value, Boolean?) = True Then
-                            stringBuilder.Append(", Function(t) t.ExcludeFromMigrations()")
+                            stringBuilder.Append(", Sub(t) t.ExcludeFromMigrations()")
                         End If
 
                         annotations.Remove(isExcludedAnnotation.Name)
@@ -936,9 +955,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref= "ICheckConstraint"/> objects.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityType"> The entity type. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateCheckConstraints(entityTypeBuilderName As String,
                                                            entityType As IEntityType,
                                                            stringBuilder As IndentedStringBuilder)
@@ -959,9 +978,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref= "ICheckConstraint"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="checkConstraint"> The check constraint. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="checkConstraint">The check constraint.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateCheckConstraint(entityTypeBuilderName As String,
                                                           checkConstraint As ICheckConstraint,
                                                           stringBuilder As IndentedStringBuilder)
@@ -990,9 +1009,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="IForeignKey"/> objects.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="foreignKeys"> The foreign keys. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="foreignKeys">The foreign keys.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateForeignKeys(entityTypeBuilderName As String,
                                                       foreignKeys As IEnumerable(Of IForeignKey),
                                                       stringBuilder As IndentedStringBuilder)
@@ -1016,9 +1035,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IForeignKey"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="foreignKey"> The foreign key. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="foreignKey">The foreign key.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateForeignKey(entityTypeBuilderName As String,
                                                      foreignKey As IForeignKey,
                                                      stringBuilder As IndentedStringBuilder)
@@ -1027,8 +1046,10 @@ Namespace Migrations.Design
             NotNull(foreignKey, NameOf(foreignKey))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
+            Dim foreignKeyBuilderNameStringBuilder As New StringBuilder()
+
             If Not foreignKey.IsOwnership Then
-                stringBuilder.
+                foreignKeyBuilderNameStringBuilder.
                     Append(entityTypeBuilderName).
                     Append(".HasOne(").
                     Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).
@@ -1038,18 +1059,22 @@ Namespace Migrations.Design
                                 VBCode.Literal(foreignKey.DependentToPrincipal.Name))
                           )
             Else
-                stringBuilder.
+                foreignKeyBuilderNameStringBuilder.
                     Append(entityTypeBuilderName).
                     Append(".WithOwner(")
 
                 If foreignKey.DependentToPrincipal IsNot Nothing Then
-                    stringBuilder.
+                    foreignKeyBuilderNameStringBuilder.
                         Append(VBCode.Literal(foreignKey.DependentToPrincipal.Name))
                 End If
             End If
 
+            foreignKeyBuilderNameStringBuilder.Append(")")
+
+            Dim foreignKeyBuilderName = foreignKeyBuilderNameStringBuilder.ToString()
+
             stringBuilder.
-                Append(")")
+                Append(foreignKeyBuilderName)
 
             ' Note that GenerateAnnotations below does the corresponding decrement
             stringBuilder.IncrementIndent()
@@ -1127,20 +1152,20 @@ Namespace Migrations.Design
                 End If
             End If
 
-            GenerateForeignKeyAnnotations(entityTypeBuilderName, foreignKey, stringBuilder)
+            GenerateForeignKeyAnnotations(foreignKeyBuilderName, foreignKey, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on a foreign key.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="foreignKey"> The foreign key. </param>
-        ''' <param name="stringBuilder"> The builder code Is added to. </param>
-        Protected Overridable Sub GenerateForeignKeyAnnotations(entityTypeBuilderName As String,
+        ''' <param name="foreignKeyBuilderName">The name of the builder variable.</param>
+        ''' <param name="foreignKey">The foreign key.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateForeignKeyAnnotations(foreignKeyBuilderName As String,
                                                                 foreignKey As IForeignKey,
                                                                 stringBuilder As IndentedStringBuilder)
 
-            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
+            NotNull(foreignKeyBuilderName, NameOf(foreignKeyBuilderName))
             NotNull(foreignKey, NameOf(foreignKey))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1148,15 +1173,15 @@ Namespace Migrations.Design
                 FilterIgnoredAnnotations(foreignKey.GetAnnotations()).
                     ToDictionary(Function(a) a.Name, Function(a) a)
 
-            GenerateAnnotations(entityTypeBuilderName, foreignKey, stringBuilder, annotations, inChainedCall:=True)
+            GenerateAnnotations(foreignKeyBuilderName, foreignKey, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for the navigations of an <see cref= "IEntityType"/>.
         ''' </summary>
-        ''' <param name="modelBuilderName"> The name of the builder variable. </param>
-        ''' <param name="entityType"> The entity type. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="modelBuilderName">The name of the builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateEntityTypeNavigations(modelBuilderName As String,
                                                                 entityType As IEntityType,
                                                                 stringBuilder As IndentedStringBuilder)
@@ -1188,9 +1213,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref= "INavigation"/> objects.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="navigations"> The navigations. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="navigations">The navigations.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateNavigations(entityTypeBuilderName As String,
                                                       navigations As IEnumerable(Of INavigation),
                                                       stringBuilder As IndentedStringBuilder)
@@ -1214,9 +1239,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref= "INavigation"/>.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="navigation"> The navigation. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="navigation">The navigation.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateNavigation(entityTypeBuilderName As String,
                                                      navigation As INavigation,
                                                      stringBuilder As IndentedStringBuilder)
@@ -1225,11 +1250,10 @@ Namespace Migrations.Design
             NotNull(navigation, NameOf(navigation))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
+            Dim navigationBuilderName = $"{entityTypeBuilderName}.Navigation({VBCode.Literal(navigation.Name)})"
+
             stringBuilder.
-                Append(entityTypeBuilderName).
-                Append(".Navigation(").
-                Append(VBCode.Literal(navigation.Name)).
-                Append(")")
+                Append(navigationBuilderName)
 
             ' Note that GenerateAnnotations below does the corresponding decrement
             stringBuilder.IncrementIndent()
@@ -1243,20 +1267,20 @@ Namespace Migrations.Design
                     Append("IsRequired()")
             End If
 
-            GenerateNavigationAnnotations(entityTypeBuilderName, navigation, stringBuilder)
+            GenerateNavigationAnnotations(navigationBuilderName, navigation, stringBuilder)
         End Sub
 
         ''' <summary>
         '''     Generates code for the annotations on a navigation.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="navigation"> The navigation. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
-        Protected Overridable Sub GenerateNavigationAnnotations(entityTypeBuilderName As String,
+        ''' <param name="navigationBuilderName">The name of the builder variable.</param>
+        ''' <param name="navigation">The navigation.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
+        Protected Overridable Sub GenerateNavigationAnnotations(navigationBuilderName As String,
                                                                 navigation As INavigation,
                                                                 stringBuilder As IndentedStringBuilder)
 
-            NotNull(entityTypeBuilderName, NameOf(entityTypeBuilderName))
+            NotNull(navigationBuilderName, NameOf(navigationBuilderName))
             NotNull(navigation, NameOf(navigation))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -1264,16 +1288,16 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(navigation.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            GenerateAnnotations(entityTypeBuilderName, navigation, stringBuilder, annotations, inChainedCall:=True)
+            GenerateAnnotations(navigationBuilderName, navigation, stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
         ''' <summary>
         '''     Generates code for data seeding.
         ''' </summary>
-        ''' <param name="entityTypeBuilderName"> The name of the builder variable. </param>
-        ''' <param name="properties"> The properties to generate. </param>
-        ''' <param name="data"> The data to be seeded. </param>
-        ''' <param name="stringBuilder"> The builder code is added to. </param>
+        ''' <param name="entityTypeBuilderName">The name of the builder variable.</param>
+        ''' <param name="properties">The properties to generate.</param>
+        ''' <param name="data">The data to be seeded.</param>
+        ''' <param name="stringBuilder">The builder code is added to.</param>
         Protected Overridable Sub GenerateData(entityTypeBuilderName As String,
                                                properties As IEnumerable(Of IProperty),
                                                data As IEnumerable(Of IDictionary(Of String, Object)),

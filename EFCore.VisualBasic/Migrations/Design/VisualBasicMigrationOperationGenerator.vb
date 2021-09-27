@@ -9,12 +9,16 @@ Namespace Migrations.Design
     ''' <summary>
     '''     Used to generate Visual Basic code for creating <see cref="MigrationOperation" /> objects.
     ''' </summary>
+    ''' <remarks>
+    '''     See <see href="https://aka.ms/efcore-docs-migrations">Database migrations</see>, And
+    '''     <see href="https://aka.ms/efcore-docs-design-time-services">EF Core design-time services</see> for more information.
+    ''' </remarks>
     Public Class VisualBasicMigrationOperationGenerator
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicMigrationOperationGenerator" /> class.
         ''' </summary>
-        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        ''' <param name="vbHelper">The Visual Basic helper.</param>
         Public Sub New(vbHelper As IVisualBasicHelper)
             VBCode = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
@@ -27,9 +31,9 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for creating <see cref="MigrationOperation" /> objects.
         ''' </summary>
-        ''' <param name="builderName"> The <see cref="MigrationOperation" /> variable name. </param>
-        ''' <param name="operations"> The operations. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="builderName">The <see cref="MigrationOperation" /> variable name.</param>
+        ''' <param name="operations">The operations.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Public Overloads Sub Generate(builderName As String,
                                       operations As IReadOnlyList(Of MigrationOperation),
                                       builder As IndentedStringBuilder)
@@ -68,8 +72,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an unknown <see cref="MigrationOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As MigrationOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -81,8 +85,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AddColumnOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AddColumnOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -212,8 +216,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AddForeignKeyOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AddForeignKeyOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -299,8 +303,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AddPrimaryKeyOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AddPrimaryKeyOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -346,8 +350,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AddUniqueConstraintOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AddUniqueConstraintOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -393,8 +397,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AddCheckConstraintOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AddCheckConstraintOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -431,8 +435,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AlterColumnOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AlterColumnOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -660,8 +664,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AlterDatabaseOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AlterDatabaseOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -704,8 +708,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AlterSequenceOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AlterSequenceOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -789,8 +793,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="AlterTableOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As AlterTableOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -834,8 +838,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="CreateIndexOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As CreateIndexOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -894,8 +898,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="EnsureSchemaOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As EnsureSchemaOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -916,8 +920,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="CreateSequenceOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As CreateSequenceOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -989,8 +993,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="CreateTableOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As CreateTableOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1247,8 +1251,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropColumnOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropColumnOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1281,8 +1285,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropForeignKeyOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropForeignKeyOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1315,8 +1319,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropIndexOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropIndexOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1352,8 +1356,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropPrimaryKeyOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropPrimaryKeyOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1386,8 +1390,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropSchemaOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropSchemaOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1408,8 +1412,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropSequenceOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropSequenceOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1438,8 +1442,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropTableOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropTableOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1468,8 +1472,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropUniqueConstraintOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropUniqueConstraintOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1502,8 +1506,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DropCheckConstraintOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DropCheckConstraintOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1537,8 +1541,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="RenameColumnOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As RenameColumnOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1574,8 +1578,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="RenameIndexOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As RenameIndexOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1615,8 +1619,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="RenameSequenceOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As RenameSequenceOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1659,8 +1663,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="RenameTableOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As RenameTableOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1703,8 +1707,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="RestartSequenceOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As RestartSequenceOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1737,8 +1741,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="SqlOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As SqlOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1755,8 +1759,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="InsertDataOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As InsertDataOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1818,8 +1822,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for a <see cref="DeleteDataOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code Is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code Is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As DeleteDataOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1852,6 +1856,20 @@ Namespace Migrations.Design
 
                 builder.AppendLine(",")
 
+                If operation.KeyColumnTypes IsNot Nothing Then
+                    If operation.KeyColumnTypes.Length = 1 Then
+                        builder.
+                            Append("keyColumnType:=").
+                            Append(VBCode.Literal(operation.KeyColumnTypes(0)))
+                    Else
+                        builder.
+                            Append("keyColumnTypes:=").
+                            Append(VBCode.Literal(operation.KeyColumnTypes))
+                    End If
+
+                    builder.AppendLine(",")
+                End If
+
                 If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
                     builder.
                         Append("keyValue:=").
@@ -1881,8 +1899,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="UpdateDataOperation" />.
         ''' </summary>
-        ''' <param name="operation"> The operation. </param>
-        ''' <param name="builder"> The builder code is added to. </param>
+        ''' <param name="operation">The operation.</param>
+        ''' <param name="builder">The builder code is added to.</param>
         Protected Overridable Overloads Sub Generate(operation As UpdateDataOperation, builder As IndentedStringBuilder)
 
             NotNull(operation, NameOf(operation))
@@ -1984,8 +2002,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for <see cref="Annotation" /> objects.
         ''' </summary>
-        ''' <param name="annotations"> The annotations. </param>
-        ''' <param name="builder"> The builder code is added to. </param>
+        ''' <param name="annotations">The annotations.</param>
+        ''' <param name="builder">The builder code is added to.</param>
         Protected Overridable Overloads Sub Annotations(annotations As IEnumerable(Of Annotation), builder As IndentedStringBuilder)
 
             NotNull(annotations, NameOf(annotations))
@@ -2009,8 +2027,8 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for removed <see cref="Annotation" /> objects.
         ''' </summary>
-        ''' <param name="annotations"> The annotations. </param>
-        ''' <param name="builder"> The builder code is added to. </param>
+        ''' <param name="annotations">The annotations.</param>
+        ''' <param name="builder">The builder code is added to.</param>
         Protected Overridable Overloads Sub OldAnnotations(annotations As IEnumerable(Of Annotation), builder As IndentedStringBuilder)
 
             NotNull(annotations, NameOf(annotations))
@@ -2031,7 +2049,7 @@ Namespace Migrations.Design
         End Sub
 
         Private Shared Function ToOnedimensionalArray(values As Object(,), Optional firstDimension As Boolean = False) As Object()
-            Debug.Assert(
+            DebugAssert(
                 values.GetLength(If(firstDimension, 1, 0)) = 1,
                 $"Length of dimension {If(firstDimension, 1, 0)} is not 1.")
 

@@ -3,7 +3,6 @@ Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Metadata
-Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 
 Namespace Scaffolding.Internal
@@ -104,7 +103,5 @@ Namespace Scaffolding.Internal
 
             Return resultingFiles
         End Function
-
     End Class
-
 End Namespace

@@ -202,7 +202,7 @@ Namespace Scaffolding.Internal
         Protected Overridable Sub GenerateProperties(entityType As IEntityType)
             NotNull(entityType, NameOf(entityType))
 
-            For Each prop In entityType.GetProperties().OrderBy(Function(p) p.GetColumnOrdinal())
+            For Each prop In entityType.GetProperties().OrderBy(Function(p) If(p.GetColumnOrder(), -1))
                 GenerateComment(prop.GetComment())
 
                 If _useDataAnnotations Then
@@ -300,6 +300,7 @@ Namespace Scaffolding.Internal
                 If Not unicode.Value Then
                     uniAttribute.AddParameter(_code.Literal(False))
                 End If
+
                 _sb.AppendLine(uniAttribute.ToString())
             End If
         End Sub

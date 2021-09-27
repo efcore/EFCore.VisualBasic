@@ -8,14 +8,21 @@ Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 
 Namespace Migrations.Design
 
+    ''' <summary>
+    '''     Used to generate Visual Basic code for migrations.
+    ''' </summary>
+    ''' <remarks>
+    '''     See <see href="https://aka.ms/efcore-docs-migrations">Database migrations</see>, And
+    '''     <see href="https://aka.ms/efcore-docs-design-time-services">EF Core design-time services</see> for more information.
+    ''' </remarks>
     Public Class VisualBasicMigrationsGenerator
         Inherits MigrationsCodeGenerator
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicMigrationsGenerator" /> class.
         ''' </summary>
-        ''' <param name="dependencies"> The base dependencies. </param>
-        ''' <param name="vbHelper"> The Visual Basic helper. </param>
+        ''' <param name="dependencies">The base dependencies.</param>
+        ''' <param name="vbHelper">The Visual Basic helper.</param>
         Public Sub New(dependencies As MigrationsCodeGeneratorDependencies,
                        vbHelper As IVisualBasicHelper)
 
@@ -32,7 +39,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Gets the file extension code files should use.
         ''' </summary>
-        ''' <value> The file extension. </value>
+        ''' <value> The file extension.</value>
         Public Overrides ReadOnly Property FileExtension As String
             Get
                 Return ".vb"
@@ -42,7 +49,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Gets the programming language supported by this service.
         ''' </summary>
-        ''' <value> The language. </value>
+        ''' <value> The language.</value>
         Public Overrides ReadOnly Property Language As String
             Get
                 Return "VB"
@@ -67,11 +74,11 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates the migration code.
         ''' </summary>
-        ''' <param name="migrationNamespace"> The migration's namespace. </param>
-        ''' <param name="migrationName"> The migration's name. </param>
-        ''' <param name="upOperations"> The migration's up operations. </param>
-        ''' <param name="downOperations"> The migration's down operations. </param>
-        ''' <returns> The migration code. </returns>
+        ''' <param name="migrationNamespace">The migration's namespace.</param>
+        ''' <param name="migrationName">The migration's name.</param>
+        ''' <param name="upOperations">The migration's up operations.</param>
+        ''' <param name="downOperations">The migration's down operations.</param>
+        ''' <returns>The migration code.</returns>
         Public Overrides Function GenerateMigration(migrationNamespace As String,
                                                     migrationName As String,
                                                     upOperations As IReadOnlyList(Of MigrationOperation),
@@ -152,12 +159,12 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates the migration metadata code.
         ''' </summary>
-        ''' <param name="migrationNamespace"> The migration's namespace. </param>
-        ''' <param name="contextType"> The migration's <see cref="DbContext" /> type. </param>
-        ''' <param name="migrationName"> The migration's name. </param>
-        ''' <param name="migrationId"> The migration's ID. </param>
-        ''' <param name="targetModel"> The migration's target model. </param>
-        ''' <returns> The migration metadata code. </returns>
+        ''' <param name="migrationNamespace">The migration's namespace.</param>
+        ''' <param name="contextType">The migration's <see cref="DbContext" /> type.</param>
+        ''' <param name="migrationName">The migration's name.</param>
+        ''' <param name="migrationId">The migration's ID.</param>
+        ''' <param name="targetModel">The migration's target model.</param>
+        ''' <returns>The migration metadata code.</returns>
         Public Overrides Function GenerateMetadata(migrationNamespace As String,
                                                    contextType As Type,
                                                    migrationName As String,
@@ -237,11 +244,11 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates the model snapshot code.
         ''' </summary>
-        ''' <param name="modelSnapshotNamespace"> The model snapshot's namespace. </param>
-        ''' <param name="contextType"> The model snapshot's <see cref="DbContext" /> type. </param>
-        ''' <param name="modelSnapshotName"> The model snapshot's name. </param>
-        ''' <param name="model"> The model. </param>
-        ''' <returns> The model snapshot code. </returns>
+        ''' <param name="modelSnapshotNamespace">The model snapshot's namespace.</param>
+        ''' <param name="contextType">The model snapshot's <see cref="DbContext" /> type.</param>
+        ''' <param name="modelSnapshotName">The model snapshot's name.</param>
+        ''' <param name="model">The model.</param>
+        ''' <returns>The model snapshot code.</returns>
         Public Overrides Function GenerateSnapshot(modelSnapshotNamespace As String,
                                                    contextType As Type,
                                                    modelSnapshotName As String,

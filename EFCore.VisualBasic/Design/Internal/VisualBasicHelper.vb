@@ -33,6 +33,7 @@ Namespace Design.Internal
             {GetType(Byte), Function(c, v) c.Literal(CByte(v))},
             {GetType(Byte()), Function(c, v) c.Literal(CType(v, Byte()))},
             {GetType(Char), Function(c, v) c.Literal(CChar(v))},
+            {GetType(DateOnly), Function(c, v) c.Literal(DirectCast(v, DateOnly))},
             {GetType(Date), Function(c, v) c.Literal(CDate(v))},
             {GetType(DateTimeOffset), Function(c, v) c.Literal(CType(v, DateTimeOffset))},
             {GetType(Decimal), Function(c, v) c.Literal(CDec(v))},
@@ -47,6 +48,7 @@ Namespace Design.Internal
             {GetType(SByte), Function(c, v) c.Literal(CSByte(v))},
             {GetType(Short), Function(c, v) c.Literal(CShort(v))},
             {GetType(String), Function(c, v) c.Literal(CStr(v))},
+            {GetType(TimeOnly), Function(c, v) c.Literal(DirectCast(v, TimeOnly))},
             {GetType(TimeSpan), Function(c, v) c.Literal(CType(v, TimeSpan))},
             {GetType(UInteger), Function(c, v) c.Literal(CUInt(v))},
             {GetType(ULong), Function(c, v) c.Literal(CULng(v))},
@@ -246,6 +248,18 @@ Namespace Design.Internal
             Return """" & If(value = """", """""", value.ToString()) & """c"
         End Function
 
+        ''' <summary>
+        '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
+        '''     directly from your code. This API may change Or be removed in future releases.
+        ''' </summary>
+        Public Overridable Function Literal(value As DateOnly) As String Implements IVisualBasicHelper.Literal
+            Return String.Format(
+                CultureInfo.InvariantCulture,
+                "New DateOnly({0}, {1}, {2})",
+                value.Year,
+                value.Month,
+                value.Day)
+        End Function
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -358,6 +372,25 @@ Namespace Design.Internal
         Public Overridable Function Literal(value As Short) As String Implements IVisualBasicHelper.Literal
             If value = Short.MinValue Then Return "Short.MinValue"
             Return value.ToString(CultureInfo.InvariantCulture) & "S"
+        End Function
+
+        ''' <summary>
+        '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
+        '''     directly from your code. This API may change Or be removed in future releases.
+        ''' </summary>
+        Public Overridable Function Literal(value As TimeOnly) As String Implements IVisualBasicHelper.Literal
+            Dim result = If(value.Millisecond = 0,
+                                String.Format(CultureInfo.InvariantCulture, "New TimeOnly({0}, {1}, {2})", value.Hour, value.Minute, value.Second),
+                                String.Format(CultureInfo.InvariantCulture, "New TimeOnly({0}, {1}, {2}, {3})", value.Hour, value.Minute, value.Second, value.Millisecond))
+
+            If value.Ticks Mod 10000 > 0 Then
+                result &= String.Format(
+                    CultureInfo.InvariantCulture,
+                    ".Add(TimeSpan.FromTicks({0}))",
+                    value.Ticks Mod 10000)
+            End If
+
+            Return result
         End Function
 
         ''' <summary>
@@ -905,7 +938,6 @@ Namespace Design.Internal
         End Sub
 
         Private Function Fragment(frag As NestedClosureCodeFragment) As String
-
             If frag.MethodCalls.Count = 1 Then
                 Return $"Sub({frag.Parameter}) {Fragment(frag.MethodCalls(0), typeQualified:=False, frag.Parameter)}"
             End If
@@ -914,13 +946,13 @@ Namespace Design.Internal
             builder.AppendLine($"Sub({frag.Parameter})")
 
             Using builder.Indent()
-                    For Each methodCall In frag.MethodCalls
-                        builder.AppendLines(Fragment(methodCall, typeQualified:=False, frag.Parameter))
-                    Next
-                End Using
+                For Each methodCall In frag.MethodCalls
+                    builder.AppendLines(Fragment(methodCall, typeQualified:=False, frag.Parameter))
+                Next
+            End Using
 
             builder.Append("End Sub")
-            Dim s = builder.ToString()
+
             Return builder.ToString()
         End Function
 

@@ -3359,6 +3359,39 @@ mb.Sql(""-- close to me"")"
                 End Sub)
         End Sub
 
+        <ConditionalFact>
+        Public Sub AlterTableOperation_annotation_set_to_null()
+            Dim oldTable = New CreateTableOperation With {
+                .Name = "Customer"
+            }
+
+            oldTable.AddAnnotation("MyAnnotation1", "Bar")
+            oldTable.AddAnnotation("MyAnnotation2", Nothing)
+
+            Dim alterTable As New AlterTableOperation With {
+                .Name = "NewCustomer",
+                .OldTable = oldTable
+            }
+
+            alterTable.AddAnnotation("MyAnnotation1", Nothing)
+            alterTable.AddAnnotation("MyAnnotation2", "Foo")
+
+            Dim expectedCode = <![CDATA[mb.AlterTable(
+    name:="NewCustomer").
+        Annotation("MyAnnotation1", Nothing).
+        Annotation("MyAnnotation2", "Foo").
+        OldAnnotation("MyAnnotation1", "Bar").
+        OldAnnotation("MyAnnotation2", Nothing)]]>.Value
+
+            Test(
+                alterTable,
+                expectedCode,
+                Sub(o)
+                    Assert.Equal("NewCustomer", o.Name)
+                    Assert.Null(o.GetAnnotation("MyAnnotation1").Value)
+                    Assert.Equal("Foo", o.GetAnnotation("MyAnnotation2").Value)
+                End Sub)
+        End Sub
         Private Sub Test(Of T As MigrationOperation)(operation As T, expectedCode As String, assertAction As Action(Of T))
 
             Dim generator As New VisualBasicMigrationOperationGenerator(

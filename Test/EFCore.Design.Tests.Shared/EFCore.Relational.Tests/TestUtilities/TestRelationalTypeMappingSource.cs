@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
     public class TestRelationalTypeMappingSource : RelationalTypeMappingSource
     {
         private static readonly RelationalTypeMapping _string
-            = new StringTypeMapping("just_string(2000)");
+            = new StringTypeMapping("just_string(2000)", DbType.String);
 
         private static readonly RelationalTypeMapping _binary
             = new ByteArrayTypeMapping("just_binary(max)", dbType: DbType.Binary);
@@ -252,6 +252,11 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                 precision = size;
                 size = null;
                 scale = 0;
+            }
+
+            if (storeTypeName?.StartsWith("ansi_string", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                unicode = false;
             }
 
             return parsedName;

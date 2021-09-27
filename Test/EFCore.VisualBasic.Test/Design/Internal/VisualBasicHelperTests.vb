@@ -131,8 +131,16 @@ string with """,
 """multi-line"" & " & If(Environment.NewLine = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
         End Sub
 
-        <UseCulture("de-DE")>
         <ConditionalFact>
+        <UseCulture("fr-CA")>
+        Public Sub Literal_works_when_DateOnly()
+            Literal_works(
+                    New DateOnly(2021, 9, 26),
+                    "New DateOnly(2021, 9, 26)")
+        End Sub
+
+        <ConditionalFact>
+        <UseCulture("de-DE")>
         Public Sub Literal_works_when_DateTime()
             Literal_works(
                     New Date(2014, 5, 28, 20, 45, 17, 300, DateTimeKind.Local),
@@ -173,6 +181,14 @@ string with """,
             Literal_works(
                     New Guid("fad4f3c3-9501-4b3a-af99-afeb496f7664"),
                     "New Guid(""fad4f3c3-9501-4b3a-af99-afeb496f7664"")")
+        End Sub
+
+        <ConditionalFact>
+        <UseCulture("fr-CA")>
+        Public Sub Literal_works_when_TimeOnly()
+            Literal_works(
+                    New TimeOnly(20, 17, 37, 50).Add(TimeSpan.FromTicks(50)),
+                    "New TimeOnly(20, 17, 37, 50).Add(TimeSpan.FromTicks(50))")
         End Sub
 
         <ConditionalFact>
@@ -405,9 +421,9 @@ TestFunc()", result)
 
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_works_when_chaining_on_chain()
-            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, {"One"},
-                                                    New MethodCallCodeFragment(_testFuncMethodInfo, "Two")).
-                         Chain(_testFuncMethodInfo, "Three")
+            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Two")).
+                Chain(_testFuncMethodInfo, "Three")
 
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
@@ -419,10 +435,10 @@ TestFunc(""Three"")", result)
 
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_works_when_chaining_on_chain_with_call()
-            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, {"One"},
-                                                    New MethodCallCodeFragment(_testFuncMethodInfo, "Two")).
-                         Chain(New MethodCallCodeFragment(_testFuncMethodInfo, {"Three"},
-                                                          New MethodCallCodeFragment(_testFuncMethodInfo, "Four")))
+            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Two")).
+                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Three").
+                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Four")))
 
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
@@ -474,7 +490,8 @@ End Sub)", result)
 
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_works_with_identifier_chained()
-            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, {"One"}, New MethodCallCodeFragment(_testFuncMethodInfo))
+            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                Chain(New MethodCallCodeFragment(_testFuncMethodInfo))
 
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder")
 

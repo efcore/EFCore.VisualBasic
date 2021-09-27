@@ -70,6 +70,7 @@ Namespace Migrations.Design
                 CoreAnnotationNames.EagerLoaded,
                 CoreAnnotationNames.DuplicateServiceProperties,
                 RelationalAnnotationNames.ColumnName,
+                RelationalAnnotationNames.ColumnOrder,
                 RelationalAnnotationNames.ColumnType,
                 RelationalAnnotationNames.TableColumnMappings,
                 RelationalAnnotationNames.ViewColumnMappings,
@@ -262,6 +263,10 @@ Namespace Migrations.Design
                 {
                     RelationalAnnotationNames.ColumnName,
                     ("MyColumn", $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnName)}(""MyColumn"")")
+                },
+                {
+                    RelationalAnnotationNames.ColumnOrder,
+                    (1, $"{columnMapping}.{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnOrder)}(1)")
                 },
                 {
                     RelationalAnnotationNames.ColumnType,

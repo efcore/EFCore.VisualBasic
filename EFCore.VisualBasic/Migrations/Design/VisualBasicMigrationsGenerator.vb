@@ -39,7 +39,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Gets the file extension code files should use.
         ''' </summary>
-        ''' <value> The file extension.</value>
+        ''' <value>The file extension.</value>
         Public Overrides ReadOnly Property FileExtension As String
             Get
                 Return ".vb"
@@ -49,7 +49,7 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Gets the programming language supported by this service.
         ''' </summary>
-        ''' <value> The language.</value>
+        ''' <value>The language.</value>
         Public Overrides ReadOnly Property Language As String
             Get
                 Return "VB"

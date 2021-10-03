@@ -575,15 +575,15 @@ Namespace Scaffolding.Internal
                     Dim methodName As String = ""
 
                     Select Case valueGenerated
-                        Case valueGenerated.OnAdd
+                        Case ValueGenerated.OnAdd
                             methodName = NameOf(PropertyBuilder.ValueGeneratedOnAdd)
-                        Case valueGenerated.OnAddOrUpdate
+                        Case ValueGenerated.OnAddOrUpdate
                             methodName = If(prop.IsConcurrencyToken,
                                             NameOf(PropertyBuilder.IsRowVersion),
                                             NameOf(PropertyBuilder.ValueGeneratedOnAddOrUpdate))
-                        Case valueGenerated.OnUpdate
+                        Case ValueGenerated.OnUpdate
                             methodName = NameOf(PropertyBuilder.ValueGeneratedOnUpdate)
-                        Case = valueGenerated.Never
+                        Case ValueGenerated.Never
                             methodName = NameOf(PropertyBuilder.ValueGeneratedNever)
                         Case Else
                             Throw New InvalidOperationException(DesignStrings.UnhandledEnumValue($"{NameOf(valueGenerated)}.{valueGenerated}"))
@@ -817,12 +817,12 @@ Namespace Scaffolding.Internal
 
                                     Dim methodName As String = Nothing
                                     Select Case valueGenerated
-                                        Case valueGenerated.OnAdd : methodName = NameOf(PropertyBuilder.ValueGeneratedOnAdd)
-                                        Case valueGenerated.OnAddOrUpdate : methodName = If([property].IsConcurrencyToken,
+                                        Case ValueGenerated.OnAdd : methodName = NameOf(PropertyBuilder.ValueGeneratedOnAdd)
+                                        Case ValueGenerated.OnAddOrUpdate : methodName = If([property].IsConcurrencyToken,
                                                                                                 NameOf(PropertyBuilder.IsRowVersion),
                                                                                                 NameOf(PropertyBuilder.ValueGeneratedOnAddOrUpdate))
-                                        Case valueGenerated.OnUpdate : methodName = NameOf(PropertyBuilder.ValueGeneratedOnUpdate)
-                                        Case valueGenerated.Never : methodName = NameOf(PropertyBuilder.ValueGeneratedNever)
+                                        Case ValueGenerated.OnUpdate : methodName = NameOf(PropertyBuilder.ValueGeneratedOnUpdate)
+                                        Case ValueGenerated.Never : methodName = NameOf(PropertyBuilder.ValueGeneratedNever)
                                         Case Else : Throw New InvalidOperationException(DesignStrings.UnhandledEnumValue($"{NameOf(valueGenerated)}.{valueGenerated}"))
                                     End Select
 

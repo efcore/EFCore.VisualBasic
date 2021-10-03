@@ -10,10 +10,10 @@
     Public Class VisualBasicDesignTimeProviderServicesAttribute
         Inherits Attribute
 
-        Public ReadOnly Property ForProvider As String
+        Public ReadOnly Property ProviderName As String
 
-        Sub New(forProvider As String)
-            Me.ForProvider = NotNull(forProvider, NameOf(forProvider))
+        Sub New(providerName As String)
+            Me.ProviderName = NotNull(providerName, NameOf(providerName))
         End Sub
     End Class
 End Namespace

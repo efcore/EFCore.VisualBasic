@@ -2,7 +2,7 @@
 Imports Microsoft.EntityFrameworkCore.Design
 
 <Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.EFCoreVisualBasicServices, EntityFrameworkCore.VisualBasic")>
-<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.InMemoryVisualBasicServices, EntityFrameworkCore.VisualBasic", InMemoryVisualBasicServices.ForProvider)>
-<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.CosmosVisualBasicServices, EntityFrameworkCore.VisualBasic", CosmosVisualBasicServices.ForProvider)>
-<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.SqliteVisualBasicServices, EntityFrameworkCore.VisualBasic", SqliteVisualBasicServices.ForProvider)>
-<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.SqlServerVisualBasicServices, EntityFrameworkCore.VisualBasic", SqlServerVisualBasicServices.ForProvider)>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.InMemoryVisualBasicServices, EntityFrameworkCore.VisualBasic", InMemoryVisualBasicServices.ProviderName)>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.CosmosVisualBasicServices, EntityFrameworkCore.VisualBasic", CosmosVisualBasicServices.ProviderName)>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.SqliteVisualBasicServices, EntityFrameworkCore.VisualBasic", SqliteVisualBasicServices.ProviderName)>
+<Assembly: DesignTimeServicesReference("EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider.SqlServerVisualBasicServices, EntityFrameworkCore.VisualBasic", SqlServerVisualBasicServices.ProviderName)>

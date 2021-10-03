@@ -1,5 +1,4 @@
 ﻿Imports Microsoft.EntityFrameworkCore.Cosmos.Metadata.Internal
-Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Design.AnnotationCodeGeneratorProvider
@@ -34,11 +33,13 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
         ''' <inheritdoc />
         Public Overrides Sub Generate(entityType As IEntityType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
-            Dim annotations = parameters.Annotations
+
             If Not parameters.IsRuntime Then
-                annotations.Remove(CosmosAnnotationNames.AnalyticalStoreTimeToLive)
-                annotations.Remove(CosmosAnnotationNames.DefaultTimeToLive)
-                annotations.Remove(CosmosAnnotationNames.Throughput)
+                With parameters.Annotations
+                    .Remove(CosmosAnnotationNames.AnalyticalStoreTimeToLive)
+                    .Remove(CosmosAnnotationNames.DefaultTimeToLive)
+                    .Remove(CosmosAnnotationNames.Throughput)
+                End With
             End If
 
             MyBase.Generate(entityType, parameters)

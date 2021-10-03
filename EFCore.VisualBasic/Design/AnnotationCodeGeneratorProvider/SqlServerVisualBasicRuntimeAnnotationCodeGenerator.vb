@@ -26,12 +26,13 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <inheritdoc />
         Public Overrides Sub Generate(model As IModel, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             If Not parameters.IsRuntime Then
-                Dim annotations = parameters.Annotations
-                annotations.Remove(SqlServerAnnotationNames.IdentityIncrement)
-                annotations.Remove(SqlServerAnnotationNames.IdentitySeed)
-                annotations.Remove(SqlServerAnnotationNames.MaxDatabaseSize)
-                annotations.Remove(SqlServerAnnotationNames.PerformanceLevelSql)
-                annotations.Remove(SqlServerAnnotationNames.ServiceTierSql)
+                With parameters.Annotations
+                    .Remove(SqlServerAnnotationNames.IdentityIncrement)
+                    .Remove(SqlServerAnnotationNames.IdentitySeed)
+                    .Remove(SqlServerAnnotationNames.MaxDatabaseSize)
+                    .Remove(SqlServerAnnotationNames.PerformanceLevelSql)
+                    .Remove(SqlServerAnnotationNames.ServiceTierSql)
+                End With
             End If
 
             MyBase.Generate(model, parameters)
@@ -40,14 +41,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <inheritdoc />
         Public Overrides Sub Generate([Property] As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             If Not parameters.IsRuntime Then
-                Dim annotations = parameters.Annotations
-                annotations.Remove(SqlServerAnnotationNames.IdentityIncrement)
-                annotations.Remove(SqlServerAnnotationNames.IdentitySeed)
-                annotations.Remove(SqlServerAnnotationNames.Sparse)
+                With parameters.Annotations
+                    .Remove(SqlServerAnnotationNames.IdentityIncrement)
+                    .Remove(SqlServerAnnotationNames.IdentitySeed)
+                    .Remove(SqlServerAnnotationNames.Sparse)
 
-                If Not annotations.ContainsKey(SqlServerAnnotationNames.ValueGenerationStrategy) Then
-                    annotations(SqlServerAnnotationNames.ValueGenerationStrategy) = [Property].GetValueGenerationStrategy()
-                End If
+                    If Not .ContainsKey(SqlServerAnnotationNames.ValueGenerationStrategy) Then
+                        .Item(SqlServerAnnotationNames.ValueGenerationStrategy) = [Property].GetValueGenerationStrategy()
+                    End If
+                End With
             End If
 
             MyBase.Generate([Property], parameters)
@@ -56,11 +58,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <inheritdoc />
         Public Overrides Sub Generate(index As IIndex, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             If Not parameters.IsRuntime Then
-                Dim annotations = parameters.Annotations
-                annotations.Remove(SqlServerAnnotationNames.Clustered)
-                annotations.Remove(SqlServerAnnotationNames.CreatedOnline)
-                annotations.Remove(SqlServerAnnotationNames.Include)
-                annotations.Remove(SqlServerAnnotationNames.FillFactor)
+                With parameters.Annotations
+                    .Remove(SqlServerAnnotationNames.Clustered)
+                    .Remove(SqlServerAnnotationNames.CreatedOnline)
+                    .Remove(SqlServerAnnotationNames.Include)
+                    .Remove(SqlServerAnnotationNames.FillFactor)
+                End With
             End If
 
             MyBase.Generate(index, parameters)
@@ -69,8 +72,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <inheritdoc />
         Public Overrides Sub Generate(aKey As IKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             If Not parameters.IsRuntime Then
-                Dim annotations = parameters.Annotations
-                annotations.Remove(SqlServerAnnotationNames.Clustered)
+                With parameters.Annotations
+                    .Remove(SqlServerAnnotationNames.Clustered)
+                End With
             End If
 
             MyBase.Generate(aKey, parameters)
@@ -79,13 +83,14 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <inheritdoc />
         Public Overrides Sub Generate(entityType As IEntityType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             If Not parameters.IsRuntime Then
-                Dim annotations = parameters.Annotations
-                annotations.Remove(SqlServerAnnotationNames.TemporalHistoryTableName)
-                annotations.Remove(SqlServerAnnotationNames.TemporalHistoryTableSchema)
-                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodEndColumnName)
-                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodEndPropertyName)
-                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodStartColumnName)
-                annotations.Remove(SqlServerAnnotationNames.TemporalPeriodStartPropertyName)
+                With parameters.Annotations
+                    .Remove(SqlServerAnnotationNames.TemporalHistoryTableName)
+                    .Remove(SqlServerAnnotationNames.TemporalHistoryTableSchema)
+                    .Remove(SqlServerAnnotationNames.TemporalPeriodEndColumnName)
+                    .Remove(SqlServerAnnotationNames.TemporalPeriodEndPropertyName)
+                    .Remove(SqlServerAnnotationNames.TemporalPeriodStartColumnName)
+                    .Remove(SqlServerAnnotationNames.TemporalPeriodStartPropertyName)
+                End With
             End If
 
             MyBase.Generate(entityType, parameters)

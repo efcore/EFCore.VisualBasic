@@ -3599,8 +3599,8 @@ End Namespace
 
             Dim Types = VBAssembly.GetTypes().
                                         Where(Function(t) t.GetCustomAttributes(Of VisualBasicDesignTimeProviderServicesAttribute).
-                                                            Any(Function(x) x.ForProvider IsNot Nothing AndAlso
-                                                                            x.ForProvider = provider)).
+                                                            Any(Function(x) x.ProviderName IsNot Nothing AndAlso
+                                                                            x.ProviderName = provider)).
                                         ToList()
 
             Types.ForEach(Sub(t) ConfigureDesignTimeServices(t, services))

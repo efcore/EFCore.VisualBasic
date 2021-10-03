@@ -24,9 +24,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
         ''' <inheritdoc/>
         Public Overrides Sub Generate([property] As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
-            Dim annotations1 = parameters.Annotations
+            Dim annotations = parameters.Annotations
             If Not parameters.IsRuntime Then
-                annotations1.Remove(SqliteAnnotationNames.Srid)
+                annotations.Remove(SqliteAnnotationNames.Srid)
             End If
 
             MyBase.Generate([property], parameters)

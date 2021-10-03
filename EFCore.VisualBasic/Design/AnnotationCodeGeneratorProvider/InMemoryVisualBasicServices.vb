@@ -2,11 +2,11 @@
 Imports Microsoft.Extensions.DependencyInjection
 
 Namespace Design.AnnotationCodeGeneratorProvider
-    <VisualBasicDesignTimeProviderServices(InMemoryVisualBasicServices.ForProvider)>
+    <VisualBasicDesignTimeProviderServices(InMemoryVisualBasicServices.ProviderName)>
     Public Class InMemoryVisualBasicServices
         Implements IDesignTimeServices
 
-        Public Const ForProvider = "Microsoft.EntityFrameworkCore.InMemory"
+        Public Const ProviderName = "Microsoft.EntityFrameworkCore.InMemory"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, InMemoryVisualBasicRuntimeAnnotationCodeGenerator)

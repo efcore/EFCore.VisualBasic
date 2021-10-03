@@ -575,23 +575,21 @@ Namespace Scaffolding.Internal
                     Dim methodName As String = ""
 
                     Select Case valueGenerated
-                        Case = ValueGenerated.OnAdd
+                        Case ValueGenerated.OnAdd
                             methodName = NameOf(PropertyBuilder.ValueGeneratedOnAdd)
-                        Case = ValueGenerated.OnAddOrUpdate
+                        Case ValueGenerated.OnAddOrUpdate
                             methodName = If(prop.IsConcurrencyToken,
                                             NameOf(PropertyBuilder.IsRowVersion),
                                             NameOf(PropertyBuilder.ValueGeneratedOnAddOrUpdate))
-
-                        Case = ValueGenerated.OnUpdate
+                        Case ValueGenerated.OnUpdate
                             methodName = NameOf(PropertyBuilder.ValueGeneratedOnUpdate)
-                        Case = ValueGenerated.Never
+                        Case ValueGenerated.Never
                             methodName = NameOf(PropertyBuilder.ValueGeneratedNever)
                         Case Else
                             Throw New InvalidOperationException(DesignStrings.UnhandledEnumValue($"{NameOf(valueGenerated)}.{valueGenerated}"))
                     End Select
 
                     lines.Add($"{methodName}()")
-
                 End If
             End If
 

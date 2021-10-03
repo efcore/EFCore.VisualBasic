@@ -2174,7 +2174,7 @@ End Namespace
 
             Protected Overrides Function GenerateDataAnnotation(entityType As IEntityType, annotation As IAnnotation) As AttributeCodeFragment
                 Select Case annotation.Name
-                    Case = "Custom:EntityAnnotation"
+                    Case "Custom:EntityAnnotation"
                         Return New AttributeCodeFragment(GetType(CustomEntityDataAnnotationAttribute),
                                                          TryCast(annotation.Value, String))
                     Case Else
@@ -2184,7 +2184,7 @@ End Namespace
 
             Protected Overrides Function GenerateDataAnnotation([property] As IProperty, annotation As IAnnotation) As AttributeCodeFragment
                 Select Case annotation.Name
-                    Case = "Custom:PropertyAnnotation"
+                    Case "Custom:PropertyAnnotation"
                         Return New AttributeCodeFragment(GetType(CustomPropertyDataAnnotationAttribute),
                                                          TryCast(annotation.Value, String))
                     Case Else

@@ -19,12 +19,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.10.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="6.0.0-rtm.21474.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-rtm.21474.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>all</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-rtm.21474.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="6.0.0-rtm.21474.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-rtm.21474.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="6.0.0-rtm.21474.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-rtm.21474.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0-rtm.21474.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />

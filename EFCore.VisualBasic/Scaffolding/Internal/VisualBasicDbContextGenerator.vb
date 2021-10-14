@@ -175,7 +175,7 @@ Namespace Scaffolding.Internal
 
             For Each entityType In model.GetEntityTypes()
                 If IsManyToManyJoinEntityType(entityType) Then Continue For
-                _builder.AppendLine($"Public Overridable Property {entityType.GetDbSetName()} As DbSet(Of {entityType.Name})")
+                _builder.AppendLine($"Public Overridable Property {_VBCode.Identifier(entityType.GetDbSetName())} As DbSet(Of {entityType.Name})")
                 generated = True
             Next
 

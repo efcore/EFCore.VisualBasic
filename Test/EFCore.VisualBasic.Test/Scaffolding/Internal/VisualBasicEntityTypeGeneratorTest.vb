@@ -1774,6 +1774,10 @@ End Namespace
             Dim expectedEntityCode1 =
 "Namespace TestNamespace
     Public Partial Class Blog
+        Public Sub New()
+            Posts = New HashSet(Of Post)()
+        End Sub
+
         Public Property Id As Integer
 
         Public Overridable Property Posts As ICollection(Of Post)
@@ -1784,6 +1788,10 @@ End Namespace
             Dim expectedEntityCode2 =
 "Namespace TestNamespace
     Public Partial Class Post
+        Public Sub New()
+            Blogs = New HashSet(Of Blog)()
+        End Sub
+
         Public Property Id As Integer
 
         Public Overridable Property Blogs As ICollection(Of Blog)
@@ -1911,6 +1919,10 @@ End Namespace
             Dim expectedEntityBlog =
 "Namespace TestNamespace
     Public Partial Class Blog
+        Public Sub New()
+            Posts = New HashSet(Of Post)()
+        End Sub
+
         Public Property Id As Integer
 
         Public Overridable Property Posts As ICollection(Of Post)
@@ -1920,6 +1932,10 @@ End Namespace
             Dim expectedEntityPost =
 "Namespace TestNamespace
     Public Partial Class Post
+        Public Sub New()
+            Blogs = New HashSet(Of Blog)()
+        End Sub
+
         Public Property Id As String
 
         Public Overridable Property Blogs As ICollection(Of Blog)
@@ -2043,6 +2059,10 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class Blog
+        Public Sub New()
+            Posts = New HashSet(Of Post)()
+        End Sub
+
         <Key>
         Public Property Id As Integer
 
@@ -2060,6 +2080,10 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class Post
+        Public Sub New()
+            Blogs = New HashSet(Of Blog)()
+        End Sub
+
         <Key>
         Public Property Id As Integer
 

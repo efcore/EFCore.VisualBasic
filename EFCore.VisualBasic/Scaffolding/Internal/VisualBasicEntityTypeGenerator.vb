@@ -183,7 +183,11 @@ Namespace Scaffolding.Internal
         Protected Overridable Sub GenerateConstructor(entityType As IEntityType)
             NotNull(entityType, NameOf(entityType))
 
-            Dim collectionNavigations = entityType.GetNavigations().Where(Function(n) n.IsCollection).ToList()
+            Dim collectionNavigations = entityType.GetDeclaredNavigations().
+                                                   Cast(Of INavigationBase)().
+                                                   Concat(entityType.GetDeclaredSkipNavigations()).
+                                                   Where(Function(n) n.IsCollection).
+                                                   ToList()
 
             If collectionNavigations.Count > 0 Then
                 _sb.AppendLine($"Public Sub New()")
@@ -402,7 +406,7 @@ Namespace Scaffolding.Internal
                     Dim referencedTypeName = navigation.TargetEntityType.Name
                     Dim navigationType = If(navigation.IsCollection, $"ICollection(Of {referencedTypeName})", referencedTypeName)
 
-                    _sb.AppendLine($"Public Overridable Property {navigation.Name} As {navigationType}")
+                    _sb.AppendLine($"Public Overridable Property {_code.Identifier(navigation.Name)} As {navigationType}")
                 Next
             End If
         End Sub

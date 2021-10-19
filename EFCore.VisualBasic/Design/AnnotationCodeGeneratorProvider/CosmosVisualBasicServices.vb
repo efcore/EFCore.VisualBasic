@@ -6,7 +6,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
     Public Class CosmosVisualBasicServices
         Implements IDesignTimeServices
 
-        Public Const ProviderName = "Microsoft.EntityFrameworkCore.Cosmos"
+        Friend Const ProviderName = "Microsoft.EntityFrameworkCore.Cosmos"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, CosmosVisualBasicRuntimeAnnotationCodeGenerator)

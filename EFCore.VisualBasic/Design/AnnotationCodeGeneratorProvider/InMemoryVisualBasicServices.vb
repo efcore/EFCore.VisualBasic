@@ -6,7 +6,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
     Public Class InMemoryVisualBasicServices
         Implements IDesignTimeServices
 
-        Public Const ProviderName = "Microsoft.EntityFrameworkCore.InMemory"
+        Friend Const ProviderName = "Microsoft.EntityFrameworkCore.InMemory"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, InMemoryVisualBasicRuntimeAnnotationCodeGenerator)

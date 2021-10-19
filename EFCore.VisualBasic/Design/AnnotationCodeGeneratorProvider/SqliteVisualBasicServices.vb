@@ -6,7 +6,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
     Public Class SqliteVisualBasicServices
         Implements IDesignTimeServices
 
-        Public Const ProviderName = "Microsoft.EntityFrameworkCore.Sqlite"
+        Friend Const ProviderName = "Microsoft.EntityFrameworkCore.Sqlite"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqliteVisualBasicRuntimeAnnotationCodeGenerator)

@@ -2,11 +2,9 @@
 Imports Microsoft.Extensions.DependencyInjection
 
 Namespace Design.AnnotationCodeGeneratorProvider
-    <VisualBasicDesignTimeProviderServices(SqliteVisualBasicServices.ProviderName)>
+    <VisualBasicDesignTimeProviderServices("Microsoft.EntityFrameworkCore.Sqlite")>
     Public Class SqliteVisualBasicServices
         Implements IDesignTimeServices
-
-        Friend Const ProviderName = "Microsoft.EntityFrameworkCore.Sqlite"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqliteVisualBasicRuntimeAnnotationCodeGenerator)

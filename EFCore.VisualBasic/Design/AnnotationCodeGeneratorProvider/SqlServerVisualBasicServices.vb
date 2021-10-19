@@ -2,11 +2,9 @@
 Imports Microsoft.Extensions.DependencyInjection
 
 Namespace Design.AnnotationCodeGeneratorProvider
-    <VisualBasicDesignTimeProviderServices(SqlServerVisualBasicServices.ProviderName)>
+    <VisualBasicDesignTimeProviderServices("Microsoft.EntityFrameworkCore.SqlServer")>
     Public Class SqlServerVisualBasicServices
         Implements IDesignTimeServices
-
-        Friend Const ProviderName = "Microsoft.EntityFrameworkCore.SqlServer"
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqlServerVisualBasicRuntimeAnnotationCodeGenerator)

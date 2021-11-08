@@ -8,10 +8,10 @@ Adds VB design-time support to EF Core.
 Installation
 ------------
 
-The latest stable version is available on [NuGet](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic).
+The latest version is available on [NuGet](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic).
 
 ```sh
-dotnet add package EntityFrameworkCore.VisualBasic
+dotnet add package EntityFrameworkCore.VisualBasic --prerelease
 ```
 
 Usage

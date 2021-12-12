@@ -138,7 +138,7 @@ Namespace Scaffolding.Internal
             _builder.AppendLine()
 
             Using _builder.Indent()
-                GenerateConstructors(contextName)
+                GenerateConstructors(contextName, generateDefaultConstructor:=Not suppressOnConfiguring)
                 GenerateDbSets(model)
                 GenerateEntityTypeErrors(model)
                 If Not suppressOnConfiguring Then
@@ -158,10 +158,14 @@ Namespace Scaffolding.Internal
             _builder.AppendLine("End Class")
         End Sub
 
-        Private Sub GenerateConstructors(contextName As String)
-            _builder.AppendLine($"Public Sub New()").
-                AppendLine("End Sub").
-                AppendLine()
+        Private Sub GenerateConstructors(contextName As String, generateDefaultConstructor As Boolean)
+
+            If generateDefaultConstructor Then
+                _builder.
+                    AppendLine($"Public Sub New()").
+                    AppendLine("End Sub").
+                    AppendLine()
+            End If
 
             _builder.AppendLine($"Public Sub New(options As DbContextOptions(Of {contextName}))").
                 IncrementIndent().AppendLine("MyBase.New(options)").
@@ -559,7 +563,6 @@ Namespace Scaffolding.Internal
             End If
 
             Dim valueGenerated = prop.ValueGenerated
-            Dim isRowVersion As Boolean = False
 
             Dim ConventionProperty = DirectCast(prop, IConventionProperty)
 
@@ -593,7 +596,7 @@ Namespace Scaffolding.Internal
                 End If
             End If
 
-            If prop.IsConcurrencyToken AndAlso Not isRowVersion Then
+            If prop.IsConcurrencyToken Then
                 lines.Add($"{NameOf(PropertyBuilder.IsConcurrencyToken)}()")
             End If
 
@@ -807,7 +810,6 @@ Namespace Scaffolding.Internal
                                 End If
 
                                 Dim valueGenerated = [property].ValueGenerated
-                                Dim isRowVersion = False
 
                                 Dim cp = CType([property], IConventionProperty).GetValueGeneratedConfigurationSource()
 
@@ -829,7 +831,7 @@ Namespace Scaffolding.Internal
                                     _builder.Append($"{methodName}()")
                                 End If
 
-                                If [property].IsConcurrencyToken AndAlso Not isRowVersion Then
+                                If [property].IsConcurrencyToken Then
                                     lines.Add($"{NameOf(PropertyBuilder.IsConcurrencyToken)}()")
                                 End If
 

@@ -6,6 +6,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 
@@ -65,11 +66,12 @@ Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
 
         If Not skipBuild Then
             Dim assembly = build.BuildInMemory()
-            Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
-
-            Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
 
             If assertModel IsNot Nothing Then
+                Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
+
+                Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
+
                 Dim compiledModel = context.GetService(Of IDesignTimeModel)().Model
                 assertModel(compiledModel)
             End If

@@ -1,9 +1,15 @@
-﻿Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports EntityFrameworkCore.VisualBasic.Design.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Design
     ''' <summary>
     '''     Implemented by database providers to generate the code for annotations.
     ''' </summary>
+    ''' <remarks>
+    '''     The service lifetime Is <see cref="Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton" />. This means a single instance
+    '''     Is used by many <see cref="Microsoft.EntityFrameworkCore.DbContext" /> instances. The implementation must be thread-safe.
+    '''     This service cannot depend on services registered as <see cref="Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped" />.
+    ''' </remarks>
     Public Interface IVisualBasicRuntimeAnnotationCodeGenerator
         ''' <summary>
         '''     Generates code to create the given annotations.

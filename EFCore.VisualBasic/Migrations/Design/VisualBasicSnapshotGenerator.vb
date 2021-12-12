@@ -42,17 +42,17 @@ Namespace Migrations.Design
         ''' <summary>
         '''     The Visual Basic helper.
         ''' </summary>
-        Private VBCode As IVisualBasicHelper
+        Private ReadOnly VBCode As IVisualBasicHelper
 
         ''' <summary>
         '''     The type mapper.
         ''' </summary>
-        Private RelationalTypeMappingSource As IRelationalTypeMappingSource
+        Private ReadOnly RelationalTypeMappingSource As IRelationalTypeMappingSource
 
         ''' <summary>
         '''     The annotation code generator.
         ''' </summary>
-        Private AnnotationCodeGenerator As IAnnotationCodeGenerator
+        Private ReadOnly AnnotationCodeGenerator As IAnnotationCodeGenerator
 
 
         ''' <summary>
@@ -618,7 +618,7 @@ Namespace Migrations.Design
                     Append(entityTypeBuilderName).
                     Append(If(primary, ".HasKey(", ".HasAlternateKey(")).
                     Append(String.Join(", ", key.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                    Append(")").
+                    Append(")"c).
                     ToString()
 
             stringBuilder.
@@ -1069,7 +1069,7 @@ Namespace Migrations.Design
                 End If
             End If
 
-            foreignKeyBuilderNameStringBuilder.Append(")")
+            foreignKeyBuilderNameStringBuilder.Append(")"c)
 
             Dim foreignKeyBuilderName = foreignKeyBuilderNameStringBuilder.ToString()
 

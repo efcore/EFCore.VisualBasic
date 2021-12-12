@@ -3,9 +3,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 
 Namespace Design
     ''' <summary>
-    '''     <para>
-    '''         Base class to be used by database providers when implementing an <see cref="IVisualBasicRuntimeAnnotationCodeGenerator"/>
-    '''     </para>
+    '''     Base class to be used by database providers when implementing an <see cref="IVisualBasicRuntimeAnnotationCodeGenerator"/>
     ''' </summary>
     Partial Public Class VisualBasicRuntimeAnnotationCodeGenerator
         Implements IVisualBasicRuntimeAnnotationCodeGenerator
@@ -15,7 +13,7 @@ Namespace Design
         ''' </summary>
         ''' <param name="vbHelper">The Visual Basic helper.</param>
         Public Sub New(vbHelper As IVisualBasicHelper)
-            Me.VBCode = NotNull(vbHelper, NameOf(vbHelper))
+            VBCode = NotNull(vbHelper, NameOf(vbHelper))
         End Sub
 
         ''' <summary>
@@ -55,7 +53,6 @@ Namespace Design
             If Not parameters.IsRuntime Then
                 For Each annotation In annotations
                     If CoreAnnotationNames.AllNames.Contains(annotation.Key) AndAlso
-                       annotation.Key <> CoreAnnotationNames.DiscriminatorValue AndAlso
                        annotation.Key <> CoreAnnotationNames.DiscriminatorMappingComplete Then
 
                         annotations.Remove(annotation.Key)
@@ -232,24 +229,30 @@ Namespace Design
         ''' <param name="type">A type.</param>
         ''' <param name="namespaces">The set of namespaces to add to.</param>
         Protected Overridable Sub AddNamespace(type As Type, namespaces As ISet(Of String))
-            If type.IsNested Then
-                AddNamespace(type.DeclaringType, namespaces)
-            End If
+            While True
 
-            If type.Namespace IsNot Nothing Then
-                namespaces.Add(type.Namespace)
-            End If
+                If type.IsNested Then
+                    AddNamespace(type.DeclaringType, namespaces)
+                End If
 
-            If type.IsGenericType Then
-                For Each argument As Type In type.GenericTypeArguments
-                    AddNamespace(argument, namespaces)
-                Next
-            End If
+                If type.Namespace IsNot Nothing Then
+                    namespaces.Add(type.Namespace)
+                End If
 
-            Dim sequenceType = type.TryGetSequenceType()
-            If sequenceType IsNot Nothing Then
-                AddNamespace(sequenceType, namespaces)
-            End If
+                If type.IsGenericType Then
+                    For Each argument As Type In type.GenericTypeArguments
+                        AddNamespace(argument, namespaces)
+                    Next
+                End If
+
+                Dim sequenceType = type.TryGetSequenceType()
+                If sequenceType IsNot Nothing Then
+                    type = sequenceType
+                    Continue While
+                End If
+
+                Exit While
+            End While
         End Sub
 
         Protected Function TryGetAndRemove(Of TKey, TValue, TReturn)(source As IDictionary(Of TKey, TValue),

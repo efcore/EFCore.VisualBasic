@@ -644,11 +644,11 @@ Namespace TestNamespace
         Public Property Id As Integer
         <Column(""propertyA"")>
         Public Property A As String
-        <Column(TypeName :=""nchar(10)"")>
+        <Column(TypeName:=""nchar(10)"")>
         Public Property B As String
-        <Column(""random"", TypeName :=""varchar(200)"")>
+        <Column(""random"", TypeName:=""varchar(200)"")>
         Public Property C As String
-        <Column(TypeName :=""numeric(18, 2)"")>
+        <Column(TypeName:=""numeric(18, 2)"")>
         Public Property D As Decimal
         <StringLength(100)>
         Public Property E As String
@@ -1076,8 +1076,8 @@ Namespace TestNamespace
         Public Property Id As Integer
         Public Property AuthorId As Integer?
 
-        <ForeignKey(NameOf(AuthorId))>
-        <InverseProperty(NameOf(Person.Posts))>
+        <ForeignKey(""AuthorId"")>
+        <InverseProperty(""Posts"")>
         Public Overridable Property Author As Person
         Public Overridable Property Contributions As ICollection(Of Contribution)
     End Class
@@ -1098,7 +1098,7 @@ Namespace TestNamespace
         <Key>
         Public Property Id As Integer
 
-        <InverseProperty(NameOf(Post.Author))>
+        <InverseProperty(""Author"")>
         Public Overridable Property Posts As ICollection(Of Post)
     End Class
 End Namespace
@@ -1161,7 +1161,7 @@ Namespace TestNamespace
         Public Property BlogId2 As Integer?
 
         <ForeignKey(""BlogId1,BlogId2"")>
-        <InverseProperty(NameOf(Blog.Posts))>
+        <InverseProperty(""Posts"")>
         Public Overridable Property BlogNavigation As Blog
     End Class
 End Namespace
@@ -1377,7 +1377,7 @@ Namespace TestNamespace
         Public Property Id As Integer
         Public Property BlogId As Integer?
 
-        <ForeignKey(NameOf(BlogId))>
+        <ForeignKey(""BlogId"")>
         <InverseProperty(""Posts"")>
         Public Overridable Property Blog As Blog
     End Class
@@ -1432,7 +1432,7 @@ Namespace TestNamespace
         Public Property Id As Integer
         Public Property Blog As Integer?
 
-        <ForeignKey(NameOf(Blog))>
+        <ForeignKey(""Blog"")>
         <InverseProperty(""Posts"")>
         Public Overridable Property BlogNavigation As Blog
     End Class
@@ -1487,10 +1487,10 @@ Namespace TestNamespace
         Public Property BlogId As Integer?
         Public Property OriginalBlogId As Integer?
 
-        <ForeignKey(NameOf(BlogId))>
+        <ForeignKey(""BlogId"")>
         <InverseProperty(""Posts"")>
         Public Overridable Property Blog As Blog
-        <ForeignKey(NameOf(OriginalBlogId))>
+        <ForeignKey(""OriginalBlogId"")>
         <InverseProperty(""OriginalPosts"")>
         Public Overridable Property OriginalBlog As Blog
     End Class
@@ -2067,7 +2067,7 @@ Namespace TestNamespace
         Public Property Id As Integer
 
         <ForeignKey(""BlogsId"")>
-        <InverseProperty(NameOf(Post.Blogs))>
+        <InverseProperty(""Blogs"")>
         Public Overridable Property Posts As ICollection(Of Post)
     End Class
 End Namespace
@@ -2088,7 +2088,7 @@ Namespace TestNamespace
         Public Property Id As Integer
 
         <ForeignKey(""PostsId"")>
-        <InverseProperty(NameOf(Blog.Posts))>
+        <InverseProperty(""Posts"")>
         Public Overridable Property Blogs As ICollection(Of Blog)
     End Class
 End Namespace

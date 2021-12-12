@@ -150,10 +150,11 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity("Lazy", Sub(e)
-                                                e.Property(Of Integer)("Id")
-                                                e.HasKey("Id")
-                                            End Sub)
+                modelBuilder.Entity(
+                    "Lazy", Sub(e)
+                                e.Property(Of Integer)("Id")
+                                e.HasKey("Id")
+                            End Sub)
             End Sub
 
             Protected Overrides Sub OnConfiguring(options As DbContextOptionsBuilder)
@@ -218,11 +219,12 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity("QueryFilter", Sub(e)
-                                                       e.Property(Of Integer)("Id")
-                                                       e.HasKey("Id")
-                                                       e.HasQueryFilter(DirectCast(Function(x) x IsNot Nothing, Expression(Of Func(Of Dictionary(Of String, Object), Boolean))))
-                                                   End Sub)
+                modelBuilder.Entity(
+                    "QueryFilter", Sub(e)
+                                       e.Property(Of Integer)("Id")
+                                       e.HasKey("Id")
+                                       e.HasQueryFilter(DirectCast(Function(x) x IsNot Nothing, Expression(Of Func(Of Dictionary(Of String, Object), Boolean))))
+                                   End Sub)
             End Sub
         End Class
 
@@ -261,11 +263,12 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity("MyEntity", Sub(e)
-                                                    e.Property(Of Integer)("Id").
+                modelBuilder.Entity(
+                    "MyEntity", Sub(e)
+                                    e.Property(Of Integer)("Id").
                                                         HasValueGenerator(Function(p, en) Nothing)
-                                                    e.HasKey("Id")
-                                                End Sub)
+                                    e.HasKey("Id")
+                                End Sub)
             End Sub
         End Class
 
@@ -283,10 +286,11 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity("MyEntity", Sub(e)
-                                                    e.Property(Of Integer)("Id").HasConversion(Function(i) i, Function(i) i)
-                                                    e.HasKey("Id")
-                                                End Sub)
+                modelBuilder.Entity(
+                    "MyEntity", Sub(e)
+                                    e.Property(Of Integer)("Id").HasConversion(Function(i) i, Function(i) i)
+                                    e.HasKey("Id")
+                                End Sub)
             End Sub
         End Class
 
@@ -305,12 +309,12 @@ End Namespace
 
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity("MyEntity",
-                                    Sub(e)
-                                        e.Property(Of Integer)("Id").
+                modelBuilder.Entity(
+                    "MyEntity", Sub(e)
+                                    e.Property(Of Integer)("Id").
                                             HasConversion(GetType(Integer), New FakeValueComparer())
-                                        e.HasKey("Id")
-                                    End Sub)
+                                    e.HasKey("Id")
+                                End Sub)
             End Sub
         End Class
 
@@ -351,11 +355,12 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity("MyEntity", Sub(e)
-                                                    e.Property(Of Integer)("Id").
+                modelBuilder.Entity(
+                    "MyEntity", Sub(e)
+                                    e.Property(Of Integer)("Id").
                                                         Metadata.SetTypeMapping(New InMemoryTypeMapping(GetType(Integer())))
-                                                    e.HasKey("Id")
-                                                End Sub)
+                                    e.HasKey("Id")
+                                End Sub)
             End Sub
         End Class
 
@@ -596,7 +601,8 @@ Namespace Internal
                 "Microsoft.EntityFrameworkCore.TestModels.AspNetIdentity.IdentityUser",
                 GetType(IdentityUser),
                 baseEntityType,
-                discriminatorProperty:="Discriminator")
+                discriminatorProperty:="Discriminator",
+                discriminatorValue:="IdentityUser")
 
             Dim id = entityType.AddProperty(
                 "Id",
@@ -712,7 +718,6 @@ Namespace Internal
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("DiscriminatorValue", "IdentityUser")
 
             Customize(entityType)
         End Sub
@@ -738,13 +743,13 @@ Namespace Internal
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.IdentityUser",
                 GetType(IdentityUser),
                 baseEntityType,
-                discriminatorProperty:="Discriminator")
+                discriminatorProperty:="Discriminator",
+                discriminatorValue:="DerivedIdentityUser")
 
             Return entityType
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("DiscriminatorValue", "DerivedIdentityUser")
 
             Customize(entityType)
         End Sub
@@ -902,7 +907,8 @@ Namespace TestNamespace
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>",
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)),
                 baseEntityType,
-                discriminatorProperty:="EnumDiscriminator")
+                discriminatorProperty:="EnumDiscriminator",
+                discriminatorValue:=VisualBasicMigrationsGeneratorTests.Enum1.One)
 
             Dim principalId = entityType.AddProperty(
                 "PrincipalId",
@@ -981,7 +987,6 @@ Namespace TestNamespace
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("DiscriminatorValue", VisualBasicMigrationsGeneratorTests.Enum1.One)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", Nothing)
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
@@ -1400,7 +1405,8 @@ Namespace TestNamespace
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentDerived<byte?>",
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentDerived(Of Byte?)),
                 baseEntityType,
-                discriminatorProperty:="EnumDiscriminator")
+                discriminatorProperty:="EnumDiscriminator",
+                discriminatorValue:=VisualBasicMigrationsGeneratorTests.Enum1.Two)
 
             Dim data = entityType.AddProperty(
                 "Data",
@@ -1424,7 +1430,6 @@ Namespace TestNamespace
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("DiscriminatorValue", VisualBasicMigrationsGeneratorTests.Enum1.Two)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", Nothing)
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
@@ -1724,13 +1729,13 @@ End Namespace
                     Assert.Same(principalKey, referenceOwnership.PrincipalKey)
 
                     Dim ownedServiceProperty = referenceOwnedType.GetServiceProperties().Single()
-                    Assert.Equal(GetType(Microsoft.EntityFrameworkCore.DbContext), ownedServiceProperty.ClrType)
-                    Assert.Equal(GetType(Microsoft.EntityFrameworkCore.DbContext), ownedServiceProperty.PropertyInfo.PropertyType)
+                    Assert.Equal(GetType(DbContext), ownedServiceProperty.ClrType)
+                    Assert.Equal(GetType(DbContext), ownedServiceProperty.PropertyInfo.PropertyType)
                     Assert.Null(ownedServiceProperty.FieldInfo)
                     Assert.Same(referenceOwnedType, ownedServiceProperty.DeclaringEntityType)
                     Dim ownedServicePropertyBinding = ownedServiceProperty.ParameterBinding
                     Assert.IsType(Of ContextParameterBinding)(ownedServicePropertyBinding)
-                    Assert.Equal(GetType(Microsoft.EntityFrameworkCore.DbContext), ownedServicePropertyBinding.ServiceType)
+                    Assert.Equal(GetType(DbContext), ownedServicePropertyBinding.ServiceType)
                     Assert.Equal(ownedServiceProperty, ownedServicePropertyBinding.ConsumedProperties.Single())
                     Assert.Equal(PropertyAccessMode.PreferField, ownedServiceProperty.GetPropertyAccessMode())
                     Assert.Null(ownedServiceProperty(CoreAnnotationNames.PropertyAccessMode))
@@ -3436,7 +3441,7 @@ End Namespace
         End Sub
 
         Public Class CosmosContext
-            Inherits Microsoft.EntityFrameworkCore.DbContext
+            Inherits DbContext
 
             Protected Overrides Sub OnConfiguring(options As DbContextOptionsBuilder)
                 options.
@@ -3467,7 +3472,7 @@ End Namespace
         End Class
 
         Public MustInherit Class ContextBase
-            Inherits Microsoft.EntityFrameworkCore.DbContext
+            Inherits DbContext
 
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
@@ -3480,7 +3485,7 @@ End Namespace
         End Class
 
         Public MustInherit Class SqlServerContextBase
-            Inherits Microsoft.EntityFrameworkCore.DbContext
+            Inherits DbContext
 
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
@@ -3493,7 +3498,7 @@ End Namespace
             End Sub
         End Class
 
-        Protected Sub Test(context As Microsoft.EntityFrameworkCore.DbContext,
+        Protected Sub Test(context As DbContext,
                            options As CompiledModelCodeGenerationOptions,
                            Optional assertScaffold As Action(Of IReadOnlyCollection(Of ScaffoldedFile)) = Nothing,
                            Optional assertModel As Action(Of IModel) = Nothing,

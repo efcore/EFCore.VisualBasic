@@ -8,9 +8,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Namespace Design.AnnotationCodeGeneratorProvider
 
     ''' <summary>
-    '''     <para>
-    '''         Base class to be used by relational database providers when implementing an <see cref="IVisualBasicRuntimeAnnotationCodeGenerator" />
-    '''     </para>
+    '''     Base class to be used by relational database providers when implementing an <see cref="IVisualBasicRuntimeAnnotationCodeGenerator" />
     ''' </summary>
     Public Class RelationalVisualBasicRuntimeAnnotationCodeGenerator
         Inherits VisualBasicRuntimeAnnotationCodeGenerator
@@ -499,16 +497,6 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(foreignKey, parameters)
         End Sub
 
-        ''' <inheritdoc />
-        Public Overrides Sub Generate(navigation As INavigation, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
-            MyBase.Generate(navigation, parameters)
-        End Sub
-
-        '''<inheritdoc />
-        Public Overrides Sub Generate(navigation As ISkipNavigation, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
-            MyBase.Generate(navigation, parameters)
-        End Sub
-
         '''<inheritdoc />
         Public Overrides Sub Generate(index As IIndex, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             Dim annotations = parameters.Annotations
@@ -521,7 +509,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(index, parameters)
         End Sub
 
-        Private Sub CreateAnnotations(Of TAnnotatable As IAnnotatable)(
+        Private Shared Sub CreateAnnotations(Of TAnnotatable As IAnnotatable)(
         Annotatable As TAnnotatable,
         process As Action(Of TAnnotatable, VisualBasicRuntimeAnnotationCodeGeneratorParameters),
         parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
@@ -545,7 +533,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     Clone())
         End Sub
 
-        Private Function Capitalize(str As String) As String
+        Private Shared Function Capitalize(str As String) As String
             Select Case str.Length
                 Case 0 : Return str
                 Case 1 : Return Char.ToUpperInvariant(str(0)).ToString()

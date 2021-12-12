@@ -69,7 +69,7 @@ Namespace Scaffolding.Internal
             NotNull(options, NameOf(options))
 
             Dim scaffoldedFiles As New List(Of ScaffoldedFile)
-            Dim modelCode = CreateModel(model, options.ModelNamespace, options.ContextType)
+            Dim modelCode = CreateModel(options.ModelNamespace, options.ContextType)
             Dim modelFileName = options.ContextType.ShortDisplayName() & ModelSuffix & FileExtension
 
             scaffoldedFiles.Add(New ScaffoldedFile With {
@@ -124,8 +124,7 @@ Namespace Scaffolding.Internal
             Return builder.ToString()
         End Function
 
-        Private Function CreateModel(model As IModel,
-                                     [namespace] As String,
+        Private Function CreateModel([namespace] As String,
                                      contextType As Type) As String
 
             Dim mainBuilder = New IndentedStringBuilder()
@@ -525,7 +524,7 @@ $"    Dim model As New {className}()
 
             Using mainBuilder.Indent()
 
-                Dim entityTypeVariable = "entityType"
+                Const entityTypeVariable = "entityType"
                 Dim variables = New HashSet(Of String) From {
                     "model",
                     "baseEntityType",
@@ -651,6 +650,16 @@ $"    Dim model As New {className}()
                     AppendLine(",").
                     Append("propertyBag:=").
                     Append(_code.Literal(True))
+            End If
+
+            Dim discriminatorValue = entityType.GetDiscriminatorValue()
+            If discriminatorValue IsNot Nothing Then
+                AddNamespace(discriminatorValue.GetType(), parameters.Namespaces)
+
+                mainBuilder.
+                    AppendLine(",").
+                    Append("discriminatorValue:=").
+                    Append(_code.UnknownLiteral(discriminatorValue))
             End If
 
             mainBuilder.
@@ -1065,8 +1074,8 @@ $"    Dim model As New {className}()
                                      namespaces As SortedSet(Of String),
                                      className As String)
 
-            Dim declaringEntityType = "declaringEntityType"
-            Dim principalEntityType = "principalEntityType"
+            Const declaringEntityType = "declaringEntityType"
+            Const principalEntityType = "principalEntityType"
 
             mainBuilder.
                 AppendLine().
@@ -1081,7 +1090,7 @@ $"    Dim model As New {className}()
                 AppendLine(") As RuntimeForeignKey")
 
             Using mainBuilder.Indent()
-                Dim foreignKeyVariable = "runtimeForeignKey"
+                Const foreignKeyVariable = "runtimeForeignKey"
 
                 Dim variables = New HashSet(Of String) From {
                     declaringEntityType,
@@ -1241,9 +1250,9 @@ $"    Dim model As New {className}()
                                          namespaces As SortedSet(Of String),
                                          className As String)
 
-            Dim declaringEntityType = "declaringEntityType"
-            Dim targetEntityType = "targetEntityType"
-            Dim joinEntityType = "joinEntityType"
+            Const declaringEntityType = "declaringEntityType"
+            Const targetEntityType = "targetEntityType"
+            Const joinEntityType = "joinEntityType"
 
             mainBuilder.
                 AppendLine().
@@ -1257,7 +1266,7 @@ $"    Dim model As New {className}()
 
             Using mainBuilder.Indent()
 
-                Dim navigationVariable = "skipNavigation"
+                Const navigationVariable = "skipNavigation"
                 Dim variables = New HashSet(Of String) From {
                     declaringEntityType,
                     targetEntityType,
@@ -1369,7 +1378,7 @@ $"    Dim model As New {className}()
 
             Using mainBuilder.Indent()
 
-                Dim entityTypeVariable = "entityType"
+                Const entityTypeVariable = "entityType"
                 Dim variables = New HashSet(Of String) From {
                     entityTypeVariable
                 }
@@ -1397,7 +1406,7 @@ $"    Dim model As New {className}()
                     AppendLine("End Sub")
         End Sub
 
-        Private Sub CreateAnnotations(Of TAnnotatable As IAnnotatable)(
+        Private Shared Sub CreateAnnotations(Of TAnnotatable As IAnnotatable)(
             annotatable As TAnnotatable,
             process As Action(Of TAnnotatable, VisualBasicRuntimeAnnotationCodeGeneratorParameters),
             parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)

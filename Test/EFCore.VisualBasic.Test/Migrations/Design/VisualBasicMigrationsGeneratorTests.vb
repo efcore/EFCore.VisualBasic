@@ -62,8 +62,6 @@ Namespace Migrations.Design
                 CoreAnnotationNames.ValueConverterType,
                 CoreAnnotationNames.ValueComparer,
                 CoreAnnotationNames.ValueComparerType,
-                CoreAnnotationNames.KeyValueComparer,
-                CoreAnnotationNames.StructuralValueComparer,
                 CoreAnnotationNames.BeforeSaveBehavior,
                 CoreAnnotationNames.AfterSaveBehavior,
                 CoreAnnotationNames.ProviderClrType,
@@ -95,7 +93,6 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.CheckConstraints,
                 RelationalAnnotationNames.DefaultSchema,
                 RelationalAnnotationNames.Filter,
-                RelationalAnnotationNames.DbFunction,
                 RelationalAnnotationNames.DbFunctions,
                 RelationalAnnotationNames.MaxIdentifierLength,
                 RelationalAnnotationNames.IsFixedLength,
@@ -114,8 +111,8 @@ Namespace Migrations.Design
                     RelationalAnnotationNames.TableName, ("MyTable",
                         _nl &
                         "entityTypeBuilder." &
-                         NameOf(RelationalEntityTypeBuilderExtensions.ToTable) &
-                         "(""MyTable"")")
+                        NameOf(RelationalEntityTypeBuilderExtensions.ToTable) &
+                        "(""MyTable"")")
                 },
                 {
                     RelationalAnnotationNames.Schema, ("MySchema",
@@ -126,10 +123,11 @@ Namespace Migrations.Design
                 },
                 {
                     CoreAnnotationNames.DiscriminatorProperty, ("Id",
-                        _toTable & _nl &
-                         _nl &
-                         "entityTypeBuilder.HasDiscriminator" &
-                         "(Of Integer)(""Id"")")
+                        _toTable &
+                        _nl &
+                        _nl &
+                        "entityTypeBuilder.HasDiscriminator" &
+                        "(Of Integer)(""Id"")")
                 },
                 {
                     CoreAnnotationNames.DiscriminatorValue, ("MyDiscriminatorValue",
@@ -223,7 +221,6 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.SequencePrefix,
                 RelationalAnnotationNames.CheckConstraints,
                 RelationalAnnotationNames.Filter,
-                RelationalAnnotationNames.DbFunction,
                 RelationalAnnotationNames.DbFunctions,
                 RelationalAnnotationNames.MaxIdentifierLength,
                 RelationalAnnotationNames.RelationalModel,
@@ -1178,7 +1175,5 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
                 BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IMigrationsCodeGenerator)()
         End Function
-
     End Class
-
 End Namespace

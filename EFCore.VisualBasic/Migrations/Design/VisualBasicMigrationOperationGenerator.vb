@@ -694,7 +694,6 @@ Namespace Migrations.Design
                         AppendLine().
                         Append("oldCollation:=").
                         Append(VBCode.Literal(operation.OldDatabase.Collation))
-                    needComma = True
                 End If
 
                 builder.Append(")")

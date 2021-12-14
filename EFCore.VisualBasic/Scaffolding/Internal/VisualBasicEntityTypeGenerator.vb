@@ -105,17 +105,17 @@ Namespace Scaffolding.Internal
             GenerateTableAttribute(entityType)
             GenerateIndexAttributes(entityType)
 
-            Dim annotations = _annotationCodeGenerator _
-                .FilterIgnoredAnnotations(entityType.GetAnnotations()) _
-                .ToDictionary(Function(a) a.Name, Function(a) a)
+            Dim annotations = _annotationCodeGenerator.
+                FilterIgnoredAnnotations(entityType.GetAnnotations()).
+                ToDictionary(Function(a) a.Name, Function(a) a)
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(entityType, annotations)
 
             For Each attribute In _annotationCodeGenerator.GenerateDataAnnotationAttributes(entityType, annotations)
-                Dim attributeWriter1 As AttributeWriter = New AttributeWriter(attribute.Type.Name)
+                Dim attributeWriter As New AttributeWriter(attribute.Type.Name)
                 For Each argument In attribute.Arguments
-                    attributeWriter1.AddParameter(_code.UnknownLiteral(argument))
+                    attributeWriter.AddParameter(_code.UnknownLiteral(argument))
                 Next
-                _sb.AppendLine(attributeWriter1.ToString())
+                _sb.AppendLine(attributeWriter.ToString())
             Next
         End Sub
 
@@ -135,7 +135,7 @@ Namespace Scaffolding.Internal
             Dim tableAttributeNeeded = Not isView AndAlso
                                        (schemaParameterNeeded OrElse tableName IsNot Nothing AndAlso tableName <> entityType.GetDbSetName())
             If tableAttributeNeeded Then
-                Dim tableAttribute1 As AttributeWriter = New AttributeWriter(NameOf(TableAttribute))
+                Dim tableAttribute1 As New AttributeWriter(NameOf(TableAttribute))
 
                 tableAttribute1.AddParameter(_code.Literal(tableName))
 
@@ -162,20 +162,20 @@ Namespace Scaffolding.Internal
                 _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(index, annotations)
 
                 If annotations.Count = 0 Then
-                    Dim indexAttribute1 As AttributeWriter = New AttributeWriter(NameOf(IndexAttribute))
+                    Dim indexAttr As New AttributeWriter(NameOf(IndexAttribute))
                     For Each prop In index.Properties
-                        indexAttribute1.AddParameter($"""{prop.Name}""")
+                        indexAttr.AddParameter(_code.Literal(prop.Name))
                     Next
 
                     If index.Name IsNot Nothing Then
-                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.Name)} :={_code.Literal(index.Name)}")
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.Name)} :={_code.Literal(index.Name)}")
                     End If
 
                     If index.IsUnique Then
-                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.IsUnique)} :={_code.Literal(index.IsUnique)}")
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.IsUnique)} :={_code.Literal(index.IsUnique)}")
                     End If
 
-                    _sb.AppendLine(indexAttribute1.ToString())
+                    _sb.AppendLine(indexAttr.ToString())
                 End If
             Next
         End Sub
@@ -227,17 +227,17 @@ Namespace Scaffolding.Internal
             GenerateUnicodeAttribute(prop)
             GeneratePrecisionAttribute(prop)
 
-            Dim annotations = _annotationCodeGenerator _
-                .FilterIgnoredAnnotations(prop.GetAnnotations()) _
-                .ToDictionary(Function(a) a.Name, Function(a) a)
+            Dim annotations = _annotationCodeGenerator.
+                FilterIgnoredAnnotations(prop.GetAnnotations()).
+                ToDictionary(Function(a) a.Name, Function(a) a)
             _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(prop, annotations)
 
             For Each attribute In _annotationCodeGenerator.GenerateDataAnnotationAttributes(prop, annotations)
-                Dim attributeWriter1 As AttributeWriter = New AttributeWriter(attribute.Type.Name)
+                Dim attributeWriter As New AttributeWriter(attribute.Type.Name)
                 For Each argument In attribute.Arguments
-                    attributeWriter1.AddParameter(_code.UnknownLiteral(argument))
+                    attributeWriter.AddParameter(_code.UnknownLiteral(argument))
                 Next
-                _sb.AppendLine(attributeWriter1.ToString())
+                _sb.AppendLine(attributeWriter.ToString())
             Next
         End Sub
 
@@ -256,17 +256,17 @@ Namespace Scaffolding.Internal
             Dim delimitedColumnType = If(columnType IsNot Nothing, _code.Literal(columnType), Nothing)
 
             If (If(delimitedColumnName, delimitedColumnType)) IsNot Nothing Then
-                Dim columnAttribute1 As AttributeWriter = New AttributeWriter(NameOf(ColumnAttribute))
+                Dim columnAttr As New AttributeWriter(NameOf(ColumnAttribute))
 
                 If delimitedColumnName IsNot Nothing Then
-                    columnAttribute1.AddParameter(delimitedColumnName)
+                    columnAttr.AddParameter(delimitedColumnName)
                 End If
 
                 If delimitedColumnType IsNot Nothing Then
-                    columnAttribute1.AddParameter($"{NameOf(ColumnAttribute.TypeName)} :={delimitedColumnType}")
+                    columnAttr.AddParameter($"{NameOf(ColumnAttribute.TypeName)}:={delimitedColumnType}")
                 End If
 
-                _sb.AppendLine(columnAttribute1.ToString())
+                _sb.AppendLine(columnAttr.ToString())
             End If
         End Sub
 
@@ -283,7 +283,7 @@ Namespace Scaffolding.Internal
             Dim maxLength = prop.GetMaxLength()
 
             If maxLength.HasValue Then
-                Dim lengthAttribute As AttributeWriter = New AttributeWriter(
+                Dim lengthAttribute As New AttributeWriter(
                 If(prop.ClrType = GetType(String), NameOf(StringLengthAttribute),
                                                    NameOf(MaxLengthAttribute)))
 
@@ -300,7 +300,7 @@ Namespace Scaffolding.Internal
 
             Dim unicode = prop.IsUnicode()
             If unicode.HasValue Then
-                Dim uniAttribute As AttributeWriter = New AttributeWriter(NameOf(UnicodeAttribute))
+                Dim uniAttribute As New AttributeWriter(NameOf(UnicodeAttribute))
                 If Not unicode.Value Then
                     uniAttribute.AddParameter(_code.Literal(False))
                 End If
@@ -313,7 +313,7 @@ Namespace Scaffolding.Internal
 
             Dim precision = prop.GetPrecision()
             If precision.HasValue Then
-                Dim precAttribute As AttributeWriter = New AttributeWriter(NameOf(PrecisionAttribute))
+                Dim precAttribute As New AttributeWriter(NameOf(PrecisionAttribute))
                 precAttribute.AddParameter(_code.Literal(precision.Value))
 
                 Dim scale = prop.GetScale()
@@ -372,12 +372,7 @@ Namespace Scaffolding.Internal
                 If inverseNavigation IsNot Nothing Then
                     Dim InversePropertyAttribute As New AttributeWriter(NameOf(InversePropertyAttribute))
 
-                    InversePropertyAttribute.AddParameter(
-                        If(Not navigation.DeclaringEntityType.
-                                          GetPropertiesAndNavigations().
-                                          Any(Function(m) m.Name = inverseNavigation.DeclaringEntityType.Name),
-                           $"NameOf({inverseNavigation.DeclaringEntityType.Name}.{inverseNavigation.Name})",
-                           _code.Literal(inverseNavigation.Name)))
+                    InversePropertyAttribute.AddParameter(_code.Literal(inverseNavigation.Name))
 
                     _sb.AppendLine(InversePropertyAttribute.ToString())
                 End If
@@ -419,17 +414,14 @@ Namespace Scaffolding.Internal
         Private Sub GenerateForeignKeyAttribute(navigation As INavigation)
             If navigation.IsOnDependent Then
                 If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
-                    Dim foreignKeyAttribute1 As New AttributeWriter(NameOf(ForeignKeyAttribute))
+                    Dim foreignKeyAttr As New AttributeWriter(NameOf(ForeignKeyAttribute))
 
-                    If navigation.ForeignKey.Properties.Count > 1 Then
-                        foreignKeyAttribute1.AddParameter(_code.Literal(
+                    foreignKeyAttr.AddParameter(
+                        _code.Literal(
                             String.Join(",", navigation.ForeignKey.Properties.
                                              Select(Function(p) p.Name))))
-                    Else
-                        foreignKeyAttribute1.AddParameter($"NameOf({navigation.ForeignKey.Properties(0).Name})")
-                    End If
 
-                    _sb.AppendLine(foreignKeyAttribute1.ToString())
+                    _sb.AppendLine(foreignKeyAttr.ToString())
                 End If
             End If
         End Sub
@@ -439,15 +431,11 @@ Namespace Scaffolding.Internal
                 Dim inverseNavigation = navigation.Inverse
 
                 If inverseNavigation IsNot Nothing Then
-                    Dim inversePropertyAttribute1 As AttributeWriter = New AttributeWriter(NameOf(InversePropertyAttribute))
+                    Dim inversePropertyAttr As New AttributeWriter(NameOf(InversePropertyAttribute))
 
-                    inversePropertyAttribute1.AddParameter(
-                        If(Not navigation.DeclaringEntityType.GetPropertiesAndNavigations().Any(
-                            Function(m) m.Name = inverseNavigation.DeclaringEntityType.Name),
-                            $"NameOf({inverseNavigation.DeclaringEntityType.Name}.{inverseNavigation.Name})",
-                            _code.Literal(inverseNavigation.Name)))
+                    inversePropertyAttr.AddParameter(_code.Literal(inverseNavigation.Name))
 
-                    _sb.AppendLine(inversePropertyAttribute1.ToString())
+                    _sb.AppendLine(inversePropertyAttr.ToString())
                 End If
             End If
         End Sub

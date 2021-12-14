@@ -8,6 +8,7 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
 Imports Microsoft.Extensions.DependencyInjection
 Imports Microsoft.Extensions.DependencyInjection.Extensions
@@ -127,9 +128,6 @@ Imports Microsoft.EntityFrameworkCore.Metadata
 Namespace TestNamespace
     Public Partial Class TestDbContext
         Inherits DbContext
-
-        Public Sub New()
-        End Sub
 
         Public Sub New(options As DbContextOptions(Of TestDbContext))
             MyBase.New(options)
@@ -1086,9 +1084,6 @@ Namespace TestNamespace
     Public Partial Class TestDbContext
         Inherits DbContext
 
-        Public Sub New()
-        End Sub
-
         Public Sub New(options As DbContextOptions(Of TestDbContext))
             MyBase.New(options)
         End Sub
@@ -1105,7 +1100,7 @@ Namespace TestNamespace
 End Namespace
 "
             Test(
-                Sub(ModelBuilder) CustomTestNamespace.TestModelBuilderExtensions.TestFluentApiCall(ModelBuilder),
+                Sub(ModelBuilder) CustomTestNamespace.TestFluentApiCall(ModelBuilder),
                 New ModelCodeGenerationOptions With {
                     .SuppressOnConfiguring = True
                 },
@@ -1122,8 +1117,10 @@ End Namespace
                 skipBuild:=True)
         End Sub
 
-        <ConditionalFact(Skip:="issue #26007")>
+        <ConditionalFact>
         Public Sub Temporal_table_works()
+
+            ' Shadow properties. Issue #26007.
 
             Dim expectedcode =
 $"Imports Microsoft.EntityFrameworkCore
@@ -1153,18 +1150,15 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of Customer)(
                 Sub(entity)
-                    entity.ToTable(Sub(tb) tb.IsTemporal(
-						Sub(ttb)
-							ttb.
-								HasPeriodStart(""PeriodStart"").
-								HasColumnName(""PeriodStart"")
-							ttb.
-								HasPeriodEnd(""PeriodEnd"").
-								HasColumnName(""PeriodEnd"")
-						End Sub))
-
+                    entity.ToTable(Sub(tb) tb.IsTemporal(Sub(ttb)
+    ttb.
+        HasPeriodStart(""PeriodStart"").
+        HasColumnName(""PeriodStart"")
+    ttb.
+        HasPeriodEnd(""PeriodEnd"").
+        HasColumnName(""PeriodEnd"")
+End Sub))
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1176,26 +1170,31 @@ Namespace TestNamespace
 End Namespace
 "
 
-            Test(
-                Sub(ModelBuilder)
-                    ModelBuilder.Entity(
-                        "Customer",
-                        Sub(e)
-                            e.Property(Of Integer)("Id")
-                            e.Property(Of String)("Name")
-                            e.HasKey("Id")
-                            e.ToTable(Sub(tb) tb.IsTemporal())
-                        End Sub)
-                End Sub,
-                New ModelCodeGenerationOptions with {.UseDataAnnotations = false},
-                Sub(code)
-                    AssertFileContents(
-                        expectedcode,
-                        code.ContextFile)
-                End Sub,
-                Sub(Model)
-                    'TODO
-                End Sub)
+            Assert.Equal(
+                SqlServerStrings.TemporalPeriodPropertyMustBeInShadowState("Customer", "PeriodStart"),
+                Assert.Throws(Of InvalidOperationException)(
+                    Sub()
+                        Test(
+                            Sub(ModelBuilder)
+                                ModelBuilder.Entity(
+                                    "Customer",
+                                    Sub(e)
+                                        e.Property(Of Integer)("Id")
+                                        e.Property(Of String)("Name")
+                                        e.HasKey("Id")
+                                        e.ToTable(Sub(tb) tb.IsTemporal())
+                                    End Sub)
+                            End Sub,
+                            New ModelCodeGenerationOptions With {.UseDataAnnotations = False},
+                            Sub(code)
+                                AssertFileContents(
+                                    expectedcode,
+                                    code.ContextFile)
+                            End Sub,
+                            Sub(Model)
+                                'TODO
+                            End Sub)
+                    End Sub).Message)
         End Sub
 
         Protected Overrides Sub AddModelServices(services As IServiceCollection)

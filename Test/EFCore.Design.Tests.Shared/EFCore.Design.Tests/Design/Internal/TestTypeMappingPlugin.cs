@@ -16,7 +16,7 @@ namespace EFCore.Design.Tests.Shared
         public RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
         {
             return _literalExpressionFunc == null
-                 ? (RelationalTypeMapping)new SimpleTestNonImplementedTypeMapping()
+                 ? new SimpleTestNonImplementedTypeMapping()
                  : new SimpleTestTypeMapping<T>(_literalExpressionFunc);
         }
     }

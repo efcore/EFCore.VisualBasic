@@ -436,9 +436,10 @@ TestFunc(""Three"")", result)
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_works_when_chaining_on_chain_with_call()
             Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
-                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Two")).
-                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Three").
-                Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Four")))
+                            Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Two")).
+                            Chain(
+                                New MethodCallCodeFragment(_testFuncMethodInfo, "Three").Chain(
+                                    New MethodCallCodeFragment(_testFuncMethodInfo, "Four")))
 
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
@@ -509,17 +510,6 @@ $"builder.
 
             Assert.Equal("builder.TestFunc(True, 42)", result)
         End Sub
-
-#Disable Warning BC40000 ' Type or member is obsolete
-        <ConditionalFact>
-        Public Sub Fragment_MethodCallCodeFragment_works_without_MethodInfo()
-            Dim method = New MethodCallCodeFragment("TestFunc", True, 42)
-
-            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
-
-            Assert.Equal(".TestFunc(True, 42)", result)
-        End Sub
-#Enable Warning BC40000 ' Type or member is obsolete
 
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_Complexe_with_identifier_works()

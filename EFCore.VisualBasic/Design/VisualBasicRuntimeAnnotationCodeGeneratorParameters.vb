@@ -8,20 +8,19 @@ Namespace Design
     Public Class VisualBasicRuntimeAnnotationCodeGeneratorParameters
 
         ''' <summary>
-        '''     <para>
-        '''         Creates the parameter object for a <see cref="IVisualBasicRuntimeAnnotationCodeGenerator" />.
-        '''     </para>
-        '''     <para>
-        '''         Do Not call this constructor directly from either provider Or application code as it may change
-        '''         as New parameters are added.
-        '''     </para>
-        '''     <para>
-        '''         This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
-        '''         the same compatibility standards as public APIs. It may be changed Or removed without notice in
-        '''         any release. You should only use it directly in your code with extreme caution And knowing that
-        '''         doing so can result in application failures when updating to a New Entity Framework Core release.
-        '''     </para>
+        '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
+        '''     the same compatibility standards as public APIs. It may be changed Or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution And knowing that
+        '''     doing so can result in application failures when updating to a New Entity Framework Core release.
         ''' </summary>
+        ''' <remarks>
+        '''     Do Not call this constructor directly from either provider Or application code as it may change
+        '''     as New dependencies are added. Instead, use this type in your constructor so that an instance
+        '''     will be created And injected automatically by the dependency injection container. To create
+        '''     an instance with some dependent services replaced, first resolve the object from the dependency
+        '''     injection container, then replace selected services using the 'With...' methods. Do not call
+        '''     the constructor at any point in this process.
+        ''' </remarks>
         <EntityFrameworkInternal>
         Public Sub New(targetName As String,
                        className As String,

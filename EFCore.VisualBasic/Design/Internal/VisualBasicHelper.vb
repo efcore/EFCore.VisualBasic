@@ -176,21 +176,19 @@ Namespace Design.Internal
             Return baseIdentifier
         End Function
 
-        Private Shared Function ChangeFirstLetterCase(builder As StringBuilder, capitalize As Boolean) As StringBuilder
+        Private Shared Sub ChangeFirstLetterCase(builder As StringBuilder, capitalize As Boolean)
             If builder.Length = 0 Then
-                Return builder
+                Exit Sub
             End If
 
             Dim first = builder(0)
             If Char.IsUpper(first) = capitalize Then
-                Return builder
+                Exit Sub
             End If
 
             builder.Remove(0, 1).
                 Insert(0, If(capitalize, Char.ToUpperInvariant(first), Char.ToLowerInvariant(first)))
-
-            Return builder
-        End Function
+        End Sub
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -318,9 +316,9 @@ Namespace Design.Internal
                 Return $"Double.{NameOf(Double.PositiveInfinity)}"
             End If
 
-            Return If(Not str.Contains("E") AndAlso
-                      Not str.Contains("e") AndAlso
-                      Not str.Contains("."), str & ".0", str)
+            Return If(Not str.Contains("E"c) AndAlso
+                      Not str.Contains("e"c) AndAlso
+                      Not str.Contains("."c), str & ".0", str)
         End Function
 
         ''' <summary>
@@ -765,35 +763,31 @@ Namespace Design.Internal
                     Return True
 
                 Case ExpressionType.MemberAccess
-                    Dim memberExpression1 = CType(exp, MemberExpression)
-                    If memberExpression1.Expression Is Nothing Then
+                    Dim memberExpression = CType(exp, MemberExpression)
+                    If memberExpression.Expression Is Nothing Then
                         builder.
-                            Append(Reference(memberExpression1.Member.DeclaringType, fullName:=True))
+                            Append(Reference(memberExpression.Member.DeclaringType, fullName:=True))
                     Else
-                        If Not HandleExpression(memberExpression1.Expression, builder) Then
+                        If Not HandleExpression(memberExpression.Expression, builder) Then
                             Return False
                         End If
                     End If
 
                     builder.
                         Append("."c).
-                        Append(memberExpression1.Member.Name)
+                        Append(memberExpression.Member.Name)
 
                     Return True
 
                 Case ExpressionType.Add
-                    Dim binaryExpression1 = CType(exp, BinaryExpression)
-                    If Not HandleExpression(binaryExpression1.Left, builder) Then
+                    Dim binaryExpression = CType(exp, BinaryExpression)
+                    If Not HandleExpression(binaryExpression.Left, builder) Then
                         Return False
                     End If
 
                     builder.Append(" + ")
 
-                    If Not HandleExpression(binaryExpression1.Right, builder) Then
-                        Return False
-                    End If
-
-                    Return True
+                    Return HandleExpression(binaryExpression.Right, builder)
             End Select
 
             Return False

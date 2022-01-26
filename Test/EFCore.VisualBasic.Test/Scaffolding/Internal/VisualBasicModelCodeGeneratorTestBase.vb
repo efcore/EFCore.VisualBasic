@@ -6,6 +6,7 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 

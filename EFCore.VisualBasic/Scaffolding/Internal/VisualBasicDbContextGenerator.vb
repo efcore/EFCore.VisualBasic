@@ -498,6 +498,10 @@ Namespace Scaffolding.Internal
                 lines.Add($"{NameOf(IndexBuilder.IsUnique)}()")
             End If
 
+            If index.IsDescending IsNot Nothing Then
+                lines.Add($"{NameOf(IndexBuilder.IsDescending)}({String.Join(", ", index.IsDescending.Select(Function(d) _VBCode.Literal(d)))})")
+            End If
+
             GenerateAnnotations(index, annotations, lines)
 
             AppendMultiLineFluentApi(index.DeclaringEntityType, lines)
@@ -706,7 +710,7 @@ Namespace Scaffolding.Internal
 
                             _builder.Append($"j.{NameOf(EntityTypeBuilder.HasKey)}({String.Join(", ", key.Properties.Select(Function(e) _VBCode.Literal(e.Name)))})")
                             If explicitName Then
-                                lines.add($"{NameOf(RelationalKeyBuilderExtensions.HasName)}({_VBCode.Literal(key.GetName())})")
+                                lines.Add($"{NameOf(RelationalKeyBuilderExtensions.HasName)}({_VBCode.Literal(key.GetName())})")
                             End If
 
                             GenerateAnnotations(key, keyAnnotations, lines)

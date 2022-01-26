@@ -1,50 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-    <IsPackable>false</IsPackable>
-    <RootNamespace>EntityFrameworkCore.VisualBasic</RootNamespace>
-    <AssemblyName>EntityFrameworkCore.VisualBasic.Test</AssemblyName>
-    <OptionStrict>On</OptionStrict>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+		<IsPackable>false</IsPackable>
+		<RootNamespace>EntityFrameworkCore.VisualBasic</RootNamespace>
+		<AssemblyName>EntityFrameworkCore.VisualBasic.Test</AssemblyName>
+		<OptionStrict>On</OptionStrict>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.0-alpha.1.21611.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-alpha.1.21611.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>all</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0-alpha.1.21611.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="7.0.0-alpha.1.21611.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0-alpha.1.21611.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="7.0.0-alpha.1.21611.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-alpha.1.21611.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0-alpha.1.21611.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
-    <PackageReference Include="xunit" Version="2.4.2-pre.12" />
-    <PackageReference Include="xunit.runner.console" Version="2.4.2-pre.12">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.0-preview.2.22075.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-preview.2.22075.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>all</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0-preview.2.22075.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="7.0.0-preview.2.22075.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0-preview.2.22075.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="7.0.0-preview.2.22075.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-preview.2.22075.2" />
+		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0-preview.2.22075.5" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
+		<PackageReference Include="xunit" Version="2.4.2-pre.12" />
+		<PackageReference Include="xunit.runner.console" Version="2.4.2-pre.12">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\EFCore.VisualBasic\EFCore.VisualBasic.vbproj" />
-    <ProjectReference Include="..\EFCore.Design.Tests.Shared\EFCore.Design.Tests.Shared.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\EFCore.VisualBasic\EFCore.VisualBasic.vbproj" />
+		<ProjectReference Include="..\EFCore.Design.Tests.Shared\EFCore.Design.Tests.Shared.csproj" />
+	</ItemGroup>
 
 </Project>

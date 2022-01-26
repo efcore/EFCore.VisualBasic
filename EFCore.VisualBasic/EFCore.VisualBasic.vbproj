@@ -1,63 +1,62 @@
-
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>EntityFrameworkCore.VisualBasic</AssemblyName>
-    <RootNamespace>EntityFrameworkCore.VisualBasic</RootNamespace>
-    <Authors>Brice Lambson, et al.</Authors>
-    <Description>Adds VB design-time support to EF Core</Description>
-    <PackageProjectUrl>https://github.com/efcore/EFCore.VisualBasic</PackageProjectUrl>
-    <PackageTags>EFCore;VB;VisualBasic</PackageTags>
-    <RepositoryUrl>https://github.com/efcore/EFCore.VisualBasic.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <Copyright>© 2022 Brice Lambson, et al. All rights reserved.</Copyright>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>7.0.0-alpha.1</Version>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <OptionStrict>On</OptionStrict>
-    <LangVersion>latest</LangVersion>
-    <DevelopmentDependency>true</DevelopmentDependency>
-    <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/efcore/EFCore.VisualBasic/releases</PackageReleaseNotes>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>EntityFrameworkCore.VisualBasic</AssemblyName>
+		<RootNamespace>EntityFrameworkCore.VisualBasic</RootNamespace>
+		<Authors>Brice Lambson, et al.</Authors>
+		<Description>Adds VB design-time support to EF Core</Description>
+		<PackageProjectUrl>https://github.com/efcore/EFCore.VisualBasic</PackageProjectUrl>
+		<PackageTags>EFCore;VB;VisualBasic</PackageTags>
+		<RepositoryUrl>https://github.com/efcore/EFCore.VisualBasic.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Copyright>© 2022 Brice Lambson, et al. All rights reserved.</Copyright>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Version>7.0.0-alpha.1</Version>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<OptionStrict>On</OptionStrict>
+		<LangVersion>latest</LangVersion>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<PackageLicenseExpression>Unlicense</PackageLicenseExpression>
+		<PackageReleaseNotes>https://github.com/efcore/EFCore.VisualBasic/releases</PackageReleaseNotes>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn></NoWarn>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<NoWarn></NoWarn>
+		<WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn></NoWarn>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn></NoWarn>
+		<WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="build\**\*">
-      <Pack>True</Pack>
-      <PackagePath>build</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="build\**\*">
+			<Pack>True</Pack>
+			<PackagePath>build</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="build\**\*.vb" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="build\**\*.vb" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.0-alpha.1.21611.1">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-alpha.1.21611.1">
-      <IncludeAssets>all</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0.0-alpha.1.21611.1">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-alpha.1.21611.1">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.0-preview.2.22075.2">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-preview.2.22075.2">
+			<IncludeAssets>all</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0.0-preview.2.22075.2">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-preview.2.22075.2">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
 
 </Project>

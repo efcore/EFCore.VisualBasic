@@ -229,30 +229,25 @@ Namespace Design
         ''' <param name="type">A type.</param>
         ''' <param name="namespaces">The set of namespaces to add to.</param>
         Protected Overridable Sub AddNamespace(type As Type, namespaces As ISet(Of String))
-            While True
 
-                If type.IsNested Then
-                    AddNamespace(type.DeclaringType, namespaces)
-                End If
+            If type.IsNested Then
+                AddNamespace(type.DeclaringType, namespaces)
+            End If
 
-                If type.Namespace IsNot Nothing Then
-                    namespaces.Add(type.Namespace)
-                End If
+            If type.Namespace IsNot Nothing Then
+                namespaces.Add(type.Namespace)
+            End If
 
-                If type.IsGenericType Then
-                    For Each argument As Type In type.GenericTypeArguments
-                        AddNamespace(argument, namespaces)
-                    Next
-                End If
+            If type.IsGenericType Then
+                For Each argument As Type In type.GenericTypeArguments
+                    AddNamespace(argument, namespaces)
+                Next
+            End If
 
-                Dim sequenceType = type.TryGetSequenceType()
-                If sequenceType IsNot Nothing Then
-                    type = sequenceType
-                    Continue While
-                End If
-
-                Exit While
-            End While
+            Dim sequenceType = type.TryGetSequenceType()
+            If sequenceType IsNot Nothing Then
+                AddNamespace(sequenceType, namespaces)
+            End If
         End Sub
 
         Protected Function TryGetAndRemove(Of TKey, TValue, TReturn)(source As IDictionary(Of TKey, TValue),

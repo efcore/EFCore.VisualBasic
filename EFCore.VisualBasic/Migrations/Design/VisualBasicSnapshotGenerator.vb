@@ -23,8 +23,8 @@ Namespace Migrations.Design
     ''' </remarks>
     Public Class VisualBasicSnapshotGenerator
 
-        Private Shared ReadOnly _hasAnnotationMethodInfo As MethodInfo =
-            GetType(ModelBuilder).GetRequiredRuntimeMethod(NameOf(ModelBuilder.HasAnnotation), GetType(String), GetType(String))
+        Private Shared ReadOnly HasAnnotationMethodInfo As MethodInfo =
+            GetType(ModelBuilder).GetRuntimeMethod(NameOf(ModelBuilder.HasAnnotation), {GetType(String), GetType(String)})
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
@@ -702,9 +702,16 @@ Namespace Migrations.Design
 
             If index.IsUnique Then
                 stringBuilder.
-                        Append("."c).
-                        AppendLine().
-                        Append("IsUnique()")
+                    AppendLine("."c).
+                    Append("IsUnique()")
+            End If
+
+            If index.IsDescending IsNot Nothing Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("IsDescending(").
+                    Append(String.Join(", ", index.IsDescending.Select(AddressOf VBCode.Literal))).
+                    Append(")"c)
             End If
 
             GenerateIndexAnnotations(indexBuilderName, index, stringBuilder)
@@ -1485,7 +1492,7 @@ Namespace Migrations.Design
 
             ' Append remaining raw annotations which did Not get generated as Fluent API calls
             For Each annotation In annotations.Values.OrderBy(Function(a) a.Name)
-                Dim c = New MethodCallCodeFragment(_hasAnnotationMethodInfo, annotation.Name, annotation.Value)
+                Dim c = New MethodCallCodeFragment(HasAnnotationMethodInfo, annotation.Name, annotation.Value)
                 chainedCall = If(chainedCall Is Nothing, c, chainedCall.Chain(c))
             Next
 

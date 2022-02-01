@@ -881,6 +881,13 @@ Namespace Migrations.Design
                         Append("unique:=True")
                 End If
 
+                If operation.IsDescending IsNot Nothing Then
+                    builder.
+                        AppendLine(",").
+                        Append("descending:=").
+                        Append(VBCode.Literal(operation.IsDescending))
+                End If
+
                 If operation.Filter IsNot Nothing Then
                     builder.
                         AppendLine(",").

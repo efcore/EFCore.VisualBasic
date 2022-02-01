@@ -176,7 +176,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    <Table(""Vista"", Schema :=""custom"")>
+    <Table(""Vista"", Schema:=""custom"")>
     Public Partial Class Vista
         <Key>
         Public Property Id As Integer
@@ -245,7 +245,7 @@ End Namespace
         End Sub
 
         <ConditionalFact>
-        Public Sub IndexAttribute_is_generated_for_multiple_indexes_with_name_unique()
+        Public Sub IndexAttribute_is_generated_for_multiple_indexes_with_name_unique_descending()
 
             Dim expectedCode =
 "Imports System.ComponentModel.DataAnnotations
@@ -254,8 +254,8 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Index(""C"")>
-    <Index(""A"", ""B"", Name :=""IndexOnAAndB"", IsUnique :=True)>
-    <Index(""B"", ""C"", Name :=""IndexOnBAndC"")>
+    <Index(""A"", ""B"", Name:=""IndexOnAAndB"", IsUnique:=True, IsDescending:={True, False})>
+    <Index(""B"", ""C"", Name:=""IndexOnBAndC"")>
     Public Partial Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
@@ -276,8 +276,9 @@ End Namespace
                           x.Property(Of Integer)("B")
                           x.Property(Of Integer)("C")
                           x.HasKey("Id")
-                          x.HasIndex({"A", "B"}, "IndexOnAAndB") _
-                              .IsUnique()
+                          x.HasIndex({"A", "B"}, "IndexOnAAndB").
+                            IsUnique().
+                            IsDescending(True, False)
                           x.HasIndex({"B", "C"}, "IndexOnBAndC")
                           x.HasIndex("C")
                       End Sub)
@@ -310,7 +311,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    <Index(""A"", ""B"", Name :=""IndexOnAAndB"", IsUnique :=True)>
+    <Index(""A"", ""B"", Name:=""IndexOnAAndB"", IsUnique:=True)>
     Public Partial Class EntityWithIndexes
         <Key>
         Public Property Id As Integer

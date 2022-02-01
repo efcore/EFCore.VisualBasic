@@ -566,7 +566,8 @@ Namespace TestNamespace
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
                     entity.HasIndex(Function(e) New With {{e.A, e.B}}, ""IndexOnAAndB"").
-                        IsUnique()
+                        IsUnique().
+                        IsDescending(False, True)
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
@@ -591,11 +592,12 @@ End Namespace
                             x.Property(Of Integer)("B")
                             x.Property(Of Integer)("C")
                             x.HasKey("Id")
-                            x.HasIndex({"A", "B"}, "IndexOnAAndB") _
-                                .IsUnique()
-                            x.HasIndex({"B", "C"}, "IndexOnBAndC") _
-                                .HasFilter("Filter SQL") _
-                                .HasAnnotation("AnnotationName", "AnnotationValue")
+                            x.HasIndex({"A", "B"}, "IndexOnAAndB").
+                                IsUnique().
+                                IsDescending(False, True)
+                            x.HasIndex({"B", "C"}, "IndexOnBAndC").
+                                HasFilter("Filter SQL").
+                                HasAnnotation("AnnotationName", "AnnotationValue")
                         End Sub)
                 End Sub,
                 New ModelCodeGenerationOptions With {
@@ -665,11 +667,11 @@ End Namespace
                             x.Property(Of Integer)("B")
                             x.Property(Of Integer)("C")
                             x.HasKey("Id")
-                            x.HasIndex({"A", "B"}, "IndexOnAAndB") _
-                                .IsUnique()
-                            x.HasIndex({"B", "C"}, "IndexOnBAndC") _
-                                .HasFilter("Filter SQL") _
-                                .HasAnnotation("AnnotationName", "AnnotationValue")
+                            x.HasIndex({"A", "B"}, "IndexOnAAndB").
+                                IsUnique()
+                            x.HasIndex({"B", "C"}, "IndexOnBAndC").
+                                HasFilter("Filter SQL").
+                                HasAnnotation("AnnotationName", "AnnotationValue")
                         End Sub)
                 End Sub,
                 New ModelCodeGenerationOptions With {
@@ -681,6 +683,101 @@ End Namespace
                         code.ContextFile)
                 End Sub,
                 Sub(model) Assert.Equal(2, model.FindEntityType("TestNamespace.EntityWithIndexes").GetIndexes().Count()))
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Indexes_with_descending()
+
+            Dim expectedCode As String =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property EntityWithIndexes As DbSet(Of EntityWithIndexes)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of EntityWithIndexes)(
+                Sub(entity)
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_ascending"").
+                        IsDescending(False, False, False)
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_descending"").
+                        IsDescending(True, True, True)
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_empty"")
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_mixed"").
+                        IsDescending(False, True, False)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(modelBuilder)
+                    modelBuilder.Entity(
+                        "EntityWithIndexes",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of Integer)("X")
+                            x.Property(Of Integer)("Y")
+                            x.Property(Of Integer)("Z")
+                            x.HasKey("Id")
+                            x.HasIndex({"X", "Y", "Z"}, "IX_empty")
+                            x.HasIndex({"X", "Y", "Z"}, "IX_all_ascending").
+                                IsDescending(False, False, False)
+                            x.HasIndex({"X", "Y", "Z"}, "IX_all_descending").
+                                IsDescending(True, True, True)
+                            x.HasIndex({"X", "Y", "Z"}, "IX_mixed").
+                                IsDescending(False, True, False)
+                        End Sub)
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = False
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedCode,
+                        code.ContextFile)
+                End Sub,
+                Sub(model)
+                    Dim EntityType = model.FindEntityType("TestNamespace.EntityWithIndexes")
+                    Assert.Equal(4, EntityType.GetIndexes().Count())
+
+                    Dim emptyIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_empty")
+                    Assert.Null(emptyIndex.IsDescending)
+
+                    Dim allAscendingIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_all_ascending")
+                    Assert.Equal({False, False, False}, allAscendingIndex.IsDescending)
+
+                    Dim allDescendingIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_all_descending")
+                    Assert.Equal({True, True, True}, allDescendingIndex.IsDescending)
+
+                    Dim mixedIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_mixed")
+                    Assert.Equal({False, True, False}, mixedIndex.IsDescending)
+                End Sub)
         End Sub
 
         <ConditionalFact>
@@ -1151,6 +1248,7 @@ Namespace TestNamespace
             modelBuilder.Entity(Of Customer)(
                 Sub(entity)
                     entity.ToTable(Sub(tb) tb.IsTemporal(Sub(ttb)
+    ttb.UseHistoryTable(""CustomerHistory"")
     ttb.
         HasPeriodStart(""PeriodStart"").
         HasColumnName(""PeriodStart"")

@@ -41,7 +41,8 @@ Namespace TestUtilities.FakeProvider
                         New RelationalCommandBuilderDependencies(
                             New TestRelationalTypeMappingSource(
                                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())))))
+                                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)()),
+                    New ExceptionDetector()))))
         End Sub
 
         Private Class FakeDbContext

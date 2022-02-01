@@ -949,6 +949,9 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("IX_Post_Title", o.Name)
                  Assert.Equal("Post", o.Table)
                  Assert.Equal({"Title"}, o.Columns)
+                 Assert.False(o.IsUnique)
+                 Assert.Null(o.IsDescending)
+                 Assert.Null(o.Filter)
              End Sub)
         End Sub
 
@@ -959,8 +962,9 @@ mb.Sql(""-- close to me"")"
                  .Name = "IX_Post_Title",
                  .Schema = "dbo",
                  .Table = "Post",
-                 .Columns = {"Title"},
+                 .Columns = {"Title", "Name"},
                  .IsUnique = True,
+                 .IsDescending = {True, False},
                  .Filter = "[Title] IS NOT NULL"
         }
 
@@ -969,8 +973,9 @@ mb.Sql(""-- close to me"")"
     name:=""IX_Post_Title"",
     schema:=""dbo"",
     table:=""Post"",
-    column:=""Title"",
+    columns:={""Title"", ""Name""},
     unique:=True,
+    descending:={True, False},
     filter:=""[Title] IS NOT NULL"")"
 
             Test(operation,
@@ -979,8 +984,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("IX_Post_Title", o.Name)
                  Assert.Equal("dbo", o.Schema)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Title"}, o.Columns)
+                 Assert.Equal({"Title", "Name"}, o.Columns)
                  Assert.True(o.IsUnique)
+                 Assert.Equal({True, False}, o.IsDescending)
+                 Assert.Equal("[Title] IS NOT NULL", o.Filter)
              End Sub)
         End Sub
 

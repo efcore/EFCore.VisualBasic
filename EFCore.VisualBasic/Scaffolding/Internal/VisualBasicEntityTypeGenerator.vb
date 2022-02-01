@@ -140,7 +140,7 @@ Namespace Scaffolding.Internal
                 tableAttribute1.AddParameter(_code.Literal(tableName))
 
                 If schemaParameterNeeded Then
-                    tableAttribute1.AddParameter($"{NameOf(TableAttribute.Schema)} :={_code.Literal(schema)}")
+                    tableAttribute1.AddParameter($"{NameOf(TableAttribute.Schema)}:={_code.Literal(schema)}")
                 End If
 
                 _sb.AppendLine(tableAttribute1.ToString())
@@ -168,11 +168,15 @@ Namespace Scaffolding.Internal
                     Next
 
                     If index.Name IsNot Nothing Then
-                        indexAttr.AddParameter($"{NameOf(IndexAttribute.Name)} :={_code.Literal(index.Name)}")
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.Name)}:={_code.Literal(index.Name)}")
                     End If
 
                     If index.IsUnique Then
-                        indexAttr.AddParameter($"{NameOf(IndexAttribute.IsUnique)} :={_code.Literal(index.IsUnique)}")
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.IsUnique)}:={_code.Literal(index.IsUnique)}")
+                    End If
+
+                    If index.IsDescending IsNot Nothing Then
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.IsDescending)}:={_code.UnknownLiteral(index.IsDescending)}")
                     End If
 
                     _sb.AppendLine(indexAttr.ToString())
@@ -390,11 +394,11 @@ Namespace Scaffolding.Internal
 
             Dim skipNavigations = entityType.GetSkipNavigations().ToList()
 
-            If skipNavigations.Count > 0 then
+            If skipNavigations.Count > 0 Then
                 _sb.AppendLine()
 
                 For Each navigation In skipNavigations
-                    If _useDataAnnotations then
+                    If _useDataAnnotations Then
                         GenerateNavigationDataAnnotations(navigation)
                     End If
 

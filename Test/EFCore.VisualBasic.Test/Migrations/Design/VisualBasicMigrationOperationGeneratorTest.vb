@@ -3399,6 +3399,7 @@ mb.Sql(""-- close to me"")"
                     Assert.Equal("Foo", o.GetAnnotation("MyAnnotation2").Value)
                 End Sub)
         End Sub
+
         Private Sub Test(Of T As MigrationOperation)(operation As T, expectedCode As String, assertAction As Action(Of T))
 
             Dim generator As New VisualBasicMigrationOperationGenerator(
@@ -3431,7 +3432,6 @@ mb.Sql(""-- close to me"")"
                     {
                         "Migration.vb",
                         "
-                            Imports Microsoft.VisualBasic
                             Imports Microsoft.EntityFrameworkCore.Migrations
                             Imports NetTopologySuite.Geometries
 

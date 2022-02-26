@@ -110,6 +110,7 @@ Namespace Migrations.Design
             End If
 
             builder.
+                AppendLine("''' <inheritdoc />").
                 Append("Partial Public Class ").
                 Append(VBCode.Identifier(migrationName)).
                 AppendLine()
@@ -120,7 +121,9 @@ Namespace Migrations.Design
                             AppendLine()
             End Using
             Using builder.Indent()
-                builder.AppendLine("Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)")
+                builder.
+                    AppendLine("''' <inheritdoc />").
+                    AppendLine("Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)")
                 Using builder.Indent()
                     VisualBasicMigrationOperationGenerator.
                         Generate("migrationBuilder", upOperations, builder)
@@ -130,6 +133,7 @@ Namespace Migrations.Design
                     AppendLine().
                     AppendLine("End Sub").
                     AppendLine().
+                    AppendLine("''' <inheritdoc />").
                     AppendLine("Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)")
                 Using builder.Indent()
                     VisualBasicMigrationOperationGenerator.
@@ -219,12 +223,12 @@ Namespace Migrations.Design
 
             Using builder.Indent()
                 builder.
+                    AppendLine("''' <inheritdoc />").
                     AppendLine("Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)")
 
                 Using builder.Indent()
                     ' TODO: Optimize.This Is repeated below
-                    VisualBasicSnapshotGenerator.
-                        Generate("modelBuilder", targetModel, builder)
+                    VisualBasicSnapshotGenerator.Generate("modelBuilder", targetModel, builder)
                 End Using
 
                 builder.AppendLine("End Sub")

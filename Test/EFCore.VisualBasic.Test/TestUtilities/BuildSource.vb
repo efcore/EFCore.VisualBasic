@@ -24,6 +24,7 @@ Public Class BuildSource
 
     Public Property TargetDir As String
     Public Property Sources As New Dictionary(Of String, String)
+    Public Property EmitDocumentationDiagnostics As Boolean
 
     Private _RootNamespace As String = Nothing
 
@@ -45,7 +46,13 @@ Public Class BuildSource
 
         Dim compilation = VisualBasicCompilation.Create(
                 assemblyName:=projectName,
-                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s.Value).WithFilePath(s.Key)),
+                syntaxTrees:=Sources.Select(
+                Function(s) SyntaxFactory.ParseSyntaxTree(
+                   text:=s.Value,
+                   path:=s.Key,
+                   options:=New VisualBasicParseOptions(
+                        LanguageVersion.Latest,
+                        If(EmitDocumentationDiagnostics, DocumentationMode.Diagnose, DocumentationMode.Parse)))),
                 references:=refs,
                 CreateVisualBasicCompilationOptions())
 
@@ -73,9 +80,31 @@ Public Class BuildSource
 
         Dim compilation = VisualBasicCompilation.Create(
                 assemblyName:=projectName,
-                syntaxTrees:=Sources.Select(Function(s) SyntaxFactory.ParseSyntaxTree(s.Value).WithFilePath(s.Key)),
+                syntaxTrees:=Sources.Select(
+                    Function(s) SyntaxFactory.ParseSyntaxTree(
+                    text:=s.Value,
+                    path:=s.Key,
+                    options:=New VisualBasicParseOptions(
+                        LanguageVersion.Latest,
+                        If(EmitDocumentationDiagnostics, DocumentationMode.Diagnose, DocumentationMode.Parse)))),
                 references:=refs,
                 CreateVisualBasicCompilationOptions())
+
+        Dim diagnostics = compilation.GetDiagnostics()
+        If Not diagnostics.IsEmpty Then
+
+            Throw New InvalidOperationException(
+                $"Build failed.
+
+First diagnostic:
+{diagnostics(0)}
+
+Location:
+{diagnostics(0).Location.SourceTree?.GetRoot().FindNode(diagnostics(0).Location.SourceSpan)}
+
+All diagnostics:
+{String.Join(Environment.NewLine, diagnostics)}")
+        End If
 
         Dim asm As Assembly
 
@@ -83,7 +112,7 @@ Public Class BuildSource
             Dim result = compilation.Emit(memStream)
             If Not result.Success Then
                 Throw New InvalidOperationException(
-                        $"Build failed:
+                        $"Failed to emit compilation:
 {String.Join(Environment.NewLine, result.Diagnostics)}")
             End If
 
@@ -95,13 +124,19 @@ Public Class BuildSource
 
     Private Function CreateVisualBasicCompilationOptions() As VisualBasicCompilationOptions
         Return New VisualBasicCompilationOptions(
-                   outputKind:=OutputKind.DynamicallyLinkedLibrary,
-                   rootNamespace:=_RootNamespace,
-                   globalImports:=GlobalImport.Parse({"Microsoft.VisualBasic",
-                                                      "System",
-                                                      "System.Collections",
-                                                      "System.Collections.Generic",
-                                                      "System.Linq"}))
+                outputKind:=OutputKind.DynamicallyLinkedLibrary,
+                rootNamespace:=_RootNamespace,
+                globalImports:=GlobalImport.Parse({"Microsoft.VisualBasic",
+                                                   "System",
+                                                   "System.Collections",
+                                                   "System.Collections.Generic",
+                                                   "System.Linq"}),
+                specificDiagnosticOptions:=New Dictionary(Of String, ReportDiagnostic) From {
+ _ ' Unused import statement.
+                    {"BC50001", ReportDiagnostic.Suppress},
+ _ ' Casing of namespace Namespace does not match casing of namespace Namespace
+                    {"BC40055", ReportDiagnostic.Suppress}
+                })
     End Function
 
 End Class

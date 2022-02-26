@@ -164,6 +164,7 @@ Namespace Scaffolding.Internal
                 If annotations.Count = 0 Then
                     Dim indexAttr As New AttributeWriter(NameOf(IndexAttribute))
                     For Each prop In index.Properties
+                        ' Do NOT use nameof for prop.Name
                         indexAttr.AddParameter(_code.Literal(prop.Name))
                     Next
 
@@ -362,6 +363,8 @@ Namespace Scaffolding.Internal
         Private Sub GenerateForeignKeyAttribute(navigation As ISkipNavigation)
             If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
                 Dim ForeignKeyAttribute As New AttributeWriter(NameOf(ForeignKeyAttribute))
+
+                ' Do NOT use nameof syntax
                 ForeignKeyAttribute.AddParameter(
                     _code.Literal(
                         String.Join(",", navigation.ForeignKey.Properties.Select(Function(p) p.Name))))
@@ -376,6 +379,7 @@ Namespace Scaffolding.Internal
                 If inverseNavigation IsNot Nothing Then
                     Dim InversePropertyAttribute As New AttributeWriter(NameOf(InversePropertyAttribute))
 
+                    ' Do NOT use nameof for inverseNavigation.Name
                     InversePropertyAttribute.AddParameter(_code.Literal(inverseNavigation.Name))
 
                     _sb.AppendLine(InversePropertyAttribute.ToString())

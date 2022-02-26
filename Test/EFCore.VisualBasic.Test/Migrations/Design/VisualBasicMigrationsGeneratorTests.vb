@@ -466,17 +466,17 @@ Namespace Migrations.Design
 
             modelBuilder.FinalizeModel()
 
-            Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
+            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
             Dim sqlServerAnnotationCodeGenerator1 As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
+                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
 
             Dim generator As New TestVisualBasicSnapshotGenerator(codeHelper,
-                                                                  sqlServerTypeMappingSource1,
+                                                                  sqlServerTypeMappingSource,
                                                                   sqlServerAnnotationCodeGenerator1)
 
             Dim sb As New IndentedStringBuilder
@@ -530,9 +530,11 @@ Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace Global.MyNamespace
+    ''' <inheritdoc />
     Partial Public Class MyMigration
         Inherits Migration
 
+        ''' <inheritdoc />
         Protected Overrides Sub Up(migrationBuilder As MigrationBuilder)
             migrationBuilder.Sql(""-- TEST"").
                 Annotation(""Some:EnumValue"", RegexOptions.Multiline)
@@ -554,6 +556,7 @@ Namespace Global.MyNamespace
                 values:=New Object() {1, Nothing, -1})
         End Sub
 
+        ''' <inheritdoc />
         Protected Overrides Sub Down(migrationBuilder As MigrationBuilder)
 
         End Sub
@@ -563,19 +566,19 @@ End Namespace
                     migrationCode,
                     ignoreLineEndingDifferences:=True)
 
-            Dim modelBuilder1 = SqlServerTestHelpers.Instance.CreateConventionBuilder(configure:=Sub(c) c.RemoveAllConventions())
-            modelBuilder1.HasAnnotation("Some:EnumValue", RegexOptions.Multiline)
-            modelBuilder1.HasAnnotation(RelationalAnnotationNames.DbFunctions, New SortedDictionary(Of String, IDbFunction)())
-            modelBuilder1.Entity("T1", Sub(eb)
-                                           eb.Property(Of Integer)("Id")
-                                           eb.Property(Of String)("C2").IsRequired()
-                                           eb.Property(Of Integer)("C3")
-                                           eb.HasKey("Id")
-                                       End Sub)
+            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(configure:=Sub(c) c.RemoveAllConventions())
+            modelBuilder.HasAnnotation("Some:EnumValue", RegexOptions.Multiline)
+            modelBuilder.HasAnnotation(RelationalAnnotationNames.DbFunctions, New SortedDictionary(Of String, IDbFunction)())
+            modelBuilder.Entity("T1", Sub(eb)
+                                          eb.Property(Of Integer)("Id")
+                                          eb.Property(Of String)("C2").IsRequired()
+                                          eb.Property(Of Integer)("C3")
+                                          eb.HasKey("Id")
+                                      End Sub)
 
-            modelBuilder1.HasAnnotation(CoreAnnotationNames.ProductVersion, Nothing)
+            modelBuilder.HasAnnotation(CoreAnnotationNames.ProductVersion, Nothing)
 
-            Dim finalizedModel = modelBuilder1.FinalizeModel(designTime:=True)
+            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
             Dim migrationMetadataCode = generator.GenerateMetadata(
                     "MyNamespace",
@@ -597,6 +600,7 @@ Namespace Global.MyNamespace
     <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
     <Migration(""20150511161616_MyMigration"")>
     Partial Class MyMigration
+        ''' <inheritdoc />
         Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)
             modelBuilder.HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
 
@@ -628,13 +632,15 @@ End Namespace
                         BuildReference.ByName("EntityFrameworkCore.VisualBasic.Test"),
                         BuildReference.ByName("Microsoft.EntityFrameworkCore"),
                         BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
+                        BuildReference.ByName("Microsoft.VisualBasic.Core"),
                         BuildReference.ByName("System.Runtime"),
                         BuildReference.ByName("System.Text.RegularExpressions")
                 },
                 .Sources = New Dictionary(Of String, String) From {
                     {"Migration.vb", migrationCode},
                     {"MigrationSnapshot.vb", migrationMetadataCode}
-                }
+                },
+                .EmitDocumentationDiagnostics = True
             }
 
             Dim asm = build.BuildInMemory()
@@ -913,11 +919,12 @@ End Namespace
             Dim build As New BuildSource With {
                 .References =
                             {
-                                BuildReference.ByName("System"),
-                                BuildReference.ByName("System.Runtime"),
                                 BuildReference.ByName("EntityFrameworkCore.VisualBasic.Test"),
                                 BuildReference.ByName("Microsoft.EntityFrameworkCore"),
                                 BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
+                                BuildReference.ByName("Microsoft.VisualBasic.Core"),
+                                BuildReference.ByName("System"),
+                                BuildReference.ByName("System.Runtime"),
                                 BuildReference.ByName("System.Text.RegularExpressions")
                             },
                  .Sources = New Dictionary(Of String, String) From {{"MigrationSnapshot.vb", modelSnapshotCode}}

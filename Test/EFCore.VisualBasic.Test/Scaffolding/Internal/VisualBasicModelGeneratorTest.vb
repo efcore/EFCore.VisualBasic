@@ -2,11 +2,11 @@
 Imports System.IO
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design
-Imports EntityFrameworkCore.VisualBasic.TestUtilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 
@@ -49,7 +49,7 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Shared Function CreateGenerator() As IModelCodeGenerator
-            Dim testAssembly As Reflection.Assembly = GetType(VisualBasicModelGeneratorTest).Assembly
+            Dim testAssembly As Assembly = GetType(VisualBasicModelGeneratorTest).Assembly
             Dim reporter As New TestOperationReporter
 
             Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).

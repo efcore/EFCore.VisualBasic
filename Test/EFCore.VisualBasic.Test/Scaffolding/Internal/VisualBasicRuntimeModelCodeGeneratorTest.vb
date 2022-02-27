@@ -54,6 +54,16 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicRuntimeModelCodeGeneratorTest
 
         <ConditionalFact>
+        Public Sub Self_referential_property()
+            Test(New TestModel.Internal.SelfReferentialDbContext(),
+                CreateCompiledModelCodeGenerationOptions(),
+                assertModel:=Sub(Model)
+                                 Assert.Single(Model.GetEntityTypes())
+                                 Assert.Same(Model, Model.FindRuntimeAnnotationValue("ReadOnlyModel"))
+                             End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Empty_model()
 
             Dim rm1 As String =
@@ -3638,6 +3648,15 @@ End Namespace
         Inherits TestModels.AspNetIdentity.IdentityUser
     End Class
 
+    Public Class SelfReferentialEntity
+        Public Property Id As Long
+        Public Property Collection As SelfReferentialProperty
+    End Class
+
+    Public Class SelfReferentialProperty
+        Inherits List(Of SelfReferentialProperty)
+    End Class
+
 End Namespace
 
 Namespace Scaffolding.TestModel.Internal
@@ -3655,6 +3674,30 @@ Namespace Scaffolding.TestModel.Internal
                 eb.HasDiscriminator().HasValue("DerivedIdentityUser")
             End Sub)
             modelBuilder.Entity(Of Scaffolding.Internal.Internal)()
+        End Sub
+    End Class
+
+    Public Class SelfReferentialDbContext
+        Inherits ContextBase
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            MyBase.OnModelCreating(modelBuilder)
+
+            modelBuilder.Entity(Of Scaffolding.Internal.SelfReferentialEntity)(
+                Sub(eb)
+                    eb.Property(Function(e) e.Collection).HasConversion(GetType(SelfReferentialPropertyValueConverter))
+                End Sub)
+        End sub
+    End Class
+
+    Public Class SelfReferentialPropertyValueConverter
+        Inherits ValueConverter(Of Scaffolding.Internal.SelfReferentialProperty, String)
+        Public Sub New()
+            Me.New(Nothing)
+        End Sub
+
+        Public Sub New(hints As ConverterMappingHints)
+            MyBase.New(Function(v) Nothing, Function(v) Nothing, hints)
         End Sub
     End Class
 End Namespace

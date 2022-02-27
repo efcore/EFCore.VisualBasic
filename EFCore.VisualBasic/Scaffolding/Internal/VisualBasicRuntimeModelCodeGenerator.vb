@@ -1431,7 +1431,7 @@ $"    Dim model As New {className}()
             End If
 
             Dim sequenceType = type.TryGetSequenceType()
-            If sequenceType IsNot Nothing Then
+            If sequenceType IsNot Nothing AndAlso sequenceType <> type Then
                 AddNamespace(sequenceType, namespaces)
             End If
         End Sub

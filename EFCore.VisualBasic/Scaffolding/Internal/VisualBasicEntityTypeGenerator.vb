@@ -162,20 +162,21 @@ Namespace Scaffolding.Internal
                 _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(index, annotations)
 
                 If annotations.Count = 0 Then
-                    Dim indexAttribute1 As AttributeWriter = New AttributeWriter(NameOf(IndexAttribute))
+                    Dim indexAttr As New AttributeWriter(NameOf(IndexAttribute))
                     For Each prop In index.Properties
-                        indexAttribute1.AddParameter($"""{prop.Name}""")
+                        ' Do Not use NameOf for property.Name
+                        indexAttr.AddParameter(_code.Literal(prop.Name))
                     Next
 
                     If index.Name IsNot Nothing Then
-                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.Name)} :={_code.Literal(index.Name)}")
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.Name)} :={_code.Literal(index.Name)}")
                     End If
 
                     If index.IsUnique Then
-                        indexAttribute1.AddParameter($"{NameOf(IndexAttribute.IsUnique)} :={_code.Literal(index.IsUnique)}")
+                        indexAttr.AddParameter($"{NameOf(IndexAttribute.IsUnique)} :={_code.Literal(index.IsUnique)}")
                     End If
 
-                    _sb.AppendLine(indexAttribute1.ToString())
+                    _sb.AppendLine(indexAttr.ToString())
                 End If
             Next
         End Sub
@@ -372,12 +373,8 @@ Namespace Scaffolding.Internal
                 If inverseNavigation IsNot Nothing Then
                     Dim InversePropertyAttribute As New AttributeWriter(NameOf(InversePropertyAttribute))
 
-                    InversePropertyAttribute.AddParameter(
-                        If(Not navigation.DeclaringEntityType.
-                                          GetPropertiesAndNavigations().
-                                          Any(Function(m) m.Name = inverseNavigation.DeclaringEntityType.Name),
-                           $"NameOf({inverseNavigation.DeclaringEntityType.Name}.{inverseNavigation.Name})",
-                           _code.Literal(inverseNavigation.Name)))
+                    ' Do Not use NameOf for inverseNavigation.Name
+                    InversePropertyAttribute.AddParameter(_code.Literal(inverseNavigation.Name))
 
                     _sb.AppendLine(InversePropertyAttribute.ToString())
                 End If
@@ -421,13 +418,11 @@ Namespace Scaffolding.Internal
                 If navigation.ForeignKey.PrincipalKey.IsPrimaryKey() Then
                     Dim foreignKeyAttribute1 As New AttributeWriter(NameOf(ForeignKeyAttribute))
 
-                    If navigation.ForeignKey.Properties.Count > 1 Then
-                        foreignKeyAttribute1.AddParameter(_code.Literal(
-                            String.Join(",", navigation.ForeignKey.Properties.
-                                             Select(Function(p) p.Name))))
-                    Else
-                        foreignKeyAttribute1.AddParameter($"NameOf({navigation.ForeignKey.Properties(0).Name})")
-                    End If
+                    ' Do NOT use nameof syntax
+
+                    foreignKeyAttribute1.AddParameter(
+                        _code.Literal(
+                            String.Join(",", navigation.ForeignKey.Properties.Select(Function(p) p.Name))))
 
                     _sb.AppendLine(foreignKeyAttribute1.ToString())
                 End If
@@ -439,15 +434,12 @@ Namespace Scaffolding.Internal
                 Dim inverseNavigation = navigation.Inverse
 
                 If inverseNavigation IsNot Nothing Then
-                    Dim inversePropertyAttribute1 As AttributeWriter = New AttributeWriter(NameOf(InversePropertyAttribute))
+                    Dim inversePropertyAttr As New AttributeWriter(NameOf(InversePropertyAttribute))
 
-                    inversePropertyAttribute1.AddParameter(
-                        If(Not navigation.DeclaringEntityType.GetPropertiesAndNavigations().Any(
-                            Function(m) m.Name = inverseNavigation.DeclaringEntityType.Name),
-                            $"NameOf({inverseNavigation.DeclaringEntityType.Name}.{inverseNavigation.Name})",
-                            _code.Literal(inverseNavigation.Name)))
+                    ' Do Not use NameOf for inverseNavigation.Name
+                    inversePropertyAttr.AddParameter(_code.Literal(inverseNavigation.Name))
 
-                    _sb.AppendLine(inversePropertyAttribute1.ToString())
+                    _sb.AppendLine(inversePropertyAttr.ToString())
                 End If
             End If
         End Sub

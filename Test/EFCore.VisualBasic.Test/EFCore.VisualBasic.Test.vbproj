@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0-preview.4.22207.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="7.0.0-preview.4.22207.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-preview.4.22207.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0-preview.4.22208.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0-preview.2.22074.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0-preview-20220401-08" />
     <PackageReference Include="xunit" Version="2.4.2-pre.12" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2-pre.12">

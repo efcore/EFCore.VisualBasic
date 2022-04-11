@@ -98,8 +98,12 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.IsFixedLength,
                 RelationalAnnotationNames.Collation,
                 RelationalAnnotationNames.IsStored,
+                RelationalAnnotationNames.TpcMappingStrategy,
+                RelationalAnnotationNames.TphMappingStrategy,
+                RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
-                RelationalAnnotationNames.ModelDependencies}
+                RelationalAnnotationNames.ModelDependencies,
+                RelationalAnnotationNames.Triggers}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -120,6 +124,13 @@ Namespace Migrations.Design
                         "entityTypeBuilder." &
                         NameOf(RelationalEntityTypeBuilderExtensions.ToTable) &
                         "(""WithAnnotations"", ""MySchema"")")
+                },
+                {
+                    RelationalAnnotationNames.MappingStrategy, (RelationalAnnotationNames.TphMappingStrategy,
+                        _toTable &
+                        _nl &
+                        _nl &
+                        "entityTypeBuilder.UseTphMappingStrategy()")
                 },
                 {
                     CoreAnnotationNames.DiscriminatorProperty, ("Id",
@@ -223,8 +234,13 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.Filter,
                 RelationalAnnotationNames.DbFunctions,
                 RelationalAnnotationNames.MaxIdentifierLength,
+                RelationalAnnotationNames.MappingStrategy,
+                RelationalAnnotationNames.TpcMappingStrategy,
+                RelationalAnnotationNames.TphMappingStrategy,
+                RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
-                RelationalAnnotationNames.ModelDependencies}
+                RelationalAnnotationNames.ModelDependencies,
+                RelationalAnnotationNames.Triggers}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
             Dim columnMapping = $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"

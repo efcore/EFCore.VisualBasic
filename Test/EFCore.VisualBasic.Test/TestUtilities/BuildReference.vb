@@ -16,15 +16,17 @@ Public Class BuildReference
     Public ReadOnly Property Path As String
 
     Public Shared Function ByName(name As String, Optional copyLocal As Boolean = False) As BuildReference
-        Dim references = Enumerable.ToList(
-                From l In DependencyContext.Default.CompileLibraries
-                From r In l.ResolveReferencePaths()
-                Where IOPath.GetFileNameWithoutExtension(r) = name
-                Select MetadataReference.CreateFromFile(r))
+
+        Dim references = (From l In DependencyContext.Default.CompileLibraries
+                          Where l.Assemblies.Any(Function(a) IOPath.GetFileNameWithoutExtension(a) = name)
+                          From r In l.ResolveReferencePaths()
+                          Where IOPath.GetFileNameWithoutExtension(r) = name
+                          Select MetadataReference.CreateFromFile(r)).ToList()
 
         If references.Count = 0 Then
             Throw New InvalidOperationException(
-                    $"Assembly '{name}' not found.")
+                    $"Assembly '{name}' not found." &
+                    "You may be missing '<PreserveCompilationContext>true</PreserveCompilationContext>' in your test project's vbproj.")
         End If
 
         Return New BuildReference(references, copyLocal)

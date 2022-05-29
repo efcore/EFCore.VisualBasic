@@ -752,11 +752,20 @@ Namespace Migrations.Design
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim annotationList = entityType.GetAnnotations().ToList()
+            Dim discriminatorPropertyAnnotation As IAnnotation = Nothing
+            Dim discriminatorValueAnnotation As IAnnotation = Nothing
+            Dim discriminatorMappingCompleteAnnotation As IAnnotation = Nothing
 
-            Dim discriminatorPropertyAnnotation = annotationList.FirstOrDefault(Function(a) a.Name = CoreAnnotationNames.DiscriminatorProperty)
-            Dim discriminatorMappingCompleteAnnotation = annotationList.FirstOrDefault(Function(a) a.Name = CoreAnnotationNames.DiscriminatorMappingComplete)
-            Dim discriminatorValueAnnotation = annotationList.FirstOrDefault(Function(a) a.Name = CoreAnnotationNames.DiscriminatorValue)
+            For Each annotation In entityType.GetAnnotations()
+                Select Case annotation.Name
+                    Case CoreAnnotationNames.DiscriminatorProperty
+                        discriminatorPropertyAnnotation = annotation
+                    Case CoreAnnotationNames.DiscriminatorValue
+                        discriminatorValueAnnotation = annotation
+                    Case CoreAnnotationNames.DiscriminatorMappingComplete
+                        discriminatorMappingCompleteAnnotation = annotation
+                End Select
+            Next
 
             Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(entityType.GetAnnotations()).
@@ -764,7 +773,7 @@ Namespace Migrations.Design
 
             Dim tableNameAnnotation = annotations.Find(RelationalAnnotationNames.TableName)
 
-            If tableNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
+            If tableNameAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim tableName = If(CStr(tableNameAnnotation?.Value), entityType.GetTableName())
 
                 If tableName IsNot Nothing OrElse tableNameAnnotation IsNot Nothing Then
@@ -793,16 +802,22 @@ Namespace Migrations.Design
                     End If
 
                     Dim isExcludedAnnotation = annotations.Find(RelationalAnnotationNames.IsTableExcludedFromMigrations)
+                    Dim isExcludedAnnotationValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean, DirectCast(isExcludedAnnotation?.Value, Boolean?), Nothing)
+                    Dim isExcludedFromMigrations = isExcludedAnnotationValue.HasValue AndAlso isExcludedAnnotationValue.Value
+
+                    If isExcludedAnnotation IsNot Nothing Then
+                        annotations.Remove(isExcludedAnnotation.Name)
+                    End If
+
+                    Dim hasTriggers = entityType.GetTriggers().Any()
+                    Dim requiresTableBuilder = isExcludedFromMigrations OrElse hasTriggers
 
                     If schema IsNot Nothing OrElse
                        (schemaAnnotation IsNot Nothing AndAlso tableName IsNot Nothing) Then
 
                         stringBuilder.Append(", ")
 
-                        Dim isExcludedAnnotationValue = CType(isExcludedAnnotation?.Value, Boolean?)
-                        If schema Is Nothing AndAlso
-                            (Not isExcludedAnnotationValue.HasValue OrElse Not isExcludedAnnotationValue.Value) Then
-
+                        If schema Is Nothing AndAlso Not requiresTableBuilder Then
                             stringBuilder.
                                 Append("DirectCast(").
                                 Append(VBCode.UnknownLiteral(schema)).
@@ -812,12 +827,25 @@ Namespace Migrations.Design
                         End If
                     End If
 
-                    If isExcludedAnnotation IsNot Nothing Then
-                        If CType(isExcludedAnnotation.Value, Boolean?) = True Then
+                    If requiresTableBuilder Then
+                        If isExcludedFromMigrations AndAlso Not hasTriggers Then
                             stringBuilder.Append(", Sub(t) t.ExcludeFromMigrations()")
-                        End If
+                        Else
+                            stringBuilder.
+                                AppendLine(", Sub(t)")
 
-                        annotations.Remove(isExcludedAnnotation.Name)
+                            Using stringBuilder.Indent()
+                                If isExcludedFromMigrations Then
+                                    stringBuilder.
+                                        AppendLine("t.ExcludeFromMigrations()").
+                                        AppendLine()
+                                End If
+
+                                GenerateTriggers("t", entityType, stringBuilder)
+                            End Using
+
+                            stringBuilder.Append("End Sub")
+                        End If
                     End If
 
                     stringBuilder.AppendLine(")")
@@ -827,7 +855,7 @@ Namespace Migrations.Design
             annotations.Remove(RelationalAnnotationNames.Schema)
 
             Dim viewNameAnnotation = annotations.Find(RelationalAnnotationNames.ViewName)
-            If viewNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
+            If viewNameAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim viewName = If(CStr(viewNameAnnotation?.Value), entityType.GetViewName())
 
                 If viewName IsNot Nothing OrElse viewNameAnnotation IsNot Nothing Then
@@ -846,8 +874,6 @@ Namespace Migrations.Design
                         stringBuilder.
                             Append(", ").
                             Append(VBCode.Literal(CStr(viewSchemaAnnotation.Value)))
-
-                        annotations.Remove(viewSchemaAnnotation.Name)
                     End If
 
                     stringBuilder.AppendLine(")")
@@ -858,7 +884,7 @@ Namespace Migrations.Design
             annotations.Remove(RelationalAnnotationNames.ViewDefinitionSql)
 
             Dim functionNameAnnotation = annotations.Find(RelationalAnnotationNames.FunctionName)
-            If functionNameAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
+            If functionNameAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim functionName = If(CStr(functionNameAnnotation?.Value), entityType.GetFunctionName())
 
                 If functionName IsNot Nothing OrElse functionNameAnnotation IsNot Nothing Then
@@ -877,7 +903,7 @@ Namespace Migrations.Design
 
             Dim sqlQueryAnnotation = annotations.Find(RelationalAnnotationNames.SqlQuery)
 
-            If sqlQueryAnnotation?.Value IsNot Nothing OrElse entityType.BaseType Is Nothing Then
+            If sqlQueryAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
                 Dim SqlQuery = If(CStr(sqlQueryAnnotation?.Value), entityType.GetSqlQuery())
 
                 If SqlQuery IsNot Nothing OrElse sqlQueryAnnotation IsNot Nothing Then
@@ -1003,7 +1029,9 @@ Namespace Migrations.Design
                 Append(", ").
                 Append(VBCode.Literal(checkConstraint.Sql))
 
-            If checkConstraint.Name <> If(checkConstraint.GetDefaultName(), checkConstraint.ModelName) Then
+            If checkConstraint.Name IsNot Nothing AndAlso
+               checkConstraint.Name <> If(checkConstraint.GetDefaultName(), checkConstraint.ModelName) Then
+
                 stringBuilder.
                     Append(", Sub(c) c.HasName(").
                     Append(VBCode.Literal(checkConstraint.Name)).
@@ -1012,6 +1040,62 @@ Namespace Migrations.Design
 
             stringBuilder.AppendLine(")")
         End Sub
+
+        ''' <summary>
+        '''     Generates code for <see cref="ITrigger" /> objects.
+        ''' </summary>
+        ''' <param name="tableBuilderName">The name of the table builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateTriggers(tableBuilderName As String,
+                                                   entityType As IEntityType,
+                                                   stringBuilder As IndentedStringBuilder)
+
+            For Each trigger In entityType.GetTriggers()
+                GenerateTrigger(tableBuilderName, trigger, stringBuilder)
+            Next
+        End Sub
+
+        ''' <summary>
+        '''     Generates code for an <see cref="ITrigger" />.
+        ''' </summary>
+        ''' <param name="tableBuilderName">The name of the table builder variable.</param>
+        ''' <param name="trigger">The check constraint.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateTrigger(tableBuilderName As String,
+                                                  trigger As ITrigger,
+                                                  stringBuilder As IndentedStringBuilder)
+
+            Dim triggerBuilderNameStringBuilder As New StringBuilder()
+            triggerBuilderNameStringBuilder.
+                Append(tableBuilderName).
+                Append(".HasTrigger(").
+                Append(VBCode.Literal(trigger.ModelName)).
+                Append(")")
+
+            Dim triggerBuilderName = triggerBuilderNameStringBuilder.ToString()
+
+            stringBuilder.Append(triggerBuilderName)
+
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
+
+            If trigger.Name IsNot Nothing AndAlso
+               trigger.Name <> If(trigger.GetDefaultName(), trigger.ModelName) Then
+
+                stringBuilder.
+                    AppendLine().
+                    Append(".HasName(").
+                    Append(VBCode.Literal(trigger.Name)).
+                    Append(")")
+            End If
+
+            Dim annotations = AnnotationCodeGenerator.
+                                FilterIgnoredAnnotations(trigger.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
+            GenerateAnnotations(triggerBuilderName, trigger, stringBuilder, annotations, inChainedCall:=True)
+    End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IForeignKey"/> objects.

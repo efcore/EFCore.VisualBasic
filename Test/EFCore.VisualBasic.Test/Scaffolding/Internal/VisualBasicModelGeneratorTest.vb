@@ -50,7 +50,7 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Shared Function CreateGenerator() As IModelCodeGenerator
-            Dim testAssembly As Reflection.Assembly = GetType(VisualBasicModelGeneratorTest).Assembly
+            Dim testAssembly As Assembly = GetType(VisualBasicModelGeneratorTest).Assembly
             Dim reporter As New TestOperationReporter
 
             Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
@@ -63,7 +63,8 @@ Namespace Scaffolding.Internal
 
             Return services.
                 BuildServiceProvider(validateScopes:=True).
-                GetRequiredService(Of IModelCodeGenerator)()
+                GetServices(Of IModelCodeGenerator)().
+                Last(Function(g) TypeOf g Is VisualBasicModelGenerator)
         End Function
     End Class
 

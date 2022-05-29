@@ -165,7 +165,8 @@ End Namespace
             Dim generator = CreateServices().
                 AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)().
                 BuildServiceProvider(validateScopes:=True).
-                GetRequiredService(Of IModelCodeGenerator)()
+                GetServices(Of IModelCodeGenerator)().
+                Last(Function(g) TypeOf g Is VisualBasicModelGenerator)
 
             Assert.StartsWith(
                 CoreStrings.ArgumentPropertyNull(NameOf(ModelCodeGenerationOptions.ContextName), "options"),
@@ -198,7 +199,8 @@ End Namespace
             Dim generator = CreateServices().
                 AddSingleton(Of IProviderCodeGeneratorPlugin, TestCodeGeneratorPlugin)().
                 BuildServiceProvider(validateScopes:=True).
-                GetRequiredService(Of IModelCodeGenerator)()
+                GetServices(Of IModelCodeGenerator)().
+                Last(Function(g) TypeOf g Is VisualBasicModelGenerator)
 
             Dim scaffoldedModel = generator.GenerateModel(
                 New Model(),

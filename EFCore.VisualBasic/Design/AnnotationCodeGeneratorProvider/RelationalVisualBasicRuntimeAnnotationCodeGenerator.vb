@@ -357,9 +357,63 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 annotations(RelationalAnnotationNames.ViewSchema) = entityType.GetViewSchema()
                 annotations(RelationalAnnotationNames.SqlQuery) = entityType.GetSqlQuery()
                 annotations(RelationalAnnotationNames.FunctionName) = entityType.GetFunctionName()
+
+                Dim triggers As New SortedDictionary(Of String, ITrigger)
+
+                If annotations.TryGetAndRemove(RelationalAnnotationNames.Triggers, triggers) Then
+
+                    parameters.Namespaces.Add(GetType(SortedDictionary(Of,)).Namespace)
+                    Dim triggersVariable = VBCode.Identifier("triggers", parameters.ScopeVariables, capitalize:=False)
+                    parameters.MainBuilder.Append("Dim ").Append(triggersVariable).AppendLine(" As New SortedDictionary(Of String, ITrigger)()").AppendLine()
+
+                    For Each Trigger In triggers
+                        Create(Trigger.Value, triggersVariable, parameters)
+                    Next
+
+                    GenerateSimpleAnnotation(RelationalAnnotationNames.Triggers, triggersVariable, parameters)
+                End If
+
             End If
 
             MyBase.Generate(entityType, parameters)
+        End Sub
+
+        Private Sub Create(trigger As ITrigger, triggersVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim triggerVariable = VBCode.Identifier(trigger.ModelName, parameters.ScopeVariables, capitalize:=False)
+            Dim mainBuilder = parameters.MainBuilder
+            mainBuilder.Append("Dim ").Append(triggerVariable).AppendLine(" As New RuntimeTrigger(").
+                IncrementIndent().
+                Append(parameters.TargetName).AppendLine(",").
+                Append(VBCode.Literal(trigger.ModelName)).AppendLine(",").
+                Append(VBCode.UnknownLiteral(trigger.Name)).AppendLine(",").
+                Append(VBCode.Literal(trigger.TableName)).AppendLine(",").
+                Append(VBCode.UnknownLiteral(trigger.TableSchema)).AppendLine(")").
+                DecrementIndent().
+                AppendLine()
+
+            CreateAnnotations(trigger,
+                              AddressOf Generate,
+                              parameters.Cloner.
+                                         WithTargetName(triggerVariable).
+                                         Clone)
+
+            mainBuilder.
+                Append(triggersVariable).
+                Append("(").
+                Append(VBCode.Literal(trigger.ModelName)).
+                Append(") = ").
+                AppendLine(triggerVariable).
+                AppendLine()
+        End Sub
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="trigger">The trigger to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Public Overridable Overloads Sub Generate(trigger As ITrigger, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            GenerateSimpleAnnotations(parameters)
         End Sub
 
         ''' <summary>
@@ -422,7 +476,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             IncrementIndent().
             Append(parameters.TargetName).
             AppendLine(",").
-            Append(code.Literal([overrides].ColumnNameOverriden)).
+            Append(code.Literal([overrides].ColumnNameOverridden)).
             AppendLine(",").
             Append(code.UnknownLiteral([overrides].ColumnName)).
             AppendLine(")").

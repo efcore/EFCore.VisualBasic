@@ -155,6 +155,15 @@ Namespace Scaffolding.Internal
                     Append("Inherits ").AppendLine(NameOf(RuntimeModel)).
                     AppendLine().
                     Append("Private Shared ").Append("_Instance As ").AppendLine(className).
+                    AppendLine("Public Shared ReadOnly Property Instance As IModel").
+                    IncrementIndent.
+                    AppendLine("Get").
+                    IncrementIndent.
+                    AppendLine("Return _Instance").
+                    DecrementIndent.
+                    AppendLine("End Get").
+                    DecrementIndent.
+                    AppendLine("End Property").
                     AppendLine().
                     AppendLine("Shared Sub New()").
                     AppendLines(
@@ -163,10 +172,6 @@ $"    Dim model As New {className}()
     model.Customize()
     _Instance = model").
                     AppendLine("End Sub").
-                    AppendLine().
-                    AppendLine("Public Shared Function Instance() As IModel").
-                    AppendLine("    Return _Instance").
-                    AppendLine("End Function").
                     AppendLine().
                     AppendLine("Partial Private Sub Initialize()").
                     AppendLine("End Sub").
@@ -685,15 +690,27 @@ $"    Dim model As New {className}()
 
             If valueComparerType Is Nothing AndAlso
                 prop(CoreAnnotationNames.ValueComparer) IsNot Nothing Then
+
                 Throw New InvalidOperationException(
                     DesignStrings.CompiledModelValueComparer(
                         prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
+            End If
+
+            Dim providerValueComparerType = TryCast(prop(CoreAnnotationNames.ProviderValueComparerType), Type)
+
+            If providerValueComparerType Is Nothing AndAlso
+               prop(CoreAnnotationNames.ProviderValueComparer) IsNot Nothing Then
+
+                Throw New InvalidOperationException(
+                    DesignStrings.CompiledModelValueComparer(
+                    prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
             End If
 
             Dim valueConverterType = TryCast(prop(CoreAnnotationNames.ValueConverterType), Type)
 
             If valueConverterType Is Nothing AndAlso
                prop.GetValueConverter() IsNot Nothing Then
+
                 Throw New InvalidOperationException(
                     DesignStrings.CompiledModelValueConverter(
                         prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
@@ -790,7 +807,6 @@ $"    Dim model As New {className}()
             Dim providerClrType = prop.GetProviderClrType()
 
             If providerClrType IsNot Nothing Then
-
                 AddNamespace(providerClrType, parameters.Namespaces)
 
                 mainBuilder.
@@ -800,7 +816,6 @@ $"    Dim model As New {className}()
             End If
 
             If valueGeneratorFactoryType IsNot Nothing Then
-
                 AddNamespace(valueGeneratorFactoryType, parameters.Namespaces)
 
                 mainBuilder.
@@ -811,7 +826,6 @@ $"    Dim model As New {className}()
             End If
 
             If valueConverterType IsNot Nothing Then
-
                 AddNamespace(valueConverterType, parameters.Namespaces)
 
                 mainBuilder.
@@ -822,13 +836,22 @@ $"    Dim model As New {className}()
             End If
 
             If valueComparerType IsNot Nothing Then
-
                 AddNamespace(valueComparerType, parameters.Namespaces)
 
                 mainBuilder.
                     AppendLine(",").
                     Append("valueComparer:=New ").
                     Append(_code.Reference(valueComparerType)).
+                    Append("()")
+            End If
+
+            If providerValueComparerType IsNot Nothing Then
+                AddNamespace(providerValueComparerType, parameters.Namespaces)
+
+                mainBuilder.
+                    AppendLine(",").
+                    Append("providerValueComparer:=New ").
+                    Append(_code.Reference(providerValueComparerType)).
                     Append("()")
             End If
 
@@ -1440,7 +1463,7 @@ $"    Dim model As New {className}()
             End If
 
             Dim sequenceType = type.TryGetSequenceType()
-            If sequenceType IsNot Nothing Then
+            If sequenceType IsNot Nothing AndAlso sequenceType <> type Then
                 AddNamespace(sequenceType, namespaces)
             End If
         End Sub

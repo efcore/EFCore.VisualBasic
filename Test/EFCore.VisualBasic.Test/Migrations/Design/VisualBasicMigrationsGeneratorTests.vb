@@ -103,7 +103,8 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
-                RelationalAnnotationNames.Triggers}
+                RelationalAnnotationNames.Triggers, ' Appears on entity but requires provider-specific support
+                RelationalAnnotationNames.GetReaderFieldValue}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -240,7 +241,8 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
-                RelationalAnnotationNames.Triggers}
+                RelationalAnnotationNames.Triggers,
+                RelationalAnnotationNames.GetReaderFieldValue}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
             Dim columnMapping = $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"

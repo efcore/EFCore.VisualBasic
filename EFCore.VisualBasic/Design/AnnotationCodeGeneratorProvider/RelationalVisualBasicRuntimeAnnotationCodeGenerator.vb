@@ -476,7 +476,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             IncrementIndent().
             Append(parameters.TargetName).
             AppendLine(",").
-            Append(code.Literal([overrides].ColumnNameOverriden)).
+            Append(code.Literal([overrides].ColumnNameOverridden)).
             AppendLine(",").
             Append(code.UnknownLiteral([overrides].ColumnName)).
             AppendLine(")").

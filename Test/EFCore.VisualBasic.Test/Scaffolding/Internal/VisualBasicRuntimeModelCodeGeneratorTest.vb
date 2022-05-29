@@ -79,6 +79,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As EmptyContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New EmptyContextModel()
@@ -86,10 +91,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -352,6 +353,29 @@ End Namespace
         End Class
 
         <ConditionalFact>
+        Public Sub Throws_for_provider_value_comparer()
+            Test(
+                New ProviderValueComparerContext,
+                New CompiledModelCodeGenerationOptions(),
+                expectedExceptionMessage:=DesignStrings.CompiledModelValueComparer(
+                    "MyEntity", "Id", NameOf(PropertyBuilder.HasConversion)))
+        End Sub
+
+        Public Class ProviderValueComparerContext
+            Inherits ContextBase
+            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+                MyBase.OnModelCreating(modelBuilder)
+
+                modelBuilder.Entity(
+                    "MyEntity",
+                    Sub(e)
+                        e.Property(Of Integer)("Id").HasConversion(GetType(Integer), Nothing, New FakeValueComparer())
+                        e.HasKey("Id")
+                    End Sub)
+            End Sub
+        End Class
+
+        <ConditionalFact>
         Public Sub Throws_for_custom_type_mapping()
             Test(
                 New TypeMappingContext(),
@@ -362,16 +386,16 @@ End Namespace
 
         Public Class TypeMappingContext
             Inherits ContextBase
-
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
                 modelBuilder.Entity(
-                    "MyEntity", Sub(e)
-                                    e.Property(Of Integer)("Id").
-                                                        Metadata.SetTypeMapping(New InMemoryTypeMapping(GetType(Integer())))
-                                    e.HasKey("Id")
-                                End Sub)
+                    "MyEntity",
+                    Sub(e)
+                        e.Property(Of Integer)("Id").
+                            Metadata.SetTypeMapping(New InMemoryTypeMapping(GetType(Integer)))
+                        e.HasKey("Id")
+                    End Sub)
             End Sub
         End Class
 
@@ -467,6 +491,11 @@ Namespace Internal
         Inherits RuntimeModel
 
         Private Shared _Instance As DbContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New DbContextModel()
@@ -474,10 +503,6 @@ Namespace Internal
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -835,6 +860,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As BigContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New BigContextModel()
@@ -842,10 +872,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -1033,7 +1059,8 @@ Namespace TestNamespace
             Dim entityType = model.AddEntityType(
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
-                baseEntityType)
+                baseEntityType,
+                discriminatorValue:="PrincipalBase")
 
             Dim id = entityType.AddProperty(
                 "Id",
@@ -1059,7 +1086,8 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueConverter:=New CastingConverter(Of Point, Point)(),
-                valueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)())
+                valueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)(),
+                providerValueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)())
             alternateId.AddAnnotation("Relational:ColumnType", "geometry")
             alternateId.AddAnnotation("Relational:DefaultValue", CType(New NetTopologySuite.IO.WKTReader().Read("SRID=0;POINT Z(0 0 0)"), NetTopologySuite.Geometries.Point))
             alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
@@ -1474,7 +1502,8 @@ Namespace TestNamespace
             Dim entityType = model.AddEntityType(
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>",
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))),
-                baseEntityType)
+                baseEntityType,
+                discriminatorValue:="PrincipalDerived<DependentBase<byte?>>")
 
             Return entityType
         End Function
@@ -1634,6 +1663,7 @@ End Namespace
                     Assert.IsType(Of CastingConverter(Of Point, Point))(principalAlternateId.GetValueConverter())
                     Assert.IsType(Of CustomValueComparer(Of Point))(principalAlternateId.GetValueComparer())
                     Assert.IsType(Of CustomValueComparer(Of Point))(principalAlternateId.GetKeyValueComparer())
+                    Assert.IsType(Of CustomValueComparer(Of Point))(principalAlternateId.GetProviderValueComparer())
                     Assert.Equal(SqlServerValueGenerationStrategy.None, principalAlternateId.GetValueGenerationStrategy())
                     Assert.Equal(PropertyAccessMode.FieldDuringConstruction, principalAlternateId.GetPropertyAccessMode())
                     Assert.Null(principalAlternateId(CoreAnnotationNames.PropertyAccessMode))
@@ -1760,7 +1790,7 @@ End Namespace
                     Assert.False(principalDerived.IsOwned())
                     Assert.IsType(Of ConstructorBinding)(principalDerived.ConstructorBinding)
                     Assert.Equal(ChangeTrackingStrategy.Snapshot, principalDerived.GetChangeTrackingStrategy())
-                    Assert.Null(principalDerived.GetDiscriminatorValue())
+                    Assert.Equal("PrincipalDerived<DependentBase<byte?>>", principalDerived.GetDiscriminatorValue())
 
                     Dim tptForeignKey = principalDerived.GetForeignKeys().Single()
                     Assert.False(tptForeignKey.IsOwnership)
@@ -2014,7 +2044,7 @@ End Namespace
                             HasColumnType("geometry").
                             HasDefaultValue(NtsGeometryServices.Instance.CreateGeometryFactory(srid:=0).
                             CreatePoint(New CoordinateZM(0, 0, 0, 0))).
-                            HasConversion(Of CastingConverter(Of Point, Point), CustomValueComparer(Of Point))()
+                            HasConversion(Of CastingConverter(Of Point, Point), CustomValueComparer(Of Point), CustomValueComparer(Of Point))()
 
                         eb.HasIndex(Function(e) e.AlternateId, "AlternateIndex").
                             IsUnique().
@@ -2127,6 +2157,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As TpcContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New TpcContextModel()
@@ -2134,10 +2169,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -2277,7 +2308,8 @@ Namespace TestNamespace
             Dim entityType = model.AddEntityType(
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
-                baseEntityType)
+                baseEntityType,
+                discriminatorValue:="PrincipalBase")
 
             Dim id = entityType.AddProperty(
                 "Id",
@@ -2376,7 +2408,8 @@ Namespace TestNamespace
             Dim entityType = model.AddEntityType(
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>",
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))),
-                baseEntityType)
+                baseEntityType,
+                discriminatorValue:="PrincipalDerived<DependentBase<byte?>>")
 
             Return entityType
         End Function
@@ -2420,7 +2453,7 @@ End Namespace
                     Assert.Equal("PrincipalBaseView", PrincipalBase.GetViewName())
                     Assert.Equal("TPC", PrincipalBase.GetViewSchema())
 
-                    Assert.Null(PrincipalBase.GetDiscriminatorValue())
+                    Assert.Equal("PrincipalBase", PrincipalBase.GetDiscriminatorValue())
                     Assert.Null(PrincipalBase.FindDiscriminatorProperty())
                     Assert.Equal("TPC", PrincipalBase.GetMappingStrategy())
 
@@ -2439,7 +2472,7 @@ End Namespace
                     Assert.Equal("PrincipalDerivedView", PrincipalDerived.GetViewName())
                     Assert.Equal("TPC", PrincipalBase.GetViewSchema())
 
-                    Assert.Null(PrincipalDerived.GetDiscriminatorValue())
+                    Assert.Equal("PrincipalDerived<DependentBase<byte?>>", PrincipalDerived.GetDiscriminatorValue())
                     Assert.Null(PrincipalDerived.FindDiscriminatorProperty())
                     Assert.Equal("TPC", PrincipalDerived.GetMappingStrategy())
 
@@ -2454,7 +2487,7 @@ End Namespace
                     Dim dependentNavigation = PrincipalDerived.GetDeclaredNavigations().First()
                     Assert.Equal("Dependent", dependentNavigation.Name)
                     Assert.Equal("Dependent", dependentNavigation.PropertyInfo.Name)
-                    Assert.Equal("<Dependent>k__BackingField", dependentNavigation.FieldInfo.Name)
+                    Assert.Equal("_Dependent", dependentNavigation.FieldInfo.Name)
                     Assert.False(dependentNavigation.IsCollection)
                     Assert.False(dependentNavigation.IsEagerLoaded)
                     Assert.False(dependentNavigation.IsOnDependent)
@@ -2616,6 +2649,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As DbFunctionContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New DbFunctionContextModel()
@@ -2623,10 +2661,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -2874,7 +2908,7 @@ End Namespace
                     Assert.False(getCount.IsAggregate)
                     Assert.Null(getCount.Translation)
                     Assert.Equal("int", getCount.TypeMapping?.StoreType)
-                    Assert.Equal(GetType(Integer()), getCount.ReturnType)
+                    Assert.Equal(GetType(Integer), getCount.ReturnType)
                     Assert.Equal("GetCount", getCount.MethodInfo.Name)
                     Assert.Empty(getCount.GetAnnotations())
                     Assert.Empty(getCount.GetRuntimeAnnotations())
@@ -2913,7 +2947,7 @@ End Namespace
                     Dim isDate = model.FindDbFunction(GetType(DbFunctionContext).GetMethod("IsDateShared"))
                     Assert.Equal("IsDate", isDate.Name)
                     Assert.Null(isDate.Schema)
-                    Assert.Equal(GetType(DbFunctionContext).FullName + ".IsDateShared(String)", isDate.ModelName)
+                    Assert.Equal(GetType(DbFunctionContext).FullName & ".IsDateShared(string)", isDate.ModelName)
                     Assert.True(isDate.IsNullable)
                     Assert.True(isDate.IsScalar)
                     Assert.True(isDate.IsBuiltIn)
@@ -2930,15 +2964,16 @@ End Namespace
 
                     Dim isDateParameter = isDate.Parameters(0)
                     Assert.Same(isDate, isDateParameter.Function)
-                    Assert.Equal("date", isDateParameter.Name)
+                    Assert.Equal("aDate", isDateParameter.Name)
                     Assert.Equal("nchar(256)", isDateParameter.StoreType)
                     Assert.False(isDateParameter.PropagatesNullability)
                     Assert.Equal(GetType(String), isDateParameter.ClrType)
                     Assert.Equal("nchar(256)", isDateParameter.TypeMapping.StoreType)
-                    Assert.Equal("date", isDateParameter.StoreFunctionParameter.Name)
+                    Assert.Equal("aDate", isDateParameter.StoreFunctionParameter.Name)
                     Assert.Equal("nchar(256)", isDateParameter.StoreFunctionParameter.Type)
 
-                    Dim getData = model.FindDbFunction(GetType(DbFunctionContext).GetMethod("GetData", {GetType(Integer())}))
+                    Dim getData = model.FindDbFunction(
+                                    GetType(DbFunctionContext).GetMethod("GetData", {GetType(Integer)}))
 
                     Assert.Equal("GetData", getData.Name)
                     Assert.Equal("dbo", getData.Schema)
@@ -2962,13 +2997,13 @@ End Namespace
                     Assert.Equal("id", getDataParameter.Name)
                     Assert.Equal("int", getDataParameter.StoreType)
                     Assert.False(getDataParameter.PropagatesNullability)
-                    Assert.Equal(GetType(Integer()), getDataParameter.ClrType)
+                    Assert.Equal(GetType(Integer), getDataParameter.ClrType)
                     Assert.Equal("int", getDataParameter.TypeMapping.StoreType)
                     Assert.Equal("id", getDataParameter.StoreFunctionParameter.Name)
                     Assert.Equal("int", getDataParameter.StoreFunctionParameter.Type)
 
                     Dim getDataParameterless = model.FindDbFunction(GetType(DbFunctionContext).
-                                                                    GetMethod("GetData", New Type() {}))
+                                                                    GetMethod("GetData", Array.Empty(Of Type)))
                     Assert.Equal("GetAllData", getDataParameterless.Name)
                     Assert.Equal("dbo", getDataParameterless.Schema)
                     Assert.Equal(GetType(DbFunctionContext).FullName & ".GetData()", getDataParameterless.ModelName)
@@ -3107,6 +3142,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As SequencesContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New SequencesContextModel()
@@ -3114,10 +3154,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -3304,6 +3340,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As ConstraintsContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New ConstraintsContextModel()
@@ -3311,10 +3352,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -3448,6 +3485,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As TriggersContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New TriggersContextModel()
@@ -3455,10 +3497,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -3619,6 +3657,11 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
         Inherits RuntimeModel
 
         Private Shared _Instance As SqliteContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New SqliteContextModel()
@@ -3626,10 +3669,6 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -3789,6 +3828,11 @@ Namespace TestNamespace
         Inherits RuntimeModel
 
         Private Shared _Instance As CosmosContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
 
         Shared Sub New()
             Dim model As New CosmosContextModel()
@@ -3796,10 +3840,6 @@ Namespace TestNamespace
             model.Customize()
             _Instance = model
         End Sub
-
-        Public Shared Function Instance() As IModel
-            Return _Instance
-        End Function
 
         Partial Private Sub Initialize()
         End Sub
@@ -3941,7 +3981,7 @@ End Namespace
             Assert.Null(dataEntity.FindDiscriminatorProperty())
 
             Dim id = dataEntity.FindProperty("Id")
-            Assert.Equal(GetType(Integer()), id.ClrType)
+            Assert.Equal(GetType(Integer), id.ClrType)
             Assert.Null(id.PropertyInfo)
             Assert.Null(id.FieldInfo)
             Assert.False(id.IsNullable)
@@ -4167,7 +4207,7 @@ End Namespace
 
             Dim Assembly = build.BuildInMemory()
 
-            If assertModel Is Nothing Then
+            If assertModel IsNot Nothing Then
                 Dim modelType = Assembly.GetType(options.ModelNamespace & "." & options.ContextType.Name & "Model")
                 Dim instancePropertyInfo = modelType.GetProperty("Instance", BindingFlags.Public Or BindingFlags.Static)
                 Dim compiledModel = DirectCast(instancePropertyInfo.GetValue(Nothing), IModel)

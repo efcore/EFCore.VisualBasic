@@ -46,16 +46,5 @@ Namespace TestUtilities.FakeProvider
             AppendBatchHeaderCalls += 1
             MyBase.AppendBatchHeader(commandStringBuilder)
         End Sub
-
-        Protected Overrides Sub AppendIdentityWhereCondition(commandStringBuilder As StringBuilder, columnModification1 As IColumnModification)
-            Call commandStringBuilder.Append(SqlGenerationHelper.DelimitIdentifier(columnModification1.ColumnName)).
-                                      Append(" = ").
-                                      Append("provider_specific_identity()")
-        End Sub
-
-        Protected Overrides Sub AppendRowsAffectedWhereCondition(commandStringBuilder As StringBuilder, expectedRowsAffected As Integer)
-            Call commandStringBuilder _
-                            .Append("provider_specific_rowcount() = ").Append(expectedRowsAffected)
-        End Sub
     End Class
 End Namespace

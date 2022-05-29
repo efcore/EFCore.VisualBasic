@@ -10,7 +10,7 @@ Namespace TestUtilities
             maxBatchSize As Integer?)
             MyBase.New(dependencies)
 
-            Me.MaxBatchSize = If(maxBatchSize, 1)
+            Me.MaxBatchSize = If(maxBatchSize, 42)
         End Sub
 
         Protected Overrides ReadOnly Property MaxBatchSize As Integer

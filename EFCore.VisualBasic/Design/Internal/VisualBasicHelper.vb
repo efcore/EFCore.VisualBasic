@@ -26,8 +26,7 @@ Namespace Design.Internal
             _typeMappingSource = typeMappingSource
         End Sub
 
-        Private Shared ReadOnly _literalFuncs As IReadOnlyDictionary(Of Type, Func(Of VisualBasicHelper, Object, String)) =
-        New Dictionary(Of Type, Func(Of VisualBasicHelper, Object, String)) From
+        Private Shared ReadOnly _literalFuncs As New Dictionary(Of Type, Func(Of VisualBasicHelper, Object, String)) From
         {
             {GetType(Boolean), Function(c, v) c.Literal(CBool(v))},
             {GetType(Byte), Function(c, v) c.Literal(CByte(v))},
@@ -582,6 +581,60 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
+        Public Overridable Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String
+            Return ListLitetal(GetType(T), values, vertical)
+        End Function
+
+        Private Function ListLitetal(type As Type, values As IEnumerable, Optional vertical As Boolean = False) As String
+
+            Dim builder As New IndentedStringBuilder()
+
+            builder.
+                Append("New List(Of ").
+                Append(Reference(type)).
+                Append(")")
+
+            Dim hasData = False
+            Dim first = True
+
+            For Each value In values
+                hasData = True
+                If first Then
+                    builder.Append(" From {")
+                    If vertical Then
+                        builder.AppendLine()
+                        builder.IncrementIndent()
+                    End If
+                    first = False
+                Else
+                    builder.Append(","c)
+
+                    If vertical Then
+                        builder.AppendLine()
+                    Else
+                        builder.Append(" "c)
+                    End If
+                End If
+
+                builder.Append(UnknownLiteral(value))
+            Next
+
+            If hasData Then
+                If vertical Then
+                    builder.AppendLine()
+                    builder.DecrementIndent()
+                End If
+
+                builder.Append("}"c)
+            End If
+
+            Return builder.ToString()
+        End Function
+
+        ''' <summary>
+        '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
+        '''     directly from your code. This API may change Or be removed in future releases.
+        ''' </summary>
         Public Overridable Function Literal(value As [Enum]) As String Implements IVisualBasicHelper.Literal
 
             Dim type = value.GetType()
@@ -680,6 +733,13 @@ Namespace Design.Internal
 
             If TypeOf value Is Array Then
                 Return ArrayLitetal(LiteralType.GetElementType(), DirectCast(value, Array))
+            End If
+
+            If TypeOf value Is IList AndAlso
+               value.GetType().IsGenericType AndAlso
+               value.GetType().GetGenericTypeDefinition() Is GetType(List(Of)) Then
+
+                Return ListLitetal(value.GetType().GetGenericArguments()(0), DirectCast(value, IList))
             End If
 
             Dim mapping = _typeMappingSource.FindMapping(LiteralType)

@@ -11,12 +11,14 @@ Namespace TestUtilities
         End Sub
 
         Public Shared ReadOnly Property Instance As New RelationalTestHelpers
+
         Public Overrides Function AddProviderServices(services As IServiceCollection) As IServiceCollection
             Return FakeRelationalOptionsExtension.AddEntityFrameworkRelationalDatabase(services)
         End Function
-        Public Overrides Sub UseProviderOptions(optionsBuilder As DbContextOptionsBuilder)
-            Call optionsBuilder.UseFakeRelational()
-        End Sub
+
+        Public Overrides Function UseProviderOptions(optionsBuilder As DbContextOptionsBuilder) As DbContextOptionsBuilder
+            Return optionsBuilder.UseFakeRelational()
+        End Function
 
         Public Overrides ReadOnly Property LoggingDefinitions As LoggingDefinitions = New TestRelationalLoggingDefinitions
     End Class

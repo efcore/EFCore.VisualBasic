@@ -124,6 +124,34 @@ Namespace Design.Internal
         End Sub
 
         <ConditionalFact>
+        Public Sub Literal_works_when_empty_list()
+            Literal_works(
+            New List(Of String),
+            "New List(Of String)")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_list_with_single_element()
+            Literal_works(
+            New List(Of String) From {"one"},
+            "New List(Of String) From {""one""}")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_list_of_mixed_objects()
+            Literal_works(
+            New List(Of Object) From {1, "two"},
+            "New List(Of Object) From {1, ""two""}")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_list_with_ctor_arguments()
+            Literal_works(
+            New List(Of String)({"one"}) From {"two", "three"},
+            "New List(Of String) From {""one"", ""two"", ""three""}")
+        End Sub
+
+        <ConditionalFact>
         Public Sub Literal_works_when_multiline_string()
             Literal_works(
 "multi-line
@@ -249,7 +277,24 @@ string with """,
     {""A"", 1},
     {""B"", 2}
 }",
-                    result,
+            result,
+            ignoreLineEndingDifferences:=True)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_list_in_vertical()
+
+            Dim listToTest As New List(Of Object) From {New List(Of Integer)({1}), "two", 3}
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Literal(listToTest, True)
+
+            Assert.Equal(
+"New List(Of Object) From {
+    New List(Of Integer) From {1},
+    ""two"",
+    3
+}",
+            result,
             ignoreLineEndingDifferences:=True)
         End Sub
 

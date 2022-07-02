@@ -17,9 +17,9 @@ Friend Class SqlServerTestHelpers
         Return services.AddEntityFrameworkSqlServer()
     End Function
 
-    Public Overrides Sub UseProviderOptions(optionsBuilder As DbContextOptionsBuilder)
-        Call optionsBuilder.UseSqlServer(New SqlConnection("Database=DummyDatabase"))
-    End Sub
+    Public Overrides Function UseProviderOptions(optionsBuilder As DbContextOptionsBuilder) As DbContextOptionsBuilder
+        Return optionsBuilder.UseSqlServer(New SqlConnection("Database=DummyDatabase"))
+    End Function
 
     Public Overrides ReadOnly Property LoggingDefinitions As LoggingDefinitions = New SqlServerLoggingDefinitions
 End Class

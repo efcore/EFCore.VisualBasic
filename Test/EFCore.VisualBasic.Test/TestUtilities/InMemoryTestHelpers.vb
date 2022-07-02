@@ -15,7 +15,7 @@ Friend Class InMemoryTestHelpers
         Return services.AddEntityFrameworkInMemoryDatabase()
     End Function
 
-    Public Overrides Sub UseProviderOptions(optionsBuilder As DbContextOptionsBuilder)
-        optionsBuilder.UseInMemoryDatabase(NameOf(InMemoryTestHelpers))
-    End Sub
+    Public Overrides Function UseProviderOptions(optionsBuilder As DbContextOptionsBuilder) As DbContextOptionsBuilder
+        Return optionsBuilder.UseInMemoryDatabase(NameOf(InMemoryTestHelpers))
+    End Function
 End Class

@@ -584,7 +584,7 @@ End Namespace
                     migrationCode,
                     ignoreLineEndingDifferences:=True)
 
-            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(configure:=Sub(c) c.RemoveAllConventions())
+            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(configureModel:=Sub(c) c.RemoveAllConventions())
             modelBuilder.HasAnnotation("Some:EnumValue", RegexOptions.Multiline)
             modelBuilder.HasAnnotation(RelationalAnnotationNames.DbFunctions, New SortedDictionary(Of String, IDbFunction)())
             modelBuilder.Entity("T1", Sub(eb)

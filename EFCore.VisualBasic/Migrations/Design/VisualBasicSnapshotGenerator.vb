@@ -73,7 +73,7 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(model.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            If TypeOf model.GetProductVersion() Is String Then
+            If model.GetProductVersion() IsNot Nothing Then
                 Dim productVersion = model.GetProductVersion()
                 annotations(CoreAnnotationNames.ProductVersion) = New Annotation(CoreAnnotationNames.ProductVersion, productVersion)
             End If
@@ -101,27 +101,28 @@ Namespace Migrations.Design
             NotNull(entityTypes, NameOf(entityTypes))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            For Each entityType In entityTypes.Where(Function(e) e.FindOwnership() Is Nothing)
+
+            Dim nonOwnedTypes = entityTypes.Where(Function(e) e.FindOwnership() Is Nothing).ToList()
+            For Each entityType In nonOwnedTypes
                 stringBuilder.AppendLine()
                 GenerateEntityType(modelBuilderName, entityType, stringBuilder)
             Next
 
-            For Each entityType In entityTypes.Where(
-                Function(e) e.FindOwnership() Is Nothing AndAlso
-                            (e.GetDeclaredForeignKeys().Any() OrElse e.GetDeclaredReferencingForeignKeys().Any(Function(fk) fk.IsOwnership)))
+            For Each entityType In nonOwnedTypes.Where(
+                     Function(e) e.GetDeclaredForeignKeys().Any() OrElse
+                                 e.GetDeclaredReferencingForeignKeys().Any(Function(fk) fk.IsOwnership))
 
                 stringBuilder.AppendLine()
                 GenerateEntityTypeRelationships(modelBuilderName, entityType, stringBuilder)
             Next
 
-            For Each entityType In entityTypes.Where(
-                Function(e) e.FindOwnership() Is Nothing AndAlso
-                            e.GetDeclaredNavigations().Any(Function(n) Not n.IsOnDependent AndAlso Not n.ForeignKey.IsOwnership))
+            For Each entityType In nonOwnedTypes.Where(
+                     Function(e) e.GetDeclaredNavigations().Any(Function(n) Not n.IsOnDependent AndAlso
+                                                                            Not n.ForeignKey.IsOwnership))
 
                 stringBuilder.AppendLine()
                 GenerateEntityTypeNavigations(modelBuilderName, entityType, stringBuilder)
             Next
-
         End Sub
 
         ''' <summary>
@@ -166,12 +167,14 @@ Namespace Migrations.Design
                     Append(VBCode.Literal(ownerNavigation))
             End If
 
+            stringBuilder.
+                AppendLine(","c)
+
             Using stringBuilder.Indent()
                 stringBuilder.
-                    AppendLine(",").
                     Append("Sub(").
                     Append(entityTypeBuilderName).
-                    AppendLine(")")
+                    AppendLine(")"c)
 
                 Using stringBuilder.Indent()
                     GenerateBaseType(entityTypeBuilderName, entityType.BaseType, stringBuilder)
@@ -296,7 +299,7 @@ Namespace Migrations.Design
                 Append(modelBuilderName).
                 Append(".Entity(").
                 Append(VBCode.Literal(entityType.Name)).
-                AppendLine(",")
+                AppendLine(","c)
 
             Using stringBuilder.Indent()
                 stringBuilder.AppendLine("Sub(b)")
@@ -350,8 +353,8 @@ Namespace Migrations.Design
                     AppendLine().
                     Append(entityTypeBuilderName).
                     Append(".HasBaseType(").
-                    Append(VBCode.Literal(baseType.Name)).
-                    AppendLine(")")
+                    Append(VBCode.Literal(GetFullName(baseType))).
+                    AppendLine(")"c)
             End If
         End Sub
 
@@ -365,75 +368,98 @@ Namespace Migrations.Design
                                                    sequence As ISequence,
                                                    stringBuilder As IndentedStringBuilder)
 
-            stringBuilder.
-                AppendLine().
+            Dim sequenceBuilderNameBuilder As New StringBuilder()
+
+            sequenceBuilderNameBuilder.
                 Append(modelBuilderName).
                 Append(".HasSequence")
 
             If sequence.Type <> Internal.Sequence.DefaultClrType Then
-                stringBuilder.
+                sequenceBuilderNameBuilder.
                     Append("(Of ").
                     Append(VBCode.Reference(sequence.Type)).
-                    Append(")")
+                    Append(")"c)
             End If
 
-            stringBuilder.
-                Append("(").
+            sequenceBuilderNameBuilder.
+                Append("("c).
                 Append(VBCode.Literal(sequence.Name))
 
             If Not String.IsNullOrEmpty(sequence.Schema) AndAlso
                sequence.Model.GetDefaultSchema() <> sequence.Schema Then
 
-                stringBuilder.
+                sequenceBuilderNameBuilder.
                     Append(", ").
                     Append(VBCode.Literal(sequence.Schema))
             End If
 
-            stringBuilder.Append(")")
+            sequenceBuilderNameBuilder.Append(")"c)
+            Dim sequenceBuilderName = sequenceBuilderNameBuilder.ToString()
 
-            Using stringBuilder.Indent()
-                If sequence.StartValue <> Internal.Sequence.DefaultStartValue Then
-                    stringBuilder.
-                        AppendLine(".").
-                        Append("StartsAt(").
-                        Append(VBCode.Literal(sequence.StartValue)).
-                        Append(")")
-                End If
+            stringBuilder.
+                AppendLine().
+                Append(sequenceBuilderName)
 
-                If sequence.IncrementBy <> Internal.Sequence.DefaultIncrementBy Then
-                    stringBuilder.
-                        AppendLine(".").
-                        Append("IncrementsBy(").
-                        Append(VBCode.Literal(sequence.IncrementBy)).
-                        Append(")")
-                End If
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
 
-                If Not sequence.MinValue.Equals(Internal.Sequence.DefaultMinValue) Then
-                    stringBuilder.
-                        AppendLine(".").
-                        Append("HasMin(").
-                        Append(VBCode.Literal(sequence.MinValue)).
-                        Append(")")
-                End If
+            If sequence.StartValue <> Internal.Sequence.DefaultStartValue Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("StartsAt(").
+                    Append(VBCode.Literal(sequence.StartValue)).
+                    Append(")"c)
+            End If
 
-                If Not sequence.MaxValue.Equals(Internal.Sequence.DefaultMaxValue) Then
-                    stringBuilder.
-                        AppendLine(".").
-                        Append("HasMax(").
-                        Append(VBCode.Literal(sequence.MaxValue)).
-                        Append(")")
-                End If
+            If sequence.IncrementBy <> Internal.Sequence.DefaultIncrementBy Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("IncrementsBy(").
+                    Append(VBCode.Literal(sequence.IncrementBy)).
+                    Append(")"c)
+            End If
 
-                If sequence.IsCyclic <> Internal.Sequence.DefaultIsCyclic Then
-                    stringBuilder.
-                        AppendLine(".").
-                        Append("IsCyclic()")
-                End If
-            End Using
+            If Not sequence.MinValue.Equals(Internal.Sequence.DefaultMinValue) Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("HasMin(").
+                    Append(VBCode.Literal(sequence.MinValue)).
+                    Append(")"c)
+            End If
 
-            stringBuilder.AppendLine()
+            If Not sequence.MaxValue.Equals(Internal.Sequence.DefaultMaxValue) Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("HasMax(").
+                    Append(VBCode.Literal(sequence.MaxValue)).
+                    Append(")"c)
+            End If
+
+            If sequence.IsCyclic <> Internal.Sequence.DefaultIsCyclic Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("IsCyclic()")
+            End If
+
+            GenerateSequenceAnnotations(sequenceBuilderName, sequence, stringBuilder)
         End Sub
 
+        ''' <summary>
+        '''     Generates code for sequence annotations.
+        ''' </summary>
+        ''' <param name="sequenceBuilderName">The name of the sequence builder variable.</param>
+        ''' <param name="sequence">The sequence.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateSequenceAnnotations(sequenceBuilderName As String,
+                                                              sequence As ISequence,
+                                                              stringBuilder As IndentedStringBuilder)
+
+            Dim annotations = AnnotationCodeGenerator.
+                                FilterIgnoredAnnotations(sequence.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
+            GenerateAnnotations(sequenceBuilderName, sequence, stringBuilder, annotations, inChainedCall:=True)
+        End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IProperty"/> objects.
@@ -486,13 +512,13 @@ Namespace Migrations.Design
 
             If [property].IsConcurrencyToken Then
                 stringBuilder.
-                    AppendLine(".").
+                    AppendLine("."c).
                     Append("IsConcurrencyToken()")
             End If
 
             If [property].IsNullable <> (clrType.IsNullableType() AndAlso Not [property].IsPrimaryKey()) Then
                 stringBuilder.
-                    AppendLine(".").
+                    AppendLine("."c).
                     Append("IsRequired()")
             End If
 
@@ -501,22 +527,22 @@ Namespace Migrations.Design
 
                 Case ValueGenerated.OnAdd
                     stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         Append("ValueGeneratedOnAdd()")
 
                 Case ValueGenerated.OnUpdate
                     stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         Append("ValueGeneratedOnUpdate()")
 
                 Case ValueGenerated.OnUpdateSometimes
                     stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         Append("ValueGeneratedOnUpdateSometimes()")
 
                 Case Else
                     stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         Append("ValueGeneratedOnAddOrUpdate()")
             End Select
 
@@ -546,11 +572,11 @@ Namespace Migrations.Design
             GenerateFluentApiForIsUnicode([property], stringBuilder)
 
             stringBuilder.
-                AppendLine(".").
+                AppendLine("."c).
                 Append(NameOf(RelationalPropertyBuilderExtensions.HasColumnType)).
-                Append("(").
-                Append(VBCode.Literal(If([property].GetColumnType(), RelationalTypeMappingSource.GetMapping([property]).StoreType))).
-                Append(")")
+                Append("("c).
+                Append(VBCode.Literal([property].GetColumnType())).
+                Append(")"c)
 
             annotations.Remove(RelationalAnnotationNames.ColumnType)
 
@@ -771,117 +797,11 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(entityType.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            Dim tableNameAnnotation = annotations.Find(RelationalAnnotationNames.TableName)
+            GenerateTableMapping(entityTypeBuilderName, entityType, stringBuilder, annotations)
+            GenerateSplitTableMapping(entityTypeBuilderName, entityType, stringBuilder)
 
-            If tableNameAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
-                Dim tableName = If(CStr(tableNameAnnotation?.Value), entityType.GetTableName())
-
-                If tableName IsNot Nothing OrElse tableNameAnnotation IsNot Nothing Then
-
-                    stringBuilder.
-                        AppendLine().
-                        Append(entityTypeBuilderName).
-                        Append(".ToTable(")
-
-                    Dim schemaAnnotation = annotations.Find(RelationalAnnotationNames.Schema)
-                    Dim schema = DirectCast(If(schemaAnnotation?.Value, entityType.GetSchema()), String)
-
-                    If tableName Is Nothing AndAlso
-                       (schemaAnnotation Is Nothing OrElse schema Is Nothing) Then
-
-                        stringBuilder.
-                            Append("DirectCast(").
-                            Append(VBCode.UnknownLiteral(tableName)).
-                            Append(", String)")
-                    Else
-                        stringBuilder.Append(VBCode.UnknownLiteral(tableName))
-                    End If
-
-                    If tableNameAnnotation IsNot Nothing Then
-                        annotations.Remove(tableNameAnnotation.Name)
-                    End If
-
-                    Dim isExcludedAnnotation = annotations.Find(RelationalAnnotationNames.IsTableExcludedFromMigrations)
-                    Dim isExcludedAnnotationValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean, DirectCast(isExcludedAnnotation?.Value, Boolean?), Nothing)
-                    Dim isExcludedFromMigrations = isExcludedAnnotationValue.HasValue AndAlso isExcludedAnnotationValue.Value
-
-                    If isExcludedAnnotation IsNot Nothing Then
-                        annotations.Remove(isExcludedAnnotation.Name)
-                    End If
-
-                    Dim hasTriggers = entityType.GetTriggers().Any()
-                    Dim requiresTableBuilder = isExcludedFromMigrations OrElse hasTriggers
-
-                    If schema IsNot Nothing OrElse
-                       (schemaAnnotation IsNot Nothing AndAlso tableName IsNot Nothing) Then
-
-                        stringBuilder.Append(", ")
-
-                        If schema Is Nothing AndAlso Not requiresTableBuilder Then
-                            stringBuilder.
-                                Append("DirectCast(").
-                                Append(VBCode.UnknownLiteral(schema)).
-                                Append(", String)")
-                        Else
-                            stringBuilder.Append(VBCode.UnknownLiteral(schema))
-                        End If
-                    End If
-
-                    If requiresTableBuilder Then
-                        If isExcludedFromMigrations AndAlso Not hasTriggers Then
-                            stringBuilder.Append(", Sub(t) t.ExcludeFromMigrations()")
-                        Else
-                            stringBuilder.
-                                AppendLine(", Sub(t)")
-
-                            Using stringBuilder.Indent()
-                                If isExcludedFromMigrations Then
-                                    stringBuilder.
-                                        AppendLine("t.ExcludeFromMigrations()").
-                                        AppendLine()
-                                End If
-
-                                GenerateTriggers("t", entityType, stringBuilder)
-                            End Using
-
-                            stringBuilder.Append("End Sub")
-                        End If
-                    End If
-
-                    stringBuilder.AppendLine(")")
-                End If
-            End If
-
-            annotations.Remove(RelationalAnnotationNames.Schema)
-
-            Dim viewNameAnnotation = annotations.Find(RelationalAnnotationNames.ViewName)
-            If viewNameAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
-                Dim viewName = If(CStr(viewNameAnnotation?.Value), entityType.GetViewName())
-
-                If viewName IsNot Nothing OrElse viewNameAnnotation IsNot Nothing Then
-                    stringBuilder.
-                        AppendLine().
-                        Append(entityTypeBuilderName).
-                        Append(".ToView(").
-                        Append(VBCode.UnknownLiteral(viewName))
-
-                    If viewNameAnnotation IsNot Nothing Then
-                        annotations.Remove(viewNameAnnotation.Name)
-                    End If
-
-                    Dim viewSchemaAnnotation = annotations.Find(RelationalAnnotationNames.ViewSchema)
-                    If viewSchemaAnnotation?.Value IsNot Nothing Then
-                        stringBuilder.
-                            Append(", ").
-                            Append(VBCode.Literal(CStr(viewSchemaAnnotation.Value)))
-                    End If
-
-                    stringBuilder.AppendLine(")")
-                End If
-            End If
-
-            annotations.Remove(RelationalAnnotationNames.ViewSchema)
-            annotations.Remove(RelationalAnnotationNames.ViewDefinitionSql)
+            GenerateViewMapping(entityTypeBuilderName, entityType, stringBuilder, annotations)
+            GenerateSplitViewMapping(entityTypeBuilderName, entityType, stringBuilder)
 
             Dim functionNameAnnotation = annotations.Find(RelationalAnnotationNames.FunctionName)
             If functionNameAnnotation IsNot Nothing OrElse entityType.BaseType Is Nothing Then
@@ -893,7 +813,7 @@ Namespace Migrations.Design
                         Append(entityTypeBuilderName).
                         Append(".ToFunction(").
                         Append(VBCode.UnknownLiteral(functionName)).
-                        AppendLine(")")
+                        AppendLine(")"c)
 
                     If functionNameAnnotation IsNot Nothing Then
                         annotations.Remove(functionNameAnnotation.Name)
@@ -912,7 +832,7 @@ Namespace Migrations.Design
                         Append(entityTypeBuilderName).
                         Append(".ToSqlQuery(").
                         Append(VBCode.UnknownLiteral(SqlQuery)).
-                        AppendLine(")")
+                        AppendLine(")"c)
 
                     If sqlQueryAnnotation IsNot Nothing Then
                         annotations.Remove(sqlQueryAnnotation.Name)
@@ -927,7 +847,7 @@ Namespace Migrations.Design
                 stringBuilder.
                     AppendLine().
                     Append(entityTypeBuilderName).
-                    Append(".").
+                    Append("."c).
                     Append("HasDiscriminator")
 
                 If discriminatorPropertyAnnotation?.Value IsNot Nothing Then
@@ -943,7 +863,7 @@ Namespace Migrations.Design
                         Append(VBCode.Reference(propertyClrType)).
                         Append(")(").
                         Append(VBCode.Literal(CStr(discriminatorPropertyAnnotation.Value))).
-                        Append(")")
+                        Append(")"c)
                 Else
                     stringBuilder.
                         Append("()")
@@ -953,11 +873,11 @@ Namespace Migrations.Design
                     Dim value = discriminatorMappingCompleteAnnotation.Value
 
                     stringBuilder.
-                        Append(".").
+                        Append("."c).
                         Append("IsComplete").
-                        Append("(").
+                        Append("("c).
                         Append(VBCode.UnknownLiteral(value)).
-                        Append(")")
+                        Append(")"c)
                 End If
 
                 If discriminatorValueAnnotation?.Value IsNot Nothing Then
@@ -972,17 +892,262 @@ Namespace Migrations.Design
                     End If
 
                     stringBuilder.
-                        Append(".").
+                        Append("."c).
                         Append("HasValue").
-                        Append("(").
+                        Append("("c).
                         Append(VBCode.UnknownLiteral(value)).
-                        Append(")")
+                        Append(")"c)
                 End If
 
                 stringBuilder.AppendLine()
             End If
 
             GenerateAnnotations(entityTypeBuilderName, entityType, stringBuilder, annotations, inChainedCall:=False)
+        End Sub
+
+        Private Sub GenerateTableMapping(entityTypeBuilderName As String,
+                                         entityType As IEntityType,
+                                         stringBuilder As IndentedStringBuilder,
+                                         annotations As Dictionary(Of String, IAnnotation))
+
+            Dim tableNameAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.TableName, tableNameAnnotation)
+
+            Dim schemaAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.Schema, schemaAnnotation)
+
+            Dim table = StoreObjectIdentifier.Create(entityType, StoreObjectType.Table)
+            Dim tableName = If(CStr(tableNameAnnotation?.Value), table?.Name)
+            If tableNameAnnotation Is Nothing AndAlso
+               (tableName Is Nothing OrElse entityType.BaseType?.GetTableName() = tableName) Then
+                Exit Sub
+            End If
+
+            stringBuilder.
+                AppendLine().
+                Append(entityTypeBuilderName).
+                Append(".ToTable(")
+
+            Dim schema = If(CStr(schemaAnnotation?.Value), table?.Schema)
+            If tableName Is Nothing AndAlso
+               (schemaAnnotation Is Nothing OrElse schema Is Nothing) Then
+                stringBuilder.
+                    Append("DirectCast(").
+                    Append(VBCode.UnknownLiteral(tableName)).
+                    Append(", String)")
+            Else
+                stringBuilder.Append(VBCode.UnknownLiteral(tableName))
+            End If
+
+            Dim isExcludedAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.IsTableExcludedFromMigrations, isExcludedAnnotation)
+
+            Dim isExcludedFromMigrationsValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean?, DirectCast(isExcludedAnnotation?.Value, Boolean?), Nothing)
+            Dim isExcludedFromMigrations = isExcludedFromMigrationsValue.HasValue AndAlso isExcludedFromMigrationsValue.Value
+
+            If isExcludedAnnotation IsNot Nothing Then
+                annotations.Remove(isExcludedAnnotation.Name)
+            End If
+
+            Dim hasTriggers = entityType.GetTriggers().Any(Function(t) t.TableName = tableName AndAlso t.TableSchema = schema)
+            Dim hasOverrides = table IsNot Nothing AndAlso
+                               entityType.GetProperties().
+                                          Select(Function(p) p.FindOverrides(table.Value)).
+                                          Any(Function(o) o IsNot Nothing)
+
+            Dim requiresTableBuilder = isExcludedFromMigrations OrElse hasTriggers OrElse hasOverrides
+
+            If schema IsNot Nothing OrElse
+               (schemaAnnotation IsNot Nothing AndAlso tableName IsNot Nothing) Then
+
+                stringBuilder.Append(", ")
+
+                If schema Is Nothing AndAlso Not requiresTableBuilder Then
+                    stringBuilder.
+                        Append("DirectCast(").
+                        Append(VBCode.UnknownLiteral(schema)).
+                        Append(", String)")
+                Else
+                    stringBuilder.Append(VBCode.UnknownLiteral(schema))
+                End If
+            End If
+
+            If requiresTableBuilder Then
+                stringBuilder.AppendLine(","c)
+
+                Using stringBuilder.Indent()
+                    stringBuilder.AppendLine("Sub(t)")
+
+                    Using stringBuilder.Indent()
+                        If isExcludedFromMigrations Then
+                            stringBuilder.
+                                AppendLine("t.ExcludeFromMigrations()").
+                            AppendLine()
+                        End If
+
+                        If hasTriggers Then
+                            GenerateTriggers("t", entityType, tableName, schema, stringBuilder)
+                        End If
+
+                        If hasOverrides Then
+                            GenerateOverrides("t", entityType, table.Value, stringBuilder)
+                        End If
+                    End Using
+
+                    stringBuilder.Append("End Sub")
+                End Using
+            End If
+
+            stringBuilder.AppendLine(")"c)
+        End Sub
+
+        Private Sub GenerateSplitTableMapping(entityTypeBuilderName As String,
+                                              entityType As IEntityType,
+                                              stringBuilder As IndentedStringBuilder)
+
+            For Each fragment In entityType.GetMappingFragments(StoreObjectType.Table)
+                Dim Table = fragment.StoreObject
+                stringBuilder.
+                    AppendLine().
+                    Append(entityTypeBuilderName).
+                    Append(".SplitToTable(").
+                    Append(VBCode.UnknownLiteral(Table.Name)).
+                    Append(", ").
+                    Append(VBCode.UnknownLiteral(Table.Schema)).
+                    AppendLine(","c)
+
+                Using stringBuilder.Indent()
+                    stringBuilder.AppendLine("Sub(t)")
+
+                    Using stringBuilder.Indent()
+                        GenerateTriggers("t", entityType, Table.Name, Table.Schema, stringBuilder)
+                        GenerateOverrides("t", entityType, Table, stringBuilder)
+                        GenerateEntityTypeMappingFragmentAnnotations("t", fragment, stringBuilder)
+                    End Using
+
+                    stringBuilder.
+                        Append("End Sub").
+                        AppendLine(")"c)
+                End Using
+            Next
+        End Sub
+
+        Private Sub GenerateViewMapping(entityTypeBuilderName As String,
+                                        entityType As IEntityType,
+                                        stringBuilder As IndentedStringBuilder,
+                                        annotations As Dictionary(Of String, IAnnotation))
+
+            Dim viewNameAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.ViewName, viewNameAnnotation)
+
+            Dim viewSchemaAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.ViewSchema, viewSchemaAnnotation)
+
+            annotations.Remove(RelationalAnnotationNames.ViewDefinitionSql)
+
+            Dim View = StoreObjectIdentifier.Create(entityType, StoreObjectType.View)
+            Dim viewName = If(CStr(viewNameAnnotation?.Value), View?.Name)
+            If viewNameAnnotation Is Nothing AndAlso
+               (viewName Is Nothing OrElse entityType.BaseType?.GetViewName() = viewName) Then
+
+                Exit Sub
+            End If
+
+            stringBuilder.
+                AppendLine().
+                Append(entityTypeBuilderName).
+                Append(".ToView(").
+                Append(VBCode.UnknownLiteral(viewName))
+
+            If viewNameAnnotation IsNot Nothing Then
+                annotations.Remove(viewNameAnnotation.Name)
+            End If
+
+            Dim hasOverrides = View IsNot Nothing AndAlso
+                               entityType.GetProperties().
+                                          Select(Function(p) p.FindOverrides(View.Value)).
+                                          Any(Function(o) o IsNot Nothing)
+
+            Dim schema = If(CStr(viewSchemaAnnotation?.Value), View?.Schema)
+            If schema IsNot Nothing OrElse
+               viewSchemaAnnotation IsNot Nothing Then
+
+                stringBuilder.Append(", ")
+
+                If schema Is Nothing AndAlso Not hasOverrides Then
+                    stringBuilder.
+                        Append("DirectCast(").
+                        Append(VBCode.UnknownLiteral(schema)).
+                        Append(", String)")
+                Else
+                    stringBuilder.Append(VBCode.UnknownLiteral(schema))
+                End If
+            End If
+
+            If hasOverrides Then
+                stringBuilder.AppendLine(","c)
+
+                Using stringBuilder.Indent()
+                    stringBuilder.AppendLine("Sub(v)")
+
+                    Using stringBuilder.Indent()
+                        GenerateOverrides("v", entityType, View.Value, stringBuilder)
+                    End Using
+
+                    stringBuilder.Append("End Sub")
+                End Using
+            End If
+
+            stringBuilder.AppendLine(")"c)
+        End Sub
+
+        Private Sub GenerateSplitViewMapping(entityTypeBuilderName As String,
+                                         entityType As IEntityType,
+                                         stringBuilder As IndentedStringBuilder)
+
+            For Each fragment In entityType.GetMappingFragments(StoreObjectType.View)
+
+                stringBuilder.
+                    AppendLine().
+                    Append(entityTypeBuilderName).
+                    Append(".SplitToView(").
+                    Append(VBCode.UnknownLiteral(fragment.StoreObject.Name)).
+                    Append(", ").
+                    Append(VBCode.UnknownLiteral(fragment.StoreObject.Schema)).
+                    AppendLine(","c)
+
+                Using stringBuilder.Indent()
+                    stringBuilder.AppendLine("Sub(v)")
+
+                    Using stringBuilder.Indent()
+                        GenerateOverrides("v", entityType, fragment.StoreObject, stringBuilder)
+                        GenerateEntityTypeMappingFragmentAnnotations("v", fragment, stringBuilder)
+                    End Using
+
+                    stringBuilder.
+                        Append("End Sub").
+                        AppendLine(")"c)
+                End Using
+            Next
+        End Sub
+
+        '' <summary>
+        ''     Generates code for mapping fragment annotations.
+        '' </summary>
+        '' <param name="tableBuilderName">The name of the table builder variable.</param>
+        '' <param name="fragment">The mapping fragment.</param>
+        '' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateEntityTypeMappingFragmentAnnotations(tableBuilderName As String,
+                                                                           fragment As IEntityTypeMappingFragment,
+                                                                           stringBuilder As IndentedStringBuilder)
+
+            Dim annotations = AnnotationCodeGenerator.
+                                FilterIgnoredAnnotations(fragment.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
+            If annotations.Count > 0 Then
+                GenerateAnnotations(tableBuilderName, fragment, stringBuilder, annotations, inChainedCall:=False)
+            End If
         End Sub
 
         ''' <summary>
@@ -1029,29 +1194,73 @@ Namespace Migrations.Design
                 Append(", ").
                 Append(VBCode.Literal(checkConstraint.Sql))
 
-            If checkConstraint.Name IsNot Nothing AndAlso
-               checkConstraint.Name <> If(checkConstraint.GetDefaultName(), checkConstraint.ModelName) Then
-
-                stringBuilder.
-                    Append(", Sub(c) c.HasName(").
-                    Append(VBCode.Literal(checkConstraint.Name)).
-                    Append(")")
-            End If
-
-            stringBuilder.AppendLine(")")
+            GenerateCheckConstraintAnnotations(checkConstraint, stringBuilder)
+            stringBuilder.AppendLine(")"c)
         End Sub
+
+        ''' <summary>
+        '''     Generates code for check constraint annotations.
+        ''' </summary>
+        ''' <param name="checkConstraint">The check constraint.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateCheckConstraintAnnotations(checkConstraint As ICheckConstraint,
+                                                                    stringBuilder As IndentedStringBuilder)
+
+            Dim hasNonDefaultName = checkConstraint.Name IsNot Nothing AndAlso
+                                    checkConstraint.Name <> If(checkConstraint.GetDefaultName(), checkConstraint.ModelName)
+
+            Dim annotations = AnnotationCodeGenerator.
+                                FilterIgnoredAnnotations(checkConstraint.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
+            If annotations.Count > 0 OrElse hasNonDefaultName Then
+                If annotations.Count > 0 Then
+                    stringBuilder.
+                        AppendLine(","c).
+                        IncrementIndent().
+                        AppendLine("Sub(c)")
+                Else
+                    stringBuilder.Append(", Sub(c) ")
+                End If
+
+                If hasNonDefaultName Then
+                    stringBuilder.
+                        Append("c.HasName(").
+                        Append(VBCode.Literal(checkConstraint.Name)).
+                        Append(")"c)
+                End If
+
+                If annotations.Count > 0 Then
+                    Using stringBuilder.Indent
+                        GenerateAnnotations("c", checkConstraint, stringBuilder, annotations, inChainedCall:=False)
+                    End Using
+                    stringBuilder.
+                        DecrementIndent().
+                        Append("End Sub")
+                End If
+            End If
+    End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="ITrigger" /> objects.
         ''' </summary>
         ''' <param name="tableBuilderName">The name of the table builder variable.</param>
         ''' <param name="entityType">The entity type.</param>
+        ''' <param name="table">The table name.</param>
+        ''' <param name="schema">The table schema.</param>
         ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateTriggers(tableBuilderName As String,
                                                    entityType As IEntityType,
+                                                   table As String,
+                                                   schema As String,
                                                    stringBuilder As IndentedStringBuilder)
 
             For Each trigger In entityType.GetTriggers()
+
+                If trigger.TableName <> table OrElse trigger.TableSchema <> schema Then
+                    Continue For
+                End If
+
                 GenerateTrigger(tableBuilderName, trigger, stringBuilder)
             Next
         End Sub
@@ -1060,42 +1269,115 @@ Namespace Migrations.Design
         '''     Generates code for an <see cref="ITrigger" />.
         ''' </summary>
         ''' <param name="tableBuilderName">The name of the table builder variable.</param>
-        ''' <param name="trigger">The check constraint.</param>
+        ''' <param name="trigger">The trigger.</param>
         ''' <param name="stringBuilder">The builder code Is added to.</param>
         Protected Overridable Sub GenerateTrigger(tableBuilderName As String,
                                                   trigger As ITrigger,
                                                   stringBuilder As IndentedStringBuilder)
 
-            Dim triggerBuilderNameStringBuilder As New StringBuilder()
-            triggerBuilderNameStringBuilder.
-                Append(tableBuilderName).
-                Append(".HasTrigger(").
-                Append(VBCode.Literal(trigger.ModelName)).
-                Append(")")
+            Dim triggerBuilderName = $"{tableBuilderName}.HasTrigger({VBCode.Literal(trigger.ModelName)})"
 
-            Dim triggerBuilderName = triggerBuilderNameStringBuilder.ToString()
-
-            stringBuilder.Append(triggerBuilderName)
+            stringBuilder.
+                AppendLine().
+                Append(triggerBuilderName)
 
             ' Note that GenerateAnnotations below does the corresponding decrement
             stringBuilder.IncrementIndent()
 
-            If trigger.Name IsNot Nothing AndAlso
-               trigger.Name <> If(trigger.GetDefaultName(), trigger.ModelName) Then
-
+            If trigger.Name <> trigger.GetDefaultName() Then
                 stringBuilder.
                     AppendLine().
                     Append(".HasName(").
                     Append(VBCode.Literal(trigger.Name)).
-                    Append(")")
+                    Append(")"c)
             End If
+
+            GenerateTriggerAnnotations(triggerBuilderName, trigger, stringBuilder)
+        End Sub
+
+        ''' <summary>
+        '''     Generates code for trigger annotations.
+        ''' </summary>
+        ''' <param name="triggerBuilderName">The name of the builder variable.</param>
+        ''' <param name="trigger">The trigger.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateTriggerAnnotations(triggerBuilderName As String,
+                                                             trigger As ITrigger,
+                                                             stringBuilder As IndentedStringBuilder)
 
             Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(trigger.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
             GenerateAnnotations(triggerBuilderName, trigger, stringBuilder, annotations, inChainedCall:=True)
-    End Sub
+        End Sub
+
+        ''' <summary>
+        '''     Generates code for <see cref="IRelationalPropertyOverrides" /> objects.
+        ''' </summary>
+        ''' <param name="tableBuilderName">The name of the table builder variable.</param>
+        ''' <param name="entityType">The entity type.</param>
+        ''' <param name="storeObject">The store object identifier.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateOverrides(tableBuilderName As String,
+                                                    entityType As IEntityType,
+                                                    storeObject As StoreObjectIdentifier,
+                                                    stringBuilder As IndentedStringBuilder)
+
+            For Each [property] In entityType.GetProperties()
+                Dim [overrides] = [property].FindOverrides(storeObject)
+                If [overrides] IsNot Nothing Then
+                    GenerateOverride(tableBuilderName, [overrides], stringBuilder)
+                End If
+            Next
+        End Sub
+
+        ''' <summary>
+        '''     Generates code for an <see cref="IRelationalPropertyOverrides" />.
+        ''' </summary>
+        ''' <param name="tableBuilderName">The name of the table builder variable.</param>
+        ''' <param name="overrides">The overrides.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateOverride(tableBuilderName As String,
+                                                   [overrides] As IRelationalPropertyOverrides,
+                                                   stringBuilder As IndentedStringBuilder)
+
+            Dim propertyBuilderName = $"{tableBuilderName}.Property({VBCode.Literal([overrides].[Property].Name)})"
+            stringBuilder.
+                AppendLine().
+                Append(propertyBuilderName)
+
+            ' Note that GenerateAnnotations below does the corresponding decrement
+            stringBuilder.IncrementIndent()
+
+            If [overrides].ColumnNameOverridden Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append(NameOf(ColumnBuilder.HasColumnName)).
+                    Append("("c).
+                    Append(VBCode.UnknownLiteral([overrides].ColumnName)).
+                    Append(")"c)
+            End If
+
+            GeneratePropertyOverridesAnnotations(propertyBuilderName, [overrides], stringBuilder)
+        End Sub
+
+        ''' <summary>
+        '''     Generates code for property overrides annotations.
+        ''' </summary>
+        ''' <param name="propertyBuilderName">The name of the builder variable.</param>
+        ''' <param name="overrides">The overrides.</param>
+        ''' <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GeneratePropertyOverridesAnnotations(propertyBuilderName As String,
+                                                                       [overrides] As IRelationalPropertyOverrides,
+                                                                       stringBuilder As IndentedStringBuilder)
+
+            Dim annotations = AnnotationCodeGenerator.
+                                FilterIgnoredAnnotations([overrides].GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
+            GenerateAnnotations(propertyBuilderName, [overrides], stringBuilder, annotations, inChainedCall:=True)
+        End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IForeignKey"/> objects.
@@ -1143,12 +1425,11 @@ Namespace Migrations.Design
                 foreignKeyBuilderNameStringBuilder.
                     Append(entityTypeBuilderName).
                     Append(".HasOne(").
-                    Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).
+                    Append(VBCode.Literal(GetFullName(foreignKey.PrincipalEntityType))).
                     Append(", ").
                     Append(If(foreignKey.DependentToPrincipal Is Nothing,
                                 VBCode.UnknownLiteral(Nothing),
-                                VBCode.Literal(foreignKey.DependentToPrincipal.Name))
-                          )
+                                VBCode.Literal(foreignKey.DependentToPrincipal.Name)))
             Else
                 foreignKeyBuilderNameStringBuilder.
                     Append(entityTypeBuilderName).
@@ -1172,7 +1453,7 @@ Namespace Migrations.Design
 
             If foreignKey.IsUnique AndAlso Not foreignKey.IsOwnership Then
                 stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         Append("WithOne(")
 
                 If foreignKey.PrincipalToDependent IsNot Nothing Then
@@ -1183,62 +1464,62 @@ Namespace Migrations.Design
                 stringBuilder.
                         AppendLine(").").
                         Append("HasForeignKey(").
-                        Append(VBCode.Literal(foreignKey.DeclaringEntityType.Name)).
+                        Append(VBCode.Literal(GetFullName(foreignKey.DeclaringEntityType))).
                         Append(", ").
                         Append(String.Join(", ", foreignKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                        Append(")")
+                        Append(")"c)
 
                 If foreignKey.PrincipalKey IsNot foreignKey.PrincipalEntityType.FindPrimaryKey() Then
                     stringBuilder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append("HasPrincipalKey(").
-                            Append(VBCode.Literal(foreignKey.PrincipalEntityType.Name)).
+                            Append(VBCode.Literal(GetFullName(foreignKey.PrincipalEntityType))).
                             Append(", ").
                             Append(String.Join(", ", foreignKey.PrincipalKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                            Append(")")
+                            Append(")"c)
                 End If
 
             Else
                 If Not foreignKey.IsOwnership Then
 
                     stringBuilder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append("WithMany(")
 
                     If foreignKey.PrincipalToDependent IsNot Nothing Then
                         stringBuilder.Append(VBCode.Literal(foreignKey.PrincipalToDependent.Name))
                     End If
 
-                    stringBuilder.Append(")")
+                    stringBuilder.Append(")"c)
                 End If
 
                 stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         Append("HasForeignKey(").
                         Append(String.Join(", ", foreignKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                        Append(")")
+                        Append(")"c)
 
                 If foreignKey.PrincipalKey IsNot foreignKey.PrincipalEntityType.FindPrimaryKey() Then
                     stringBuilder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append("HasPrincipalKey(").
                             Append(String.Join(", ", foreignKey.PrincipalKey.Properties.Select(Function(p) VBCode.Literal(p.Name)))).
-                            Append(")")
+                            Append(")"c)
                 End If
             End If
 
             If Not foreignKey.IsOwnership Then
                 If foreignKey.DeleteBehavior <> DeleteBehavior.ClientSetNull Then
                     stringBuilder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append("OnDelete(").
                             Append(VBCode.Literal(DirectCast(foreignKey.DeleteBehavior, [Enum]))).
-                            Append(")")
+                            Append(")"c)
                 End If
 
                 If foreignKey.IsRequired Then
                     stringBuilder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append("IsRequired()")
                 End If
             End If
@@ -1285,10 +1566,9 @@ Namespace Migrations.Design
                 Append(modelBuilderName).
                 Append(".Entity(").
                 Append(VBCode.Literal(entityType.Name)).
-                AppendLine(",")
+                AppendLine(","c)
 
             Using stringBuilder.Indent()
-
                 stringBuilder.AppendLine("Sub(b)")
 
                 Using stringBuilder.Indent()
@@ -1354,7 +1634,7 @@ Namespace Migrations.Design
                navigation.ForeignKey.IsRequiredDependent Then
 
                 stringBuilder.
-                    AppendLine(".").
+                    AppendLine("."c).
                     Append("IsRequired()")
             End If
 
@@ -1406,7 +1686,7 @@ Namespace Migrations.Design
             stringBuilder.
                 AppendLine().
                 Append(entityTypeBuilderName).
-                Append(".").
+                Append("."c).
                 Append(NameOf(EntityTypeBuilder.HasData)).
                 AppendLine("({")
 
@@ -1414,7 +1694,7 @@ Namespace Migrations.Design
                 Dim firstDatum As Boolean = True
                 For Each o In dataList
                     If Not firstDatum Then
-                        stringBuilder.AppendLine(",")
+                        stringBuilder.AppendLine(","c)
                     Else
                         firstDatum = False
                     End If
@@ -1427,13 +1707,13 @@ Namespace Migrations.Design
                             Dim value As Object = Nothing
                             If o.TryGetValue([property].Name, value) AndAlso value IsNot Nothing Then
                                 If Not firstProperty Then
-                                    stringBuilder.AppendLine(",")
+                                    stringBuilder.AppendLine(","c)
                                 Else
                                     firstProperty = False
                                 End If
 
                                 stringBuilder.
-                                    Append(".").
+                                    Append("."c).
                                     Append(VBCode.Identifier([property].Name)).
                                     Append(" = ").
                                     Append(VBCode.UnknownLiteral(value))
@@ -1463,11 +1743,11 @@ Namespace Migrations.Design
             Dim maxLength As Integer = [property].GetMaxLength().Value
 
             stringBuilder.
-                AppendLine(".").
+                AppendLine("."c).
                 Append(NameOf(PropertyBuilder.HasMaxLength)).
-                Append("(").
+                Append("("c).
                 Append(VBCode.Literal(maxLength)).
-                Append(")")
+                Append(")"c)
         End Sub
 
         Private Sub GenerateFluentApiForPrecisionAndScale([property] As IProperty,
@@ -1481,9 +1761,9 @@ Namespace Migrations.Design
             Dim precision As Integer = [property].GetPrecision().Value
 
             stringBuilder.
-                AppendLine(".").
+                AppendLine("."c).
                 Append(NameOf(PropertyBuilder.HasPrecision)).
-                Append("(").
+                Append("("c).
                 Append(VBCode.UnknownLiteral(precision))
 
 
@@ -1495,7 +1775,7 @@ Namespace Migrations.Design
                     Append(VBCode.UnknownLiteral(scale))
             End If
 
-            stringBuilder.Append(")")
+            stringBuilder.Append(")"c)
 
         End Sub
 
@@ -1510,11 +1790,11 @@ Namespace Migrations.Design
             Dim unicode As Boolean = [property].IsUnicode().Value
 
             stringBuilder.
-                AppendLine(".").
+                AppendLine("."c).
                 Append(NameOf(PropertyBuilder.IsUnicode)).
-                Append("(").
+                Append("("c).
                 Append(VBCode.Literal(unicode)).
-                Append(")")
+                Append(")"c)
 
         End Sub
 
@@ -1528,9 +1808,9 @@ Namespace Migrations.Design
             If Not [property].TryGetDefaultValue(defaultValue) Then Exit Sub
 
             stringBuilder.
-                AppendLine(".").
+                AppendLine("."c).
                 Append(NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)).
-                Append("(")
+                Append("("c)
 
             If defaultValue IsNot DBNull.Value Then
 
@@ -1547,7 +1827,7 @@ Namespace Migrations.Design
             End If
 
             stringBuilder.
-                Append(")")
+                Append(")"c)
         End Sub
 
         Private Sub GenerateAnnotations(builderName As String,
@@ -1584,7 +1864,7 @@ Namespace Migrations.Design
             If chainedCall IsNot Nothing Then
                 If inChainedCall Then
                     stringBuilder.
-                        AppendLine(".").
+                        AppendLine("."c).
                         AppendLines(VBCode.Fragment(chainedCall, startWithDot:=False), skipFinalNewline:=True)
                 Else
                     If leadingNewline Then
@@ -1615,6 +1895,28 @@ Namespace Migrations.Design
             End If
         End Sub
 
+        Private Shared Function GetFullName(entityType As IReadOnlyEntityType) As String
+            Dim entityTypeName = entityType.Name
+            Dim ownership = entityType.FindOwnership()
+
+            If ownership Is Nothing Then
+                Return entityTypeName
+            End If
+
+            If entityType.HasSharedClrType AndAlso
+               entityTypeName = ownership.PrincipalEntityType.GetOwnedName(
+                                    entityType.ClrType.ShortDisplayName(),
+                                    ownership.PrincipalToDependent.Name) Then
+
+                entityTypeName = entityType.ClrType.DisplayName()
+            End If
+
+            Return GetFullName(ownership.PrincipalEntityType) &
+                   "."c &
+                   ownership.PrincipalToDependent.Name &
+                   "#"c &
+                   entityTypeName
+        End Function
     End Class
 
 End Namespace

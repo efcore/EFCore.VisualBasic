@@ -168,8 +168,10 @@ Namespace Scaffolding.Internal
             End If
 
             _builder.AppendLine($"Public Sub New(options As DbContextOptions(Of {contextName}))").
-                IncrementIndent().AppendLine("MyBase.New(options)").
-                DecrementIndent().AppendLine("End Sub").
+                IncrementIndent().
+                AppendLine("MyBase.New(options)").
+                DecrementIndent().
+                AppendLine("End Sub").
                 AppendLine()
         End Sub
 
@@ -367,18 +369,54 @@ Namespace Scaffolding.Internal
                 End If
             Next
 
+            Dim triggers = entityType.GetTriggers().ToArray()
+
+            If triggers.Length > 0 Then
+                Using _builder.Indent()
+                    _builder.
+                        AppendLine().
+                        AppendLine($"{EntityLambdaIdentifier}.{NameOf(RelationalEntityTypeBuilderExtensions.ToTable)}(")
+
+                    Using _builder.Indent()
+                        _builder.AppendLine("Sub(tb)")
+
+                        For Each trigger In entityType.GetTriggers().Where(Function(t) t.Name IsNot Nothing)
+                            GenerateTrigger("tb", trigger)
+                        Next
+
+                        _builder.AppendLine("End Sub)")
+                    End Using
+                End Using
+            End If
         End Sub
 
-        Private Sub AppendMultiLineFluentApi(entityType As IEntityType, lines As IList(Of String))
+        Private Sub GenerateTrigger(tableBuilderName As String, trigger As ITrigger)
+            Dim lines = New List(Of String) From {$"HasTrigger({_VBCode.Literal(trigger.Name)})"}
+
+            Dim annotations = _annotationCodeGenerator.
+                                FilterIgnoredAnnotations(trigger.GetAnnotations()).
+                                ToDictionary(Function(a) a.Name, Function(a) a)
+
+            _annotationCodeGenerator.RemoveAnnotationsHandledByConventions(trigger, annotations)
+
+            GenerateAnnotations(trigger, annotations, lines)
+
+            AppendMultiLineFluentApi(Nothing, lines, tableBuilderName)
+        End Sub
+
+        Private Sub AppendMultiLineFluentApi(entityType As IEntityType, lines As IList(Of String), Optional builderName As String = Nothing)
             If lines.Count <= 0 Then Exit Sub
 
-            InitializeEntityTypeBuilder(entityType)
+            If entityType IsNot Nothing Then
+                InitializeEntityTypeBuilder(entityType)
+            End If
 
             Using _builder.Indent()
 
-                _builder.Append(EntityLambdaIdentifier).
-                         Append("."c).
-                         Append(lines(0))
+                _builder.
+                    Append(If(builderName, EntityLambdaIdentifier)).
+                    Append("."c).
+                    Append(lines(0))
 
                 Using _builder.Indent()
                     For Each line In lines.Skip(1)
@@ -848,11 +886,9 @@ Namespace Scaffolding.Internal
                                     lines.Clear()
                                 End If
                             Next
-
                         End Using
 
                         _builder.AppendLine("End Sub)")
-
                     End Using
                 End Using
             End Using

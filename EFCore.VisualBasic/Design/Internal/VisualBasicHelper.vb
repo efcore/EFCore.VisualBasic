@@ -581,7 +581,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String
+        Public Overridable Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String Implements IVisualBasicHelper.Literal
             Return ListLitetal(GetType(T), values, vertical)
         End Function
 

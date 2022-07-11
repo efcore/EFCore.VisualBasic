@@ -96,6 +96,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(entityType, parameters)
         End Sub
 
-    End Class
+        ''' <inheritdoc />
+        Public Overrides Sub Generate([overrides] As IRelationalPropertyOverrides, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            If Not parameters.IsRuntime Then
+                Dim annotations = parameters.Annotations
+                annotations.Remove(SqlServerAnnotationNames.IdentityIncrement)
+                annotations.Remove(SqlServerAnnotationNames.IdentitySeed)
+            End If
 
+            MyBase.Generate([overrides], parameters)
+    End Sub
+    End Class
 End Namespace

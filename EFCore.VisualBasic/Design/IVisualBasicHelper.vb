@@ -58,6 +58,14 @@ Namespace Design
         Function Literal(values As Object(,)) As String
 
         ''' <summary>
+        '''     Generates a list literal.
+        ''' </summary>
+        ''' <param name="values">The list.</param>
+        ''' <param name="vertical">A value indicating whether to layout the literal vertically.</param>
+        ''' <returns>The literal.</returns>
+        Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String
+
+        ''' <summary>
         '''     Generates a BigInteger
         ''' </summary>
         ''' <param name="value">The BigInteger</param>

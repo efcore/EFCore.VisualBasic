@@ -1,5 +1,4 @@
 ﻿Imports EntityFrameworkCore.VisualBasic.Design
-Imports EntityFrameworkCore.VisualBasic.TestUtilities
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure

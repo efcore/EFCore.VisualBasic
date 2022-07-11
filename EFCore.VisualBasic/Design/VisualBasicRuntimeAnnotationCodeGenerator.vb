@@ -250,7 +250,7 @@ Namespace Design
             End If
         End Sub
 
-        Protected Function TryGetAndRemove(Of TKey, TValue, TReturn)(source As IDictionary(Of TKey, TValue),
+        Protected Shared Function TryGetAndRemove(Of TKey, TValue, TReturn)(source As IDictionary(Of TKey, TValue),
                                                                      key As TKey,
                                                                      ByRef annotationValue As TReturn) As Boolean
 

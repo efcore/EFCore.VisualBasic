@@ -254,7 +254,7 @@ Namespace Scaffolding.Internal
         End Sub
 
         Private Sub GenerateColumnAttribute(prop As IProperty)
-            Dim columnName = prop.GetColumnBaseName()
+            Dim columnName = prop.GetColumnName()
             Dim columnType = prop.GetConfiguredColumnType()
 
             Dim delimitedColumnName = If(columnName IsNot Nothing AndAlso columnName <> prop.Name, _code.Literal(columnName), Nothing)

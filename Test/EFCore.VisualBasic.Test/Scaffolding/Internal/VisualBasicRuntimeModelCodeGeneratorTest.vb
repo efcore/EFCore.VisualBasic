@@ -151,12 +151,12 @@ End Namespace
         <ConditionalFact>
         Public Sub Throws_for_constructor_binding()
             Test(
-                New LazyLoadingProxiesContext(),
+                New ConstructorBindingContext(),
                 CreateCompiledModelCodeGenerationOptions(),
                 expectedExceptionMessage:=DesignStrings.CompiledModelConstructorBinding("Lazy", "Customize()", "LazyEntityType"))
         End Sub
 
-        Public Class LazyLoadingProxiesContext
+        Public Class ConstructorBindingContext
             Inherits ContextBase
 
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
@@ -166,6 +166,9 @@ End Namespace
                     "Lazy", Sub(e)
                                 e.Property(Of Integer)("Id")
                                 e.HasKey("Id")
+                                DirectCast(e.Metadata, EntityType).ConstructorBinding = New ConstructorBinding(
+                                    GetType(Object).GetConstructor(Type.EmptyTypes),
+                                    Array.Empty(Of ParameterBinding)())
                             End Sub)
             End Sub
 
@@ -903,6 +906,7 @@ Namespace TestNamespace
             DependentBasebyteEntityType.CreateForeignKey1(dependentBasebyte, principalBase)
             DependentBasebyteEntityType.CreateForeignKey2(dependentBasebyte, principalDerivedDependentBasebyte)
             OwnedTypeEntityType.CreateForeignKey1(ownedType, principalBase)
+            OwnedTypeEntityType.CreateForeignKey2(ownedType, ownedType)
             OwnedType0EntityType.CreateForeignKey1(ownedType0, principalDerivedDependentBasebyte)
             PrincipalBasePrincipalDerivedDependentBasebyteEntityType.CreateForeignKey1(principalBasePrincipalDerivedDependentBasebyte, principalDerivedDependentBasebyte)
             PrincipalBasePrincipalDerivedDependentBasebyteEntityType.CreateForeignKey2(principalBasePrincipalDerivedDependentBasebyte, principalBase)
@@ -1069,12 +1073,13 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            Dim [overrides] As New SortedDictionary(Of StoreObjectIdentifier, Object)()
+            Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim idPrincipalDerived As New RuntimeRelationalPropertyOverrides(
                 id,
+                StoreObjectIdentifier.Table("PrincipalDerived", Nothing),
                 True,
                 "DerivedId")
-            [overrides](StoreObjectIdentifier.Table("PrincipalDerived", Nothing)) = idPrincipalDerived
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.Table("PrincipalDerived", Nothing), idPrincipalDerived})
             id.AddAnnotation("Relational:RelationalOverrides", [overrides])
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
@@ -1176,8 +1181,18 @@ Namespace TestNamespace
                 "PrincipalBaseId",
                 GetType(Long),
                 propertyAccessMode:=PropertyAccessMode.Field,
+                valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+            Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
+            Dim principalBaseIdPrincipalBase As New RuntimeRelationalPropertyOverrides(
+                principalBaseId,
+                StoreObjectIdentifier.Table("PrincipalBase", "mySchema"),
+                False,
+                Nothing)
+            principalBaseIdPrincipalBase.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.Table("PrincipalBase", "mySchema"), principalBaseIdPrincipalBase})
+            principalBaseId.AddAnnotation("Relational:RelationalOverrides", [overrides])
+            principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim principalBaseAlternateId = entityType.AddProperty(
                 "PrincipalBaseAlternateId",
@@ -1186,6 +1201,31 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
             principalBaseAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim details = entityType.AddProperty(
+                "Details",
+                GetType(String),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                propertyAccessMode:=PropertyAccessMode.Field,
+                nullable:=True)
+            Dim overrides0 As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
+            Dim detailsDetails As New RuntimeRelationalPropertyOverrides(
+                details,
+                StoreObjectIdentifier.Table("Details", Nothing),
+                False,
+                Nothing)
+            overrides0.GetType().GetMethod("Add").Invoke(overrides0, {StoreObjectIdentifier.Table("Details", Nothing), detailsDetails})
+            details.AddAnnotation("Relational:RelationalOverrides", overrides0)
+            details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim number = entityType.AddProperty(
+                "Number",
+                GetType(Integer),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                propertyAccessMode:=PropertyAccessMode.Field)
+            number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim context = entityType.AddServiceProperty(
                 "Context",
@@ -1220,7 +1260,26 @@ Namespace TestNamespace
             Return runtimeForeignKey
         End Function
 
+        Public Shared Function CreateForeignKey2(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
+                principalEntityType.FindKey({principalEntityType.FindProperty("PrincipalBaseId"), principalEntityType.FindProperty("PrincipalBaseAlternateId")}),
+                principalEntityType,
+                deleteBehavior:=DeleteBehavior.ClientCascade,
+                unique:=True,
+                required:=True,
+                requiredDependent:=True)
+
+            Return runtimeForeignKey
+        End Function
+
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+            Dim fragments As New StoreObjectDictionary(Of RuntimeEntityTypeMappingFragment)()
+            Dim detailsFragment As New RuntimeEntityTypeMappingFragment(
+                entityType,
+                StoreObjectIdentifier.Table("Details", Nothing),
+                Nothing)
+            fragments.GetType().GetMethod("Add").Invoke(fragments, {StoreObjectIdentifier.Table("Details", Nothing), detailsFragment})
+            entityType.AddAnnotation("Relational:MappingFragments", fragments)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", "mySchema")
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
@@ -1274,6 +1333,21 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+
+            Dim details = entityType.AddProperty(
+                "Details",
+                GetType(String),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim number = entityType.AddProperty(
+                "Number",
+                GetType(Integer),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+            number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim context = entityType.AddServiceProperty(
                 "Context",
@@ -1577,11 +1651,13 @@ End Namespace
                         Sub(c) AssertFileContents("PrincipalDerivedDependentBasebyteEntityType.vb", e7, c))
                 End Sub,
                 Sub(Model)
-                    Assert.Equal(CoreStrings.RuntimeModelMissingData,
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
                         Assert.Throws(Of InvalidOperationException)(Sub() Model.GetCollation()).Message)
-                    Assert.Null(Model(RelationalAnnotationNames.Collation))
+                    Assert.Equal(
+                        {RelationalAnnotationNames.MaxIdentifierLength, SqlServerAnnotationNames.ValueGenerationStrategy},
+                        Model.GetAnnotations().Select(Function(a) a.Name))
                     Assert.Equal(SqlServerValueGenerationStrategy.IdentityColumn, Model.GetValueGenerationStrategy())
-                    Assert.Null(Model(CoreAnnotationNames.PropertyAccessMode))
                     Assert.Equal(
                         CoreStrings.RuntimeModelMissingData,
                         Assert.Throws(Of InvalidOperationException)(Function() Model.GetPropertyAccessMode()).Message)
@@ -1623,6 +1699,9 @@ End Namespace
                         Assert.Throws(Of InvalidOperationException)(Sub() MyPrincipalBase.GetSeedData()).Message)
 
                     Dim PrincipalId = MyPrincipalBase.FindProperty(NameOf(PrincipalBase.Id))
+                    Assert.Equal(
+                        {RelationalAnnotationNames.RelationalOverrides, SqlServerAnnotationNames.ValueGenerationStrategy},
+                        PrincipalId.GetAnnotations().Select(Function(a) a.Name))
                     Assert.Equal(GetType(Long?), PrincipalId.ClrType)
                     Assert.Equal(GetType(Long?), PrincipalId.PropertyInfo.PropertyType)
                     Assert.Equal(GetType(Long?), PrincipalId.FieldInfo.FieldType)
@@ -1632,7 +1711,7 @@ End Namespace
                     Assert.Equal(PropertySaveBehavior.Save, PrincipalId.GetBeforeSaveBehavior())
                     Assert.Null(PrincipalId(CoreAnnotationNames.BeforeSaveBehavior))
                     Assert.Null(PrincipalId(CoreAnnotationNames.AfterSaveBehavior))
-                    Assert.Equal("Id", PrincipalId.GetColumnBaseName())
+                    Assert.Equal("Id", PrincipalId.GetColumnName())
                     Assert.Equal("Id", PrincipalId.GetColumnName(StoreObjectIdentifier.Table("PrincipalBase", "mySchema")))
                     Assert.Equal("DerivedId", PrincipalId.GetColumnName(StoreObjectIdentifier.Table("PrincipalDerived")))
                     Assert.Equal("bigint", PrincipalId.GetColumnType())
@@ -1657,7 +1736,7 @@ End Namespace
                     Assert.Equal(GetType(Point), principalAlternateId.ClrType)
                     Assert.False(principalAlternateId.IsNullable)
                     Assert.Equal(ValueGenerated.OnAdd, principalAlternateId.ValueGenerated)
-                    Assert.Equal("AlternateId", principalAlternateId.GetColumnBaseName())
+                    Assert.Equal("AlternateId", principalAlternateId.GetColumnName())
                     Assert.Equal("geometry", principalAlternateId.GetColumnType())
                     Assert.Equal(0, DirectCast(principalAlternateId.GetDefaultValue(), Point).SRID)
                     Assert.IsType(Of CastingConverter(Of Point, Point))(principalAlternateId.GetValueConverter())
@@ -1673,6 +1752,7 @@ End Namespace
                     Assert.Equal(2, MyPrincipalBase.GetIndexes().Count())
 
                     Dim compositeIndex = MyPrincipalBase.GetIndexes().First()
+                    Assert.Empty(compositeIndex.GetAnnotations())
                     Assert.Equal({principalAlternateId, PrincipalId}, compositeIndex.Properties)
                     Assert.False(compositeIndex.IsUnique)
                     Assert.Null(compositeIndex.Name)
@@ -1714,6 +1794,9 @@ End Namespace
                     Assert.Equal("AK_PrincipalBase_Id", principalAlternateKey.GetName())
 
                     Dim principalKey = MyPrincipalBase.GetKeys().Last()
+                    Assert.Equal(
+                        {RelationalAnnotationNames.Name},
+                        principalKey.GetAnnotations().Select(Function(a) a.Name))
                     Assert.Equal({PrincipalId, principalAlternateId}, principalKey.Properties)
                     Assert.True(principalKey.IsPrimaryKey())
                     Assert.Equal("PK", principalKey.GetName())
@@ -1725,6 +1808,9 @@ End Namespace
                     Assert.Equal({principalAlternateKey, principalKey}, PrincipalId.GetContainingKeys())
 
                     Dim referenceOwnedNavigation = MyPrincipalBase.GetNavigations().Single()
+                    Assert.Equal(
+                        {CoreAnnotationNames.EagerLoaded},
+                        referenceOwnedNavigation.GetAnnotations().Select(Function(a) a.Name))
                     Assert.Equal(NameOf(PrincipalBase.Owned), referenceOwnedNavigation.Name)
                     Assert.False(referenceOwnedNavigation.IsCollection)
                     Assert.True(referenceOwnedNavigation.IsEagerLoaded)
@@ -1758,7 +1844,27 @@ End Namespace
                         CoreStrings.RuntimeModelMissingData,
                         Assert.Throws(Of InvalidOperationException)(Sub() referenceOwnedType.GetNavigationAccessMode()).Message)
 
+                    Dim principalTable = StoreObjectIdentifier.Create(referenceOwnedType, StoreObjectType.Table).Value
+
+                    Dim ownedId = referenceOwnedType.FindProperty("PrincipalBaseId")
+                    Assert.True(ownedId.IsPrimaryKey())
+                    Assert.Equal(
+                        SqlServerValueGenerationStrategy.IdentityColumn,
+                        PrincipalId.GetValueGenerationStrategy(principalTable))
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() PrincipalId.GetIdentityIncrement(principalTable)).Message)
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() PrincipalId.GetIdentitySeed(principalTable)).Message)
+
+                    Dim ownedFragment = referenceOwnedType.GetMappingFragments().Single()
+                    Assert.Equal(NameOf(OwnedType.Details),
+                        referenceOwnedType.FindProperty(NameOf(OwnedType.Details)).GetColumnName(ownedFragment.StoreObject))
+                    Assert.Null(referenceOwnedType.FindProperty(NameOf(OwnedType.Details)).GetColumnName(principalTable))
+
                     Dim referenceOwnership = referenceOwnedNavigation.ForeignKey
+                    Assert.Empty(referenceOwnership.GetAnnotations())
                     Assert.Same(referenceOwnership, referenceOwnedType.FindOwnership())
                     Assert.True(referenceOwnership.IsOwnership)
                     Assert.True(referenceOwnership.IsRequired)
@@ -1771,6 +1877,7 @@ End Namespace
                     Assert.Same(principalKey, referenceOwnership.PrincipalKey)
 
                     Dim ownedServiceProperty = referenceOwnedType.GetServiceProperties().Single()
+                    Assert.Empty(ownedServiceProperty.GetAnnotations())
                     Assert.Equal(GetType(DbContext), ownedServiceProperty.ClrType)
                     Assert.Equal(GetType(DbContext), ownedServiceProperty.PropertyInfo.PropertyType)
                     Assert.Null(ownedServiceProperty.FieldInfo)
@@ -1893,7 +2000,7 @@ End Namespace
                     Assert.False(rowid.IsShadowProperty())
                     Assert.True(rowid.IsConcurrencyToken)
                     Assert.Equal(ValueGenerated.OnAddOrUpdate, rowid.ValueGenerated)
-                    Assert.Equal("rowid", rowid.GetColumnBaseName())
+                    Assert.Equal("rowid", rowid.GetColumnName())
                     Assert.Equal("rowversion", rowid.GetColumnType())
                     Assert.Null(rowid(RelationalAnnotationNames.Comment))
                     Assert.Equal(CoreStrings.RuntimeModelMissingData,
@@ -1948,7 +2055,7 @@ End Namespace
                     Assert.False(dependentData.IsShadowProperty())
                     Assert.False(dependentData.IsConcurrencyToken)
                     Assert.Equal(ValueGenerated.Never, dependentData.ValueGenerated)
-                    Assert.Equal("Data", dependentData.GetColumnBaseName())
+                    Assert.Equal("Data", dependentData.GetColumnName())
                     Assert.Equal("char(20)", dependentData.GetColumnType())
                     Assert.Equal(20, dependentData.GetMaxLength())
                     Assert.False(dependentData.IsUnicode())
@@ -1965,7 +2072,7 @@ End Namespace
                     Assert.True(dependentMoney.IsShadowProperty())
                     Assert.False(dependentMoney.IsConcurrencyToken)
                     Assert.Equal(ValueGenerated.Never, dependentMoney.ValueGenerated)
-                    Assert.Equal("Money", dependentMoney.GetColumnBaseName())
+                    Assert.Equal("Money", dependentMoney.GetColumnName())
                     Assert.Equal("decimal(9,3)", dependentMoney.GetColumnType())
                     Assert.Null(dependentMoney.GetMaxLength())
                     Assert.Null(dependentMoney.IsUnicode())
@@ -2062,10 +2169,16 @@ End Namespace
 
                         eb.HasAlternateKey(Function(e) e.Id)
 
-                        eb.OwnsOne(Function(e) e.Owned,
+                        eb.OwnsOne(
+                            Function(e) e.Owned,
                             Sub(ob)
                                 ob.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues)
                                 ob.UsePropertyAccessMode(PropertyAccessMode.Field)
+
+                                ob.ToTable("PrincipalBase", "mySchema",
+                                    Sub(t) t.Property("PrincipalBaseId").UseIdentityColumn(2, 3))
+
+                                ob.SplitToTable("Details", Sub(s) s.Property(Function(e) e.Details))
                             End Sub)
 
                         eb.Navigation(Function(e) e.Owned).
@@ -2629,6 +2742,9 @@ End Namespace
                 End Set
             End Property
 
+            Public Property Number As Integer
+            Public Property Details As String
+
             Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
             Public Event PropertyChanging As PropertyChangingEventHandler Implements INotifyPropertyChanging.PropertyChanging
 
@@ -3025,8 +3141,8 @@ End Namespace
                     Assert.Null(dataEntity.FindPrimaryKey())
                     Dim dataEntityFunctionMapping = dataEntity.GetFunctionMappings().Single(Function(m) m.IsDefaultFunctionMapping)
                     Assert.True(dataEntityFunctionMapping.IncludesDerivedTypes)
-                    Assert.True(dataEntityFunctionMapping.IsSharedTablePrincipal)
-                    Assert.True(dataEntityFunctionMapping.IsSplitEntityTypePrincipal)
+                    Assert.Null(dataEntityFunctionMapping.IsSharedTablePrincipal)
+                    Assert.Null(dataEntityFunctionMapping.IsSplitEntityTypePrincipal)
                     Assert.Same(getDataParameterless, dataEntityFunctionMapping.DbFunction)
 
                     Dim getDataStoreFunction = dataEntityFunctionMapping.StoreFunction
@@ -3035,8 +3151,8 @@ End Namespace
 
                     Dim dataEntityOtherFunctionMapping = dataEntity.GetFunctionMappings().Single(Function(m) Not m.IsDefaultFunctionMapping)
                     Assert.True(dataEntityOtherFunctionMapping.IncludesDerivedTypes)
-                    Assert.True(dataEntityOtherFunctionMapping.IsSharedTablePrincipal)
-                    Assert.True(dataEntityOtherFunctionMapping.IsSplitEntityTypePrincipal)
+                    Assert.Null(dataEntityOtherFunctionMapping.IsSharedTablePrincipal)
+                    Assert.Null(dataEntityOtherFunctionMapping.IsSplitEntityTypePrincipal)
                     Assert.Same(getData, dataEntityOtherFunctionMapping.DbFunction)
 
                     Dim getDataOtherStoreFunction = dataEntityOtherFunctionMapping.StoreFunction
@@ -3064,8 +3180,8 @@ End Namespace
                     Assert.Null(objectEntity.FindPrimaryKey())
                     Dim objectEntityFunctionMapping = objectEntity.GetFunctionMappings().Single(Function(m) m.IsDefaultFunctionMapping)
                     Assert.True(objectEntityFunctionMapping.IncludesDerivedTypes)
-                    Assert.True(objectEntityFunctionMapping.IsSharedTablePrincipal)
-                    Assert.True(objectEntityFunctionMapping.IsSplitEntityTypePrincipal)
+                    Assert.Null(objectEntityFunctionMapping.IsSharedTablePrincipal)
+                    Assert.Null(objectEntityFunctionMapping.IsSplitEntityTypePrincipal)
                     Assert.Same(getBlobs, objectEntityFunctionMapping.DbFunction)
                 End Sub)
         End Sub
@@ -3782,7 +3898,7 @@ End Namespace
                     Assert.Equal(GetType(Point), point.ClrType)
                     Assert.True(point.IsNullable)
                     Assert.Equal(ValueGenerated.Never, point.ValueGenerated)
-                    Assert.Equal("Point", point.GetColumnBaseName())
+                    Assert.Equal("Point", point.GetColumnName())
                     Assert.Equal("POINT", point.GetColumnType())
                     Assert.Null(point.GetValueConverter())
                     Assert.IsType(Of GeometryValueComparer(Of Point))(point.GetValueComparer())

@@ -360,6 +360,27 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                 Dim triggers As New SortedDictionary(Of String, ITrigger)
 
+                Dim fragments As IReadOnlyStoreObjectDictionary(Of IEntityTypeMappingFragment) = Nothing
+
+                If annotations.TryGetAndRemove(RelationalAnnotationNames.MappingFragments,
+                                               fragments) Then
+
+                    AddNamespace(GetType(StoreObjectDictionary(Of RuntimeEntityTypeMappingFragment)), parameters.Namespaces)
+                    AddNamespace(GetType(StoreObjectIdentifier), parameters.Namespaces)
+
+                    Dim fragmentsVariable = VBCode.Identifier("fragments", parameters.ScopeVariables, capitalize:=False)
+
+                    parameters.
+                        MainBuilder.
+                        Append("Dim ").Append(fragmentsVariable).AppendLine(" As New StoreObjectDictionary(Of RuntimeEntityTypeMappingFragment)()")
+
+                    For Each fragment In fragments.GetValues()
+                        Create(fragment, fragmentsVariable, parameters)
+                    Next
+
+                    GenerateSimpleAnnotation(RelationalAnnotationNames.MappingFragments, fragmentsVariable, parameters)
+                End If
+
                 If annotations.TryGetAndRemove(RelationalAnnotationNames.Triggers, triggers) Then
 
                     parameters.Namespaces.Add(GetType(SortedDictionary(Of,)).Namespace)
@@ -372,10 +393,62 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                     GenerateSimpleAnnotation(RelationalAnnotationNames.Triggers, triggersVariable, parameters)
                 End If
-
             End If
 
             MyBase.Generate(entityType, parameters)
+        End Sub
+
+        Private Sub Create(fragment As IEntityTypeMappingFragment,
+                           fragmentsVariable As String,
+                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim storeObject = fragment.StoreObject
+            Dim code = VBCode
+            Dim overrideVariable = code.Identifier(storeObject.Name & "Fragment", parameters.ScopeVariables, capitalize:=False)
+            Dim mainBuilder = parameters.MainBuilder
+
+            mainBuilder.
+                Append("Dim ").
+                Append(overrideVariable).
+                AppendLine(" As New RuntimeEntityTypeMappingFragment(").
+                IncrementIndent().
+                Append(parameters.TargetName).
+                AppendLine(",")
+
+            AppendLiteral(storeObject, mainBuilder, code)
+
+            mainBuilder.
+                AppendLine(",").
+                Append(code.Literal(fragment.IsTableExcludedFromMigrations)).
+                AppendLine(")").
+                DecrementIndent()
+
+            CreateAnnotations(fragment,
+                              AddressOf Generate,
+                              parameters.Cloner.
+                                         WithTargetName(overrideVariable).
+                                         Clone)
+
+            ' Using reflection because VB currently doesn't seem to be able to call a method that has
+            ' an 'in' parameter if it's virtual.
+            mainBuilder.
+                Append(fragmentsVariable).
+                Append($".GetType().GetMethod(""Add"").Invoke({fragmentsVariable}, {{")
+
+            AppendLiteral(storeObject, mainBuilder, code)
+
+            mainBuilder.
+                Append(", ").
+                Append(overrideVariable).AppendLine("})")
+        End Sub
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="fragment">The fragment to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Public Overridable Overloads Sub Generate(fragment As IEntityTypeMappingFragment, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            GenerateSimpleAnnotations(parameters)
         End Sub
 
         Private Sub Create(trigger As ITrigger, triggersVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
@@ -440,15 +513,17 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 annotations.Remove(RelationalAnnotationNames.Comment)
                 annotations.Remove(RelationalAnnotationNames.Collation)
 
-                Dim [overrides] As SortedDictionary(Of StoreObjectIdentifier, Object) = Nothing
+                Dim tableOverrides As IReadOnlyStoreObjectDictionary(Of IRelationalPropertyOverrides) = Nothing
 
-                If TryGetAndRemove(annotations, RelationalAnnotationNames.RelationalOverrides, [overrides]) Then
-                    parameters.Namespaces.Add(GetType(SortedDictionary(Of StoreObjectIdentifier, Object)).Namespace)
+                If TryGetAndRemove(annotations, RelationalAnnotationNames.RelationalOverrides, tableOverrides) Then
+                    AddNamespace(GetType(StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)), parameters.Namespaces)
+                    AddNamespace(GetType(StoreObjectIdentifier), parameters.Namespaces)
+
                     Dim overridesVariable = VBCode.Identifier("overrides", parameters.ScopeVariables, capitalize:=False)
-                    parameters.MainBuilder.Append("Dim ").Append(overridesVariable).AppendLine(" As New SortedDictionary(Of StoreObjectIdentifier, Object)()")
+                    parameters.MainBuilder.Append("Dim ").Append(overridesVariable).AppendLine(" As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()")
 
-                    For Each overridePair In [overrides]
-                        Create(DirectCast(overridePair.Value, IRelationalPropertyOverrides), overridePair.Key, overridesVariable, parameters)
+                    For Each [overrides] In tableOverrides.GetValues()
+                        Create([overrides], overridesVariable, parameters)
                     Next
 
                     GenerateSimpleAnnotation(RelationalAnnotationNames.RelationalOverrides, overridesVariable, parameters)
@@ -459,67 +534,53 @@ Namespace Design.AnnotationCodeGeneratorProvider
         End Sub
 
         Private Sub Create([overrides] As IRelationalPropertyOverrides,
-                        storeObject As StoreObjectIdentifier,
                         overridesVariable As String,
                         parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim storeObject = [overrides].StoreObject
 
             Dim code = VBCode
 
             Dim overrideVariable =
-            code.Identifier(parameters.TargetName & Capitalize(storeObject.Name), parameters.ScopeVariables, capitalize:=False)
+                code.Identifier(parameters.TargetName & Capitalize(storeObject.Name), parameters.ScopeVariables, capitalize:=False)
+
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-            Append("Dim ").
-            Append(overrideVariable).
-            AppendLine(" As New RuntimeRelationalPropertyOverrides(").
-            IncrementIndent().
-            Append(parameters.TargetName).
-            AppendLine(",").
-            Append(code.Literal([overrides].ColumnNameOverridden)).
-            AppendLine(",").
-            Append(code.UnknownLiteral([overrides].ColumnName)).
-            AppendLine(")").
-            DecrementIndent()
+                Append("Dim ").
+                Append(overrideVariable).
+                AppendLine(" As New RuntimeRelationalPropertyOverrides(").
+                IncrementIndent().
+                Append(parameters.TargetName).AppendLine(",")
+
+            AppendLiteral(storeObject, mainBuilder, code)
+
+            mainBuilder.
+                AppendLine(",").
+                Append(code.Literal([overrides].ColumnNameOverridden)).
+                AppendLine(",").
+                Append(code.UnknownLiteral([overrides].ColumnName)).
+                AppendLine(")").
+                DecrementIndent()
 
             CreateAnnotations([overrides],
-                              AddressOf GenerateOverrides,
+                              AddressOf Generate,
                               parameters.Cloner.
                                          WithTargetName(overrideVariable).
                                          Clone())
 
-            mainBuilder.Append(overridesVariable).Append("(StoreObjectIdentifier.")
+            ' Using reflection because VB currently doesn't seem to be able to call a method that has
+            ' an 'in' parameter if it's virtual.
+            mainBuilder.
+                Append(overridesVariable).
+                Append($".GetType().GetMethod(""Add"").Invoke({overridesVariable}, {{")
 
-            Select Case storeObject.StoreObjectType
-                Case StoreObjectType.Table
-                    mainBuilder.
-                    Append("Table(").
-                    Append(code.Literal(storeObject.Name)).
-                    Append(", ").
-                    Append(code.UnknownLiteral(storeObject.Schema)).
-                    Append(")")
-                Case StoreObjectType.View
-                    mainBuilder.
-                    Append("View(").
-                    Append(code.Literal(storeObject.Name)).
-                    Append(", ").
-                    Append(code.UnknownLiteral(storeObject.Schema)).
-                    Append(")")
-                Case StoreObjectType.SqlQuery
-                    mainBuilder.
-                    Append("SqlQuery(").
-                    Append(code.Literal(storeObject.Name)).
-                    Append(")")
-                Case StoreObjectType.Function
-                    mainBuilder.
-                    Append("DbFunction(").
-                    Append(code.Literal(storeObject.Name)).
-                    Append(")")
-            End Select
+            AppendLiteral(storeObject, mainBuilder, code)
 
             mainBuilder.
-            Append(") = ").
-            AppendLines(overrideVariable)
+                Append(", ").
+                Append(overrideVariable).
+                AppendLines("})")
         End Sub
 
         ''' <summary>
@@ -527,7 +588,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' </summary>
         ''' <param name="overrides">The property overrides to which the annotations are applied.</param>
         ''' <param name="parameters">Additional parameters used during code generation.</param>
-        Public Overridable Sub GenerateOverrides([Overrides] As IAnnotatable, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Public Overridable Overloads Sub Generate([Overrides] As IRelationalPropertyOverrides, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
 
@@ -600,5 +661,39 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End Select
 
         End Function
+
+        Private Shared Sub AppendLiteral(storeObject As StoreObjectIdentifier, builder As IndentedStringBuilder, code As IVisualBasicHelper)
+
+            builder.Append("StoreObjectIdentifier.")
+
+            Select Case storeObject.StoreObjectType
+                Case StoreObjectType.Table
+                    builder.
+                        Append("Table(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(", ").
+                        Append(code.UnknownLiteral(storeObject.Schema)).
+                        Append(")")
+                Case StoreObjectType.View
+                    builder.
+                        Append("View(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(", ").
+                        Append(code.UnknownLiteral(storeObject.Schema)).
+                        Append(")")
+                Case StoreObjectType.SqlQuery
+                    builder.
+                        Append("SqlQuery(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(")")
+                Case StoreObjectType.Function
+                    builder.
+                        Append("DbFunction(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(")")
+                Case Else
+                    DebugAssert(True, "Unexpected StoreObjectType: " & storeObject.StoreObjectType)
+            End Select
+        End Sub
     End Class
 End Namespace

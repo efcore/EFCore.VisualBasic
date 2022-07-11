@@ -1297,6 +1297,86 @@ End Namespace
                     End Sub).Message)
         End Sub
 
+        <ConditionalFact>
+        Public Sub Trigger_works()
+
+            Dim expectedcode =
+$"Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Employee As DbSet(Of Employee)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            If Not optionsBuilder.IsConfigured Then
+                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+            End If
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity(Of Employee)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                    entity.ToTable(
+                        Sub(tb)
+                            tb.HasTrigger(""Trigger1"")
+                            tb.HasTrigger(""Trigger2"")
+                        End Sub)
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.Entity(
+                        "Employee",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.ToTable(
+                                Sub(tb)
+                                    tb.HasTrigger("Trigger1")
+                                    tb.HasTrigger("Trigger2")
+                                End Sub)
+                        End Sub)
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = False
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedcode,
+                        code.ContextFile)
+                End Sub,
+                Sub(Model)
+                    Dim EntityType = Model.FindEntityType("TestNamespace.Employee")
+                    Dim triggers = EntityType.GetTriggers()
+
+                    Assert.Collection(triggers.OrderBy(Function(t) t.Name),
+                        Sub(t) Assert.Equal("Trigger1", t.Name),
+                        Sub(t) Assert.Equal("Trigger2", t.Name))
+                End Sub)
+        End Sub
+
         Protected Overrides Sub AddModelServices(services As IServiceCollection)
             services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, TestModelAnnotationProvider)())
         End Sub

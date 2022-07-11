@@ -468,6 +468,7 @@ $"    Dim model As New {className}()
             Dim methodBuilder As New IndentedStringBuilder()
             Dim namespaces As New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(BindingFlags).Namespace,
+                GetType(MethodInfo).Namespace,
                 GetType(RuntimeEntityType).Namespace
             }
 

@@ -228,6 +228,7 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.ForeignKeyMappings,
                 RelationalAnnotationNames.TableIndexMappings,
                 RelationalAnnotationNames.UniqueConstraintMappings,
+                RelationalAnnotationNames.MappingFragments,
                 RelationalAnnotationNames.Name,
                 RelationalAnnotationNames.Sequences,
                 RelationalAnnotationNames.SequencePrefix,

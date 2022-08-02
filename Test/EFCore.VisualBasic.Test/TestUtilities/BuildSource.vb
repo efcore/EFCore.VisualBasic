@@ -12,13 +12,16 @@ Public Class BuildSource
         _RootNamespace = rootNamespace
     End Sub
 
-    Public Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From
+    Public ReadOnly Property References As ICollection(Of BuildReference) = New List(Of BuildReference) From
         {
-            BuildReference.ByName("System.Runtime"),
+            BuildReference.ByName("Microsoft.VisualBasic.Core"),
+            BuildReference.ByName("netstandard"),
             BuildReference.ByName("System.Collections"),
             BuildReference.ByName("System.ComponentModel.Annotations"),
             BuildReference.ByName("System.Data.Common"),
             BuildReference.ByName("System.Linq.Expressions"),
+            BuildReference.ByName("System.Runtime"),
+            BuildReference.ByName("System.Runtime.Extensions"),
             BuildReference.ByName("System.Text.RegularExpressions")
         }
 

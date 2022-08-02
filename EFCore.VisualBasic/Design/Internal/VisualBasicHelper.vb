@@ -1,6 +1,7 @@
 ﻿Imports System.Globalization
 Imports System.Linq.Expressions
 Imports System.Numerics
+Imports System.Security
 Imports System.Text
 Imports EntityFrameworkCore.VisualBasic
 Imports Microsoft.EntityFrameworkCore.Design
@@ -112,7 +113,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function ShouldUseFullName(type As Type) As Boolean
+        Protected Overridable Function ShouldUseFullName(type As Type) As Boolean
             Return ShouldUseFullName(type.Name)
         End Function
 
@@ -120,7 +121,7 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function ShouldUseFullName(shortTypeName As String) As Boolean
+        Protected Overridable Function ShouldUseFullName(shortTypeName As String) As Boolean
             Return False
         End Function
 
@@ -213,6 +214,7 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As String) As String Implements IVisualBasicHelper.Literal
+            If value Is Nothing Then Return "Nothing"
 
             Return """" & value.Replace("""", """""").
                                 Replace(vbCrLf, """ & vbCrLf & """).
@@ -887,21 +889,12 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Function Fragment(frag As MethodCallCodeFragment,
-                          Optional instanceIdentifier As String = Nothing,
-                          Optional typeQualified As Boolean = False,
-                          Optional startWithDot As Boolean = True) As String Implements IVisualBasicHelper.Fragment
+        Public Overridable Function Fragment(frag As MethodCallCodeFragment,
+                                             instanceIdentifier As String,
+                                             typeQualified As Boolean) As String _
+        Implements IVisualBasicHelper.Fragment
 
-            Return Fragment(frag, typeQualified, instanceIdentifier, startWithDot)
-        End Function
-
-        Private Function Fragment(frag As MethodCallCodeFragment,
-                                  typeQualified As Boolean,
-                                  instanceIdentifier As String,
-                                  Optional startWithDot As Boolean = True) As String
-
-            Dim builder As New IndentedStringBuilder
-            Dim current = frag
+            Dim builder As New StringBuilder
 
             If typeQualified Then
                 If instanceIdentifier Is Nothing OrElse
@@ -913,95 +906,126 @@ Namespace Design.Internal
 
                 builder.
                     Append(frag.DeclaringType).
-                    Append(".").
+                    Append("."c).
                     Append(frag.Method).
-                    Append("(").
+                    Append("("c).
                     Append(instanceIdentifier)
 
                 For i = 0 To frag.Arguments.Count - 1
                     builder.Append(", ")
-                    Argument(frag.Arguments(i), builder)
-                Next
 
-                builder.Append(")")
-
-                Return builder.ToString()
-            End If
-
-            Dim IsFirstLine As Boolean = True
-            Dim DotAlreadyAdded = False
-
-            ' Non-type-qualified fragment
-            If instanceIdentifier IsNot Nothing Then
-
-                builder.Append(instanceIdentifier)
-
-                If current.ChainedCall IsNot Nothing Then
-                    builder.
-                        AppendLine("."c).
-                        IncrementIndent()
-                    IsFirstLine = False
-                    DotAlreadyAdded = True
-                End If
-            End If
-
-            While True
-                If IsFirstLine Then
-                    If startWithDot Then
-                        builder.Append("."c)
-                    End If
-                    IsFirstLine = False
+                    If TypeOf frag.Arguments(i) Is NestedClosureCodeFragment Then
+                        Dim nestedFragment = DirectCast(frag.Arguments(i), NestedClosureCodeFragment)
+                        builder.Append(Fragment(nestedFragment, 1))
                     Else
-                        If Not DotAlreadyAdded Then
-                        builder.AppendLine("."c)
-                    Else
-                        DotAlreadyAdded = False
+                        builder.Append(UnknownLiteral(frag.Arguments(i)))
                     End If
-                End If
-
-                builder.
-                    Append(current.Method).
-                    Append("("c)
-
-                For i = 0 To current.Arguments.Count - 1
-                    If i > 0 Then
-                        builder.Append(", ")
-                    End If
-
-                    Argument(current.Arguments(i), builder)
                 Next
 
                 builder.Append(")"c)
 
-                If current.ChainedCall Is Nothing Then Exit While
+                Return builder.ToString()
+            End If
 
-                current = current.ChainedCall
-            End While
+            If instanceIdentifier IsNot Nothing Then
+                builder.Append(instanceIdentifier)
+            End If
+
+            builder.Append(Fragment(frag, indent:=1))
 
             Return builder.ToString()
-
         End Function
 
-        Private Sub Argument(argument As Object, builder As IndentedStringBuilder)
-            If TypeOf argument Is NestedClosureCodeFragment Then
-                Dim nestedFragment = DirectCast(argument, NestedClosureCodeFragment)
-                builder.AppendLines(Fragment(nestedFragment), skipFinalNewline:=True)
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function Fragment(frag As MethodCallCodeFragment,
+                                             Optional indent As Integer = 0,
+                                             Optional startWithDot As Boolean = True) As String _
+        Implements IVisualBasicHelper.Fragment
+
+            If frag Is Nothing Then Return String.Empty
+
+            Dim builder As New IndentedStringBuilder()
+
+            If frag.ChainedCall Is Nothing Then
+                If startWithDot Then builder.Append("."c)
+                AppendMethodCall(frag, indent, builder)
             Else
-                builder.Append(UnknownLiteral(argument))
+                If startWithDot Then builder.AppendLine("."c)
+
+                For i = 0 To indent - 1
+                    builder.IncrementIndent()
+                Next
+
+                Dim first = True
+                Dim current = frag
+                Do
+                    If first Then
+                        first = False
+                    Else
+                        builder.AppendLine("."c)
+                    End If
+                    AppendMethodCall(current, indent, builder)
+
+                    current = current.ChainedCall
+                Loop While current IsNot Nothing
             End If
+
+            Return builder.ToString()
+        End Function
+
+        Private Sub AppendMethodCall(current As MethodCallCodeFragment, indent As Integer, builder As IndentedStringBuilder)
+
+            builder.
+                Append(current.Method).
+                Append("(")
+
+            For i = 0 To current.Arguments.Count - 1
+                If i <> 0 Then
+                    builder.Append(", ")
+                End If
+
+                If TypeOf current.Arguments(i) Is NestedClosureCodeFragment Then
+                    Dim nestedFragment = DirectCast(current.Arguments(i), NestedClosureCodeFragment)
+                    builder.Append(Fragment(nestedFragment, indent + 1))
+                Else
+                    builder.Append(UnknownLiteral(current.Arguments(i)))
+                End If
+            Next
+
+            builder.Append(")"c)
         End Sub
 
-        Private Function Fragment(frag As NestedClosureCodeFragment) As String
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function Fragment(frag As NestedClosureCodeFragment,
+                                             Optional indent As Integer = 0) As String _
+        Implements IVisualBasicHelper.Fragment
+
             If frag.MethodCalls.Count = 1 Then
-                Return $"Sub({frag.Parameter}) {Fragment(frag.MethodCalls(0), typeQualified:=False, frag.Parameter)}"
+                Return $"Sub({frag.Parameter}) {frag.Parameter}{Fragment(frag.MethodCalls(0), indent)}"
             End If
 
-            Dim builder = New IndentedStringBuilder()
+            Dim builder As New IndentedStringBuilder()
             builder.AppendLine($"Sub({frag.Parameter})")
+
+            For i = 0 To indent - 2
+                builder.IncrementIndent()
+            Next
 
             Using builder.Indent()
                 For Each methodCall In frag.MethodCalls
-                    builder.AppendLines(Fragment(methodCall, typeQualified:=False, frag.Parameter))
+                    builder.
+                        Append(frag.Parameter).
+                        AppendLine(Fragment(methodCall, indent))
                 Next
             End Using
 
@@ -1010,6 +1034,87 @@ Namespace Design.Internal
             Return builder.ToString()
         End Function
 
-    End Class
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function Fragment(frag As AttributeCodeFragment) As String Implements IVisualBasicHelper.Fragment
 
+            Dim builder As New StringBuilder()
+
+            Dim attributeName = frag.Type.Name
+            If attributeName.EndsWith("Attribute", StringComparison.Ordinal) Then
+                attributeName = attributeName.Substring(0, attributeName.Length - 9)
+            End If
+
+            builder.
+                Append("<"c).
+                Append(attributeName)
+
+            If frag.Arguments.Count <> 0 OrElse frag.NamedArguments.Count <> 0 Then
+                builder.Append("("c)
+
+                Dim first = True
+                For Each value In frag.Arguments
+                    If Not first Then
+                        builder.Append(", ")
+                    Else
+                        first = False
+                    End If
+
+                    builder.Append(UnknownLiteral(value))
+                Next
+
+                For Each item In frag.NamedArguments
+                    If Not first Then
+                        builder.Append(", ")
+                    Else
+                        first = False
+                    End If
+
+                    builder.
+                        Append(item.Key).
+                        Append(":=").
+                        Append(UnknownLiteral(item.Value))
+                Next
+
+                builder.Append(")"c)
+            End If
+
+            builder.Append(">"c)
+
+            Return builder.ToString()
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function XmlComment(comment As String, Optional indent As Integer = 0) As String _
+        Implements IVisualBasicHelper.XmlComment
+
+            Dim builder As New StringBuilder()
+
+            Dim first = True
+            For Each line In comment.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None)
+
+                If Not first Then
+                    builder.
+                        AppendLine().
+                        Append(" "c, indent * 4).
+                        Append("''' ")
+                Else
+                    first = False
+                End If
+
+                builder.Append(SecurityElement.Escape(line))
+            Next
+
+            Return builder.ToString()
+        End Function
+    End Class
 End Namespace

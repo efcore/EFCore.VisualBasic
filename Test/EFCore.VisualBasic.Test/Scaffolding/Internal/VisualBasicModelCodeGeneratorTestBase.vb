@@ -42,26 +42,19 @@ Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
         assertScaffold(scaffoldedModel)
 
         Dim build As New BuildSource(options.RootNamespace) With {
-            .References =
-            {
-                BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                BuildReference.ByName("System.Runtime"),
-                BuildReference.ByName("System.Linq.Expressions"),
-                BuildReference.ByName("netstandard"),
-                BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"),
-                BuildReference.ByName("Microsoft.EntityFrameworkCore"),
-                BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"),
-                BuildReference.ByName("System.ComponentModel.Annotations"),
-                BuildReference.ByName("System.ComponentModel.DataAnnotations"),
-                BuildReference.ByName("System.ComponentModel.Primitives"),
-                BuildReference.ByName("System.Data.Common"),
-                BuildReference.ByName("System.Collections")
-            },
             .Sources = {scaffoldedModel.ContextFile}.
                         Concat(scaffoldedModel.AdditionalFiles).
                         ToDictionary(Function(f) f.Path, Function(f) f.Code)
         }
+
+        With build.References
+            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
+            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
+            .Add(BuildReference.ByName("System.ComponentModel.DataAnnotations"))
+            .Add(BuildReference.ByName("System.ComponentModel.Primitives"))
+        End With
 
         If Not skipBuild Then
             Dim assembly = build.BuildInMemory()

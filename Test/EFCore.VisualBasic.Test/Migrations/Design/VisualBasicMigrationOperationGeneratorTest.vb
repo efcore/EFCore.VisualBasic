@@ -3419,15 +3419,6 @@ mb.Sql(""-- close to me"")"
 
             Dim build = New BuildSource() With
             {
-                .References =
-                {
-                    BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                    BuildReference.ByName("System.Runtime"),
-                    BuildReference.ByName("System.Linq.Expressions"),
-                    BuildReference.ByName("netstandard"),
-                    BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                    BuildReference.ByName("NetTopologySuite")
-                },
                 .Sources = New Dictionary(Of String, String) From {
                     {
                         "Migration.vb",
@@ -3446,6 +3437,11 @@ mb.Sql(""-- close to me"")"
                     }
                 }
             }
+
+            With build.References
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+                .Add(BuildReference.ByName("NetTopologySuite"))
+            End With
 
             Dim assembly = build.BuildInMemory()
             Dim factoryType = assembly.GetType("OperationsFactory")

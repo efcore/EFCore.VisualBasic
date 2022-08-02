@@ -3,7 +3,6 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
-Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
@@ -177,7 +176,10 @@ Namespace Scaffolding.Internal
                     End If
 
                     If index.IsDescending IsNot Nothing Then
-                        indexAttr.AddParameter($"{NameOf(IndexAttribute.IsDescending)}:={_code.UnknownLiteral(index.IsDescending)}")
+                        indexAttr.AddParameter(
+                            If(index.IsDescending.Count = 0,
+                                $"{NameOf(IndexAttribute.AllDescending)}:=True",
+                                $"{NameOf(IndexAttribute.IsDescending)}:={_code.UnknownLiteral(index.IsDescending)}"))
                     End If
 
                     _sb.AppendLine(indexAttr.ToString())

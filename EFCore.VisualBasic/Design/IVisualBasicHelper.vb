@@ -17,12 +17,29 @@ Namespace Design
         ''' <param name="typeQualified">
         '''     <see langword="True" />if the method call should be type-qualified, <see langword="False" />for instance/extension syntax.
         ''' </param>
-        ''' <param name="startWithDot"></param>
         ''' <returns>The fragment.</returns>
         Function Fragment(frag As MethodCallCodeFragment,
-                          Optional instanceIdentifier As String = Nothing,
-                          Optional typeQualified As Boolean = False,
+                          instanceIdentifier As String,
+                          typeQualified As Boolean) As String
+
+        ''' <summary>
+        '''     Generates a method call code fragment.
+        ''' </summary>
+        ''' <param name="frag">The method call. If null, no code Is generated.</param>
+        ''' <param name="indent">The indentation level to use when multiple lines are generated.</param>
+        ''' <returns>The fragment.</returns>
+        Function Fragment(frag As MethodCallCodeFragment,
+                          Optional indent As Integer = 0,
                           Optional startWithDot As Boolean = True) As String
+
+        ''' <summary>
+        ''' Generates a lambda code fragment.
+        ''' </summary>
+        ''' <param name="frag">The lambda.</param>
+        ''' <param name="indent">The indentation level to use when multiple lines are generated.</param>
+        ''' <returns>The fragment.</returns>
+        Function Fragment(frag As NestedClosureCodeFragment,
+                          Optional indent As Integer = 0) As String
 
         ''' <summary>
         '''     Generates a valid Visual Basic identifier from the specified string unique to the scope.
@@ -66,7 +83,7 @@ Namespace Design
         Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String
 
         ''' <summary>
-        '''     Generates a BigInteger
+        '''     Generates a BigInteger literal.
         ''' </summary>
         ''' <param name="value">The BigInteger</param>
         ''' <returns>The literal.</returns>
@@ -265,6 +282,19 @@ Namespace Design
         ''' <returns>The literal.</returns>
         Function UnknownLiteral(value As Object) As String
 
-    End Interface
+        ''' <summary>
+        ''' Generates an attribute specification.
+        ''' </summary>
+        ''' <param name="frag">The attribute code fragment.</param>
+        ''' <returns>The attribute specification code.</returns>
+        Function Fragment(frag As AttributeCodeFragment) As String
 
+        ''' <summary>
+        ''' Generates an XML documentation comment. Handles escaping And newlines.
+        ''' </summary>
+        ''' <param name="comment">The comment.</param>
+        ''' <param name="indent">The indentation level to use when multiple lines are generated.</param>
+        ''' <returns>The comment.</returns>
+        Function XmlComment(comment As String, Optional indent As Integer = 0) As String
+    End Interface
 End Namespace

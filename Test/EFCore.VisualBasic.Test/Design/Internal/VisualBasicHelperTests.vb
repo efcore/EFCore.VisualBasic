@@ -460,7 +460,8 @@ string with """,
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
             Assert.Equal(
-".TestFunc().
+".
+TestFunc().
 TestFunc()", result)
         End Sub
 
@@ -473,7 +474,8 @@ TestFunc()", result)
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
             Assert.Equal(
-".TestFunc(""One"").
+".
+TestFunc(""One"").
 TestFunc(""Two"").
 TestFunc(""Three"")", result)
         End Sub
@@ -489,7 +491,8 @@ TestFunc(""Three"")", result)
             Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
             Assert.Equal(
-".TestFunc(""One"").
+".
+TestFunc(""One"").
 TestFunc(""Two"").
 TestFunc(""Three"").
 TestFunc(""Four"")", result)
@@ -526,10 +529,122 @@ End Sub)", result)
         End Sub
 
         <ConditionalFact>
+    public Sub Fragment_MethodCallCodeFragment_works_when_nested_closure_with_chain()
+    
+        Dim method As New MethodCallCodeFragment(
+            _testFuncMethodInfo,
+            new NestedClosureCodeFragment(
+                "x",
+                new MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                    Chain(new MethodCallCodeFragment(_testFuncMethodInfo, "Two"))))
+
+        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method)
+
+        Assert.Equal(
+".TestFunc(Sub(x) x.
+    TestFunc(""One"").
+    TestFunc(""Two""))",
+            result,
+            ignoreLineEndingDifferences:= true)
+    end Sub
+
+        <ConditionalFact>
+        Public Sub Fragment_MethodCallCodeFragment_with_indent_works_when_nested_closure_with_chain()
+
+            Dim method As New MethodCallCodeFragment(
+            _testFuncMethodInfo,
+            new NestedClosureCodeFragment(
+                "x",
+                new MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                    Chain(new MethodCallCodeFragment(_testFuncMethodInfo, "Two"))))
+
+        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method, indent:= 1)
+
+            Assert.Equal(
+".TestFunc(Sub(x) x.
+        TestFunc(""One"").
+        TestFunc(""Two""))",
+            result,
+            ignoreLineEndingDifferences:=True)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Fragment_MethodCallCodeFragment_with_indent_works_when_chain_and_nested_closure_with_chain()
+
+            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                Chain(
+                    new MethodCallCodeFragment(
+                    _testFuncMethodInfo,
+                    new NestedClosureCodeFragment(
+                        "x",
+                        new MethodCallCodeFragment(_testFuncMethodInfo, "Two").
+                            Chain(new MethodCallCodeFragment(_testFuncMethodInfo, "Three")))))
+
+        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method, indent:= 1)
+
+            Assert.Equal(
+".
+    TestFunc(""One"").
+    TestFunc(Sub(x) x.
+        TestFunc(""Two"").
+        TestFunc(""Three""))",
+            result,
+            ignoreLineEndingDifferences:=True)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Fragment_MethodCallCodeFragment_works_when_nested_closure_with_two_calls()
+            Dim method = New MethodCallCodeFragment(
+                _testFuncMethodInfo,
+                New NestedClosureCodeFragment(
+                    "x",
+                    {
+                        new MethodCallCodeFragment(_testFuncMethodInfo, "One"),
+                        new MethodCallCodeFragment(_testFuncMethodInfo, "Two")
+                    }))
+
+        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method)
+
+            Assert.Equal(
+".TestFunc(Sub(x)
+    x.TestFunc(""One"")
+    x.TestFunc(""Two"")
+End Sub)",
+            result,
+            ignoreLineEndingDifferences:=True)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Fragment_MethodCallCodeFragment_with_indent_works_when_chain_and_nested_closure()
+            Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                Chain(
+                    New MethodCallCodeFragment(
+                        _testFuncMethodInfo,
+                    New NestedClosureCodeFragment(
+                        "x",
+                        {
+                            New MethodCallCodeFragment(_testFuncMethodInfo, "Two"),
+                            New MethodCallCodeFragment(_testFuncMethodInfo, "Three")
+                        })))
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, indent:=1)
+
+            Assert.Equal(
+".
+    TestFunc(""One"").
+    TestFunc(Sub(x)
+        x.TestFunc(""Two"")
+        x.TestFunc(""Three"")
+    End Sub)",
+            result,
+            ignoreLineEndingDifferences:=True)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_works_with_identifier()
             Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, True, 42)
 
-            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder")
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder", typeQualified:=False)
 
             Assert.Equal("builder.TestFunc(True, 42)", result)
         End Sub
@@ -539,7 +654,7 @@ End Sub)", result)
             Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
                 Chain(New MethodCallCodeFragment(_testFuncMethodInfo))
 
-            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder")
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder", typeQualified:=False)
 
             Assert.Equal(
 $"builder.
@@ -551,7 +666,7 @@ $"builder.
         Public Sub Fragment_MethodCallCodeFragment_works_with_type_qualified()
             Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, True, 42)
 
-            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder")
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder", typeQualified:=False)
 
             Assert.Equal("builder.TestFunc(True, 42)", result)
         End Sub
@@ -582,7 +697,7 @@ $"builder.
                                             }))
                                      })))
 
-            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder")
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, instanceIdentifier:="builder", typeQualified:=False)
 
             Assert.Equal(
 "builder.

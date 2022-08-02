@@ -211,7 +211,7 @@ Public Module VisualBasicUtilities
                 Return ch >= "0"c AndAlso ch <= "9"c
             End If
 
-            Return ch <= "Z"c OrElse ch = "_"c
+            Return ch <= "Z"c
         End If
 
         If ch <= "z"c Then

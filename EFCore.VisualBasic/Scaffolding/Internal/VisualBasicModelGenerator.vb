@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports EntityFrameworkCore.VisualBasic.Design
+Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -10,8 +11,8 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicModelGenerator
         Inherits ModelCodeGenerator
 
-        Private _VBDbContextGenerator As VisualBasicDbContextGenerator
-        Private _VBEntityTypeGenerator As VisualBasicEntityTypeGenerator
+        Private ReadOnly _VBDbContextGenerator As VisualBasicDbContextGenerator
+        Private ReadOnly _VBEntityTypeGenerator As VisualBasicEntityTypeGenerator
 
         Public Sub New(dependencies As ModelCodeGeneratorDependencies,
                        annotationCodeGenerator As IAnnotationCodeGenerator,
@@ -82,7 +83,7 @@ Namespace Scaffolding.Internal
 
             For Each entityType In model.GetEntityTypes()
 
-                If VisualBasicDbContextGenerator.IsManyToManyJoinEntityType(entityType) Then Continue For
+                If entityType.IsSimpleManyToManyJoinEntityType Then Continue For
 
                 generatedCode = _VBEntityTypeGenerator.
                                     WriteCode(

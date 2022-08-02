@@ -234,13 +234,13 @@ End Namespace
                 New ModelCodeGenerationOptions,
                 Sub(code)
                     Assert.Contains(
-          ".HasComment(""An integer property"")",
-          code.ContextFile.Code)
+                        ".HasComment(""An integer property"")",
+                        code.ContextFile.Code)
                 End Sub,
                 Sub(model)
                     Assert.Equal(
-         "An integer property",
-         model.FindEntityType("TestNamespace.Entity").GetProperty("Property").GetComment())
+                        "An integer property",
+                        model.FindEntityType("TestNamespace.Entity").GetProperty("Property").GetComment())
                 End Sub)
         End Sub
 
@@ -257,13 +257,13 @@ End Namespace
                 New ModelCodeGenerationOptions,
                 Sub(code)
                     Assert.Contains(
-          ".HasComment(""An entity comment"")",
-          code.ContextFile.Code)
+                        ".HasComment(""An entity comment"")",
+                        code.ContextFile.Code)
                 End Sub,
                 Sub(model)
                     Assert.Equal(
-         "An entity comment",
-         model.FindEntityType("TestNamespace.Entity").GetComment())
+                        "An entity comment",
+                        model.FindEntityType("TestNamespace.Entity").GetComment())
                 End Sub)
         End Sub
 
@@ -288,10 +288,9 @@ End Namespace
 
         <ConditionalFact>
         Public Sub ModelInDifferentNamespaceDbContext_works()
-            Dim modelGenerationOptions As New ModelCodeGenerationOptions With
-            {
-            .ContextNamespace = "TestNamespace",
-            .ModelNamespace = "AnotherNamespaceOfModel"
+            Dim modelGenerationOptions As New ModelCodeGenerationOptions With {
+                .ContextNamespace = "TestNamespace",
+                .ModelNamespace = "AnotherNamespaceOfModel"
             }
 
             Const entityInAnotherNamespaceTypeName As String = "EntityInAnotherNamespace"
@@ -570,9 +569,11 @@ Namespace TestNamespace
                     entity.HasIndex(Function(e) New With {{e.A, e.B}}, ""IndexOnAAndB"").
                         IsUnique().
                         IsDescending(False, True)
+
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
@@ -647,6 +648,7 @@ Namespace TestNamespace
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
@@ -718,13 +720,19 @@ Namespace TestNamespace
 
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_ascending"").
-                        IsDescending(False, False, False)
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_ascending"")
+
                     entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_descending"").
-                        IsDescending(True, True, True)
-                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_empty"")
+                        IsDescending()
+
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_empty"").
+                        IsDescending()
+
                     entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_mixed"").
                         IsDescending(False, True, False)
+
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_unspecified"")
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
@@ -747,7 +755,9 @@ End Namespace
                             x.Property(Of Integer)("Y")
                             x.Property(Of Integer)("Z")
                             x.HasKey("Id")
-                            x.HasIndex({"X", "Y", "Z"}, "IX_empty")
+                            x.HasIndex({"X", "Y", "Z"}, "IX_unspecified")
+                            x.HasIndex({"X", "Y", "Z"}, "IX_empty").
+                                IsDescending()
                             x.HasIndex({"X", "Y", "Z"}, "IX_all_ascending").
                                 IsDescending(False, False, False)
                             x.HasIndex({"X", "Y", "Z"}, "IX_all_descending").
@@ -766,16 +776,19 @@ End Namespace
                 End Sub,
                 Sub(model)
                     Dim EntityType = model.FindEntityType("TestNamespace.EntityWithIndexes")
-                    Assert.Equal(4, EntityType.GetIndexes().Count())
+                    Assert.Equal(5, EntityType.GetIndexes().Count())
+
+                    Dim unspecifiedIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_unspecified")
+                    Assert.Null(unspecifiedIndex.IsDescending)
 
                     Dim emptyIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_empty")
-                    Assert.Null(emptyIndex.IsDescending)
+                    Assert.Equal(Array.Empty(Of Boolean)(), emptyIndex.IsDescending)
 
                     Dim allAscendingIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_all_ascending")
-                    Assert.Equal({False, False, False}, allAscendingIndex.IsDescending)
+                    Assert.Null(allAscendingIndex.IsDescending)
 
                     Dim allDescendingIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_all_descending")
-                    Assert.Equal({True, True, True}, allDescendingIndex.IsDescending)
+                    Assert.Equal(Array.Empty(Of Boolean)(), allDescendingIndex.IsDescending)
 
                     Dim mixedIndex = Assert.Single(EntityType.GetIndexes(), Function(i) i.Name = "IX_mixed")
                     Assert.Equal({False, True, False}, mixedIndex.IsDescending)
@@ -816,7 +829,9 @@ Namespace TestNamespace
                 Sub(entity)
                     entity.HasIndex(Function(e) e.DependentId, ""IX_DependentEntity_DependentId"").
                         IsUnique()
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
+
                     entity.HasOne(Function(d) d.NavigationToPrincipal).
                         WithOne(Function(p) p.NavigationToDependent).
                         HasPrincipalKey(Of PrincipalEntity)(Function(p) p.PrincipalId).
@@ -826,6 +841,7 @@ Namespace TestNamespace
             modelBuilder.Entity(Of PrincipalEntity)(
                 Sub(entity)
                     entity.HasKey(Function(e) e.AlternateId)
+
                     entity.Property(Function(e) e.AlternateId).UseIdentityColumn()
                 End Sub)
 
@@ -901,6 +917,7 @@ Namespace TestNamespace
             modelBuilder.Entity(Of Employee)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
+
                     entity.Property(Function(e) e.HireDate).
                         HasColumnType(""date"").
                         HasColumnName(""hiring_date"")
@@ -1250,14 +1267,15 @@ Namespace TestNamespace
             modelBuilder.Entity(Of Customer)(
                 Sub(entity)
                     entity.ToTable(Sub(tb) tb.IsTemporal(Sub(ttb)
-    ttb.UseHistoryTable(""CustomerHistory"")
-    ttb.
-        HasPeriodStart(""PeriodStart"").
-        HasColumnName(""PeriodStart"")
-    ttb.
-        HasPeriodEnd(""PeriodEnd"").
-        HasColumnName(""PeriodEnd"")
-End Sub))
+                                ttb.UseHistoryTable(""CustomerHistory"")
+                                ttb.
+                                HasPeriodStart(""PeriodStart"").
+                                HasColumnName(""PeriodStart"")
+                                ttb.
+                                HasPeriodEnd(""PeriodEnd"").
+                                HasColumnName(""PeriodEnd"")
+                            End Sub))
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
@@ -1298,6 +1316,41 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub Sequences_work()
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.HasSequence(Of Integer)("EvenNumbers", "dbo").
+                    StartsAt(2).
+                    IncrementsBy(2).
+                    HasMin(2).
+                    HasMax(100).
+                    IsCyclic(True)
+                End Sub,
+                New ModelCodeGenerationOptions(),
+                Sub(code)
+                    Assert.Contains(
+".HasSequence(Of Integer)(""EvenNumbers"", ""dbo"").
+                StartsAt(2).
+                IncrementsBy(2).
+                HasMin(2).
+                HasMax(100).
+                IsCyclic()",
+                    code.ContextFile.Code)
+                End Sub,
+                Sub(Model)
+                    Dim Sequence = Model.FindSequence("EvenNumbers", "dbo")
+                    Assert.NotNull(Sequence)
+
+                    Assert.Equal(GetType(Integer), Sequence.Type)
+                    Assert.Equal(2, Sequence.StartValue)
+                    Assert.Equal(2, Sequence.IncrementBy)
+                    Assert.Equal(2, Sequence.MinValue)
+                    Assert.Equal(100, Sequence.MaxValue)
+                    Assert.True(Sequence.IsCyclic)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Trigger_works()
 
             Dim expectedcode =
@@ -1333,6 +1386,7 @@ Namespace TestNamespace
                     entity.ToTable(
                         Sub(tb)
                             tb.HasTrigger(""Trigger1"")
+
                             tb.HasTrigger(""Trigger2"")
                         End Sub)
                 End Sub)

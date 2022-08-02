@@ -303,6 +303,68 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub IndexAttribute_is_generated_with_ascending_descending()
+
+            Dim expectedCode =
+"Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    <Index(""A"", ""B"", Name:=""AllAscending"")>
+    <Index(""A"", ""B"", Name:=""AllDescending"", AllDescending:=True)>
+    <Index(""A"", ""B"", Name:=""PartiallyDescending"", IsDescending:={True, False})>
+    Public Partial Class EntityWithAscendingDescendingIndexes
+        <Key>
+        Public Property Id As Integer
+        Public Property A As Integer
+        Public Property B As Integer
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.
+                        Entity(
+                            "EntityWithAscendingDescendingIndexes",
+                            Sub(x)
+                                x.Property(Of Integer)("Id")
+                                x.Property(Of Integer)("A")
+                                x.Property(Of Integer)("B")
+                                x.HasKey("Id")
+                                x.HasIndex({"A", "B"}, "AllAscending")
+                                x.HasIndex({"A", "B"}, "PartiallyDescending").IsDescending(True, False)
+                                x.HasIndex({"A", "B"}, "AllDescending").IsDescending()
+                            End Sub)
+                End Sub,
+            New ModelCodeGenerationOptions With {.UseDataAnnotations = True},
+            Sub(code)
+                AssertFileContents(
+                    expectedCode,
+                    code.AdditionalFiles.Single(Function(f) f.Path = "EntityWithAscendingDescendingIndexes.vb"))
+            End Sub,
+            Sub(model)
+                Dim entityType = model.FindEntityType("TestNamespace.EntityWithAscendingDescendingIndexes")
+                Dim indexes = entityType.GetIndexes()
+                Assert.Collection(
+                    indexes,
+                    Sub(i)
+                        Assert.Equal("AllAscending", i.Name)
+                        Assert.Null(i.IsDescending)
+                    End Sub,
+                    Sub(i)
+                        Assert.Equal("AllDescending", i.Name)
+                        Assert.Equal(Array.Empty(Of Boolean), i.IsDescending)
+                    End Sub,
+                    Sub(i)
+                        Assert.Equal("PartiallyDescending", i.Name)
+                        Assert.Equal({True, False}, i.IsDescending)
+                    End Sub)
+            End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub Entity_with_indexes_generates_IndexAttribute_only_for_indexes_without_annotations()
 
             Dim expectedCode =
@@ -352,6 +414,7 @@ Namespace TestNamespace
                 Sub(entity)
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"")
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
@@ -1308,6 +1371,7 @@ Namespace TestNamespace
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
+
                     entity.HasOne(Function(d) d.BlogNavigation).
                         WithMany(Function(p) p.Posts).
                         HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}}).

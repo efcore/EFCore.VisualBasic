@@ -180,7 +180,7 @@ Namespace Scaffolding.Internal
             Dim generated = False
 
             For Each entityType In model.GetEntityTypes()
-                If IsManyToManyJoinEntityType(entityType) Then Continue For
+                If entityType.IsSimpleManyToManyJoinEntityType Then Continue For
                 _builder.AppendLine($"Public Overridable Property {_VBCode.Identifier(entityType.GetDbSetName())} As DbSet(Of {entityType.Name})")
                 generated = True
             Next
@@ -192,12 +192,12 @@ Namespace Scaffolding.Internal
 
         Private Sub GenerateEntityTypeErrors(model As IModel)
 
-            Dim errors = model.GetEntityTypeErrors()
+            Dim errors = model.GetReverseEngineeringErrors()
             For Each entityTypeError In errors
-                _builder.AppendLine($"' {entityTypeError.Value} Please see the warning messages.")
+                _builder.AppendLine($"' {entityTypeError} Please see the warning messages.")
             Next
 
-            If errors.Count > 0 Then
+            If errors.Any Then
                 _builder.AppendLine()
             End If
         End Sub
@@ -218,7 +218,9 @@ Namespace Scaffolding.Internal
                     End If
 
                     Dim useProviderCall = _providerConfigurationCodeGenerator.GenerateUseProvider(connectionString)
-                    _builder.AppendLines(_VBCode.Fragment(useProviderCall, "optionsBuilder"))
+                    _builder.
+                        Append("optionsBuilder").
+                        AppendLine(_VBCode.Fragment(useProviderCall, _builder.CurrentIndent + 1))
                 End Using
 
                 _builder.AppendLine("End If")
@@ -242,7 +244,7 @@ Namespace Scaffolding.Internal
             annotations.Remove(CoreAnnotationNames.ProductVersion)
             annotations.Remove(RelationalAnnotationNames.MaxIdentifierLength)
             annotations.Remove(ScaffoldingAnnotationNames.DatabaseName)
-            annotations.Remove(ScaffoldingAnnotationNames.EntityTypeErrors)
+            annotations.Remove(ScaffoldingAnnotationNames.ReverseEngineeringErrors)
 
             Dim lines As New List(Of String)
 
@@ -260,7 +262,7 @@ Namespace Scaffolding.Internal
                         Using _builder.Indent()
                             For Each line In lines
                                 _builder.
-                                    AppendLine(".").
+                                    AppendLine("."c).
                                     Append(line)
                             Next
                         End Using
@@ -272,7 +274,7 @@ Namespace Scaffolding.Internal
             Using _builder.Indent()
                 For Each entityType In model.GetEntityTypes()
 
-                    If IsManyToManyJoinEntityType(entityType) Then Continue For
+                    If entityType.IsSimpleManyToManyJoinEntityType() Then Continue For
 
                     _entityTypeBuilderInitialized = False
 
@@ -303,7 +305,7 @@ Namespace Scaffolding.Internal
                 _builder.AppendLine()
                 _builder.AppendLine($"modelBuilder.Entity(Of {entityType.Name})(")
                 _builder.Indent()
-                _builder.AppendLine($"Sub({EntityLambdaIdentifier})")
+                _builder.Append($"Sub({EntityLambdaIdentifier})")
             End If
 
             _entityTypeBuilderInitialized = True
@@ -378,7 +380,7 @@ Namespace Scaffolding.Internal
                         AppendLine($"{EntityLambdaIdentifier}.{NameOf(RelationalEntityTypeBuilderExtensions.ToTable)}(")
 
                     Using _builder.Indent()
-                        _builder.AppendLine("Sub(tb)")
+                        _builder.Append("Sub(tb)")
 
                         For Each trigger In entityType.GetTriggers().Where(Function(t) t.Name IsNot Nothing)
                             GenerateTrigger("tb", trigger)
@@ -414,9 +416,10 @@ Namespace Scaffolding.Internal
             Using _builder.Indent()
 
                 _builder.
+                    AppendLine().
                     Append(If(builderName, EntityLambdaIdentifier)).
                     Append("."c).
-                    Append(lines(0))
+                    AppendLines(lines(0), skipFinalNewline:=True)
 
                 Using _builder.Indent()
                     For Each line In lines.Skip(1)
@@ -1027,7 +1030,7 @@ Namespace Scaffolding.Internal
                     Next
                 End If
 
-                lines.Add(_VBCode.Fragment(fluentApiCall, startWithDot:=False))
+                lines.Add(_VBCode.Fragment(fluentApiCall, indent:=1, startWithDot:=False))
 
                 If fluentApiCall.Namespace IsNot Nothing Then
                     _namespaces.Add(fluentApiCall.Namespace)
@@ -1038,33 +1041,5 @@ Namespace Scaffolding.Internal
                 annotations.Values.
                     Select(Function(a) $"HasAnnotation({_VBCode.Literal(a.Name)}, {_VBCode.UnknownLiteral(a.Value)})"))
         End Sub
-
-        Friend Shared Function IsManyToManyJoinEntityType(entityType As IEntityType) As Boolean
-            If Not entityType.GetNavigations().Any() AndAlso
-               Not entityType.GetSkipNavigations().Any() Then
-
-                Dim primaryKey = entityType.FindPrimaryKey()
-                Dim properties = entityType.GetProperties().ToList()
-                Dim foreignKeys = entityType.GetForeignKeys().ToList()
-
-                If primaryKey IsNot Nothing AndAlso
-                    primaryKey.Properties.Count > 1 AndAlso
-                    foreignKeys.Count = 2 AndAlso
-                    primaryKey.Properties.Count = properties.Count AndAlso
-                    foreignKeys(0).Properties.Count + foreignKeys(1).Properties.Count = properties.Count AndAlso
-                    Not foreignKeys(0).Properties.Intersect(foreignKeys(1).Properties).Any() AndAlso
-                    foreignKeys(0).IsRequired AndAlso
-                    foreignKeys(1).IsRequired AndAlso
-                    Not foreignKeys(0).IsUnique AndAlso
-                    Not foreignKeys(1).IsUnique Then
-
-                    Return True
-                End If
-            End If
-
-            Return False
-        End Function
-
     End Class
-
 End Namespace

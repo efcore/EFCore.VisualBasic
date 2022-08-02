@@ -22,6 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="northwind.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="School.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

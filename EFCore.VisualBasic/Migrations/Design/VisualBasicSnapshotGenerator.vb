@@ -571,17 +571,24 @@ Namespace Migrations.Design
             GenerateFluentApiForPrecisionAndScale([property], stringBuilder)
             GenerateFluentApiForIsUnicode([property], stringBuilder)
 
-            stringBuilder.
-                AppendLine("."c).
-                Append(NameOf(RelationalPropertyBuilderExtensions.HasColumnType)).
-                Append("("c).
-                Append(VBCode.Literal([property].GetColumnType())).
-                Append(")"c)
+            If Not annotations.ContainsKey(RelationalAnnotationNames.ColumnType) Then
+                annotations(RelationalAnnotationNames.ColumnType) = New Annotation(
+                    RelationalAnnotationNames.ColumnType,
+                    [property].GetColumnType())
+            End If
 
-            annotations.Remove(RelationalAnnotationNames.ColumnType)
+            Dim defaultValue As Object = Nothing
+            If annotations.ContainsKey(RelationalAnnotationNames.DefaultValue) AndAlso
+               [property].TryGetDefaultValue(defaultValue) AndAlso
+               defaultValue IsNot DBNull.Value AndAlso
+               TypeOf FindValueConverter([property]) Is ValueConverter Then
 
-            GenerateFluentApiForDefaultValue([property], stringBuilder)
-            annotations.Remove(RelationalAnnotationNames.DefaultValue)
+                Dim valueConverter = DirectCast(FindValueConverter([property]), ValueConverter)
+
+                annotations(RelationalAnnotationNames.DefaultValue) = New Annotation(
+                    RelationalAnnotationNames.DefaultValue,
+                    ValueConverter.ConvertToProvider(defaultValue))
+            End If
 
             GenerateAnnotations(propertyBuilderName, [property], stringBuilder, annotations, inChainedCall:=True)
         End Sub
@@ -812,7 +819,7 @@ Namespace Migrations.Design
                         AppendLine().
                         Append(entityTypeBuilderName).
                         Append(".ToFunction(").
-                        Append(VBCode.UnknownLiteral(functionName)).
+                        Append(VBCode.Literal(functionName)).
                         AppendLine(")"c)
 
                     If functionNameAnnotation IsNot Nothing Then
@@ -831,7 +838,7 @@ Namespace Migrations.Design
                         AppendLine().
                         Append(entityTypeBuilderName).
                         Append(".ToSqlQuery(").
-                        Append(VBCode.UnknownLiteral(SqlQuery)).
+                        Append(VBCode.Literal(SqlQuery)).
                         AppendLine(")"c)
 
                     If sqlQueryAnnotation IsNot Nothing Then
@@ -870,13 +877,13 @@ Namespace Migrations.Design
                 End If
 
                 If discriminatorMappingCompleteAnnotation?.Value IsNot Nothing Then
-                    Dim value = discriminatorMappingCompleteAnnotation.Value
+                    Dim value = CBool(discriminatorMappingCompleteAnnotation.Value)
 
                     stringBuilder.
                         Append("."c).
                         Append("IsComplete").
                         Append("("c).
-                        Append(VBCode.UnknownLiteral(value)).
+                        Append(VBCode.Literal(value)).
                         Append(")"c)
                 End If
 
@@ -919,7 +926,8 @@ Namespace Migrations.Design
             Dim table = StoreObjectIdentifier.Create(entityType, StoreObjectType.Table)
             Dim tableName = If(CStr(tableNameAnnotation?.Value), table?.Name)
             If tableNameAnnotation Is Nothing AndAlso
-               (tableName Is Nothing OrElse entityType.BaseType?.GetTableName() = tableName) Then
+               entityType.BaseType IsNot Nothing AndAlso
+               entityType.BaseType.GetTableName() = tableName Then
                 Exit Sub
             End If
 
@@ -933,10 +941,10 @@ Namespace Migrations.Design
                (schemaAnnotation Is Nothing OrElse schema Is Nothing) Then
                 stringBuilder.
                     Append("DirectCast(").
-                    Append(VBCode.UnknownLiteral(tableName)).
+                    Append(VBCode.Literal(tableName)).
                     Append(", String)")
             Else
-                stringBuilder.Append(VBCode.UnknownLiteral(tableName))
+                stringBuilder.Append(VBCode.Literal(tableName))
             End If
 
             Dim isExcludedAnnotation As IAnnotation = Nothing
@@ -965,10 +973,10 @@ Namespace Migrations.Design
                 If schema Is Nothing AndAlso Not requiresTableBuilder Then
                     stringBuilder.
                         Append("DirectCast(").
-                        Append(VBCode.UnknownLiteral(schema)).
+                        Append(VBCode.Literal(schema)).
                         Append(", String)")
                 Else
-                    stringBuilder.Append(VBCode.UnknownLiteral(schema))
+                    stringBuilder.Append(VBCode.Literal(schema))
                 End If
             End If
 
@@ -990,7 +998,7 @@ Namespace Migrations.Design
                         End If
 
                         If hasOverrides Then
-                            GenerateOverrides("t", entityType, table.Value, stringBuilder)
+                            GeneratePropertyOverrides("t", entityType, table.Value, stringBuilder)
                         End If
                     End Using
 
@@ -1011,9 +1019,9 @@ Namespace Migrations.Design
                     AppendLine().
                     Append(entityTypeBuilderName).
                     Append(".SplitToTable(").
-                    Append(VBCode.UnknownLiteral(Table.Name)).
+                    Append(VBCode.Literal(Table.Name)).
                     Append(", ").
-                    Append(VBCode.UnknownLiteral(Table.Schema)).
+                    Append(VBCode.Literal(Table.Schema)).
                     AppendLine(","c)
 
                 Using stringBuilder.Indent()
@@ -1021,7 +1029,7 @@ Namespace Migrations.Design
 
                     Using stringBuilder.Indent()
                         GenerateTriggers("t", entityType, Table.Name, Table.Schema, stringBuilder)
-                        GenerateOverrides("t", entityType, Table, stringBuilder)
+                        GeneratePropertyOverrides("t", entityType, Table, stringBuilder)
                         GenerateEntityTypeMappingFragmentAnnotations("t", fragment, stringBuilder)
                     End Using
 
@@ -1057,7 +1065,7 @@ Namespace Migrations.Design
                 AppendLine().
                 Append(entityTypeBuilderName).
                 Append(".ToView(").
-                Append(VBCode.UnknownLiteral(viewName))
+                Append(VBCode.Literal(viewName))
 
             If viewNameAnnotation IsNot Nothing Then
                 annotations.Remove(viewNameAnnotation.Name)
@@ -1077,10 +1085,10 @@ Namespace Migrations.Design
                 If schema Is Nothing AndAlso Not hasOverrides Then
                     stringBuilder.
                         Append("DirectCast(").
-                        Append(VBCode.UnknownLiteral(schema)).
+                        Append(VBCode.Literal(schema)).
                         Append(", String)")
                 Else
-                    stringBuilder.Append(VBCode.UnknownLiteral(schema))
+                    stringBuilder.Append(VBCode.Literal(schema))
                 End If
             End If
 
@@ -1091,7 +1099,7 @@ Namespace Migrations.Design
                     stringBuilder.AppendLine("Sub(v)")
 
                     Using stringBuilder.Indent()
-                        GenerateOverrides("v", entityType, View.Value, stringBuilder)
+                        GeneratePropertyOverrides("v", entityType, View.Value, stringBuilder)
                     End Using
 
                     stringBuilder.Append("End Sub")
@@ -1111,16 +1119,16 @@ Namespace Migrations.Design
                     AppendLine().
                     Append(entityTypeBuilderName).
                     Append(".SplitToView(").
-                    Append(VBCode.UnknownLiteral(fragment.StoreObject.Name)).
+                    Append(VBCode.Literal(fragment.StoreObject.Name)).
                     Append(", ").
-                    Append(VBCode.UnknownLiteral(fragment.StoreObject.Schema)).
+                    Append(VBCode.Literal(fragment.StoreObject.Schema)).
                     AppendLine(","c)
 
                 Using stringBuilder.Indent()
                     stringBuilder.AppendLine("Sub(v)")
 
                     Using stringBuilder.Indent()
-                        GenerateOverrides("v", entityType, fragment.StoreObject, stringBuilder)
+                        GeneratePropertyOverrides("v", entityType, fragment.StoreObject, stringBuilder)
                         GenerateEntityTypeMappingFragmentAnnotations("v", fragment, stringBuilder)
                     End Using
 
@@ -1239,7 +1247,7 @@ Namespace Migrations.Design
                         Append("End Sub")
                 End If
             End If
-    End Sub
+        End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="ITrigger" /> objects.
@@ -1319,15 +1327,15 @@ Namespace Migrations.Design
         ''' <param name="entityType">The entity type.</param>
         ''' <param name="storeObject">The store object identifier.</param>
         ''' <param name="stringBuilder">The builder code Is added to.</param>
-        Protected Overridable Sub GenerateOverrides(tableBuilderName As String,
-                                                    entityType As IEntityType,
-                                                    storeObject As StoreObjectIdentifier,
-                                                    stringBuilder As IndentedStringBuilder)
+        Protected Overridable Sub GeneratePropertyOverrides(tableBuilderName As String,
+                                                            entityType As IEntityType,
+                                                            storeObject As StoreObjectIdentifier,
+                                                            stringBuilder As IndentedStringBuilder)
 
             For Each [property] In entityType.GetProperties()
                 Dim [overrides] = [property].FindOverrides(storeObject)
                 If [overrides] IsNot Nothing Then
-                    GenerateOverride(tableBuilderName, [overrides], stringBuilder)
+                    GeneratePropertyOverride(tableBuilderName, [overrides], stringBuilder)
                 End If
             Next
         End Sub
@@ -1338,9 +1346,9 @@ Namespace Migrations.Design
         ''' <param name="tableBuilderName">The name of the table builder variable.</param>
         ''' <param name="overrides">The overrides.</param>
         ''' <param name="stringBuilder">The builder code Is added to.</param>
-        Protected Overridable Sub GenerateOverride(tableBuilderName As String,
-                                                   [overrides] As IRelationalPropertyOverrides,
-                                                   stringBuilder As IndentedStringBuilder)
+        Protected Overridable Sub GeneratePropertyOverride(tableBuilderName As String,
+                                                            [overrides] As IRelationalPropertyOverrides,
+                                                            stringBuilder As IndentedStringBuilder)
 
             Dim propertyBuilderName = $"{tableBuilderName}.Property({VBCode.Literal([overrides].[Property].Name)})"
             stringBuilder.
@@ -1350,12 +1358,12 @@ Namespace Migrations.Design
             ' Note that GenerateAnnotations below does the corresponding decrement
             stringBuilder.IncrementIndent()
 
-            If [overrides].ColumnNameOverridden Then
+            If [overrides].IsColumnNameOverridden Then
                 stringBuilder.
                     AppendLine("."c).
                     Append(NameOf(ColumnBuilder.HasColumnName)).
                     Append("("c).
-                    Append(VBCode.UnknownLiteral([overrides].ColumnName)).
+                    Append(VBCode.Literal([overrides].ColumnName)).
                     Append(")"c)
             End If
 
@@ -1427,9 +1435,7 @@ Namespace Migrations.Design
                     Append(".HasOne(").
                     Append(VBCode.Literal(GetFullName(foreignKey.PrincipalEntityType))).
                     Append(", ").
-                    Append(If(foreignKey.DependentToPrincipal Is Nothing,
-                                VBCode.UnknownLiteral(Nothing),
-                                VBCode.Literal(foreignKey.DependentToPrincipal.Name)))
+                    Append(VBCode.Literal(foreignKey.DependentToPrincipal?.Name))
             Else
                 foreignKeyBuilderNameStringBuilder.
                     Append(entityTypeBuilderName).
@@ -1764,7 +1770,7 @@ Namespace Migrations.Design
                 AppendLine("."c).
                 Append(NameOf(PropertyBuilder.HasPrecision)).
                 Append("("c).
-                Append(VBCode.UnknownLiteral(precision))
+                Append(VBCode.Literal(precision))
 
 
             Dim scale As Integer = [property].GetScale().GetValueOrDefault
@@ -1772,7 +1778,7 @@ Namespace Migrations.Design
             If scale <> 0 Then
                 stringBuilder.
                     Append(", ").
-                    Append(VBCode.UnknownLiteral(scale))
+                    Append(VBCode.Literal(scale))
             End If
 
             stringBuilder.Append(")"c)
@@ -1796,38 +1802,6 @@ Namespace Migrations.Design
                 Append(VBCode.Literal(unicode)).
                 Append(")"c)
 
-        End Sub
-
-        Private Sub GenerateFluentApiForDefaultValue([property] As IProperty,
-                                                     stringBuilder As IndentedStringBuilder)
-
-            NotNull([property], NameOf([property]))
-            NotNull(stringBuilder, NameOf(stringBuilder))
-
-            Dim defaultValue As Object = Nothing
-            If Not [property].TryGetDefaultValue(defaultValue) Then Exit Sub
-
-            stringBuilder.
-                AppendLine("."c).
-                Append(NameOf(RelationalPropertyBuilderExtensions.HasDefaultValue)).
-                Append("("c)
-
-            If defaultValue IsNot DBNull.Value Then
-
-                Dim value = defaultValue
-
-                Dim t = FindValueConverter([property])
-                If TypeOf t Is ValueConverter Then
-                    Dim valueConverter = DirectCast(t, ValueConverter)
-                    value = valueConverter.ConvertToProvider(defaultValue)
-                End If
-
-                stringBuilder.
-                    Append(VBCode.UnknownLiteral(value))
-            End If
-
-            stringBuilder.
-                Append(")"c)
         End Sub
 
         Private Sub GenerateAnnotations(builderName As String,
@@ -1863,16 +1837,21 @@ Namespace Migrations.Design
             ' First generate single Fluent API call chain
             If chainedCall IsNot Nothing Then
                 If inChainedCall Then
-                    stringBuilder.
-                        AppendLine("."c).
-                        AppendLines(VBCode.Fragment(chainedCall, startWithDot:=False), skipFinalNewline:=True)
+                    If chainedCall.ChainedCall Is Nothing Then
+                        stringBuilder.
+                            AppendLine("."c).
+                            Append(VBCode.Fragment(chainedCall, stringBuilder.CurrentIndent, startWithDot:=False))
+                    Else
+                        stringBuilder.
+                            Append(VBCode.Fragment(chainedCall, stringBuilder.CurrentIndent))
+                    End If
                 Else
                     If leadingNewline Then
                         stringBuilder.AppendLine()
                     End If
 
-                    stringBuilder.AppendLines(VBCode.Fragment(chainedCall, builderName), skipFinalNewline:=True)
-                    stringBuilder.AppendLine()
+                    stringBuilder.Append(builderName)
+                    stringBuilder.AppendLine(VBCode.Fragment(chainedCall, stringBuilder.CurrentIndent + 1))
                 End If
 
                 leadingNewline = True
@@ -1918,5 +1897,4 @@ Namespace Migrations.Design
                    entityTypeName
         End Function
     End Class
-
 End Namespace

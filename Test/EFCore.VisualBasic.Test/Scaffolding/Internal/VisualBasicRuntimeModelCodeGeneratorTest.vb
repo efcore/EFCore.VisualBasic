@@ -837,11 +837,11 @@ End Namespace
                 MyBase.New(typeMappingSource)
             End Sub
 
-            Public Overrides Function ShouldUseFullName(type As Type) As Boolean
+            Protected Overrides Function ShouldUseFullName(type As Type) As Boolean
                 Return MyBase.ShouldUseFullName(type)
             End Function
 
-            Public Overrides Function ShouldUseFullName(shortTypeName As String) As Boolean
+            Protected Overrides Function ShouldUseFullName(shortTypeName As String) As Boolean
                 Return MyBase.ShouldUseFullName(shortTypeName) OrElse
                    shortTypeName = NameOf(Index) OrElse
                    shortTypeName = NameOf(Internal)
@@ -895,33 +895,33 @@ Namespace TestNamespace
     Public Partial Class BigContextModel
 
         Private Sub Initialize()
-            Dim dependentBasebyte = DependentBasebyteEntityType.Create(Me)
+            Dim dependentBase = DependentBaseEntityType.Create(Me)
             Dim principalBase = PrincipalBaseEntityType.Create(Me)
             Dim ownedType = OwnedTypeEntityType.Create(Me)
             Dim ownedType0 = OwnedType0EntityType.Create(Me)
             Dim principalBasePrincipalDerivedDependentBasebyte = PrincipalBasePrincipalDerivedDependentBasebyteEntityType.Create(Me)
-            Dim dependentDerivedbyte = DependentDerivedbyteEntityType.Create(Me, dependentBasebyte)
-            Dim principalDerivedDependentBasebyte = PrincipalDerivedDependentBasebyteEntityType.Create(Me, principalBase)
+            Dim dependentDerived = DependentDerivedEntityType.Create(Me, dependentBase)
+            Dim principalDerived = PrincipalDerivedEntityType.Create(Me, principalBase)
 
-            DependentBasebyteEntityType.CreateForeignKey1(dependentBasebyte, principalBase)
-            DependentBasebyteEntityType.CreateForeignKey2(dependentBasebyte, principalDerivedDependentBasebyte)
+            DependentBaseEntityType.CreateForeignKey1(dependentBase, principalBase)
+            DependentBaseEntityType.CreateForeignKey2(dependentBase, principalDerived)
             OwnedTypeEntityType.CreateForeignKey1(ownedType, principalBase)
             OwnedTypeEntityType.CreateForeignKey2(ownedType, ownedType)
-            OwnedType0EntityType.CreateForeignKey1(ownedType0, principalDerivedDependentBasebyte)
-            PrincipalBasePrincipalDerivedDependentBasebyteEntityType.CreateForeignKey1(principalBasePrincipalDerivedDependentBasebyte, principalDerivedDependentBasebyte)
+            OwnedType0EntityType.CreateForeignKey1(ownedType0, principalDerived)
+            PrincipalBasePrincipalDerivedDependentBasebyteEntityType.CreateForeignKey1(principalBasePrincipalDerivedDependentBasebyte, principalDerived)
             PrincipalBasePrincipalDerivedDependentBasebyteEntityType.CreateForeignKey2(principalBasePrincipalDerivedDependentBasebyte, principalBase)
-            PrincipalDerivedDependentBasebyteEntityType.CreateForeignKey1(principalDerivedDependentBasebyte, principalBase)
+            PrincipalDerivedEntityType.CreateForeignKey1(principalDerived, principalBase)
 
-            PrincipalBaseEntityType.CreateSkipNavigation1(principalBase, principalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyte)
-            PrincipalDerivedDependentBasebyteEntityType.CreateSkipNavigation1(principalDerivedDependentBasebyte, principalBase, principalBasePrincipalDerivedDependentBasebyte)
+            PrincipalBaseEntityType.CreateSkipNavigation1(principalBase, principalDerived, principalBasePrincipalDerivedDependentBasebyte)
+            PrincipalDerivedEntityType.CreateSkipNavigation1(principalDerived, principalBase, principalBasePrincipalDerivedDependentBasebyte)
 
-            DependentBasebyteEntityType.CreateAnnotations(dependentBasebyte)
+            DependentBaseEntityType.CreateAnnotations(dependentBase)
             PrincipalBaseEntityType.CreateAnnotations(principalBase)
             OwnedTypeEntityType.CreateAnnotations(ownedType)
             OwnedType0EntityType.CreateAnnotations(ownedType0)
             PrincipalBasePrincipalDerivedDependentBasebyteEntityType.CreateAnnotations(principalBasePrincipalDerivedDependentBasebyte)
-            DependentDerivedbyteEntityType.CreateAnnotations(dependentDerivedbyte)
-            PrincipalDerivedDependentBasebyteEntityType.CreateAnnotations(principalDerivedDependentBasebyte)
+            DependentDerivedEntityType.CreateAnnotations(dependentDerived)
+            PrincipalDerivedEntityType.CreateAnnotations(principalDerived)
 
             Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
             Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
@@ -941,7 +941,7 @@ Imports Microsoft.EntityFrameworkCore.ValueGeneration
 Imports NetTopologySuite.Geometries
 
 Namespace TestNamespace
-    Friend Partial Class DependentBasebyteEntityType
+    Friend Partial Class DependentBaseEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -960,7 +960,6 @@ Namespace TestNamespace
             Dim principalAlternateId = entityType.AddProperty(
                 "PrincipalAlternateId",
                 GetType(Point),
-                valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
             principalAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -1030,9 +1029,10 @@ Namespace TestNamespace
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
             entityType.AddAnnotation("DiscriminatorMappingComplete", False)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
+            entityType.AddAnnotation("Relational:MappingStrategy", "TPH")
             entityType.AddAnnotation("Relational:Schema", Nothing)
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalDerived")
+            entityType.AddAnnotation("Relational:TableName", "DependentBase<byte?>")
             entityType.AddAnnotation("Relational:ViewName", Nothing)
             entityType.AddAnnotation("Relational:ViewSchema", Nothing)
 
@@ -1073,6 +1073,7 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim idPrincipalDerived As New RuntimeRelationalPropertyOverrides(
                 id,
@@ -1081,6 +1082,7 @@ Namespace TestNamespace
                 "DerivedId")
             [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.Table("PrincipalDerived", Nothing), idPrincipalDerived})
             id.AddAnnotation("Relational:RelationalOverrides", [overrides])
+
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim alternateId = entityType.AddProperty(
@@ -1142,6 +1144,7 @@ Namespace TestNamespace
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
+            entityType.AddAnnotation("Relational:MappingStrategy", "TPT")
             entityType.AddAnnotation("Relational:Schema", "mySchema")
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
             entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
@@ -1183,6 +1186,7 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim principalBaseIdPrincipalBase As New RuntimeRelationalPropertyOverrides(
                 principalBaseId,
@@ -1192,6 +1196,7 @@ Namespace TestNamespace
             principalBaseIdPrincipalBase.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
             [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.Table("PrincipalBase", "mySchema"), principalBaseIdPrincipalBase})
             principalBaseId.AddAnnotation("Relational:RelationalOverrides", [overrides])
+
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim principalBaseAlternateId = entityType.AddProperty(
@@ -1209,6 +1214,7 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
+
             Dim overrides0 As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim detailsDetails As New RuntimeRelationalPropertyOverrides(
                 details,
@@ -1217,6 +1223,7 @@ Namespace TestNamespace
                 Nothing)
             overrides0.GetType().GetMethod("Add").Invoke(overrides0, {StoreObjectIdentifier.Table("Details", Nothing), detailsDetails})
             details.AddAnnotation("Relational:RelationalOverrides", overrides0)
+
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -1315,17 +1322,17 @@ Namespace TestNamespace
                 baseEntityType,
                 sharedClrType:=True)
 
-            Dim principalDerivedDependentBasebyteId = entityType.AddProperty(
-                "PrincipalDerived<DependentBase<byte?>>Id",
+            Dim principalDerivedId = entityType.AddProperty(
+                "PrincipalDerivedId",
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalDerivedDependentBasebyteId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+            principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim principalDerivedDependentBasebyteAlternateId = entityType.AddProperty(
-                "PrincipalDerived<DependentBase<byte?>>AlternateId",
+            Dim principalDerivedAlternateId = entityType.AddProperty(
+                "PrincipalDerivedAlternateId",
                 GetType(Point),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalDerivedDependentBasebyteAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+            principalDerivedAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
                 "Id",
@@ -1354,14 +1361,14 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
 
             Dim key = entityType.AddKey(
-                {principalDerivedDependentBasebyteId, principalDerivedDependentBasebyteAlternateId, id})
+                {principalDerivedId, principalDerivedAlternateId, id})
             entityType.SetPrimaryKey(key)
 
             Return entityType
         End Function
 
         Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerived<DependentBase<byte?>>Id"), declaringEntityType.FindProperty("PrincipalDerived<DependentBase<byte?>>AlternateId")},
+            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId"), declaringEntityType.FindProperty("PrincipalDerivedAlternateId")},
                 principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
                 principalEntityType,
                 deleteBehavior:=DeleteBehavior.Cascade,
@@ -1512,7 +1519,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Friend Partial Class DependentDerivedbyteEntityType
+    Friend Partial Class DependentDerivedEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1547,7 +1554,7 @@ Namespace TestNamespace
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", Nothing)
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalDerived")
+            entityType.AddAnnotation("Relational:TableName", "DependentBase<byte?>")
             entityType.AddAnnotation("Relational:ViewName", Nothing)
             entityType.AddAnnotation("Relational:ViewSchema", Nothing)
 
@@ -1570,7 +1577,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Friend Partial Class PrincipalDerivedDependentBasebyteEntityType
+    Friend Partial Class PrincipalDerivedEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -1642,13 +1649,13 @@ End Namespace
                         Collection(code,
                         Sub(c) AssertFileContents("BigContextModel.vb", rm1, c),
                         Sub(c) AssertFileContents("BigContextModelBuilder.vb", rm2, c),
-                        Sub(c) AssertFileContents("DependentBasebyteEntityType.vb", e1, c),
+                        Sub(c) AssertFileContents("DependentBaseEntityType.vb", e1, c),
                         Sub(c) AssertFileContents("PrincipalBaseEntityType.vb", e2, c),
                         Sub(c) AssertFileContents("OwnedTypeEntityType.vb", e3, c),
                         Sub(c) AssertFileContents("OwnedType0EntityType.vb", e4, c),
                         Sub(c) AssertFileContents("PrincipalBasePrincipalDerivedDependentBasebyteEntityType.vb", e5, c),
-                        Sub(c) AssertFileContents("DependentDerivedbyteEntityType.vb", e6, c),
-                        Sub(c) AssertFileContents("PrincipalDerivedDependentBasebyteEntityType.vb", e7, c))
+                        Sub(c) AssertFileContents("DependentDerivedEntityType.vb", e6, c),
+                        Sub(c) AssertFileContents("PrincipalDerivedEntityType.vb", e7, c))
                 End Sub,
                 Sub(Model)
                     Assert.Equal(
@@ -2234,8 +2241,6 @@ End Namespace
                            HasForeignKey(Of DependentBase(Of Byte?))("PrincipalId").
                            HasPrincipalKey(Of PrincipalBase)(Function(e) e.Id)
 
-                        eb.ToTable("PrincipalDerived")
-
                         eb.HasDiscriminator(Of Enum1)("EnumDiscriminator").
                            HasValue(Enum1.One).
                            HasValue(Of DependentDerived(Of Byte?))(Enum1.Two).
@@ -2295,6 +2300,7 @@ End Namespace
             Dim rm2 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 
@@ -2302,18 +2308,28 @@ Namespace TestNamespace
     Public Partial Class TpcContextModel
 
         Private Sub Initialize()
-            Dim dependentBasebyte = DependentBasebyteEntityType.Create(Me)
+            Dim dependentBase = DependentBaseEntityType.Create(Me)
             Dim principalBase = PrincipalBaseEntityType.Create(Me)
-            Dim principalDerivedDependentBasebyte = PrincipalDerivedDependentBasebyteEntityType.Create(Me, principalBase)
+            Dim principalDerived = PrincipalDerivedEntityType.Create(Me, principalBase)
 
-            DependentBasebyteEntityType.CreateForeignKey1(dependentBasebyte, principalDerivedDependentBasebyte)
+            DependentBaseEntityType.CreateForeignKey1(dependentBase, principalDerived)
             PrincipalBaseEntityType.CreateForeignKey1(principalBase, principalBase)
-            PrincipalBaseEntityType.CreateForeignKey2(principalBase, principalDerivedDependentBasebyte)
+            PrincipalBaseEntityType.CreateForeignKey2(principalBase, principalDerived)
 
-            DependentBasebyteEntityType.CreateAnnotations(dependentBasebyte)
+            DependentBaseEntityType.CreateAnnotations(dependentBase)
             PrincipalBaseEntityType.CreateAnnotations(principalBase)
-            PrincipalDerivedDependentBasebyteEntityType.CreateAnnotations(principalDerivedDependentBasebyte)
+            PrincipalDerivedEntityType.CreateAnnotations(principalDerived)
 
+            Dim sequences As New SortedDictionary(Of (String, String), ISequence)()
+            Dim principalBaseSequence As New RuntimeSequence(
+                "PrincipalBaseSequence",
+                Me,
+                GetType(Long),
+                schema:="TPC")
+
+            sequences(("PrincipalBaseSequence", "TPC")) = principalBaseSequence
+
+            Me.AddAnnotation("Relational:Sequences", sequences)
             Me.AddAnnotation("Relational:DefaultSchema", "TPC")
             Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
             Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
@@ -2331,7 +2347,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Friend Partial Class DependentBasebyteEntityType
+    Friend Partial Class DependentBaseEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -2410,6 +2426,7 @@ End Namespace
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Data
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -2431,7 +2448,34 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+
+            Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
+            Dim idDerivedInsert As New RuntimeRelationalPropertyOverrides(
+                id,
+                StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"),
+                True,
+                "DerivedId")
+            idDerivedInsert.AddAnnotation("foo", "bar3")
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"), idDerivedInsert})
+            Dim idPrincipalBaseView As New RuntimeRelationalPropertyOverrides(
+                id,
+                StoreObjectIdentifier.View("PrincipalBaseView", "TPC"),
+                False,
+                Nothing)
+            idPrincipalBaseView.AddAnnotation("foo", "bar2")
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.View("PrincipalBaseView", "TPC"), idPrincipalBaseView})
+            Dim idPrincipalBaseInsert As New RuntimeRelationalPropertyOverrides(
+                id,
+                StoreObjectIdentifier.InsertStoredProcedure("PrincipalBase_Insert", "TPC"),
+                True,
+                "BaseId")
+            idPrincipalBaseInsert.AddAnnotation("foo", "bar")
+            idPrincipalBaseInsert.AddAnnotation("Relational:ParameterDirection", ParameterDirection.Output)
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("PrincipalBase_Insert", "TPC"), idPrincipalBaseInsert})
+            id.AddAnnotation("Relational:RelationalOverrides", [overrides])
+
+            id.AddAnnotation("Relational:DefaultValueSql", "NEXT VALUE FOR [TPC].[PrincipalBaseSequence]")
+            id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.Sequence)
 
             Dim principalBaseId = entityType.AddProperty(
                 "PrincipalBaseId",
@@ -2439,11 +2483,11 @@ Namespace TestNamespace
                 nullable:=True)
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim principalDerivedDependentBasebyteId = entityType.AddProperty(
-                "PrincipalDerived<DependentBase<byte?>>Id",
+            Dim principalDerivedId = entityType.AddProperty(
+                "PrincipalDerivedId",
                 GetType(Long?),
                 nullable:=True)
-            principalDerivedDependentBasebyteId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+            principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -2453,7 +2497,7 @@ Namespace TestNamespace
                 {principalBaseId})
 
             Dim index0 = entityType.AddIndex(
-                {principalDerivedDependentBasebyteId})
+                {principalDerivedId})
 
             Return entityType
         End Function
@@ -2474,7 +2518,7 @@ Namespace TestNamespace
         End Function
 
         Public Shared Function CreateForeignKey2(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerived<DependentBase<byte?>>Id")},
+            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId")},
                 principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
                 principalEntityType)
 
@@ -2489,6 +2533,38 @@ Namespace TestNamespace
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+            Dim insertSproc As New RuntimeStoredProcedure(
+                entityType,
+                "PrincipalBase_Insert",
+                "TPC",
+                True)
+
+            insertSproc.AddParameter("PrincipalBaseId")
+            insertSproc.AddParameter("PrincipalDerivedId")
+            insertSproc.AddParameter("Id")
+            insertSproc.AddAnnotation("foo", "bar1")
+            entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+
+            Dim deleteSproc As New RuntimeStoredProcedure(
+                entityType,
+                "PrincipalBase_Delete",
+                "TPC",
+                False)
+
+            deleteSproc.AddParameter("Id")
+            entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+
+            Dim updateSproc As New RuntimeStoredProcedure(
+                entityType,
+                "PrincipalBase_Update",
+                "TPC",
+                False)
+
+            updateSproc.AddParameter("PrincipalBaseId")
+            updateSproc.AddParameter("PrincipalDerivedId")
+            updateSproc.AddParameter("Id")
+            entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:MappingStrategy", "TPC")
             entityType.AddAnnotation("Relational:Schema", "TPC")
@@ -2515,7 +2591,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Friend Partial Class PrincipalDerivedDependentBasebyteEntityType
+    Friend Partial Class PrincipalDerivedEntityType
 
         Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
             Dim entityType = model.AddEntityType(
@@ -2528,6 +2604,37 @@ Namespace TestNamespace
         End Function
 
         Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+            Dim insertSproc As New RuntimeStoredProcedure(
+                entityType,
+                "Derived_Insert",
+                "TPC",
+                False)
+
+            insertSproc.AddParameter("PrincipalBaseId")
+            insertSproc.AddParameter("PrincipalDerivedId")
+            insertSproc.AddResultColumn("Id")
+            entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+
+            Dim deleteSproc As New RuntimeStoredProcedure(
+                entityType,
+                "Derived_Delete",
+                "TPC",
+                False)
+
+            deleteSproc.AddParameter("Id")
+            entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+
+            Dim updateSproc As New RuntimeStoredProcedure(
+                entityType,
+                "Derived_Update",
+                "Derived",
+                False)
+
+            updateSproc.AddParameter("PrincipalBaseId")
+            updateSproc.AddParameter("PrincipalDerivedId")
+            updateSproc.AddParameter("Id")
+            entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
             entityType.AddAnnotation("Relational:Schema", "TPC")
             entityType.AddAnnotation("Relational:SqlQuery", Nothing)
@@ -2553,18 +2660,59 @@ End Namespace
                         code,
                         Sub(c) AssertFileContents("TpcContextModel.vb", rm1, c),
                         Sub(c) AssertFileContents("TpcContextModelBuilder.vb", rm2, c),
-                        Sub(c) AssertFileContents("DependentBasebyteEntityType.vb", e1, c),
+                        Sub(c) AssertFileContents("DependentBaseEntityType.vb", e1, c),
                         Sub(c) AssertFileContents("PrincipalBaseEntityType.vb", e2, c),
-                        Sub(c) AssertFileContents("PrincipalDerivedDependentBasebyteEntityType.vb", e3, c))
+                        Sub(c) AssertFileContents("PrincipalDerivedEntityType.vb", e3, c))
                 End Sub,
                 Sub(Model)
                     Assert.Equal("TPC", Model.GetDefaultSchema())
 
                     Dim PrincipalBase = Model.FindEntityType(GetType(PrincipalBase))
+                    Dim id = PrincipalBase.FindProperty("Id")
+
+                    Assert.Equal("Id", id.GetColumnName())
                     Assert.Equal("PrincipalBase", PrincipalBase.GetTableName())
                     Assert.Equal("TPC", PrincipalBase.GetSchema())
+                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.Table).Value))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.Table).Value))
+
                     Assert.Equal("PrincipalBaseView", PrincipalBase.GetViewName())
                     Assert.Equal("TPC", PrincipalBase.GetViewSchema())
+                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.View).Value))
+                    Assert.Equal("bar2",
+                        id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.View).Value)("foo"))
+
+                    Dim insertSproc = PrincipalBase.GetInsertStoredProcedure()
+                    Assert.Equal("PrincipalBase_Insert", insertSproc.Name)
+                    Assert.Equal("TPC", insertSproc.Schema)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, insertSproc.Parameters)
+                    Assert.Empty(insertSproc.ResultColumns)
+                    Assert.True(insertSproc.AreTransactionsSuppressed)
+                    Assert.Equal("bar1", insertSproc("foo"))
+                    Assert.Same(PrincipalBase, insertSproc.EntityType)
+                    Assert.Equal("BaseId", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.InsertStoredProcedure).Value))
+                    Assert.Equal("bar",
+                        id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.InsertStoredProcedure).Value)("foo"))
+
+                    Dim updateSproc = PrincipalBase.GetUpdateStoredProcedure()
+                    Assert.Equal("PrincipalBase_Update", updateSproc.Name)
+                    Assert.Equal("TPC", updateSproc.Schema)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, updateSproc.Parameters)
+                    Assert.Empty(updateSproc.ResultColumns)
+                    Assert.False(updateSproc.AreTransactionsSuppressed)
+                    Assert.Empty(updateSproc.GetAnnotations())
+                    Assert.Same(PrincipalBase, updateSproc.EntityType)
+                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.UpdateStoredProcedure).Value))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.UpdateStoredProcedure).Value))
+
+                    Dim deleteSproc = PrincipalBase.GetDeleteStoredProcedure()
+                    Assert.Equal("PrincipalBase_Delete", deleteSproc.Name)
+                    Assert.Equal("TPC", deleteSproc.Schema)
+                    Assert.Equal({"Id"}, deleteSproc.Parameters)
+                    Assert.Empty(deleteSproc.ResultColumns)
+                    Assert.Same(PrincipalBase, deleteSproc.EntityType)
+                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.DeleteStoredProcedure).Value))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.DeleteStoredProcedure).Value))
 
                     Assert.Equal("PrincipalBase", PrincipalBase.GetDiscriminatorValue())
                     Assert.Null(PrincipalBase.FindDiscriminatorProperty())
@@ -2584,6 +2732,39 @@ End Namespace
                     Assert.Equal("TPC", PrincipalDerived.GetSchema())
                     Assert.Equal("PrincipalDerivedView", PrincipalDerived.GetViewName())
                     Assert.Equal("TPC", PrincipalBase.GetViewSchema())
+
+                    insertSproc = PrincipalDerived.GetInsertStoredProcedure()
+                    Assert.Equal("Derived_Insert", insertSproc.Name)
+                    Assert.Equal("TPC", insertSproc.Schema)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId"}, insertSproc.Parameters)
+                    Assert.Equal({"Id"}, insertSproc.ResultColumns)
+                    Assert.False(insertSproc.AreTransactionsSuppressed)
+                    Assert.Null(insertSproc("foo"))
+                    Assert.Same(PrincipalDerived, insertSproc.EntityType)
+                    Assert.Equal("DerivedId", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.InsertStoredProcedure).Value))
+                    Assert.Equal("bar3",
+                        id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.InsertStoredProcedure).Value)("foo"))
+
+                    updateSproc = PrincipalDerived.GetUpdateStoredProcedure()
+                    Assert.Equal("Derived_Update", updateSproc.Name)
+                    Assert.Equal("Derived", updateSproc.Schema)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, updateSproc.Parameters)
+                    Assert.Empty(updateSproc.ResultColumns)
+                    Assert.False(updateSproc.AreTransactionsSuppressed)
+                    Assert.Empty(updateSproc.GetAnnotations())
+                    Assert.Same(PrincipalDerived, updateSproc.EntityType)
+                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.UpdateStoredProcedure).Value))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.UpdateStoredProcedure).Value))
+
+                    deleteSproc = PrincipalDerived.GetDeleteStoredProcedure()
+                    Assert.Equal("Derived_Delete", deleteSproc.Name)
+                    Assert.Equal("TPC", deleteSproc.Schema)
+                    Assert.Equal({"Id"}, deleteSproc.Parameters)
+                    Assert.Empty(deleteSproc.ResultColumns)
+                    Assert.False(deleteSproc.AreTransactionsSuppressed)
+                    Assert.Same(PrincipalDerived, deleteSproc.EntityType)
+                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.DeleteStoredProcedure).Value))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.DeleteStoredProcedure).Value))
 
                     Assert.Equal("PrincipalDerived<DependentBase<byte?>>", PrincipalDerived.GetDiscriminatorValue())
                     Assert.Null(PrincipalDerived.FindDiscriminatorProperty())
@@ -2649,8 +2830,21 @@ End Namespace
                         eb.Ignore(Function(e) e.Owned)
 
                         eb.UseTpcMappingStrategy()
+
                         eb.ToTable("PrincipalBase")
-                        eb.ToView("PrincipalBaseView")
+                        eb.ToView("PrincipalBaseView", Sub(tb) tb.Property(Function(e) e.Id).HasAnnotation("foo", "bar2"))
+
+                        eb.InsertUsingStoredProcedure(Sub(s) s.SuppressTransactions().
+                            HasParameter("PrincipalBaseId").
+                            HasParameter("PrincipalDerivedId").
+                            HasParameter(Function(p) p.Id, Function(pb) pb.HasName("BaseId").IsOutput().HasAnnotation("foo", "bar")).
+                            HasAnnotation("foo", "bar1"))
+                        eb.UpdateUsingStoredProcedure(Sub(s) s.
+                            HasParameter("PrincipalBaseId").
+                            HasParameter("PrincipalDerivedId").
+                            HasParameter(Function(p) p.Id))
+                        eb.DeleteUsingStoredProcedure(Sub(s) s.
+                            HasParameter(Function(p) p.Id))
                     End Sub)
 
                 modelBuilder.Entity(Of PrincipalDerived(Of DependentBase(Of Byte?)))(
@@ -2663,6 +2857,17 @@ End Namespace
 
                         eb.ToTable("PrincipalDerived")
                         eb.ToView("PrincipalDerivedView")
+
+                        eb.InsertUsingStoredProcedure("Derived_Insert", Sub(s) s.
+                            HasParameter("PrincipalBaseId").
+                            HasParameter("PrincipalDerivedId").
+                            HasResultColumn(Function(p) p.Id, Function(pb) pb.HasName("DerivedId").HasAnnotation("foo", "bar3")))
+                        eb.UpdateUsingStoredProcedure("Derived_Update", "Derived", Sub(s) s.
+                            HasParameter("PrincipalBaseId").
+                            HasParameter("PrincipalDerivedId").
+                            HasParameter(Function(p) p.Id))
+                        eb.DeleteUsingStoredProcedure("Derived_Delete", Sub(s) s.
+                            HasParameter(Function(p) p.Id))
                     End Sub)
 
                 modelBuilder.Entity(Of DependentBase(Of Byte?))(
@@ -3442,6 +3647,177 @@ End Namespace
         End Class
 
         <ConditionalFact>
+        Public Sub Key_sequences()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.KeySequencesContext))>
+    Public Partial Class KeySequencesContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As KeySequencesContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New KeySequencesContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim rm2 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class KeySequencesContextModel
+
+        Private Sub Initialize()
+            Dim data = DataEntityType.Create(Me)
+
+            DataEntityType.CreateAnnotations(data)
+
+            Dim sequences As New SortedDictionary(Of (String, String), ISequence)()
+            Dim keySeq As New RuntimeSequence(
+                "KeySeq",
+                Me,
+                GetType(Long),
+                schema:="KeySeqSchema")
+
+            sequences(("KeySeq", "KeySeqSchema")) = keySeq
+
+            Me.AddAnnotation("Relational:Sequences", sequences)
+            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
+            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim e1 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Friend Partial Class DataEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data),
+                baseEntityType)
+
+            Dim id = entityType.AddProperty(
+                "Id",
+                GetType(Integer),
+                valueGenerated:=ValueGenerated.OnAdd,
+                afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.AddAnnotation("Relational:DefaultValueSql", "NEXT VALUE FOR [KeySeqSchema].[KeySeq]")
+            id.AddAnnotation("SqlServer:SequenceName", "KeySeq")
+            id.AddAnnotation("SqlServer:SequenceSchema", "KeySeqSchema")
+            id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.Sequence)
+
+            Dim blob = entityType.AddProperty(
+                "Blob",
+                GetType(Byte()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim key = entityType.AddKey(
+                {id})
+            entityType.SetPrimaryKey(key)
+
+            Return entityType
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+            entityType.AddAnnotation("Relational:FunctionName", Nothing)
+            entityType.AddAnnotation("Relational:Schema", Nothing)
+            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+            entityType.AddAnnotation("Relational:TableName", "Data")
+            entityType.AddAnnotation("Relational:ViewName", Nothing)
+            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Test(
+                New KeySequencesContext(),
+                CreateCompiledModelCodeGenerationOptions(),
+                Sub(code)
+                    Assert.Collection(
+                    code,
+                    Sub(c) AssertFileContents("KeySequencesContextModel.vb", rm1, c),
+                    Sub(c) AssertFileContents("KeySequencesContextModelBuilder.vb", rm2, c),
+                    Sub(c) AssertFileContents("DataEntityType.vb", e1, c))
+                End Sub,
+                Sub(Model)
+                    Assert.Single(Model.GetSequences())
+
+                    Dim keySequence = Model.FindSequence("KeySeq", "KeySeqSchema")
+                    Assert.Same(Model, DirectCast(keySequence, IReadOnlySequence).Model)
+                    Assert.Equal("KeySeq", keySequence.Name)
+                    Assert.Equal("KeySeqSchema", keySequence.Schema)
+                    Assert.False(keySequence.IsCyclic)
+                    Assert.Equal(1, keySequence.StartValue)
+                    Assert.Null(keySequence.MinValue)
+                    Assert.Null(keySequence.MaxValue)
+                    Assert.Equal(1, keySequence.IncrementBy)
+                    Assert.NotNull(keySequence.ToString())
+
+                    Assert.Single(DirectCast(Model.GetEntityTypes(), IEnumerable))
+                    Dim dataEntity = Model.FindEntityType(GetType(Data))
+                    Assert.Same(keySequence, dataEntity.FindPrimaryKey().Properties.Single().FindSequence())
+                End Sub)
+        End Sub
+
+        Public Class KeySequencesContext
+            Inherits SqlServerContextBase
+
+            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+                MyBase.OnModelCreating(modelBuilder)
+
+                modelBuilder.Entity(Of Data)(
+                    Sub(eb)
+                        eb.Property(Of Integer)("Id").UseSequence("KeySeq", "KeySeqSchema")
+                        eb.HasKey("Id")
+                    End Sub)
+            End Sub
+        End Class
+
+        <ConditionalFact>
         Public Sub CheckConstraints()
 
             Dim rm1 =
@@ -4025,23 +4401,23 @@ Namespace TestNamespace
                 nullable:=True)
             blob.AddAnnotation("Cosmos:PropertyName", "JsonBlob")
 
-            Dim __id = entityType.AddProperty(
+            Dim id0 = entityType.AddProperty(
                 "__id",
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New IdValueGeneratorFactory().Create)
-            __id.AddAnnotation("Cosmos:PropertyName", "id")
+            id0.AddAnnotation("Cosmos:PropertyName", "id")
 
-            Dim __jObject = entityType.AddProperty(
+            Dim jObject = entityType.AddProperty(
                 "__jObject",
                 GetType(JObject),
                 nullable:=True,
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            __jObject.AddAnnotation("Cosmos:PropertyName", "")
+            jObject.AddAnnotation("Cosmos:PropertyName", "")
 
-            Dim _etag = entityType.AddProperty(
+            Dim etag = entityType.AddProperty(
                 "_etag",
                 GetType(String),
                 nullable:=True,
@@ -4055,7 +4431,7 @@ Namespace TestNamespace
             entityType.SetPrimaryKey(key)
 
             Dim key0 = entityType.AddKey(
-                {__id, partitionId})
+                {id0, partitionId})
 
             Return entityType
         End Function
@@ -4297,29 +4673,24 @@ End Namespace
             End If
 
             Dim build = New BuildSource With {
-                        .References =
-                        {
-                            BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                            BuildReference.ByName("System.Runtime"),
-                            BuildReference.ByName("System.Linq.Expressions"),
-                            BuildReference.ByName("netstandard"),
-                            BuildReference.ByName("System.Collections"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite"),
-                            BuildReference.ByName("Microsoft.EntityFrameworkCore.Specification.Tests"),
-                            BuildReference.ByName("NetTopologySuite"),
-                            BuildReference.ByName("Newtonsoft.Json"),
-                            BuildReference.ByName(GetType(VisualBasicRuntimeModelCodeGeneratorTest).Assembly.GetName().Name)
-                        },
-                        .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
-                    }
+                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
+            }
+
+            With build.References
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Specification.Tests"))
+                .Add(BuildReference.ByName("NetTopologySuite"))
+                .Add(BuildReference.ByName("Newtonsoft.Json"))
+                .Add(BuildReference.ByName(GetType(VisualBasicRuntimeModelCodeGeneratorTest).Assembly.GetName().Name))
+            End With
 
             Dim Assembly = build.BuildInMemory()
 

@@ -32,6 +32,7 @@ Namespace Migrations.Design
 
         Private Shared ReadOnly _nl As String = Environment.NewLine
         Private Shared ReadOnly _toTable As String = _nl & "entityTypeBuilder.ToTable(""WithAnnotations"")"
+        Private Shared ReadOnly _toNullTable As String = _nl & "entityTypeBuilder.ToTable(DirectCast(Nothing, String))"
 
         <ConditionalFact>
         Sub FileExtension_works()
@@ -74,10 +75,18 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.ViewColumnMappings,
                 RelationalAnnotationNames.SqlQueryColumnMappings,
                 RelationalAnnotationNames.FunctionColumnMappings,
+                RelationalAnnotationNames.InsertStoredProcedureParameterMappings,
+                RelationalAnnotationNames.InsertStoredProcedureResultColumnMappings,
+                RelationalAnnotationNames.DeleteStoredProcedureParameterMappings,
+                RelationalAnnotationNames.UpdateStoredProcedureParameterMappings,
+                RelationalAnnotationNames.UpdateStoredProcedureResultColumnMappings,
                 RelationalAnnotationNames.DefaultColumnMappings,
                 RelationalAnnotationNames.TableMappings,
                 RelationalAnnotationNames.ViewMappings,
                 RelationalAnnotationNames.FunctionMappings,
+                RelationalAnnotationNames.InsertStoredProcedureMappings,
+                RelationalAnnotationNames.DeleteStoredProcedureMappings,
+                RelationalAnnotationNames.UpdateStoredProcedureMappings,
                 RelationalAnnotationNames.SqlQueryMappings,
                 RelationalAnnotationNames.DefaultMappings,
                 RelationalAnnotationNames.ForeignKeyMappings,
@@ -98,13 +107,13 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.IsFixedLength,
                 RelationalAnnotationNames.Collation,
                 RelationalAnnotationNames.IsStored,
+                RelationalAnnotationNames.ParameterDirection,
                 RelationalAnnotationNames.TpcMappingStrategy,
                 RelationalAnnotationNames.TphMappingStrategy,
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
-                RelationalAnnotationNames.Triggers, ' Appears on entity but requires provider-specific support
-                RelationalAnnotationNames.GetReaderFieldValue}
+                RelationalAnnotationNames.FieldValueGetter}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -158,10 +167,12 @@ Namespace Migrations.Design
                 },
                 {
                     CoreAnnotationNames.DefiningQuery,
-                    (Expression.Lambda(Expression.Constant(Nothing)), "")
+                    (Expression.Lambda(Expression.Constant(Nothing)), _toNullTable)
                 },
                 {
                     RelationalAnnotationNames.ViewName, ("MyView",
+                        _toNullTable &
+                        _nl &
                         _nl &
                         "entityTypeBuilder." &
                         NameOf(RelationalEntityTypeBuilderExtensions.ToView) &
@@ -169,12 +180,16 @@ Namespace Migrations.Design
                 },
                 {
                     RelationalAnnotationNames.FunctionName, (Nothing,
+                        _toNullTable &
+                        _nl &
                         _nl &
                         "entityTypeBuilder" &
                         $".{NameOf(RelationalEntityTypeBuilderExtensions.ToFunction)}(Nothing)")
                 },
                 {
                     RelationalAnnotationNames.SqlQuery, (Nothing,
+                        _toNullTable &
+                        _nl &
                         _nl &
                         "entityTypeBuilder" &
                         $".{NameOf(RelationalEntityTypeBuilderExtensions.ToSqlQuery)}(Nothing)")
@@ -220,10 +235,18 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.ViewColumnMappings,
                 RelationalAnnotationNames.SqlQueryColumnMappings,
                 RelationalAnnotationNames.FunctionColumnMappings,
+                RelationalAnnotationNames.InsertStoredProcedureParameterMappings,
+                RelationalAnnotationNames.InsertStoredProcedureResultColumnMappings,
+                RelationalAnnotationNames.DeleteStoredProcedureParameterMappings,
+                RelationalAnnotationNames.UpdateStoredProcedureParameterMappings,
+                RelationalAnnotationNames.UpdateStoredProcedureResultColumnMappings,
                 RelationalAnnotationNames.DefaultColumnMappings,
                 RelationalAnnotationNames.TableMappings,
                 RelationalAnnotationNames.ViewMappings,
                 RelationalAnnotationNames.FunctionMappings,
+                RelationalAnnotationNames.InsertStoredProcedureMappings,
+                RelationalAnnotationNames.DeleteStoredProcedureMappings,
+                RelationalAnnotationNames.UpdateStoredProcedureMappings,
                 RelationalAnnotationNames.SqlQueryMappings,
                 RelationalAnnotationNames.ForeignKeyMappings,
                 RelationalAnnotationNames.TableIndexMappings,
@@ -243,7 +266,7 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
                 RelationalAnnotationNames.Triggers,
-                RelationalAnnotationNames.GetReaderFieldValue}
+                RelationalAnnotationNames.FieldValueGetter}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
             Dim columnMapping = $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"
@@ -647,20 +670,18 @@ End Namespace
             ignoreLineEndingDifferences:=True)
 
             Dim build = New BuildSource With {
-                .References = {
-                        BuildReference.ByName("EntityFrameworkCore.VisualBasic.Test"),
-                        BuildReference.ByName("Microsoft.EntityFrameworkCore"),
-                        BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                        BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                        BuildReference.ByName("System.Runtime"),
-                        BuildReference.ByName("System.Text.RegularExpressions")
-                },
                 .Sources = New Dictionary(Of String, String) From {
                     {"Migration.vb", migrationCode},
                     {"MigrationSnapshot.vb", migrationMetadataCode}
                 },
                 .EmitDocumentationDiagnostics = True
             }
+
+            With build.References
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+                .Add(BuildReference.ByName(GetType(VisualBasicMigrationsGeneratorTests).Assembly.GetName().Name))
+            End With
 
             Dim asm = build.BuildInMemory()
 
@@ -936,18 +957,14 @@ End Namespace
 
         Private Function CompileModelSnapshot(modelSnapshotCode As String, modelSnapshotTypeName As String) As ModelSnapshot
             Dim build As New BuildSource With {
-                .References =
-                            {
-                                BuildReference.ByName("EntityFrameworkCore.VisualBasic.Test"),
-                                BuildReference.ByName("Microsoft.EntityFrameworkCore"),
-                                BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"),
-                                BuildReference.ByName("Microsoft.VisualBasic.Core"),
-                                BuildReference.ByName("System"),
-                                BuildReference.ByName("System.Runtime"),
-                                BuildReference.ByName("System.Text.RegularExpressions")
-                            },
                  .Sources = New Dictionary(Of String, String) From {{"MigrationSnapshot.vb", modelSnapshotCode}}
             }
+
+            With build.References
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+                .Add(BuildReference.ByName(GetType(VisualBasicMigrationsGeneratorTests).Assembly.GetName().Name))
+            End With
 
             Dim assembly = build.BuildInMemory()
 

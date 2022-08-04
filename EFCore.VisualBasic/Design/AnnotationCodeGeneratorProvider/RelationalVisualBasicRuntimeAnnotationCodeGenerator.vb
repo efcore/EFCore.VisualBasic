@@ -320,7 +320,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             mainBuilder.
             Append(sequencesVariable).
             Append("((").Append(code.Literal(aSequence.Name)).Append(", ").
-            Append(code.UnknownLiteral(aSequence.Schema)).Append(")) = ").
+            Append(code.Literal(aSequence.Schema)).Append(")) = ").
             AppendLine(sequenceVariable).
             AppendLine()
         End Sub
@@ -344,6 +344,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 annotations.Remove(RelationalAnnotationNames.ViewMappings)
                 annotations.Remove(RelationalAnnotationNames.SqlQueryMappings)
                 annotations.Remove(RelationalAnnotationNames.FunctionMappings)
+                annotations.Remove(RelationalAnnotationNames.InsertStoredProcedureMappings)
+                annotations.Remove(RelationalAnnotationNames.DeleteStoredProcedureMappings)
+                annotations.Remove(RelationalAnnotationNames.UpdateStoredProcedureMappings)
                 annotations.Remove(RelationalAnnotationNames.DefaultMappings)
             Else
                 annotations.Remove(RelationalAnnotationNames.CheckConstraints)
@@ -382,7 +385,6 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 End If
 
                 If annotations.TryGetAndRemove(RelationalAnnotationNames.Triggers, triggers) Then
-
                     parameters.Namespaces.Add(GetType(SortedDictionary(Of,)).Namespace)
                     Dim triggersVariable = VBCode.Identifier("triggers", parameters.ScopeVariables, capitalize:=False)
                     parameters.MainBuilder.Append("Dim ").Append(triggersVariable).AppendLine(" As New SortedDictionary(Of String, ITrigger)()").AppendLine()
@@ -392,6 +394,41 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     Next
 
                     GenerateSimpleAnnotation(RelationalAnnotationNames.Triggers, triggersVariable, parameters)
+                End If
+
+                Dim insertStoredProcedure As StoredProcedure = Nothing
+                If annotations.TryGetAndRemove(
+                   RelationalAnnotationNames.InsertStoredProcedure, insertStoredProcedure) Then
+
+                    Dim sprocVariable = VBCode.Identifier("insertSproc", parameters.ScopeVariables, capitalize:=False)
+
+                    Create(insertStoredProcedure, sprocVariable, parameters)
+
+                    GenerateSimpleAnnotation(RelationalAnnotationNames.InsertStoredProcedure, sprocVariable, parameters)
+                    parameters.MainBuilder.AppendLine()
+                End If
+
+                Dim deleteStoredProcedure As StoredProcedure = Nothing
+                If annotations.TryGetAndRemove(
+                    RelationalAnnotationNames.DeleteStoredProcedure, deleteStoredProcedure) Then
+
+                    Dim sprocVariable = VBCode.Identifier("deleteSproc", parameters.ScopeVariables, capitalize:=False)
+
+                    Create(deleteStoredProcedure, sprocVariable, parameters)
+
+                    GenerateSimpleAnnotation(RelationalAnnotationNames.DeleteStoredProcedure, sprocVariable, parameters)
+                    parameters.MainBuilder.AppendLine()
+                End If
+
+                Dim updateStoredProcedure As StoredProcedure = Nothing
+                If annotations.TryGetAndRemove(
+                    RelationalAnnotationNames.UpdateStoredProcedure, updateStoredProcedure) Then
+                    Dim sprocVariable = VBCode.Identifier("updateSproc", parameters.ScopeVariables, capitalize:=False)
+
+                    Create(updateStoredProcedure, sprocVariable, parameters)
+
+                    GenerateSimpleAnnotation(RelationalAnnotationNames.UpdateStoredProcedure, sprocVariable, parameters)
+                    parameters.MainBuilder.AppendLine()
                 End If
             End If
 
@@ -459,9 +496,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 IncrementIndent().
                 Append(parameters.TargetName).AppendLine(",").
                 Append(VBCode.Literal(trigger.ModelName)).AppendLine(",").
-                Append(VBCode.UnknownLiteral(trigger.Name)).AppendLine(",").
+                Append(VBCode.Literal(trigger.Name)).AppendLine(",").
                 Append(VBCode.Literal(trigger.TableName)).AppendLine(",").
-                Append(VBCode.UnknownLiteral(trigger.TableSchema)).AppendLine(")").
+                Append(VBCode.Literal(trigger.TableSchema)).AppendLine(")").
                 DecrementIndent().
                 AppendLine()
 
@@ -489,6 +526,54 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
+        Private Sub Create(storedProcedure As IStoredProcedure, sprocVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            AddNamespace(GetType(RuntimeStoredProcedure), parameters.Namespaces)
+            Dim code = VBCode
+            Dim mainBuilder = parameters.MainBuilder
+
+            mainBuilder.
+            Append("Dim ").Append(sprocVariable).AppendLine(" As New RuntimeStoredProcedure(").
+                IncrementIndent().
+                Append(parameters.TargetName).AppendLine(",").
+                Append(code.Literal(storedProcedure.Name)).AppendLine(",").
+                Append(code.Literal(storedProcedure.Schema)).AppendLine(",").
+                Append(code.Literal(storedProcedure.AreTransactionsSuppressed)).
+                AppendLine(")").
+                DecrementIndent().
+                AppendLine()
+
+            For Each parameter In storedProcedure.Parameters
+                mainBuilder.
+                    Append(sprocVariable).
+                    Append(".AddParameter(").
+                    Append(code.Literal(parameter)).
+                    AppendLine(")")
+            Next
+
+            For Each resultColumn In storedProcedure.ResultColumns
+                mainBuilder.
+                    Append(sprocVariable).
+                    Append(".AddResultColumn(").
+                    Append(code.Literal(resultColumn)).
+                    AppendLine(")")
+            Next
+
+            CreateAnnotations(storedProcedure,
+                              AddressOf Generate,
+                              parameters.Cloner.
+                                         WithTargetName(sprocVariable).
+                                         Clone())
+        End Sub
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="storedProcedure">The stored procedure to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Public Overridable Overloads Sub Generate(storedProcedure As IStoredProcedure, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            GenerateSimpleAnnotations(parameters)
+        End Sub
+
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
@@ -507,6 +592,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 annotations.Remove(RelationalAnnotationNames.ViewColumnMappings)
                 annotations.Remove(RelationalAnnotationNames.SqlQueryColumnMappings)
                 annotations.Remove(RelationalAnnotationNames.FunctionColumnMappings)
+                annotations.Remove(RelationalAnnotationNames.InsertStoredProcedureParameterMappings)
+                annotations.Remove(RelationalAnnotationNames.InsertStoredProcedureResultColumnMappings)
+                annotations.Remove(RelationalAnnotationNames.DeleteStoredProcedureParameterMappings)
+                annotations.Remove(RelationalAnnotationNames.UpdateStoredProcedureParameterMappings)
+                annotations.Remove(RelationalAnnotationNames.UpdateStoredProcedureResultColumnMappings)
                 annotations.Remove(RelationalAnnotationNames.DefaultColumnMappings)
             Else
                 annotations.Remove(RelationalAnnotationNames.ColumnOrder)
@@ -520,13 +610,18 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     AddNamespace(GetType(StoreObjectIdentifier), parameters.Namespaces)
 
                     Dim overridesVariable = VBCode.Identifier("overrides", parameters.ScopeVariables, capitalize:=False)
-                    parameters.MainBuilder.Append("Dim ").Append(overridesVariable).AppendLine(" As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()")
+                    parameters.MainBuilder.
+                        AppendLine().
+                        Append("Dim ").
+                        Append(overridesVariable).
+                        AppendLine(" As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()")
 
                     For Each [overrides] In tableOverrides.GetValues()
                         Create([overrides], overridesVariable, parameters)
                     Next
 
                     GenerateSimpleAnnotation(RelationalAnnotationNames.RelationalOverrides, overridesVariable, parameters)
+                    parameters.MainBuilder.AppendLine()
                 End If
             End If
 
@@ -557,9 +652,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             mainBuilder.
                 AppendLine(",").
-                Append(code.Literal([overrides].ColumnNameOverridden)).
+                Append(code.Literal([overrides].IsColumnNameOverridden)).
                 AppendLine(",").
-                Append(code.UnknownLiteral([overrides].ColumnName)).
+                Append(code.Literal([overrides].ColumnName)).
                 AppendLine(")").
                 DecrementIndent()
 
@@ -672,14 +767,14 @@ Namespace Design.AnnotationCodeGeneratorProvider
                         Append("Table(").
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
-                        Append(code.UnknownLiteral(storeObject.Schema)).
+                        Append(code.Literal(storeObject.Schema)).
                         Append(")")
                 Case StoreObjectType.View
                     builder.
                         Append("View(").
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
-                        Append(code.UnknownLiteral(storeObject.Schema)).
+                        Append(code.Literal(storeObject.Schema)).
                         Append(")")
                 Case StoreObjectType.SqlQuery
                     builder.
@@ -690,6 +785,27 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     builder.
                         Append("DbFunction(").
                         Append(code.Literal(storeObject.Name)).
+                        Append(")")
+                Case StoreObjectType.InsertStoredProcedure
+                    builder.
+                        Append("InsertStoredProcedure(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(", ").
+                        Append(code.Literal(storeObject.Schema)).
+                        Append(")")
+                Case StoreObjectType.DeleteStoredProcedure
+                    builder.
+                        Append("DeleteStoredProcedure(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(", ").
+                        Append(code.Literal(storeObject.Schema)).
+                        Append(")")
+                Case StoreObjectType.UpdateStoredProcedure
+                    builder.
+                        Append("UpdateStoredProcedure(").
+                        Append(code.Literal(storeObject.Name)).
+                        Append(", ").
+                        Append(code.Literal(storeObject.Schema)).
                         Append(")")
                 Case Else
                     DebugAssert(True, "Unexpected StoreObjectType: " & storeObject.StoreObjectType)

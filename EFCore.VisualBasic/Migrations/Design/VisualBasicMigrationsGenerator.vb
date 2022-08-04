@@ -1,6 +1,6 @@
 ﻿Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Design.Internal
+Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations.Design
@@ -325,5 +325,4 @@ Namespace Migrations.Design
             Return builder.ToString()
         End Function
     End Class
-
 End Namespace

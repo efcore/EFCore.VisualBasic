@@ -1,0 +1,307 @@
+﻿<#@ template language="VB" hostSpecific="true" linePragmas="false" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
+<#@ assembly name="Microsoft.Extensions.DependencyInjection.Abstractions" #>
+<#@ parameter name="Model" type="Microsoft.EntityFrameworkCore.Metadata.IModel" #>
+<#@ parameter name="Options" type="Microsoft.EntityFrameworkCore.Scaffolding.ModelCodeGenerationOptions" #>
+<#@ parameter name="NamespaceHint" type="System.String" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore.Design" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore.Scaffolding" #>
+<#@ import namespace="Microsoft.Extensions.DependencyInjection" #>
+<#@ import namespace="EntityFrameworkCore.VisualBasic.Design" #>
+<#
+    Dim services = DirectCast(Host, IServiceProvider)
+    Dim providerCode = services.GetRequiredService(Of IProviderConfigurationCodeGenerator)()
+    Dim annotationCodeGenerator = services.GetRequiredService(Of IAnnotationCodeGenerator)()
+    Dim code = services.GetRequiredService(Of IVisualBasicHelper)()
+
+    Dim importsList = New List(Of String) From {
+        "System",
+        "System.Collections.Generic",
+        "Microsoft.EntityFrameworkCore"
+    }
+
+    If NamespaceHint <> Options.ModelNamespace AndAlso
+       Not String.IsNullOrEmpty(Options.ModelNamespace) Then
+        importsList.Add(Options.ModelNamespace)
+    End If
+
+    If Not string.IsNullOrEmpty(NamespaceHint) Then
+#>
+Namespace <#= NamespaceHint #>
+<#
+    End If
+#>
+    Public Partial Class <#= Options.ContextName #>
+        Inherits DbContext
+
+<#
+    If Not Options.SuppressOnConfiguring Then
+#>
+        Public Sub New()
+        End Sub
+
+<#
+    End If
+#>
+        Public Sub New(options As DbContextOptions(Of <#= Options.ContextName #>))
+            MyBase.New(options)
+        End Sub
+
+<#
+    For Each entityType in Model.GetEntityTypes().Where(Function(e) Not e.IsSimpleManyToManyJoinEntityType())
+#>
+        Public Overridable Property <#= code.Identifier(entityType.GetDbSetName()) #> As DbSet(Of <#= entityType.Name #>)
+
+<#
+    Next
+
+    If Not Options.SuppressOnConfiguring Then
+#>
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+<#
+        If Not Options.SuppressConnectionStringWarning Then
+#>
+            'TODO /!\ To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+<#
+        End If
+#>
+            optionsBuilder<#= code.Fragment(providerCode.GenerateUseProvider(Options.ConnectionString), indent:=4) #>
+        End Sub
+
+<#
+    End If
+#>
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+<#
+    Dim anyConfiguration = False
+
+    Dim modelFluentApiCalls = Model.GetFluentApiCalls(annotationCodeGenerator)
+    If modelFluentApiCalls IsNot Nothing Then
+        importsList.AddRange(modelFluentApiCalls.GetRequiredUsings())
+#>
+            modelBuilder<#= code.Fragment(modelFluentApiCalls, indent:=4) #>
+<#
+        anyConfiguration = True
+    End If
+
+    Dim mainEnvironment As StringBuilder
+    For Each entityType in Model.GetEntityTypes().Where(Function(e) Not e.IsSimpleManyToManyJoinEntityType())
+        ' Save all previously generated code, and start generating into a new temporary environment
+        mainEnvironment = GenerationEnvironment
+        GenerationEnvironment = New StringBuilder()
+
+        If anyConfiguration Then
+            WriteLine("")
+        End If
+
+        Dim anyEntityTypeConfiguration = False
+#>
+            modelBuilder.Entity(Of <#= entityType.Name #>)(
+                Sub(entity)
+<#
+        Dim key = entityType.FindPrimaryKey()
+        If key IsNot Nothing Then
+            Dim keyFluentApiCalls = key.GetFluentApiCalls(annotationCodeGenerator)
+            If keyFluentApiCalls IsNot Nothing OrElse
+               key.Properties.Count > 1 OrElse
+               (Not key.IsHandledByConventions() AndAlso Not Options.UseDataAnnotations)
+
+                If keyFluentApiCalls IsNot Nothing Then
+                    importsList.AddRange(keyFluentApiCalls.GetRequiredUsings())
+                End If
+#>
+                    entity.HasKey(<#= code.Lambda(key.Properties, "e") #>)<#= code.Fragment(keyFluentApiCalls, indent:=6) #>
+<#
+                anyEntityTypeConfiguration = True
+            End If
+        End If
+
+        Dim entityTypeFluentApiCalls = entityType.GetFluentApiCalls(annotationCodeGenerator)?.
+                                           FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.HasDataAnnotation))
+
+        If entityTypeFluentApiCalls IsNot Nothing Then
+            importsList.AddRange(entityTypeFluentApiCalls.GetRequiredUsings())
+
+            If anyEntityTypeConfiguration Then
+                WriteLine("")
+            End If
+#>
+                    entity<#= code.Fragment(entityTypeFluentApiCalls, indent:=5) #>
+<#
+            anyEntityTypeConfiguration = true
+        End If
+
+        For Each index in entityType.GetIndexes().
+                                     Where(Function(i) Not (Options.UseDataAnnotations AndAlso i.HasDataAnnotation(annotationCodeGenerator)))
+
+            If anyEntityTypeConfiguration Then
+                WriteLine("")
+            End If
+
+            Dim indexFluentApiCalls = index.GetFluentApiCalls(annotationCodeGenerator)
+            If indexFluentApiCalls IsNot Nothing Then
+                importsList.AddRange(indexFluentApiCalls.GetRequiredUsings())
+            End If
+#>
+                    entity.HasIndex(<#= code.Lambda(index.Properties, "e") #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent:=6) #>
+<#
+            anyEntityTypeConfiguration = True
+        Next
+
+        Dim firstProperty = True
+        For Each prop in entityType.GetProperties()
+            Dim propertyFluentApiCalls = prop.GetFluentApiCalls(annotationCodeGenerator)?.
+                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.HasDataAnnotation) AndAlso
+                                              Not (c.Method = "IsRequired" AndAlso Options.UseNullableReferenceTypes AndAlso Not prop.ClrType.IsValueType))
+
+            If propertyFluentApiCalls Is Nothing Then
+                Continue For
+            End If
+
+            importsList.AddRange(propertyFluentApiCalls.GetRequiredUsings())
+
+            If anyEntityTypeConfiguration AndAlso firstProperty Then
+                WriteLine("")
+            End If
+#>
+                    entity.Property(Function(e) e.<#= code.Identifier(prop.Name) #>)<#= code.Fragment(propertyFluentApiCalls, indent:=6) #>
+<#
+            anyEntityTypeConfiguration = True
+            firstProperty = False
+        Next
+
+        For Each foreignKey in entityType.GetForeignKeys()
+            Dim foreignKeyFluentApiCalls = foreignKey.GetFluentApiCalls(annotationCodeGenerator)?.
+                                                      FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.HasDataAnnotation))
+
+            If foreignKeyFluentApiCalls Is Nothing Then
+                Continue For
+            End If
+
+            importsList.AddRange(foreignKeyFluentApiCalls.GetRequiredUsings())
+
+            If anyEntityTypeConfiguration Then
+                WriteLine("")
+            End If
+#>
+                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= If(foreignKey.IsUnique, "WithOne", "WithMany") #>(Function(p) p.<#= foreignKey.PrincipalToDependent.Name #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent:=6) #>
+<#
+            anyEntityTypeConfiguration = True
+        Next
+
+        For Each skipNavigation in entityType.GetSkipNavigations().Where(Function(n) n.IsLeftNavigation())
+            If anyEntityTypeConfiguration Then
+                WriteLine("")
+            End If
+
+            Dim left = skipNavigation.ForeignKey
+            Dim leftFluentApiCalls = left.GetFluentApiCalls(annotationCodeGenerator, useStrings:=True)
+            Dim right = skipNavigation.Inverse.ForeignKey
+            Dim rightFluentApiCalls = right.GetFluentApiCalls(annotationCodeGenerator, useStrings:=True)
+            Dim joinEntityType = skipNavigation.JoinEntityType
+
+            If leftFluentApiCalls IsNot Nothing Then
+                importsList.AddRange(leftFluentApiCalls.GetRequiredUsings())
+            End If
+
+            If rightFluentApiCalls IsNot Nothing Then
+                importsList.AddRange(rightFluentApiCalls.GetRequiredUsings())
+            End If
+#>
+                    entity.HasMany(Function(d) d.<#= skipNavigation.Name #>).WithMany(Function(p) p.<#= skipNavigation.Inverse.Name #>).
+                        UsingEntity(Of Dictionary(Of String, Object))(
+                            <#= code.Literal(joinEntityType.Name) #>,
+                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent:=7) #>,
+                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent:=7) #>,
+                            Sub(j)
+<#
+            Dim joinKey = joinEntityType.FindPrimaryKey()
+            Dim joinKeyFluentApiCalls = joinKey.GetFluentApiCalls(annotationCodeGenerator)
+
+            If joinKeyFluentApiCalls IsNot Nothing Then
+                importsList.AddRange(joinKeyFluentApiCalls.GetRequiredUsings())
+            End If
+#>
+                                j.HasKey(<#= code.Arguments(joinKey.Properties.Select(Function(e) e.Name)) #>)<#= code.Fragment(joinKeyFluentApiCalls, indent:=8) #>
+<#
+            Dim joinEntityTypeFluentApiCalls = joinEntityType.GetFluentApiCalls(annotationCodeGenerator)
+            If joinEntityTypeFluentApiCalls IsNot Nothing Then
+                importsList.AddRange(joinEntityTypeFluentApiCalls.GetRequiredUsings())
+#>
+                                j<#= code.Fragment(joinEntityTypeFluentApiCalls, indent:=8) #>
+<#
+            End If
+
+            For Each index in joinEntityType.GetIndexes()
+                Dim indexFluentApiCalls = index.GetFluentApiCalls(annotationCodeGenerator)
+                If indexFluentApiCalls IsNot Nothing Then
+                    importsList.AddRange(indexFluentApiCalls.GetRequiredUsings())
+                End If
+#>
+                                j.HasIndex(<#= code.Literal(index.Properties.Select(Function(e) e.Name).ToArray()) #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent:=8) #>
+<#
+            Next
+#>
+                            End Sub)
+<#
+            anyEntityTypeConfiguration = True
+        Next
+#>
+                End Sub)
+<#
+        ' If any signicant code was generated, append it to the main environment
+        If anyEntityTypeConfiguration Then
+            mainEnvironment.Append(GenerationEnvironment)
+            anyConfiguration = True
+        End If
+
+        ' Resume generating code into the main environment
+        GenerationEnvironment = mainEnvironment
+    Next
+
+    For Each sequence in Model.GetSequences()
+        Dim needsType = sequence.Type <> GetType(long)
+        Dim needsSchema = Not String.IsNullOrEmpty(sequence.Schema) AndAlso sequence.Schema <> sequence.Model.GetDefaultSchema()
+        Dim sequenceFluentApiCalls = sequence.GetFluentApiCalls(annotationCodeGenerator)
+#>
+            modelBuilder.HasSequence<#= If(needsType, $"(Of {code.Reference(sequence.Type)})", "") #>(<#= code.Literal(sequence.Name) #><#= If(needsSchema, $", {code.Literal(sequence.Schema)}", "") #>)<#= code.Fragment(sequenceFluentApiCalls, indent:=4) #>
+<#
+    Next
+
+    If anyConfiguration Then
+        WriteLine("")
+    End If
+#>
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+<#
+    If Not String.IsNullOrEmpty(NamespaceHint) Then
+#>
+End Namespace
+<#
+    End If
+#>
+<#
+    mainEnvironment = GenerationEnvironment
+    GenerationEnvironment = New StringBuilder()
+
+    For Each ns in importsList.Distinct().OrderBy(Function(x) x, new NamespaceComparer())
+#>
+Imports <#= ns #>
+<#
+    Next
+
+    WriteLine("")
+
+    GenerationEnvironment.Append(mainEnvironment)
+#>

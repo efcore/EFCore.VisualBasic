@@ -59,4 +59,34 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Scaffolding\Internal\VisualBasicDbContextGenerator.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Scaffolding.Internal</CustomToolNamespace>
+      <LastGenOutput>VisualBasicDbContextGenerator.vb</LastGenOutput>
+    </None>
+    <None Update="Scaffolding\Internal\VisualBasicEntityTypeGenerator.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <CustomToolNamespace>Scaffolding.Internal</CustomToolNamespace>
+      <LastGenOutput>VisualBasicEntityTypeGenerator.vb</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Scaffolding\Internal\VisualBasicDbContextGenerator.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VisualBasicDbContextGenerator.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Scaffolding\Internal\VisualBasicEntityTypeGenerator.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VisualBasicEntityTypeGenerator.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

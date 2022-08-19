@@ -13,17 +13,23 @@ Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
 Imports Microsoft.Extensions.DependencyInjection
 Imports Microsoft.Extensions.DependencyInjection.Extensions
 Imports Xunit
+Imports Xunit.Abstractions
 
 Namespace Scaffolding.Internal
     Public Class VisualBasicDbContextGeneratorTest
         Inherits VisualBasicModelCodeGeneratorTestBase
 
+        Public Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
+            MyBase.New(fixture, output)
+        End Sub
+
         <ConditionalFact>
         Public Sub Empty_model()
 
             Dim expectedCode As String =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -37,14 +43,11 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -72,8 +75,9 @@ End Namespace
         Public Sub SuppressConnectionStringWarning_works()
 
             Dim expectedCode As String =
-"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -87,13 +91,10 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -122,8 +123,9 @@ End Namespace
         Public Sub SuppressOnConfiguring_works()
 
             Dim expectedcode =
-"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -134,7 +136,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -213,8 +214,8 @@ End Namespace
 
             Assert.Contains(
 "optionsBuilder.
-                    UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).
-                    SetContextOption()",
+                UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).
+                SetContextOption()",
                 scaffoldedModel.ContextFile.Code)
         End Sub
 
@@ -251,7 +252,7 @@ End Namespace
                     modelBuilder.Entity(
                       "Entity",
                       Sub(x)
-                          x.HasComment("An entity comment")
+                          x.ToTable(Function(tb) tb.HasComment("An entity comment"))
                       End Sub)
                 End Sub,
                 New ModelCodeGenerationOptions,
@@ -274,7 +275,7 @@ End Namespace
                 New ModelCodeGenerationOptions With {
                     .UseDataAnnotations = True
                 },
-                Sub(code) Assert.Contains("entity.ToView(""Vista"")", code.ContextFile.Code),
+                Sub(code) Assert.Contains(".ToView(""Vista"")", code.ContextFile.Code),
                 Sub(model)
                     Dim entityType = model.FindEntityType("TestNamespace.Vista")
 
@@ -422,7 +423,7 @@ End Namespace
                 New ModelCodeGenerationOptions,
                 Sub(code)
                     Assert.Contains("Property(Function(e) e.UnicodeColumn).IsUnicode()", code.ContextFile.Code)
-                    Assert.Contains("Property(Function(e) e.NonUnicodeColumn).IsUnicode(false)", code.ContextFile.Code)
+                    Assert.Contains("Property(Function(e) e.NonUnicodeColumn).IsUnicode(False)", code.ContextFile.Code)
                 End Sub,
                 Sub(model)
                     Dim entity1 = model.FindEntityType("TestNamespace.Entity")
@@ -509,38 +510,12 @@ End Namespace
         End Sub
 
         <ConditionalFact>
-        Public Sub Sequence_works()
-            Test(
-                Sub(modelBuilder) modelBuilder.HasSequence(Of Integer)("OrderNumbers").
-                                               StartsAt(250).
-                                               IncrementsBy(5).
-                                               HasMin(100).
-                                               HasMax(1_000_000).
-                                               IsCyclic(True),
-                New ModelCodeGenerationOptions,
-                Sub(code) Assert.Contains(
-"modelBuilder.HasSequence(Of Integer)(""OrderNumbers"").
-                StartsAt(250).
-                IncrementsBy(5).
-                HasMin(100).
-                HasMax(1000000).
-                IsCyclic()", code.ContextFile.Code),
-                Sub(model)
-                    Dim MySequence = model.FindSequence("OrderNumbers")
-                    Assert.Equal(250, MySequence.StartValue)
-                    Assert.Equal(5, MySequence.IncrementBy)
-                    Assert.Equal(100, MySequence.MinValue)
-                    Assert.Equal(1_000_000, MySequence.MaxValue)
-                    Assert.True(MySequence.IsCyclic)
-                End Sub)
-        End Sub
-
-        <ConditionalFact>
         Public Sub Entity_with_indexes_and_use_data_annotations_false_always_generates_fluent_API()
 
             Dim expectedcode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -556,14 +531,11 @@ Namespace TestNamespace
         Public Overridable Property EntityWithIndexes As DbSet(Of EntityWithIndexes)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
                     entity.HasIndex(Function(e) New With {{e.A, e.B}}, ""IndexOnAAndB"").
@@ -618,8 +590,9 @@ End Namespace
         Public Sub Entity_with_indexes_and_use_data_annotations_true_generates_fluent_API_only_for_indexes_with_annotations()
 
             Dim expectedCode As String =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -635,14 +608,11 @@ Namespace TestNamespace
         Public Overridable Property EntityWithIndexes As DbSet(Of EntityWithIndexes)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
@@ -693,8 +663,9 @@ End Namespace
         Public Sub Indexes_with_descending()
 
             Dim expectedCode As String =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -710,26 +681,20 @@ Namespace TestNamespace
         Public Overridable Property EntityWithIndexes As DbSet(Of EntityWithIndexes)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
                     entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_ascending"")
 
-                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_descending"").
-                        IsDescending()
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_all_descending"").IsDescending()
 
-                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_empty"").
-                        IsDescending()
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_empty"").IsDescending()
 
-                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_mixed"").
-                        IsDescending(False, True, False)
+                    entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_mixed"").IsDescending(False, True, False)
 
                     entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_unspecified"")
 
@@ -799,8 +764,9 @@ End Namespace
         Public Sub Entity_lambda_uses_correct_identifiers()
 
             Dim expectedCode As String =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -814,26 +780,22 @@ Namespace TestNamespace
         End Sub
 
         Public Overridable Property DependentEntity As DbSet(Of DependentEntity)
+
         Public Overridable Property PrincipalEntity As DbSet(Of PrincipalEntity)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of DependentEntity)(
                 Sub(entity)
-                    entity.HasIndex(Function(e) e.DependentId, ""IX_DependentEntity_DependentId"").
-                        IsUnique()
+                    entity.HasIndex(Function(e) e.DependentId, ""IX_DependentEntity_DependentId"").IsUnique()
 
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
 
-                    entity.HasOne(Function(d) d.NavigationToPrincipal).
-                        WithOne(Function(p) p.NavigationToDependent).
+                    entity.HasOne(Function(d) d.NavigationToPrincipal).WithOne(Function(p) p.NavigationToDependent).
                         HasPrincipalKey(Of PrincipalEntity)(Function(p) p.PrincipalId).
                         HasForeignKey(Of DependentEntity)(Function(d) d.DependentId)
                 End Sub)
@@ -889,8 +851,9 @@ End Namespace
         Public Sub Column_type_is_not_scaffolded_as_annotation()
 
             Dim expectedCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -906,18 +869,14 @@ Namespace TestNamespace
         Public Overridable Property Employee As DbSet(Of Employee)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Employee)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.Property(Function(e) e.HireDate).
                         HasColumnType(""date"").
                         HasColumnName(""hiring_date"")
@@ -1096,41 +1055,39 @@ End Namespace
         Public Sub Global_namespace_works()
 
             Dim expectedcode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
-Public Partial Class TestDbContext
-    Inherits DbContext
+    Public Partial Class TestDbContext
+        Inherits DbContext
 
-    Public Sub New()
-    End Sub
+        Public Sub New()
+        End Sub
 
-    Public Sub New(options As DbContextOptions(Of TestDbContext))
-        MyBase.New(options)
-    End Sub
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
 
-    Public Overridable Property MyEntity As DbSet(Of MyEntity)
+        Public Overridable Property MyEntity As DbSet(Of MyEntity)
 
-    Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-        If Not optionsBuilder.IsConfigured Then
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
             'TODO /!\ {DesignStrings.SensitiveInformationWarning}
             optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-        End If
-    End Sub
+        End Sub
 
-    Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of MyEntity)(
+                Sub(entity)
+                    entity.HasNoKey()
+                End Sub)
 
-        modelBuilder.Entity(Of MyEntity)(
-            Sub(entity)
-                entity.HasNoKey()
-            End Sub)
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
 
-        OnModelCreatingPartial(modelBuilder)
-    End Sub
-
-    Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
-    End Sub
-End Class
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
 "
 
             Test(
@@ -1192,9 +1149,10 @@ End Class
         Public Sub Fluent_calls_in_custom_namespaces_work()
 
             Dim expectedcode =
-"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+"Imports System
+Imports System.Collections.Generic
 Imports CustomTestNamespace
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1239,8 +1197,9 @@ End Namespace
             ' Shadow properties. Issue #26007.
 
             Dim expectedcode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1256,25 +1215,22 @@ Namespace TestNamespace
         Public Overridable Property Customer As DbSet(Of Customer)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Customer)(
                 Sub(entity)
                     entity.ToTable(Sub(tb) tb.IsTemporal(Sub(ttb)
-                                ttb.UseHistoryTable(""CustomerHistory"")
-                                ttb.
-                                HasPeriodStart(""PeriodStart"").
-                                HasColumnName(""PeriodStart"")
-                                ttb.
-                                HasPeriodEnd(""PeriodEnd"").
-                                HasColumnName(""PeriodEnd"")
-                            End Sub))
+                            ttb.UseHistoryTable(""CustomerHistory"")
+                            ttb.
+                            HasPeriodStart(""PeriodStart"").
+                            HasColumnName(""PeriodStart"")
+                            ttb.
+                            HasPeriodEnd(""PeriodEnd"").
+                            HasColumnName(""PeriodEnd"")
+                        End Sub))
 
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
@@ -1319,21 +1275,22 @@ End Namespace
         Public Sub Sequences_work()
             Test(
                 Sub(ModelBuilder)
-                    ModelBuilder.HasSequence(Of Integer)("EvenNumbers", "dbo").
-                    StartsAt(2).
-                    IncrementsBy(2).
-                    HasMin(2).
-                    HasMax(100).
-                    IsCyclic(True)
+                    ModelBuilder.
+                        HasSequence(Of Integer)("EvenNumbers", "dbo").
+                        StartsAt(2).
+                        IncrementsBy(2).
+                        HasMin(2).
+                        HasMax(100).
+                        IsCyclic(True)
                 End Sub,
                 New ModelCodeGenerationOptions(),
                 Sub(code)
                     Assert.Contains(
 ".HasSequence(Of Integer)(""EvenNumbers"", ""dbo"").
-                StartsAt(2).
+                StartsAt(2L).
                 IncrementsBy(2).
-                HasMin(2).
-                HasMax(100).
+                HasMin(2L).
+                HasMax(100L).
                 IsCyclic()",
                     code.ContextFile.Code)
                 End Sub,
@@ -1354,8 +1311,9 @@ End Namespace
         Public Sub Trigger_works()
 
             Dim expectedcode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1371,24 +1329,19 @@ Namespace TestNamespace
         Public Overridable Property Employee As DbSet(Of Employee)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Employee)(
                 Sub(entity)
+                    entity.ToTable(Sub(tb)
+                        tb.HasTrigger(""Trigger1"")
+                        tb.HasTrigger(""Trigger2"")
+                    End Sub)
+
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
-
-                    entity.ToTable(
-                        Sub(tb)
-                            tb.HasTrigger(""Trigger1"")
-
-                            tb.HasTrigger(""Trigger2"")
-                        End Sub)
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1428,6 +1381,70 @@ End Namespace
                     Assert.Collection(triggers.OrderBy(Function(t) t.Name),
                         Sub(t) Assert.Equal("Trigger1", t.Name),
                         Sub(t) Assert.Equal("Trigger2", t.Name))
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub ValueGenerationStrategy_works_when_none()
+
+            Dim expectedcode =
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Channel As DbSet(Of Channel)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of Channel)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).HasAnnotation(""SqlServer:ValueGenerationStrategy"", SqlServerValueGenerationStrategy.None)
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.Entity(
+                    "Channel",
+                    Sub(x)
+                        x.Property(Of Integer)("Id").
+                            Metadata.SetValueGenerationStrategy(SqlServerValueGenerationStrategy.None)
+                    End Sub)
+                End Sub,
+                New ModelCodeGenerationOptions(),
+                Sub(code)
+                    AssertFileContents(
+                        expectedcode,
+                        code.ContextFile)
+                End Sub,
+                Sub(Model)
+                    Dim entityType = Assert.Single(model.GetEntityTypes())
+                    Dim prop = Assert.Single(entityType.GetProperties())
+                    Assert.Equal(SqlServerValueGenerationStrategy.None, prop.GetValueGenerationStrategy())
                 End Sub)
         End Sub
 

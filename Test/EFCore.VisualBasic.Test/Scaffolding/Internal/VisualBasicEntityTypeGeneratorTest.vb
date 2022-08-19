@@ -9,16 +9,23 @@ Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
 Imports Microsoft.Extensions.DependencyInjection
 Imports Microsoft.Extensions.DependencyInjection.Extensions
 Imports Xunit
+Imports Xunit.Abstractions
 
 Namespace Scaffolding.Internal
     Public Class VisualBasicEntityTypeGeneratorTest
         Inherits VisualBasicModelCodeGeneratorTestBase
 
+        Public Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
+            MyBase.New(fixture, output)
+        End Sub
+
         <ConditionalFact>
         Public Sub KeylessAttribute_is_generated_for_key_less_entity()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -29,8 +36,9 @@ Namespace TestNamespace
 End Namespace
 "
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -46,14 +54,11 @@ Namespace TestNamespace
         Public Overridable Property Vista As DbSet(Of Vista)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -88,7 +93,9 @@ New ModelCodeGenerationOptions With
         Public Sub TableAttribute_is_generated_for_custom_name()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -129,7 +136,9 @@ End Namespace
         Public Sub TableAttribute_is_not_generated_for_default_schema()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -171,7 +180,9 @@ End Namespace
         Public Sub TableAttribute_is_generated_for_non_default_schema()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -214,7 +225,9 @@ End Namespace
         Public Sub TableAttribute_is_not_generated_for_views()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -248,7 +261,9 @@ End Namespace
         Public Sub IndexAttribute_is_generated_for_multiple_indexes_with_name_unique_descending()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -259,8 +274,11 @@ Namespace TestNamespace
     Public Partial Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
+
         Public Property A As Integer
+
         Public Property B As Integer
+
         Public Property C As Integer
     End Class
 End Namespace
@@ -306,7 +324,9 @@ End Namespace
         Public Sub IndexAttribute_is_generated_with_ascending_descending()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -317,7 +337,9 @@ Namespace TestNamespace
     Public Partial Class EntityWithAscendingDescendingIndexes
         <Key>
         Public Property Id As Integer
+
         Public Property A As Integer
+
         Public Property B As Integer
     End Class
 End Namespace
@@ -368,7 +390,9 @@ End Namespace
         Public Sub Entity_with_indexes_generates_IndexAttribute_only_for_indexes_without_annotations()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -377,16 +401,20 @@ Namespace TestNamespace
     Public Partial Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
+
         Public Property A As Integer
+
         Public Property B As Integer
+
         Public Property C As Integer
     End Class
 End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -402,18 +430,14 @@ Namespace TestNamespace
         Public Overridable Property EntityWithIndexes As DbSet(Of EntityWithIndexes)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
-                    entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
-                        HasFilter(""Filter SQL"")
+                    entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").HasFilter(""Filter SQL"")
 
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
@@ -460,7 +484,9 @@ End Namespace
         Public Sub KeyAttribute_is_generated_for_single_property_and_no_fluent_api()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -473,8 +499,9 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -490,14 +517,11 @@ Namespace TestNamespace
         Public Overridable Property Entity As DbSet(Of Entity)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Entity)(
                 Sub(entity)
                     entity.Property(Function(e) e.PrimaryKey).UseIdentityColumn()
@@ -540,7 +564,9 @@ End Namespace
         Public Sub KeyAttribute_is_generated_on_multiple_properties_but_configuring_Imports_fluent_api_for_composite_key()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -548,6 +574,7 @@ Namespace TestNamespace
     Public Partial Class Post
         <Key>
         Public Property Key As Integer
+
         <Key>
         Public Property Serial As Integer
     End Class
@@ -555,8 +582,9 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -572,14 +600,11 @@ Namespace TestNamespace
         Public Overridable Property Post As DbSet(Of Post)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
                     entity.HasKey(Function(e) New With {{e.Key, e.Serial}})
@@ -626,7 +651,9 @@ End Namespace
         Public Sub RequiredAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -634,6 +661,7 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property Id As Integer
+
         <Required>
         Public Property RequiredString As String
     End Class
@@ -663,7 +691,9 @@ End Namespace
         Public Sub RequiredAttribute_is_not_generated_for_key_property()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -698,7 +728,9 @@ End Namespace
         Public Sub ColumnAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -706,22 +738,28 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property Id As Integer
+
         <Column(""propertyA"")>
         Public Property A As String
+
         <Column(TypeName:=""nchar(10)"")>
         Public Property B As String
+
         <Column(""random"", TypeName:=""varchar(200)"")>
         Public Property C As String
+
         <Column(TypeName:=""numeric(18, 2)"")>
         Public Property D As Decimal
+
         <StringLength(100)>
         Public Property E As String
     End Class
 End Namespace
 "
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -737,14 +775,11 @@ Namespace TestNamespace
         Public Overridable Property Entity As DbSet(Of Entity)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Entity)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
@@ -797,7 +832,9 @@ End Namespace
         Public Sub MaxLengthAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -805,8 +842,10 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property Id As Integer
+
         <StringLength(34)>
         Public Property A As String
+
         <MaxLength(10)>
         Public Property B As Byte()
     End Class
@@ -842,7 +881,9 @@ End Namespace
         Public Sub UnicodeAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -850,12 +891,15 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property Id As Integer
+
         <StringLength(34)>
         <Unicode>
         Public Property A As String
+
         <StringLength(34)>
         <Unicode(False)>
         Public Property B As String
+
         <StringLength(34)>
         Public Property C As String
     End Class
@@ -893,7 +937,9 @@ End Namespace
         Public Sub PrecisionAttribute_is_generated_for_property()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -901,12 +947,16 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property Id As Integer
+
         <Precision(10)>
         Public Property A As Decimal
+
         <Precision(14, 3)>
         Public Property B As Decimal
+
         <Precision(5)>
         Public Property C As Date
+
         <Precision(3)>
         Public Property D As DateTimeOffset
     End Class
@@ -948,7 +998,9 @@ New ModelCodeGenerationOptions With
         Public Sub Comments_are_generated()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -972,7 +1024,7 @@ End Namespace
                       Entity(
                         "Entity",
                         Sub(x)
-                            x.HasComment("Entity Comment")
+                            x.ToTable(Function(tb) tb.HasComment("Entity Comment"))
                             x.Property(Of Integer)("Id").HasComment("Property Comment")
                         End Sub)
                 End Function,
@@ -991,7 +1043,9 @@ End Namespace
         Public Sub Comments_complex_are_generated()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1018,10 +1072,10 @@ End Namespace
                     Return modelBuilder.Entity(
                       "Entity",
                       Sub(x)
-                          x.HasComment(
+                          x.ToTable(Function(tb) tb.HasComment(
 "Entity Comment
 On multiple lines
-With XML content <br/>")
+With XML content <br/>"))
                           x.Property(Of Integer)("Id").HasComment(
 "Property Comment
 On multiple lines
@@ -1044,7 +1098,9 @@ With XML content <br/>")
         Public Sub Properties_names_are_escaped_for_reserved_keywords()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1052,7 +1108,9 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property [Property] As Integer
+
         Public Property [Function] As String
+
         Public Property [Integer] As Integer
     End Class
 End Namespace
@@ -1085,7 +1143,9 @@ End Namespace
         Public Sub Properties_are_sorted_in_order_of_definition_in_table()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1093,7 +1153,9 @@ Namespace TestNamespace
     Public Partial Class Entity
         <Key>
         Public Property Id As Integer
+
         Public Property FirstProperty As String
+
         Public Property LastProperty As String
     End Class
 End Namespace
@@ -1123,47 +1185,46 @@ End Namespace
         End Sub
 
         <ConditionalFact>
-        Public Sub Navigation_properties_are_sorted_after_properties_and_collection_are_initialized_in_ctor()
+        Public Sub Navigation_properties_are_sorted_after_properties_and_collection_are_initialized()
 
             Dim expectedCodePost =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class Post
-        Public Sub New()
-            Contributions = New HashSet(Of Contribution)()
-        End Sub
-
         <Key>
         Public Property Id As Integer
+
         Public Property AuthorId As Integer?
 
         <ForeignKey(""AuthorId"")>
         <InverseProperty(""Posts"")>
         Public Overridable Property Author As Person
-        Public Overridable Property Contributions As ICollection(Of Contribution)
+
+        <InverseProperty(""Post"")>
+        Public Overridable ReadOnly Property Contributions As ICollection(Of Contribution) = New List(Of Contribution)()
     End Class
 End Namespace
 "
 
             Dim expectedCodePerson =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class Person
-        Public Sub New()
-            Posts = New HashSet(Of Post)()
-        End Sub
-
         <Key>
         Public Property Id As Integer
 
         <InverseProperty(""Author"")>
-        Public Overridable Property Posts As ICollection(Of Post)
+        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
@@ -1182,7 +1243,7 @@ End Namespace
                             x.Property(Of Integer)("Id")
 
                             x.HasOne("Person", "Author").WithMany("Posts")
-                            x.HasMany("Contribution", "Contributions").WithOne()
+                            x.HasMany("Contribution", "Contributions").WithOne("Post")
                         End Sub)
                 End Function,
                 New ModelCodeGenerationOptions With {
@@ -1213,7 +1274,9 @@ End Namespace
         Public Sub ForeignKeyAttribute_is_generated_for_composite_fk()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1221,10 +1284,12 @@ Namespace TestNamespace
     Public Partial Class Post
         <Key>
         Public Property Id As Integer
+
         Public Property BlogId1 As Integer?
+
         Public Property BlogId2 As Integer?
 
-        <ForeignKey(""BlogId1,BlogId2"")>
+        <ForeignKey(""BlogId1, BlogId2"")>
         <InverseProperty(""Posts"")>
         Public Overridable Property BlogNavigation As Blog
     End Class
@@ -1232,8 +1297,9 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1247,17 +1313,15 @@ Namespace TestNamespace
         End Sub
 
         Public Overridable Property Blog As DbSet(Of Blog)
+
         Public Overridable Property Post As DbSet(Of Post)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
                     entity.HasKey(Function(e) New With {{e.Id1, e.Id2}})
@@ -1320,7 +1384,9 @@ New ModelCodeGenerationOptions With
         Public Sub ForeignKeyAttribute_InversePropertyAttribute_is_not_generated_for_alternate_key()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1328,7 +1394,9 @@ Namespace TestNamespace
     Public Partial Class Post
         <Key>
         Public Property Id As Integer
+
         Public Property BlogId1 As Integer?
+
         Public Property BlogId2 As Integer?
 
         Public Overridable Property BlogNavigation As Blog
@@ -1337,8 +1405,9 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1352,17 +1421,15 @@ Namespace TestNamespace
         End Sub
 
         Public Overridable Property Blog As DbSet(Of Blog)
+
         Public Overridable Property Post As DbSet(Of Post)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
@@ -1372,10 +1439,7 @@ Namespace TestNamespace
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
 
-                    entity.HasOne(Function(d) d.BlogNavigation).
-                        WithMany(Function(p) p.Posts).
-                        HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}}).
-                        HasForeignKey(Function(d) New With {{d.BlogId1, d.BlogId2}})
+                    entity.HasOne(Function(d) d.BlogNavigation).WithMany(Function(p) p.Posts).HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1432,7 +1496,9 @@ End Namespace
         Public Sub InverseProperty_when_navigation_property_with_same_type_and_navigation_name()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1440,6 +1506,7 @@ Namespace TestNamespace
     Public Partial Class Post
         <Key>
         Public Property Id As Integer
+
         Public Property BlogId As Integer?
 
         <ForeignKey(""BlogId"")>
@@ -1487,7 +1554,9 @@ New ModelCodeGenerationOptions With
         Public Sub InverseProperty_when_navigation_property_with_same_type_and_property_name()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1495,6 +1564,7 @@ Namespace TestNamespace
     Public Partial Class Post
         <Key>
         Public Property Id As Integer
+
         Public Property Blog As Integer?
 
         <ForeignKey(""Blog"")>
@@ -1541,7 +1611,9 @@ End Namespace
         Public Sub InverseProperty_when_navigation_property_with_same_type_and_other_navigation_name()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1549,12 +1621,15 @@ Namespace TestNamespace
     Public Partial Class Post
         <Key>
         Public Property Id As Integer
+
         Public Property BlogId As Integer?
+
         Public Property OriginalBlogId As Integer?
 
         <ForeignKey(""BlogId"")>
         <InverseProperty(""Posts"")>
         Public Overridable Property Blog As Blog
+
         <ForeignKey(""OriginalBlogId"")>
         <InverseProperty(""OriginalPosts"")>
         Public Overridable Property OriginalBlog As Blog
@@ -1609,7 +1684,9 @@ End Namespace
         Public Sub Entity_with_custom_annotation()
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1623,8 +1700,9 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
- $"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+ $"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1640,14 +1718,11 @@ Namespace TestNamespace
         Public Overridable Property EntityWithAnnotation As DbSet(Of EntityWithAnnotation)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of EntityWithAnnotation)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
@@ -1691,7 +1766,9 @@ End Namespace
 
 
             Dim expectedCode =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
@@ -1705,8 +1782,9 @@ End Namespace
 "
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1722,14 +1800,11 @@ Namespace TestNamespace
         Public Overridable Property EntityWithPropertyAnnotation As DbSet(Of EntityWithPropertyAnnotation)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of EntityWithPropertyAnnotation)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
@@ -1773,8 +1848,9 @@ End Namespace
         Public Sub Scaffold_skip_navigations_default()
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1788,36 +1864,26 @@ Namespace TestNamespace
         End Sub
 
         Public Overridable Property Blog As DbSet(Of Blog)
+
         Public Overridable Property Post As DbSet(Of Post)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
 
-                    entity.HasMany(Function(d) d.Posts).
-                        WithMany(Function(p) p.Blogs).
+                    entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
-                            Function(l)
-                                Return l.HasOne(Of Post)().WithMany().
-                                    HasForeignKey(""PostsId"")
-                            End Function,
-                            Function(r)
-                                Return r.HasOne(Of Blog)().WithMany().
-                                    HasForeignKey(""BlogsId"")
-                            End Function,
+                            Function(r) r.HasOne(Of Post)().WithMany().HasForeignKey(""PostsId""),
+                            Function(l) l.HasOne(Of Blog)().WithMany().HasForeignKey(""BlogsId""),
                             Sub(j)
                                 j.HasKey(""BlogsId"", ""PostsId"")
-                                j.ToTable(""BlogPost"")
                                 j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
                             End Sub)
                 End Sub)
@@ -1837,29 +1903,27 @@ End Namespace
 "
 
             Dim expectedEntityCode1 =
-"Namespace TestNamespace
-    Public Partial Class Blog
-        Public Sub New()
-            Posts = New HashSet(Of Post)()
-        End Sub
+"Imports System
+Imports System.Collections.Generic
 
+Namespace TestNamespace
+    Public Partial Class Blog
         Public Property Id As Integer
 
-        Public Overridable Property Posts As ICollection(Of Post)
+        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
 
             Dim expectedEntityCode2 =
-"Namespace TestNamespace
-    Public Partial Class Post
-        Public Sub New()
-            Blogs = New HashSet(Of Blog)()
-        End Sub
+"Imports System
+Imports System.Collections.Generic
 
+Namespace TestNamespace
+    Public Partial Class Post
         Public Property Id As Integer
 
-        Public Overridable Property Blogs As ICollection(Of Blog)
+        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "
@@ -1923,8 +1987,9 @@ End Namespace
         Public Sub Scaffold_skip_navigations_different_key_type()
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -1938,36 +2003,26 @@ Namespace TestNamespace
         End Sub
 
         Public Overridable Property Blog As DbSet(Of Blog)
+
         Public Overridable Property Post As DbSet(Of Post)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
 
-                    entity.HasMany(Function(d) d.Posts).
-                        WithMany(Function(p) p.Blogs).
+                    entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
-                            Function(l)
-                                Return l.HasOne(Of Post)().WithMany().
-                                    HasForeignKey(""PostsId"")
-                            End Function,
-                            Function(r)
-                                Return r.HasOne(Of Blog)().WithMany().
-                                    HasForeignKey(""BlogsId"")
-                            End Function,
+                            Function(r) r.HasOne(Of Post)().WithMany().HasForeignKey(""PostsId""),
+                            Function(l) l.HasOne(Of Blog)().WithMany().HasForeignKey(""BlogsId""),
                             Sub(j)
                                 j.HasKey(""BlogsId"", ""PostsId"")
-                                j.ToTable(""BlogPost"")
                                 j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
                             End Sub)
                 End Sub)
@@ -1982,28 +2037,26 @@ End Namespace
 "
 
             Dim expectedEntityBlog =
-"Namespace TestNamespace
-    Public Partial Class Blog
-        Public Sub New()
-            Posts = New HashSet(Of Post)()
-        End Sub
+"Imports System
+Imports System.Collections.Generic
 
+Namespace TestNamespace
+    Public Partial Class Blog
         Public Property Id As Integer
 
-        Public Overridable Property Posts As ICollection(Of Post)
+        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
             Dim expectedEntityPost =
-"Namespace TestNamespace
-    Public Partial Class Post
-        Public Sub New()
-            Blogs = New HashSet(Of Blog)()
-        End Sub
+"Imports System
+Imports System.Collections.Generic
 
+Namespace TestNamespace
+    Public Partial Class Post
         Public Property Id As String
 
-        Public Overridable Property Blogs As ICollection(Of Blog)
+        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "
@@ -2054,8 +2107,9 @@ End Namespace
         Public Sub Scaffold_skip_navigations_default_data_annotations()
 
             Dim expectedDbContextCode =
-$"Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Metadata
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class TestDbContext
@@ -2069,36 +2123,26 @@ Namespace TestNamespace
         End Sub
 
         Public Overridable Property Blog As DbSet(Of Blog)
+
         Public Overridable Property Post As DbSet(Of Post)
 
         Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
-            If Not optionsBuilder.IsConfigured Then
-                'TODO /!\ {DesignStrings.SensitiveInformationWarning}
-                optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
-            End If
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
 
-                    entity.HasMany(Function(d) d.Posts).
-                        WithMany(Function(p) p.Blogs).
+                    entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
-                            Function(l)
-                                Return l.HasOne(Of Post)().WithMany().
-                                    HasForeignKey(""PostsId"")
-                            End Function,
-                            Function(r)
-                                Return r.HasOne(Of Blog)().WithMany().
-                                    HasForeignKey(""BlogsId"")
-                            End Function,
+                            Function(r) r.HasOne(Of Post)().WithMany().HasForeignKey(""PostsId""),
+                            Function(l) l.HasOne(Of Blog)().WithMany().HasForeignKey(""BlogsId""),
                             Sub(j)
                                 j.HasKey(""BlogsId"", ""PostsId"")
-                                j.ToTable(""BlogPost"")
                                 j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
                             End Sub)
                 End Sub)
@@ -2118,43 +2162,39 @@ End Namespace
 "
 
             Dim expectedEntity1Code =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class Blog
-        Public Sub New()
-            Posts = New HashSet(Of Post)()
-        End Sub
-
         <Key>
         Public Property Id As Integer
 
         <ForeignKey(""BlogsId"")>
         <InverseProperty(""Blogs"")>
-        Public Overridable Property Posts As ICollection(Of Post)
+        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
 
             Dim expectedEntity2Code =
-"Imports System.ComponentModel.DataAnnotations
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     Public Partial Class Post
-        Public Sub New()
-            Blogs = New HashSet(Of Blog)()
-        End Sub
-
         <Key>
         Public Property Id As Integer
 
         <ForeignKey(""PostsId"")>
         <InverseProperty(""Posts"")>
-        Public Overridable Property Blogs As ICollection(Of Blog)
+        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "

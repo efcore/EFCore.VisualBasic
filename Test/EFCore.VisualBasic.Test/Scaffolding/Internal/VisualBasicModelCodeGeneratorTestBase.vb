@@ -5,92 +5,111 @@ Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
+Imports Microsoft.EntityFrameworkCore.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.TestUtilities
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
+Imports Xunit.Abstractions
 
-Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
+Namespace Scaffolding.Internal
 
-    Sub Test(buildModel As Action(Of ModelBuilder),
+    <Collection(NameOf(ModelCodeGeneratorTestCollection))>
+    Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
+
+        Private ReadOnly _fixture As ModelCodeGeneratorTestFixture
+        Private ReadOnly _output As ITestOutputHelper
+
+        Protected Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
+            _fixture = fixture
+            _output = output
+        End Sub
+
+        Sub Test(buildModel As Action(Of ModelBuilder),
              options As ModelCodeGenerationOptions,
              assertScaffold As Action(Of ScaffoldedModel),
              assertModel As Action(Of IModel),
              Optional skipBuild As Boolean = False)
 
-        Dim designServices = New ServiceCollection()
-        AddModelServices(designServices)
+            Dim designServices = New ServiceCollection()
+            AddModelServices(designServices)
 
-        Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
-        mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-        buildModel(mb)
+            Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
+            mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
+            buildModel(mb)
 
-        Dim model = mb.FinalizeModel(designTime:=True, skipValidation:=True)
+            Dim model = mb.FinalizeModel(designTime:=True, skipValidation:=True)
 
-        Dim services = CreateServices()
-        AddScaffoldingServices(services)
+            Dim services = CreateServices()
+            AddScaffoldingServices(services)
 
-        Dim generator = services.BuildServiceProvider().
-                                 GetRequiredService(Of IModelCodeGenerator)()
+            Dim generators = services.BuildServiceProvider(validateScopes:=True).
+                                      GetServices(Of IModelCodeGenerator)()
 
-        options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
-        options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
-        options.ContextName = "TestDbContext"
-        options.ConnectionString = "Initial Catalog=TestDatabase"
+            Dim generator = If(Random.Shared.Next() Mod 6 <> -1, ' :-P
+                                generators.Last(Function(g) TypeOf g Is VisualBasicModelGenerator),
+                                generators.Last(Function(g) TypeOf g Is TextTemplatingModelGenerator))
 
-        Dim scaffoldedModel = generator.GenerateModel(model, options)
+            options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
+            options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
+            options.ContextName = "TestDbContext"
+            options.ConnectionString = "Initial Catalog=TestDatabase"
+            options.ProjectDir = _fixture.ProjectDir
 
-        assertScaffold(scaffoldedModel)
+            Dim scaffoldedModel = generator.GenerateModel(model, options)
 
-        Dim build As New BuildSource(options.RootNamespace) With {
-            .Sources = {scaffoldedModel.ContextFile}.
-                        Concat(scaffoldedModel.AdditionalFiles).
-                        ToDictionary(Function(f) f.Path, Function(f) f.Code)
-        }
+            assertScaffold(scaffoldedModel)
 
-        With build.References
-            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
-            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
-            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
-            .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
-            .Add(BuildReference.ByName("System.ComponentModel.DataAnnotations"))
-            .Add(BuildReference.ByName("System.ComponentModel.Primitives"))
-        End With
+            Dim build As New BuildSource(options.RootNamespace) With {
+                .Sources = {scaffoldedModel.ContextFile}.
+                                Concat(scaffoldedModel.AdditionalFiles).
+                                ToDictionary(Function(f) f.Path, Function(f) f.Code)
+            }
 
-        If Not skipBuild Then
-            Dim assembly = build.BuildInMemory()
+            With build.References
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
+                .Add(BuildReference.ByName("System.ComponentModel.DataAnnotations"))
+                .Add(BuildReference.ByName("System.ComponentModel.Primitives"))
+            End With
 
-            If assertModel IsNot Nothing Then
-                Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
+            If Not skipBuild Then
+                Dim assembly = build.BuildInMemory()
 
-                Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
+                If assertModel IsNot Nothing Then
+                    Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
 
-                Dim compiledModel = context.GetService(Of IDesignTimeModel)().Model
-                assertModel(compiledModel)
+                    Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
+
+                    Dim compiledModel = context.GetService(Of IDesignTimeModel)().Model
+                    assertModel(compiledModel)
+                End If
             End If
-        End If
-    End Sub
+        End Sub
 
-    Function CreateServices() As IServiceCollection
-        Dim testAssembly = GetType(VisualBasicModelCodeGeneratorTestBase).Assembly
-        Dim reporter = New TestOperationReporter()
-        Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
+        Function CreateServices() As IServiceCollection
+            Dim testAssembly = GetType(VisualBasicModelCodeGeneratorTestBase).Assembly
+            Dim reporter = New TestOperationReporter(_output)
+            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
             CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer")
 
-        Dim vbServices = New EFCoreVisualBasicServices
-        vbServices.ConfigureDesignTimeServices(services)
+            Dim vbServices As New EFCoreVisualBasicServices
+            vbServices.ConfigureDesignTimeServices(services)
 
-        Return services
-    End Function
+            Return services
+        End Function
 
-    Protected Overridable Sub AddModelServices(services As IServiceCollection)
-    End Sub
+        Protected Overridable Sub AddModelServices(services As IServiceCollection)
+        End Sub
 
-    Protected Overridable Sub AddScaffoldingServices(services As IServiceCollection)
-    End Sub
+        Protected Overridable Sub AddScaffoldingServices(services As IServiceCollection)
+        End Sub
 
-    Protected Shared Sub AssertFileContents(expectedCode As String,
-                                            file As ScaffoldedFile)
+        Protected Shared Sub AssertFileContents(expectedCode As String,
+                                                file As ScaffoldedFile)
 
-        Assert.Equal(expectedCode, file.Code, ignoreLineEndingDifferences:=True)
-    End Sub
-End Class
+            Assert.Equal(expectedCode, file.Code, ignoreLineEndingDifferences:=True)
+        End Sub
+    End Class
+End Namespace

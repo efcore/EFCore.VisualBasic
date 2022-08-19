@@ -327,6 +327,14 @@ Friend Module SharedTypeExtensions
             Return
         End If
 
+        If type.IsArray Then
+            For Each ns In type.GetElementType().GetNamespaces()
+                Yield ns
+            Next
+
+            Return
+        End If
+
         Yield type.Namespace
 
         If type.IsGenericType Then

@@ -4,6 +4,7 @@ Imports System.Text
 Friend Module VBTypeExtensions
 
     <Extension()>
+    <Obsolete("Dead code?")>
     Public Function IsDefaultValue(type As Type, value As Object) As Boolean
         Return (value Is Nothing) OrElse value.Equals(type.GetDefaultValue())
     End Function
@@ -18,7 +19,7 @@ Friend Module VBTypeExtensions
                                 Optional fullName As Boolean = True,
                                 Optional compilable As Boolean = False) As String
 
-        Dim stringBuilder = New StringBuilder()
+        Dim stringBuilder As New StringBuilder()
         ProcessType(stringBuilder, type, fullName, compilable)
         Return stringBuilder.ToString()
     End Function

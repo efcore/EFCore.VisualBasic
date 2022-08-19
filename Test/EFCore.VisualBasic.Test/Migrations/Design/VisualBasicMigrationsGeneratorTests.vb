@@ -107,13 +107,15 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.IsFixedLength,
                 RelationalAnnotationNames.Collation,
                 RelationalAnnotationNames.IsStored,
-                RelationalAnnotationNames.ParameterDirection,
                 RelationalAnnotationNames.TpcMappingStrategy,
                 RelationalAnnotationNames.TphMappingStrategy,
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
-                RelationalAnnotationNames.FieldValueGetter}
+                RelationalAnnotationNames.FieldValueGetter,
+                RelationalAnnotationNames.JsonPropertyName,
+                RelationalAnnotationNames.JsonColumnName, ' Appears On entity type but requires specific model (i.e. owned types that can map To json, otherwise validation throws)
+                RelationalAnnotationNames.JsonColumnTypeMapping}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -161,9 +163,11 @@ Namespace Migrations.Design
                 },
                 {
                     RelationalAnnotationNames.Comment, ("My Comment",
-                        _toTable & _nl &
                         _nl &
-                        "entityTypeBuilder.HasComment(""My Comment"")")
+                        "entityTypeBuilder.ToTable(""WithAnnotations""," & _nl &
+                        "    Sub(t)" & _nl & _nl &
+                        "        t.HasComment(""My Comment"")" & _nl &
+                        "    End Sub)")
                 },
                 {
                     CoreAnnotationNames.DefiningQuery,
@@ -266,7 +270,10 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
                 RelationalAnnotationNames.Triggers,
-                RelationalAnnotationNames.FieldValueGetter}
+                RelationalAnnotationNames.FieldValueGetter,
+                RelationalAnnotationNames.JsonColumnName,
+                RelationalAnnotationNames.JsonColumnTypeMapping,
+                RelationalAnnotationNames.JsonPropertyName}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
             Dim columnMapping = $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"
@@ -388,7 +395,7 @@ Namespace Migrations.Design
                 Dim annotationName As String = CStr(field.GetValue(Nothing))
 
                 If Not invalidAnnotations.Contains(annotationName) Then
-                    Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+                    Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
                     Dim metadataItem = createMetadataItem(modelBuilder)
                     metadataItem.SetAnnotation(annotationName, If(validAnnotations.ContainsKey(annotationName),
                                                                     validAnnotations(annotationName).Value,
@@ -476,7 +483,7 @@ Namespace Migrations.Design
                     sqlServerAnnotationCodeGenerator1),
                 codeHelper)
 
-            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
             modelBuilder.Entity(Of WithAnnotations)(Sub(eb)
                                                         eb.HasDiscriminator(Of RawEnum)("EnumDiscriminator") _
@@ -500,7 +507,7 @@ Namespace Migrations.Design
 
         Private Shared Sub AssertConverter(valueConverter1 As ValueConverter, expected As String)
 
-            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
 
             Dim prop = modelBuilder.Entity(Of WithAnnotations)().Property(Function(e) e.Id).Metadata
             prop.SetMaxLength(1000)
@@ -721,7 +728,7 @@ End Namespace
         Public Sub Snapshots_compile()
             Dim generator = CreateMigrationsCodeGenerator()
 
-            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
 
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
             modelBuilder.Entity(Of EntityWithConstructorBinding)(
@@ -813,7 +820,7 @@ End Namespace
         Public Sub Snapshot_with_default_values_are_round_tripped()
             Dim generator = CreateMigrationsCodeGenerator()
 
-            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Entity(Of EntityWithEveryPrimitive)(
             Sub(eb)
                 eb.Property(Function(e) e.Boolean).HasDefaultValue(False)
@@ -1055,7 +1062,7 @@ End Namespace
         Public Sub Data_seedings_With_HasData_is_generated_correctly()
             Dim Generator = CreateMigrationsCodeGenerator()
 
-            Dim MyModelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim MyModelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
 
             MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
                                                        eb.HasData({
@@ -1110,7 +1117,7 @@ End Namespace
         <ConditionalFact>
         Public Sub Sequence_is_generated_correctly()
 
-            Dim modelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
 
             modelBuilder.HasSequence(Of Integer)("OrderNumbers", "Shared").
                 StartsAt(1000).
@@ -1157,7 +1164,7 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
         <ConditionalFact>
         Public Sub Index_is_generated_correctly()
 
-            Dim MyModelBuilder = RelationalTestHelpers.Instance.CreateConventionBuilder()
+            Dim MyModelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
 
             MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
                                                        eb.HasIndex(Function(e) New With {e.Id, e.Name}).

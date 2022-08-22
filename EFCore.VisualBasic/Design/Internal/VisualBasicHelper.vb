@@ -213,7 +213,6 @@ Namespace Design.Internal
             Return If(namespaces.Length > 0, namespaces.Remove(namespaces.Length - 1, 1).ToString(), "_")
         End Function
 
-
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
@@ -226,7 +225,6 @@ Namespace Design.Internal
                                 Replace(vbCr, """ & vbCr & """).
                                 Replace(vbLf, """ & vbLf & """) & """"
         End Function
-
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -1171,8 +1169,8 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function GetRequiredUsings(type As Type) As IEnumerable(Of String) _
-        Implements IVisualBasicHelper.GetRequiredUsings
+        Public Overridable Function GetRequiredImports(type As Type) As IEnumerable(Of String) _
+        Implements IVisualBasicHelper.GetRequiredImports
             Return type.GetNamespaces()
         End Function
 

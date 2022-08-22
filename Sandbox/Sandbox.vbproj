@@ -21,24 +21,13 @@
     <ProjectReference Include="..\EFCore.VisualBasic\EFCore.VisualBasic.vbproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="CodeTemplates\EFCore\DbContext.t4">
-      <Generator></Generator>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CodeTemplates\EFCore\EntityType.t4">
-      <Generator></Generator>
-    </None>
+  <ItemGroup>    
     <None Update="northwind.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="School.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
   <Import Project="..\EFCore.VisualBasic\build\net7.0\EntityFrameworkCore.VisualBasic.targets" />

@@ -75,7 +75,7 @@ Namespace Scaffolding.Internal
         Next
     End If
 
-            Me.Write("    Public Partial Class ")
+            Me.Write("    Partial Public Class ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(EntityType.Name))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
@@ -105,7 +105,7 @@ Namespace Scaffolding.Internal
             Next
         End If
 
-        importsList.AddRange(code.GetRequiredUsings(prop.ClrType))
+        importsList.AddRange(code.GetRequiredImports(prop.ClrType))
 
             Me.Write("        Public Property ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Identifier(prop.Name)))

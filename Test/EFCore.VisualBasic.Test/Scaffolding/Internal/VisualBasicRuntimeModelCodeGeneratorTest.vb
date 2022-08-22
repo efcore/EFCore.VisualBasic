@@ -2489,12 +2489,12 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
-            Dim idDerivedInsert As New RuntimeRelationalPropertyOverrides(
+            Dim idDerived_Insert As New RuntimeRelationalPropertyOverrides(
                 id,
                 StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"),
                 True,
                 "DerivedId")
-            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"), idDerivedInsert})
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"), idDerived_Insert})
             Dim idPrincipalBaseView As New RuntimeRelationalPropertyOverrides(
                 id,
                 StoreObjectIdentifier.View("PrincipalBaseView", "TPC"),
@@ -4461,23 +4461,23 @@ Namespace TestNamespace
                 nullable:=True)
             blob.AddAnnotation("Cosmos:PropertyName", "JsonBlob")
 
-            Dim id0 = entityType.AddProperty(
+            Dim __id = entityType.AddProperty(
                 "__id",
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New IdValueGeneratorFactory().Create)
-            id0.AddAnnotation("Cosmos:PropertyName", "id")
+            __id.AddAnnotation("Cosmos:PropertyName", "id")
 
-            Dim jObject = entityType.AddProperty(
+            Dim __jObject = entityType.AddProperty(
                 "__jObject",
                 GetType(JObject),
                 nullable:=True,
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            jObject.AddAnnotation("Cosmos:PropertyName", "")
+            __jObject.AddAnnotation("Cosmos:PropertyName", "")
 
-            Dim etag = entityType.AddProperty(
+            Dim _etag = entityType.AddProperty(
                 "_etag",
                 GetType(String),
                 nullable:=True,
@@ -4491,7 +4491,7 @@ Namespace TestNamespace
             entityType.SetPrimaryKey(key)
 
             Dim key0 = entityType.AddKey(
-                {id0, partitionId})
+                {__id, partitionId})
 
             Return entityType
         End Function

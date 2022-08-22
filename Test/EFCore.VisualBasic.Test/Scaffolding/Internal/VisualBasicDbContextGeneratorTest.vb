@@ -19,8 +19,8 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicDbContextGeneratorTest
         Inherits VisualBasicModelCodeGeneratorTestBase
 
-        Public Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
-            MyBase.New(fixture, output)
+        Public Sub New(output As ITestOutputHelper)
+            MyBase.New(output)
         End Sub
 
         <ConditionalFact>
@@ -32,7 +32,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -80,7 +80,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -128,7 +128,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New(options As DbContextOptions(Of TestDbContext))
@@ -518,7 +518,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -595,7 +595,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -668,7 +668,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -769,7 +769,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -856,7 +856,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1059,7 +1059,7 @@ $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1155,7 +1155,7 @@ Imports CustomTestNamespace
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New(options As DbContextOptions(Of TestDbContext))
@@ -1202,7 +1202,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1316,7 +1316,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1394,7 +1394,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()

@@ -1,4 +1,5 @@
 ﻿<#@ template language="VB" hostSpecific="true" linePragmas="false" #>
+<#@ output extension=".vb" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
@@ -37,7 +38,7 @@ Namespace <#= NamespaceHint #>
 <#
     End If
 #>
-    Public Partial Class <#= Options.ContextName #>
+    Partial Public Class <#= Options.ContextName #>
         Inherits DbContext
 
 <#

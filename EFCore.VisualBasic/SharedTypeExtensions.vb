@@ -324,7 +324,7 @@ Friend Module SharedTypeExtensions
     <Extension()>
     Iterator Function GetNamespaces(type As Type) As IEnumerable(Of String)
         If _builtInTypeNames.ContainsKey(type) Then
-            Return
+            Exit Function
         End If
 
         If type.IsArray Then
@@ -332,7 +332,7 @@ Friend Module SharedTypeExtensions
                 Yield ns
             Next
 
-            Return
+            Exit Function
         End If
 
         Yield type.Namespace
@@ -345,5 +345,4 @@ Friend Module SharedTypeExtensions
             Next
         End If
     End Function
-
 End Module

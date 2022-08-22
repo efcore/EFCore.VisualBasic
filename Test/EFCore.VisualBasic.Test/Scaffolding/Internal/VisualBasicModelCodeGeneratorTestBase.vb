@@ -13,14 +13,11 @@ Imports Xunit.Abstractions
 
 Namespace Scaffolding.Internal
 
-    <Collection(NameOf(ModelCodeGeneratorTestCollection))>
     Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
 
-        Private ReadOnly _fixture As ModelCodeGeneratorTestFixture
         Private ReadOnly _output As ITestOutputHelper
 
-        Protected Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
-            _fixture = fixture
+        Protected Sub New(output As ITestOutputHelper)
             _output = output
         End Sub
 
@@ -53,7 +50,6 @@ Namespace Scaffolding.Internal
             options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
             options.ContextName = "TestDbContext"
             options.ConnectionString = "Initial Catalog=TestDatabase"
-            options.ProjectDir = _fixture.ProjectDir
 
             Dim scaffoldedModel = generator.GenerateModel(model, options)
 

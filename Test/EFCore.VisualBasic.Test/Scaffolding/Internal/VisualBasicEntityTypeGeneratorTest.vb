@@ -15,8 +15,8 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicEntityTypeGeneratorTest
         Inherits VisualBasicModelCodeGeneratorTestBase
 
-        Public Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
-            MyBase.New(fixture, output)
+        Public Sub New(output As ITestOutputHelper)
+            MyBase.New(output)
         End Sub
 
         <ConditionalFact>
@@ -31,7 +31,7 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Keyless>
-    Public Partial Class Vista
+    Partial Public Class Vista
     End Class
 End Namespace
 "
@@ -41,7 +41,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -101,7 +101,7 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Table(""Vistas"")>
-    Public Partial Class Vista
+    Partial Public Class Vista
         <Key>
         Public Property Id As Integer
     End Class
@@ -143,7 +143,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Vista
+    Partial Public Class Vista
         <Key>
         Public Property Id As Integer
     End Class
@@ -188,7 +188,7 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Table(""Vista"", Schema:=""custom"")>
-    Public Partial Class Vista
+    Partial Public Class Vista
         <Key>
         Public Property Id As Integer
     End Class
@@ -233,7 +233,7 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Keyless>
-    Public Partial Class Vista
+    Partial Public Class Vista
     End Class
 End Namespace
 "
@@ -271,7 +271,7 @@ Namespace TestNamespace
     <Index(""C"")>
     <Index(""A"", ""B"", Name:=""IndexOnAAndB"", IsUnique:=True, IsDescending:={True, False})>
     <Index(""B"", ""C"", Name:=""IndexOnBAndC"")>
-    Public Partial Class EntityWithIndexes
+    Partial Public Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
 
@@ -334,7 +334,7 @@ Namespace TestNamespace
     <Index(""A"", ""B"", Name:=""AllAscending"")>
     <Index(""A"", ""B"", Name:=""AllDescending"", AllDescending:=True)>
     <Index(""A"", ""B"", Name:=""PartiallyDescending"", IsDescending:={True, False})>
-    Public Partial Class EntityWithAscendingDescendingIndexes
+    Partial Public Class EntityWithAscendingDescendingIndexes
         <Key>
         Public Property Id As Integer
 
@@ -398,7 +398,7 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <Index(""A"", ""B"", Name:=""IndexOnAAndB"", IsUnique:=True)>
-    Public Partial Class EntityWithIndexes
+    Partial Public Class EntityWithIndexes
         <Key>
         Public Property Id As Integer
 
@@ -417,7 +417,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -491,7 +491,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property PrimaryKey As Integer
     End Class
@@ -504,7 +504,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -571,7 +571,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Key As Integer
 
@@ -587,7 +587,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -658,7 +658,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property Id As Integer
 
@@ -698,7 +698,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property RequiredString As String
     End Class
@@ -735,7 +735,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property Id As Integer
 
@@ -762,7 +762,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -839,7 +839,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property Id As Integer
 
@@ -888,7 +888,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property Id As Integer
 
@@ -944,7 +944,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property Id As Integer
 
@@ -1008,7 +1008,7 @@ Namespace TestNamespace
     ''' <summary>
     ''' Entity Comment
     ''' </summary>
-    Public Partial Class Entity
+    Partial Public Class Entity
         ''' <summary>
         ''' Property Comment
         ''' </summary>
@@ -1055,7 +1055,7 @@ Namespace TestNamespace
     ''' On multiple lines
     ''' With XML content &lt;br/&gt;
     ''' </summary>
-    Public Partial Class Entity
+    Partial Public Class Entity
         ''' <summary>
         ''' Property Comment
         ''' On multiple lines
@@ -1105,7 +1105,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property [Property] As Integer
 
@@ -1150,7 +1150,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Entity
+    Partial Public Class Entity
         <Key>
         Public Property Id As Integer
 
@@ -1195,7 +1195,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 
@@ -1219,7 +1219,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Person
+    Partial Public Class Person
         <Key>
         Public Property Id As Integer
 
@@ -1281,7 +1281,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 
@@ -1302,7 +1302,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1391,7 +1391,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 
@@ -1410,7 +1410,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1503,7 +1503,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 
@@ -1561,7 +1561,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 
@@ -1618,7 +1618,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 
@@ -1692,7 +1692,7 @@ Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
     <CustomEntityDataAnnotation(""first argument"")>
-    Public Partial Class EntityWithAnnotation
+    Partial Public Class EntityWithAnnotation
         <Key>
         Public Property Id As Integer
     End Class
@@ -1705,7 +1705,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1773,7 +1773,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class EntityWithPropertyAnnotation
+    Partial Public Class EntityWithPropertyAnnotation
         <Key>
         <CustomPropertyDataAnnotation(""first argument"")>
         Public Property Id As Integer
@@ -1787,7 +1787,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1853,7 +1853,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -1907,7 +1907,7 @@ End Namespace
 Imports System.Collections.Generic
 
 Namespace TestNamespace
-    Public Partial Class Blog
+    Partial Public Class Blog
         Public Property Id As Integer
 
         Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
@@ -1920,7 +1920,7 @@ End Namespace
 Imports System.Collections.Generic
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         Public Property Id As Integer
 
         Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
@@ -1992,7 +1992,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -2041,7 +2041,7 @@ End Namespace
 Imports System.Collections.Generic
 
 Namespace TestNamespace
-    Public Partial Class Blog
+    Partial Public Class Blog
         Public Property Id As Integer
 
         Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
@@ -2053,7 +2053,7 @@ End Namespace
 Imports System.Collections.Generic
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         Public Property Id As String
 
         Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
@@ -2112,7 +2112,7 @@ Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class TestDbContext
+    Partial Public Class TestDbContext
         Inherits DbContext
 
         Public Sub New()
@@ -2169,7 +2169,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Blog
+    Partial Public Class Blog
         <Key>
         Public Property Id As Integer
 
@@ -2188,7 +2188,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
-    Public Partial Class Post
+    Partial Public Class Post
         <Key>
         Public Property Id As Integer
 

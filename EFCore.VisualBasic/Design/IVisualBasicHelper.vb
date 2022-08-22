@@ -312,10 +312,10 @@ Namespace Design
         Function Arguments(values As IEnumerable(Of Object)) As String
 
         ''' <summary>
-        '''     Gets the using statements required when referencing a type.
+        '''     Gets the imports statements required when referencing a type.
         ''' </summary>
         ''' <param name="type">The type.</param>
         ''' <returns>The usings.</returns>
-        Function GetRequiredUsings(type As Type) As IEnumerable(Of String)
+        Function GetRequiredImports(type As Type) As IEnumerable(Of String)
     End Interface
 End Namespace

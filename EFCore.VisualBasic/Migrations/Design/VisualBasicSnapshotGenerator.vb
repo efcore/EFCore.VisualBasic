@@ -920,9 +920,6 @@ Namespace Migrations.Design
 
             Dim table = StoreObjectIdentifier.Create(entityType, StoreObjectType.Table)
             Dim tableName = If(CStr(tableNameAnnotation?.Value), table?.Name)
-            'If tableNameAnnotation Is Nothing AndAlso
-            '   entityType.BaseType IsNot Nothing AndAlso
-            '   entityType.BaseType.GetTableName() = tableName Then
 
             Dim explicitName = tableNameAnnotation IsNot Nothing OrElse
                 entityType.BaseType Is Nothing OrElse

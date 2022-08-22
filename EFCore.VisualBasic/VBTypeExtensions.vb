@@ -4,12 +4,6 @@ Imports System.Text
 Friend Module VBTypeExtensions
 
     <Extension()>
-    <Obsolete("Dead code?")>
-    Public Function IsDefaultValue(type As Type, value As Object) As Boolean
-        Return (value Is Nothing) OrElse value.Equals(type.GetDefaultValue())
-    End Function
-
-    <Extension()>
     Public Function ShortDisplayName(type As Type) As String
         Return type.DisplayName(fullName:=False)
     End Function
@@ -133,5 +127,4 @@ Friend Module VBTypeExtensions
 
         builder.Append(")"c)
     End Sub
-
 End Module

@@ -26,6 +26,8 @@ Namespace Scaffolding.Internal
             _serviceProvider = serviceProvider
         End Sub
 
+        Private Const FileExtension = ".vb"
+
         ''' <summary>
         '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -53,7 +55,7 @@ Namespace Scaffolding.Internal
             End If
 
             Dim host As New TextTemplatingEngineHost(_serviceProvider)
-            host.SetFileExtension(".vb")
+            host.SetFileExtension(FileExtension)
 
             Dim contextTemplate As New VisualBasicDbContextGenerator With {
                 .Host = host,
@@ -84,7 +86,7 @@ Namespace Scaffolding.Internal
             For Each entityType In model.GetEntityTypes()
 
                 host.Initialize()
-                host.SetFileExtension(".vb")
+                host.SetFileExtension(FileExtension)
 
                 Dim entityTypeTemplate As New VisualBasicEntityTypeGenerator With {
                     .Host = host,

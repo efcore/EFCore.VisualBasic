@@ -31,8 +31,7 @@ Namespace Scaffolding.Internal
 
             Dim result = generator.GenerateModel(
                 modelBuilder.FinalizeModel(designTime:=True),
-                New ModelCodeGenerationOptions With
-                {
+                New ModelCodeGenerationOptions With {
                     .ModelNamespace = "TestNamespace",
                     .ContextNamespace = "ContextNameSpace",
                     .ContextDir = Path.Combine("..", "TestContextDir" & Path.DirectorySeparatorChar),

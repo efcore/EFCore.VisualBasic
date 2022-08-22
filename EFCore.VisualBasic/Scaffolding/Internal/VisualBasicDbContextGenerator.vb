@@ -53,7 +53,7 @@ Namespace Scaffolding.Internal
 
     End If
 
-            Me.Write("    Public Partial Class ")
+            Me.Write("    Partial Public Class ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(Options.ContextName))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"        Inherits DbContext"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 

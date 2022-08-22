@@ -1,4 +1,5 @@
 ﻿<#@ template language="VB" hostSpecific="true" linePragmas="false" #>
+<#@ output extension=".vb" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
@@ -57,7 +58,7 @@ Namespace <#= NamespaceHint #>
         Next
     End If
 #>
-    Public Partial Class <#= EntityType.Name #>
+    Partial Public Class <#= EntityType.Name #>
 <#
     Dim firstProperty = true
     For Each prop In entityType.GetProperties().OrderBy(Function(p) If(p.GetColumnOrder(), -1))
@@ -83,7 +84,7 @@ Namespace <#= NamespaceHint #>
             Next
         End If
 
-        importsList.AddRange(code.GetRequiredUsings(prop.ClrType))
+        importsList.AddRange(code.GetRequiredImports(prop.ClrType))
 #>
         Public Property <#= code.Identifier(prop.Name) #> As <#= code.Reference(prop.ClrType) #>
 <#

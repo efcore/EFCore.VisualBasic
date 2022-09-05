@@ -5,7 +5,7 @@ Namespace Design
     ''' <summary>
     '''     Base class to be used by database providers when implementing an <see cref="IVisualBasicRuntimeAnnotationCodeGenerator"/>
     ''' </summary>
-    Partial Public Class VisualBasicRuntimeAnnotationCodeGenerator
+    Public Class VisualBasicRuntimeAnnotationCodeGenerator
         Implements IVisualBasicRuntimeAnnotationCodeGenerator
 
         ''' <summary>
@@ -209,7 +209,7 @@ Namespace Design
                                                            valueString As String,
                                                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            If parameters.TargetName <> "this" Then
+            If parameters.TargetName <> "Me" Then
                 parameters.MainBuilder.
                     Append(parameters.TargetName).
                     Append("."c)
@@ -220,7 +220,7 @@ Namespace Design
                 Append(VBCode.Literal(annotationName)).
                 Append(", ").
                 Append(valueString).
-                AppendLine(")")
+                AppendLine(")"c)
         End Sub
 
         ''' <summary>
@@ -256,6 +256,5 @@ Namespace Design
 
             Return source.TryGetAndRemove(key, annotationValue)
         End Function
-
     End Class
 End Namespace

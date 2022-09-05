@@ -77,13 +77,13 @@ Namespace Design.Internal
             If properties.Count = 1 Then
                 builder.
                     Append(lambdaIdentifier).
-                    Append(".").
+                    Append("."c).
                     Append(properties(0))
             Else
                 builder.
                     Append("New With {").
                     AppendJoin(", ", properties.Select(Function(p) $"{lambdaIdentifier}.{p}")).
-                    Append("}")
+                    Append("}"c)
             End If
 
             Return builder.ToString()
@@ -555,7 +555,7 @@ Namespace Design.Internal
                 Dim valueCount = values.GetLength(1)
                 For i = 0 To rowCount - 1
                     If i <> 0 Then
-                        builder.AppendLine(",")
+                        builder.AppendLine(","c)
                     End If
 
                     builder.Append("{"c)
@@ -594,7 +594,7 @@ Namespace Design.Internal
             builder.
                 Append("New List(Of ").
                 Append(Reference(type)).
-                Append(")")
+                Append(")"c)
 
             Dim hasData = False
             Dim first = True
@@ -982,7 +982,7 @@ Namespace Design.Internal
 
             builder.
                 Append(current.Method).
-                Append("(")
+                Append("("c)
 
             For i = 0 To current.Arguments.Count - 1
                 If i <> 0 Then

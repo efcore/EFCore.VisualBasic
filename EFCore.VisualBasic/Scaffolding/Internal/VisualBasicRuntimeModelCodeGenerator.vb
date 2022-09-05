@@ -259,7 +259,7 @@ $"    Dim model As New {className}()
                         End If
 
                         mainBuilder.
-                            AppendLine(")")
+                            AppendLine(")"c)
                     Next
 
                     If anyEntityTypes Then
@@ -285,11 +285,11 @@ $"    Dim model As New {className}()
                                 Append(entityClassName).
                                 Append(".CreateForeignKey").
                                 Append(foreignKeyNumber.ToString()).
-                                Append("(").
+                                Append("("c).
                                 Append(variableName).
                                 Append(", ").
                                 Append(principalVariable).
-                                AppendLine(")")
+                                AppendLine(")"c)
 
                             foreignKeyNumber += 1
                         Next
@@ -320,13 +320,13 @@ $"    Dim model As New {className}()
                                 Append(entityClassName).
                                 Append(".CreateSkipNavigation").
                                 Append(navigationNumber.ToString()).
-                                Append("(").
+                                Append("("c).
                                 Append(variableName).
                                 Append(", ").
                                 Append(targetVariable).
                                 Append(", ").
                                 Append(joinVariable).
-                                AppendLine(")")
+                                AppendLine(")"c)
 
                             navigationNumber += 1
                         Next
@@ -347,9 +347,9 @@ $"    Dim model As New {className}()
                         mainBuilder.
                             Append(entityClassName).
                             Append(".CreateAnnotations").
-                            Append("(").
+                            Append("("c).
                             Append(variableName).
-                            AppendLine(")")
+                            AppendLine(")"c)
                     Next
 
                     If anyEntityTypes Then
@@ -407,25 +407,25 @@ $"    Dim model As New {className}()
             AddNamespace(typeConfiguration.ClrType, parameters.Namespaces)
 
             If typeConfiguration.GetMaxLength().HasValue Then
-                mainBuilder.AppendLine(",").
+                mainBuilder.AppendLine(","c).
                 Append("maxLength:=").
                 Append(_code.Literal(typeConfiguration.GetMaxLength()))
             End If
 
             If typeConfiguration.IsUnicode().HasValue Then
-                mainBuilder.AppendLine(",").
+                mainBuilder.AppendLine(","c).
                 Append("unicode:=").
                 Append(_code.Literal(typeConfiguration.IsUnicode()))
             End If
 
             If typeConfiguration.GetPrecision().HasValue Then
-                mainBuilder.AppendLine(",").
+                mainBuilder.AppendLine(","c).
                 Append("precision:=").
                 Append(_code.Literal(typeConfiguration.GetPrecision()))
             End If
 
             If typeConfiguration.GetScale().HasValue Then
-                mainBuilder.AppendLine(",").
+                mainBuilder.AppendLine(","c).
                 Append("scale:=").
                 Append(_code.Literal(typeConfiguration.GetScale()))
             End If
@@ -434,7 +434,7 @@ $"    Dim model As New {className}()
             If providerClrType IsNot Nothing Then
                 AddNamespace(providerClrType, parameters.Namespaces)
 
-                mainBuilder.AppendLine(",").
+                mainBuilder.AppendLine(","c).
                 Append("providerPropertyType:=").
                 Append(_code.Literal(providerClrType))
             End If
@@ -443,14 +443,14 @@ $"    Dim model As New {className}()
             If valueConverterType IsNot Nothing Then
                 AddNamespace(valueConverterType, parameters.Namespaces)
 
-                mainBuilder.AppendLine(",").
+                mainBuilder.AppendLine(","c).
                 Append("valueConverter:=New ").
                 Append(_code.Reference(valueConverterType)).
                 Append("()")
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(
@@ -609,14 +609,14 @@ $"    Dim model As New {className}()
                 AppendLine(" = model.AddEntityType(").
                 IncrementIndent().
                 Append(_code.Literal(runTimeEntityType.Name)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(_code.Literal(runTimeEntityType.ClrType)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append("baseEntityType")
 
             If runTimeEntityType.HasSharedClrType Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("sharedClrType:=").
                     Append(_code.Literal(runTimeEntityType.HasSharedClrType))
             End If
@@ -625,7 +625,7 @@ $"    Dim model As New {className}()
 
             If discriminatorProperty IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("discriminatorProperty:=").
                     Append(_code.Literal(discriminatorProperty))
             End If
@@ -636,7 +636,7 @@ $"    Dim model As New {className}()
                 parameters.Namespaces.Add(GetType(ChangeTrackingStrategy).Namespace)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("changeTrackingStrategy:=").
                     Append(_code.Literal(CType(changeTrackingStrat, [Enum])))
             End If
@@ -645,15 +645,15 @@ $"    Dim model As New {className}()
 
             If indexerPropertyInfo IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(").
                     Append(_code.Literal(runTimeEntityType.ClrType)).
-                    Append(")")
+                    Append(")"c)
             End If
 
             If runTimeEntityType.IsPropertyBag Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("propertyBag:=").
                     Append(_code.Literal(True))
             End If
@@ -663,13 +663,13 @@ $"    Dim model As New {className}()
                 AddNamespace(discriminatorValue.GetType(), parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("discriminatorValue:=").
                     Append(_code.UnknownLiteral(discriminatorValue))
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 AppendLine().
                 DecrementIndent()
         End Sub
@@ -744,63 +744,63 @@ $"    Dim model As New {className}()
 
             If prop.IsNullable Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("nullable:=").
                     Append(_code.Literal(True))
             End If
 
             If prop.IsConcurrencyToken Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("concurrencyToken:=").
                     Append(_code.Literal(True))
             End If
 
             If prop.ValueGenerated <> ValueGenerated.Never Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("valueGenerated:=").
                     Append(_code.Literal(CType(prop.ValueGenerated, [Enum])))
             End If
 
             If prop.GetBeforeSaveBehavior() <> PropertySaveBehavior.Save Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("beforeSaveBehavior:=").
                     Append(_code.Literal(CType(prop.GetBeforeSaveBehavior(), [Enum])))
             End If
 
             If prop.GetAfterSaveBehavior() <> PropertySaveBehavior.Save Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("afterSaveBehavior:=").
                     Append(_code.Literal(CType(prop.GetAfterSaveBehavior(), [Enum])))
             End If
 
             If prop.GetMaxLength().HasValue Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("maxLength:=").
                     Append(_code.Literal(prop.GetMaxLength()))
             End If
 
             If prop.IsUnicode().HasValue Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("unicode:=").
                     Append(_code.Literal(prop.IsUnicode()))
             End If
 
             If prop.GetPrecision().HasValue Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("precision:=").
                     Append(_code.Literal(prop.GetPrecision()))
             End If
 
             If prop.GetScale().HasValue Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("scale:=").
                     Append(_code.Literal(prop.GetScale()))
             End If
@@ -811,7 +811,7 @@ $"    Dim model As New {className}()
                 AddNamespace(providerClrType, parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("providerPropertyType:=").
                     Append(_code.Literal(providerClrType))
             End If
@@ -820,7 +820,7 @@ $"    Dim model As New {className}()
                 AddNamespace(valueGeneratorFactoryType, parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("valueGeneratorFactory:=AddressOf New ").
                     Append(_code.Reference(valueGeneratorFactoryType)).
                     Append("().Create")
@@ -830,7 +830,7 @@ $"    Dim model As New {className}()
                 AddNamespace(valueConverterType, parameters.Namespaces)
 
                 mainBuilder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("valueConverter:=New ").
                             Append(_code.Reference(valueConverterType)).
                             Append("()")
@@ -840,7 +840,7 @@ $"    Dim model As New {className}()
                 AddNamespace(valueComparerType, parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("valueComparer:=New ").
                     Append(_code.Reference(valueComparerType)).
                     Append("()")
@@ -850,14 +850,14 @@ $"    Dim model As New {className}()
                 AddNamespace(providerValueComparerType, parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("providerValueComparer:=New ").
                     Append(_code.Reference(providerValueComparerType)).
                     Append("()")
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(prop,
@@ -879,7 +879,7 @@ $"    Dim model As New {className}()
             If Not skipType Then
                 AddNamespace(Prop.ClrType, parameters.Namespaces)
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append(_code.Literal(Prop.ClrType))
             End If
 
@@ -890,7 +890,7 @@ $"    Dim model As New {className}()
                 AddNamespace(propertyInfo.DeclaringType, parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("propertyInfo:=")
 
                 If Prop.IsIndexerProperty() Then
@@ -916,7 +916,7 @@ $"    Dim model As New {className}()
                 AddNamespace(fieldInfo.DeclaringType, parameters.Namespaces)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("fieldInfo:=").
                     Append(_code.Literal(fieldInfo.DeclaringType)).
                     Append(".GetField(").
@@ -933,7 +933,7 @@ $"    Dim model As New {className}()
                 parameters.Namespaces.Add(GetType(PropertyAccessMode).Namespace)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("propertyAccessMode:=").
                     Append(_code.Literal(CType(propertyAccessMode, [Enum])))
             End If
@@ -944,7 +944,7 @@ $"    Dim model As New {className}()
                                    mainBuilder As IndentedStringBuilder,
                                    Optional propertyVariables As Dictionary(Of IProperty, String) = Nothing)
 
-            mainBuilder.Append("{")
+            mainBuilder.Append("{"c)
 
             Dim first = True
 
@@ -968,11 +968,11 @@ $"    Dim model As New {className}()
                         Append(entityTypeVariable).
                         Append(".FindProperty(").
                         Append(_code.Literal(prop.Name)).
-                        Append(")")
+                        Append(")"c)
                 End If
             Next
 
-            mainBuilder.Append("}")
+            mainBuilder.Append("}"c)
         End Sub
 
         Private Sub Create(prop As IServiceProperty,
@@ -994,7 +994,7 @@ $"    Dim model As New {className}()
             PropertyBaseParameters(prop, parameters, skipType:=True)
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(prop,
@@ -1025,7 +1025,7 @@ $"    Dim model As New {className}()
             FindProperties(parameters.TargetName, key.Properties, mainBuilder, propertyVariables)
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             If key.IsPrimaryKey() Then
@@ -1033,7 +1033,7 @@ $"    Dim model As New {className}()
                     Append(parameters.TargetName).
                     Append(".SetPrimaryKey(").
                     Append(variableName).
-                    AppendLine(")")
+                    AppendLine(")"c)
             End If
 
             CreateAnnotations(key,
@@ -1065,20 +1065,20 @@ $"    Dim model As New {className}()
 
             If Index.Name IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("name:=").
                     Append(_code.Literal(Index.Name))
             End If
 
             If Index.IsUnique Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("unique:=").
                     Append(_code.Literal(True))
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(Index,
@@ -1132,56 +1132,56 @@ $"    Dim model As New {className}()
                 FindProperties(declaringEntityType, aforeignKey.Properties, mainBuilder)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append(principalEntityType).
                     Append(".FindKey(")
 
                 FindProperties(principalEntityType, aforeignKey.PrincipalKey.Properties, mainBuilder)
-                mainBuilder.Append(")")
+                mainBuilder.Append(")"c)
 
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append(principalEntityType)
 
                 If aforeignKey.DeleteBehavior <> ForeignKey.DefaultDeleteBehavior Then
                     namespaces.Add(GetType(DeleteBehavior).Namespace)
 
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("deleteBehavior:=").
                         Append(_code.Literal(CType(aforeignKey.DeleteBehavior, [Enum])))
                 End If
 
                 If aforeignKey.IsUnique Then
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("unique:=").
                         Append(_code.Literal(True))
                 End If
 
                 If aforeignKey.IsRequired Then
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("required:=").
                         Append(_code.Literal(True))
                 End If
 
                 If aforeignKey.IsRequiredDependent Then
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("requiredDependent:=").
                         Append(_code.Literal(True))
                 End If
 
                 If aforeignKey.IsOwnership Then
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("ownership:=").
                         Append(_code.Literal(True))
                 End If
 
                 mainBuilder.
-                    AppendLine(")").
+                    AppendLine(")"c).
                     AppendLine().
                     DecrementIndent()
 
@@ -1240,9 +1240,9 @@ $"    Dim model As New {className}()
                 Append(".AddNavigation(").
                 IncrementIndent().
                 Append(_code.Literal(navigation.Name)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(foreignKeyVariable).
-                AppendLine(",").
+                AppendLine(","c).
                 Append("onDependent:=").
                 Append(_code.Literal(navigation.IsOnDependent))
 
@@ -1250,13 +1250,13 @@ $"    Dim model As New {className}()
 
             If navigation.IsEagerLoaded Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("eagerLoaded:=").
                     Append(_code.Literal(True))
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 AppendLine().
                 DecrementIndent()
 
@@ -1282,10 +1282,10 @@ $"    Dim model As New {className}()
                 AppendLine().
                 Append("Public Shared Function CreateSkipNavigation").
                 Append(navigationNumber.ToString()).
-                Append("(").Append(declaringEntityType).Append(" As RuntimeEntityType").
+                Append("("c).Append(declaringEntityType).Append(" As RuntimeEntityType").
                 Append(", ").Append(targetEntityType).Append(" As RuntimeEntityType").
                 Append(", ").Append(joinEntityType).Append(" As RuntimeEntityType").
-                Append(")").
+                Append(")"c).
                 AppendLine(" As RuntimeSkipNavigation")
 
             Using mainBuilder.Indent()
@@ -1313,9 +1313,9 @@ $"    Dim model As New {className}()
                     AppendLine(".AddSkipNavigation(").
                     IncrementIndent().
                     Append(_code.Literal(navigation.Name)).
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append(targetEntityType).
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append(joinEntityType).
                     AppendLine(".FindForeignKey(")
 
@@ -1323,22 +1323,22 @@ $"    Dim model As New {className}()
                     FindProperties(joinEntityType, navigation.ForeignKey.Properties, mainBuilder)
 
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append(declaringEntityType).
                         Append(".FindKey(")
 
                     FindProperties(declaringEntityType, navigation.ForeignKey.PrincipalKey.Properties, mainBuilder)
-                    mainBuilder.Append(")")
+                    mainBuilder.Append(")"c)
 
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append(declaringEntityType).
-                        Append(")")
+                        Append(")"c)
                 End Using
 
                 mainBuilder.
-                    AppendLine(",").
-                    Append(_code.Literal(navigation.IsCollection)).AppendLine(",").
+                    AppendLine(","c).
+                    Append(_code.Literal(navigation.IsCollection)).AppendLine(","c).
                     Append(_code.Literal(navigation.IsOnDependent))
 
                 PropertyBaseParameters(navigation, parameters.Cloner.
@@ -1347,13 +1347,13 @@ $"    Dim model As New {className}()
 
                 If navigation.IsEagerLoaded Then
                     mainBuilder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("eagerLoaded:=").
                         Append(_code.Literal(True))
                 End If
 
                 mainBuilder.
-                    AppendLine(")").
+                    AppendLine(")"c).
                     DecrementIndent()
 
                 mainBuilder.AppendLine()
@@ -1362,7 +1362,7 @@ $"    Dim model As New {className}()
 
                 mainBuilder.
                     Append("Dim Inverse = ").Append(targetEntityType).Append(".FindSkipNavigation(").
-                    Append(_code.Literal(navigation.Inverse.Name)).AppendLine(")").
+                    Append(_code.Literal(navigation.Inverse.Name)).AppendLine(")"c).
                     AppendLine("If Inverse IsNot Nothing Then")
 
                 Using mainBuilder.Indent()

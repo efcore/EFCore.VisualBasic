@@ -104,109 +104,109 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table))
 
                 If operation.ColumnType IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("type:=").
                         Append(VBCode.Literal(operation.ColumnType))
                 End If
 
                 If operation.IsUnicode = False Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("unicode:=False")
                 End If
 
                 If operation.IsFixedLength = True Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("fixedLength:=True")
                 End If
 
                 If operation.MaxLength.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("maxLength:=").
                         Append(VBCode.Literal(operation.MaxLength.Value))
                 End If
 
                 If operation.Precision.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("precision:=").
                         Append(VBCode.Literal(operation.Precision.Value))
                 End If
 
                 If operation.Scale.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("scale:=").
                         Append(VBCode.Literal(operation.Scale.Value))
                 End If
 
                 If operation.IsRowVersion Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("rowVersion:=True")
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("nullable:=").
                     Append(VBCode.Literal(operation.IsNullable))
 
                 If operation.DefaultValueSql IsNot Nothing Then
 
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("defaultValueSql:=").
                         Append(VBCode.Literal(operation.DefaultValueSql))
 
                 ElseIf operation.ComputedColumnSql IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("computedColumnSql:=").
                         Append(VBCode.UnknownLiteral(operation.ComputedColumnSql))
 
                     If operation.IsStored IsNot Nothing Then
                         builder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("stored:=").
                             Append(VBCode.Literal(operation.IsStored))
                     End If
 
                 ElseIf operation.DefaultValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("defaultValue:=").
                         Append(VBCode.UnknownLiteral(operation.DefaultValue))
                 End If
 
                 If operation.Comment IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
                 If operation.Collation IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("collation:=").
                         Append(VBCode.Literal(operation.Collation))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -233,16 +233,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.Columns.Length = 1 Then
                     builder.
@@ -256,25 +256,25 @@ Namespace Migrations.Design
 
                 If operation.PrincipalSchema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("principalSchema:=").
                         Append(VBCode.Literal(operation.PrincipalSchema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("principalTable:=").
                     Append(VBCode.Literal(operation.PrincipalTable))
 
                 If operation.PrincipalColumns IsNot Nothing Then
                     If operation.PrincipalColumns.Length = 1 Then
                         builder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("principalColumn:=").
                             Append(VBCode.Literal(operation.PrincipalColumns(0)))
                     Else
                         builder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("principalColumns:=").
                             Append(VBCode.Literal(operation.PrincipalColumns))
                     End If
@@ -282,19 +282,19 @@ Namespace Migrations.Design
 
                 If operation.OnUpdate <> ReferentialAction.NoAction Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("onUpdate:=").
                         Append(VBCode.Literal(CType(operation.OnUpdate, [Enum])))
                 End If
 
                 If operation.OnDelete <> ReferentialAction.NoAction Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("onDelete:=").
                         Append(VBCode.Literal(CType(operation.OnDelete, [Enum])))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -319,16 +319,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.Columns.Length = 1 Then
                     builder.
@@ -341,7 +341,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -367,16 +367,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.Columns.Length = 1 Then
                     builder.
@@ -388,7 +388,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -414,19 +414,19 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("sql:=").
                     Append(VBCode.Literal(operation.Sql)).
-                    Append(")")
+                    Append(")"c)
             End Using
 
             Annotations(operation.GetAnnotations(), builder)
@@ -454,207 +454,207 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table))
 
                 If operation.ColumnType IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("type:=").
                         Append(VBCode.Literal(operation.ColumnType))
                 End If
 
                 If operation.IsUnicode = False Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("unicode:=False")
                 End If
 
                 If operation.IsFixedLength = True Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("fixedLength:=True")
                 End If
 
                 If operation.MaxLength.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("maxLength:=").
                         Append(VBCode.Literal(operation.MaxLength.Value))
                 End If
 
                 If operation.Precision.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("precision:=").
                         Append(VBCode.Literal(operation.Precision.Value))
                 End If
 
                 If operation.Scale.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("scale:=").
                         Append(VBCode.Literal(operation.Scale.Value))
                 End If
 
                 If operation.IsRowVersion Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("rowVersion:=True")
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("nullable:=").
                     Append(VBCode.Literal(operation.IsNullable))
 
                 If operation.DefaultValueSql IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("defaultValueSql:=").
                         Append(VBCode.Literal(operation.DefaultValueSql))
 
                 ElseIf operation.ComputedColumnSql IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("computedColumnSql:=").
                         Append(VBCode.UnknownLiteral(operation.ComputedColumnSql))
 
                     If operation.IsStored IsNot Nothing Then
                         builder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("stored:=").
                             Append(VBCode.Literal(operation.IsStored))
                     End If
 
                 ElseIf operation.DefaultValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("defaultValue:=").
                         Append(VBCode.UnknownLiteral(operation.DefaultValue))
                 End If
 
                 If operation.Comment IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
                 If operation.Collation IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("collation:=").
                         Append(VBCode.Literal(operation.Collation))
                 End If
 
                 If operation.OldColumn.ClrType IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldClrType:=GetType(").
                         Append(VBCode.Reference(operation.OldColumn.ClrType)).
-                        Append(")")
+                        Append(")"c)
                 End If
 
                 If operation.OldColumn.ColumnType IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldType:=").
                         Append(VBCode.Literal(operation.OldColumn.ColumnType))
                 End If
 
                 If operation.OldColumn.IsUnicode = False Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldUnicode:=False")
                 End If
 
                 If operation.OldColumn.IsFixedLength = True Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldFixedLength:=True")
                 End If
 
                 If operation.OldColumn.MaxLength.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldMaxLength:=").
                         Append(VBCode.Literal(operation.OldColumn.MaxLength.Value))
                 End If
 
                 If operation.OldColumn.Precision.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldPrecision:=").
                         Append(VBCode.Literal(operation.OldColumn.Precision.Value))
                 End If
 
                 If operation.OldColumn.Scale.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldScale:=").
                         Append(VBCode.Literal(operation.OldColumn.Scale.Value))
                 End If
 
                 If operation.OldColumn.IsRowVersion Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldRowVersion:=True")
                 End If
 
                 If operation.OldColumn.IsNullable Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldNullable:=True")
                 End If
 
                 If operation.OldColumn.DefaultValueSql IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldDefaultValueSql:=").
                         Append(VBCode.Literal(operation.OldColumn.DefaultValueSql))
                 ElseIf operation.OldColumn.ComputedColumnSql IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldComputedColumnSql:=").
                         Append(VBCode.UnknownLiteral(operation.OldColumn.ComputedColumnSql))
 
                     If operation.IsStored IsNot Nothing Then
                         builder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("oldStored:=").
                             Append(VBCode.Literal(operation.OldColumn.IsStored))
                     End If
 
                 ElseIf operation.OldColumn.DefaultValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldDefaultValue:=").
                         Append(VBCode.UnknownLiteral(operation.OldColumn.DefaultValue))
                 End If
 
                 If operation.OldColumn.Comment IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldComment:=").
                         Append(VBCode.Literal(operation.OldColumn.Comment))
                 End If
 
                 If operation.OldColumn.Collation IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldCollation:=").
                         Append(VBCode.Literal(operation.OldColumn.Collation))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
                 OldAnnotations(operation.OldColumn.GetAnnotations(), builder)
@@ -687,7 +687,7 @@ Namespace Migrations.Design
 
                 If operation.OldDatabase.Collation IsNot Nothing Then
                     If needComma Then
-                        builder.Append(",")
+                        builder.Append(","c)
                     End If
 
                     builder.
@@ -696,7 +696,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.OldDatabase.Collation))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
                 OldAnnotations(operation.OldDatabase.GetAnnotations(), builder)
@@ -723,66 +723,66 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.IncrementBy <> 1 Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("incrementBy:=").
                         Append(VBCode.Literal(operation.IncrementBy))
                 End If
 
                 If operation.MinValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("minValue:=").
                         Append(VBCode.Literal(operation.MinValue))
                 End If
 
                 If operation.MaxValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("maxValue:=").
                         Append(VBCode.Literal(operation.MaxValue))
                 End If
 
                 If operation.IsCyclic Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("cyclic:=True")
                 End If
 
                 If operation.OldSequence.IncrementBy <> 1 Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldIncrementBy:=").
                         Append(VBCode.Literal(operation.OldSequence.IncrementBy))
                 End If
 
                 If operation.OldSequence.MinValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldMinValue:=").
                         Append(VBCode.Literal(operation.OldSequence.MinValue))
                 End If
 
                 If operation.OldSequence.MaxValue IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldMaxValue:=").
                         Append(VBCode.Literal(operation.OldSequence.MaxValue))
                 End If
 
                 If operation.OldSequence.IsCyclic Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldCyclic:=True")
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
                 OldAnnotations(operation.OldSequence.GetAnnotations(), builder)
@@ -808,26 +808,26 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.Comment IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
                 If operation.OldTable.Comment IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("oldComment:=").
                         Append(VBCode.Literal(operation.OldTable.Comment))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
                 OldAnnotations(operation.OldTable.GetAnnotations(), builder)
@@ -854,16 +854,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.Columns.Length = 1 Then
                     builder.
@@ -877,25 +877,25 @@ Namespace Migrations.Design
 
                 If operation.IsUnique Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("unique:=True")
                 End If
 
                 If operation.IsDescending IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("descending:=").
                         Append(VBCode.Literal(operation.IsDescending))
                 End If
 
                 If operation.Filter IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("filter:=").
                         Append(VBCode.Literal(operation.Filter))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
                 Annotations(operation.GetAnnotations(), builder)
 
             End Using
@@ -917,7 +917,7 @@ Namespace Migrations.Design
                 builder.
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -939,10 +939,10 @@ Namespace Migrations.Design
                 builder.
                     Append("(Of ").
                     Append(VBCode.Reference(operation.ClrType)).
-                    Append(")")
+                    Append(")"c)
             End If
 
-            builder.AppendLine("(")
+            builder.AppendLine("("c)
 
             Using builder.Indent()
                 builder.
@@ -951,46 +951,46 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.StartValue <> 1L Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("startValue:=").
                         Append(VBCode.Literal(operation.StartValue))
                 End If
 
                 If operation.IncrementBy <> 1 Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("incrementBy:=").
                         Append(VBCode.Literal(operation.IncrementBy))
                 End If
 
                 If operation.MinValue.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("minValue:=").
                         Append(VBCode.Literal(operation.MinValue.Value))
                 End If
 
                 If operation.MaxValue.HasValue Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("maxValue:=").
                         Append(VBCode.Literal(operation.MaxValue.Value))
                 End If
 
                 If operation.IsCyclic Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("cyclic:=True")
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1015,13 +1015,13 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     AppendLine("columns:=Function(table) New With {")
 
                 Dim map = New Dictionary(Of String, String)
@@ -1033,7 +1033,7 @@ Namespace Migrations.Design
                         map.Add(column.Name, propertyName)
 
                         builder.
-                            Append(".").
+                            Append("."c).
                             Append(propertyName).
                             Append(" = table.Column(Of ").
                             Append(VBCode.Reference(column.ClrType)).
@@ -1123,12 +1123,12 @@ Namespace Migrations.Design
                                 Append(VBCode.Literal(column.Collation))
                         End If
 
-                        builder.Append(")")
+                        builder.Append(")"c)
 
                         Annotations(column.GetAnnotations(), builder)
 
                         If i <> operation.Columns.Count - 1 Then
-                            builder.Append(",")
+                            builder.Append(","c)
                         End If
 
                         builder.AppendLine()
@@ -1146,7 +1146,7 @@ Namespace Migrations.Design
                             Append(VBCode.Literal(operation.PrimaryKey.Name)).
                             Append(", ").
                             Append(VBCode.Lambda(operation.PrimaryKey.Columns.Select(Function(c) map(c)).ToList())).
-                            Append(")")
+                            Append(")"c)
 
                         Annotations(operation.PrimaryKey.GetAnnotations(), builder)
                         builder.AppendLine()
@@ -1158,7 +1158,7 @@ Namespace Migrations.Design
                             Append(VBCode.Literal(uniqueConstraint.Name)).
                             Append(", ").
                             Append(VBCode.Lambda(uniqueConstraint.Columns.Select(Function(c) map(c)).ToList())).
-                            Append(")")
+                            Append(")"c)
 
                         Annotations(uniqueConstraint.GetAnnotations(), builder)
                         builder.AppendLine()
@@ -1170,7 +1170,7 @@ Namespace Migrations.Design
                             Append(VBCode.Literal(checkConstraints.Name)).
                             Append(", ").
                             Append(VBCode.Literal(checkConstraints.Sql)).
-                            Append(")")
+                            Append(")"c)
 
                         Annotations(checkConstraints.GetAnnotations(), builder)
                         builder.AppendLine()
@@ -1183,7 +1183,7 @@ Namespace Migrations.Design
                             builder.
                                 Append("name:=").
                                 Append(VBCode.Literal(foreignKey.Name)).
-                                AppendLine(",").
+                                AppendLine(","c).
                                 Append(If(foreignKey.Columns.Length = 1 OrElse foreignKey.PrincipalColumns Is Nothing,
                                             "column:=",
                                             "columns:=")).
@@ -1191,18 +1191,18 @@ Namespace Migrations.Design
 
                             If foreignKey.PrincipalSchema IsNot Nothing Then
                                 builder.
-                                    AppendLine(",").
+                                    AppendLine(","c).
                                     Append("principalSchema:=").
                                     Append(VBCode.Literal(foreignKey.PrincipalSchema))
                             End If
 
                             builder.
-                                AppendLine(",").
+                                AppendLine(","c).
                                 Append("principalTable:=").
                                 Append(VBCode.Literal(foreignKey.PrincipalTable))
 
                             If foreignKey.PrincipalColumns IsNot Nothing Then
-                                builder.AppendLine(",")
+                                builder.AppendLine(","c)
 
                                 If foreignKey.PrincipalColumns.Length = 1 Then
                                     builder.
@@ -1217,19 +1217,19 @@ Namespace Migrations.Design
 
                             If foreignKey.OnUpdate <> ReferentialAction.NoAction Then
                                 builder.
-                                    AppendLine(",").
+                                    AppendLine(","c).
                                     Append("onUpdate:=").
                                     Append(VBCode.Literal(CType(foreignKey.OnUpdate, [Enum])))
                             End If
 
                             If foreignKey.OnDelete <> ReferentialAction.NoAction Then
                                 builder.
-                                    AppendLine(",").
+                                    AppendLine(","c).
                                     Append("onDelete:=").
                                     Append(VBCode.Literal(CType(foreignKey.OnDelete, [Enum])))
                             End If
 
-                            builder.Append(")")
+                            builder.Append(")"c)
 
                             Annotations(foreignKey.GetAnnotations(), builder)
 
@@ -1243,12 +1243,12 @@ Namespace Migrations.Design
 
                 If operation.Comment IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("comment:=").
                         Append(VBCode.Literal(operation.Comment))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1273,16 +1273,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1307,16 +1307,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1341,19 +1341,19 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.Table IsNot Nothing Then
                     builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1378,16 +1378,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1409,7 +1409,7 @@ Namespace Migrations.Design
                 builder.
                     Append("name:=").
                     Append(VBCode.Literal(operation.Name)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1434,12 +1434,12 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1464,12 +1464,12 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1494,16 +1494,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1528,16 +1528,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1563,19 +1563,19 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("newName:=").
                     Append(VBCode.Literal(operation.NewName)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1600,23 +1600,23 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.Table IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("table:=").
                         Append(VBCode.Literal(operation.Table))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("newName:=").
                     Append(VBCode.Literal(operation.NewName)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1641,26 +1641,26 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.NewName IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("newName:=").
                         Append(VBCode.Literal(operation.NewName))
                 End If
 
                 If operation.NewSchema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("newSchema:=").
                         Append(VBCode.Literal(operation.NewSchema))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1685,26 +1685,26 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 If operation.NewName IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("newName:=").
                         Append(VBCode.Literal(operation.NewName))
                 End If
 
                 If operation.NewSchema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("newSchema:=").
                         Append(VBCode.Literal(operation.NewSchema))
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1729,16 +1729,16 @@ Namespace Migrations.Design
 
                 If operation.Schema IsNot Nothing Then
                     builder.
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
                 builder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("startValue:=").
                     Append(VBCode.Literal(operation.StartValue)).
-                    Append(")")
+                    Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using
@@ -1757,7 +1757,7 @@ Namespace Migrations.Design
             builder.
                 Append(".Sql(").
                 Append(VBCode.Literal(operation.Sql)).
-                Append(")")
+                Append(")"c)
 
             Annotations(operation.GetAnnotations(), builder)
         End Sub
@@ -1779,13 +1779,13 @@ Namespace Migrations.Design
                     builder.
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).
-                        AppendLine(",")
+                        AppendLine(","c)
                 End If
 
                 builder.
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.Columns.Length = 1 Then
                     builder.
@@ -1797,7 +1797,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
-                builder.AppendLine(",")
+                builder.AppendLine(","c)
 
                 If operation.Values.GetLength(0) = 1 AndAlso operation.Values.GetLength(1) = 1 Then
                     builder.
@@ -1821,7 +1821,7 @@ Namespace Migrations.Design
                         AppendLines(VBCode.Literal(operation.Values), skipFinalNewline:=True)
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
             End Using
         End Sub
 
@@ -1842,13 +1842,13 @@ Namespace Migrations.Design
                     builder.
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).
-                        AppendLine(",")
+                        AppendLine(","c)
                 End If
 
                 builder.
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.KeyColumns.Length = 1 Then
                     builder.
@@ -1860,7 +1860,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.KeyColumns))
                 End If
 
-                builder.AppendLine(",")
+                builder.AppendLine(","c)
 
                 If operation.KeyColumnTypes IsNot Nothing Then
                     If operation.KeyColumnTypes.Length = 1 Then
@@ -1873,7 +1873,7 @@ Namespace Migrations.Design
                             Append(VBCode.Literal(operation.KeyColumnTypes))
                     End If
 
-                    builder.AppendLine(",")
+                    builder.AppendLine(","c)
                 End If
 
                 If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
@@ -1898,7 +1898,7 @@ Namespace Migrations.Design
                         AppendLines(VBCode.Literal(operation.KeyValues), skipFinalNewline:=True)
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
             End Using
         End Sub
 
@@ -1919,13 +1919,13 @@ Namespace Migrations.Design
                     builder.
                         Append("schema:=").
                         Append(VBCode.Literal(operation.Schema)).
-                        AppendLine(",")
+                        AppendLine(","c)
                 End If
 
                 builder.
                     Append("table:=").
                     Append(VBCode.Literal(operation.Table)).
-                    AppendLine(",")
+                    AppendLine(","c)
 
                 If operation.KeyColumns.Length = 1 Then
                     builder.
@@ -1937,7 +1937,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.KeyColumns))
                 End If
 
-                builder.AppendLine(",")
+                builder.AppendLine(","c)
 
                 If operation.KeyValues.GetLength(0) = 1 AndAlso operation.KeyValues.GetLength(1) = 1 Then
                     builder.
@@ -1963,7 +1963,7 @@ Namespace Migrations.Design
                         AppendLines(VBCode.Literal(operation.KeyValues), skipFinalNewline:=True)
                 End If
 
-                builder.AppendLine(",")
+                builder.AppendLine(","c)
 
                 If operation.Columns.Length = 1 Then
                     builder.
@@ -1975,7 +1975,7 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Columns))
                 End If
 
-                builder.AppendLine(",")
+                builder.AppendLine(","c)
 
                 If operation.Values.GetLength(0) = 1 AndAlso operation.Values.GetLength(1) = 1 Then
                     builder.
@@ -2001,7 +2001,7 @@ Namespace Migrations.Design
                         AppendLines(VBCode.Literal(operation.Values), skipFinalNewline:=True)
                 End If
 
-                builder.Append(")")
+                builder.Append(")"c)
             End Using
         End Sub
 
@@ -2019,13 +2019,13 @@ Namespace Migrations.Design
 
                 ' TODO: Give providers an opportunity To render these As provider-specific extension methods
                 builder.
-                    AppendLine(".").
+                    AppendLine("."c).
                     IncrementIndent().
                     Append("Annotation(").
                     Append(VBCode.Literal(annotation.Name)).
                     Append(", ").
                     Append(VBCode.UnknownLiteral(annotation.Value)).
-                    Append(")").
+                    Append(")"c).
                     DecrementIndent()
             Next
         End Sub
@@ -2043,13 +2043,13 @@ Namespace Migrations.Design
             For Each annotation In annotations
                 ' TODO: Give providers an opportunity To render these As provider-specific extension methods
                 builder.
-                    AppendLine(".").
+                    AppendLine("."c).
                     IncrementIndent().
                     Append("OldAnnotation(").
                     Append(VBCode.Literal(annotation.Name)).
                     Append(", ").
                     Append(VBCode.UnknownLiteral(annotation.Value)).
-                    Append(")").
+                    Append(")"c).
                     DecrementIndent()
             Next
         End Sub

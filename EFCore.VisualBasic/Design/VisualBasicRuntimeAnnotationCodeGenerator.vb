@@ -212,7 +212,7 @@ Namespace Design
             If parameters.TargetName <> "Me" Then
                 parameters.MainBuilder.
                     Append(parameters.TargetName).
-                    Append(".")
+                    Append("."c)
             End If
 
             parameters.MainBuilder.
@@ -220,7 +220,7 @@ Namespace Design
                 Append(VBCode.Literal(annotationName)).
                 Append(", ").
                 Append(valueString).
-                AppendLine(")")
+                AppendLine(")"c)
         End Sub
 
         ''' <summary>

@@ -424,7 +424,7 @@ Namespace Scaffolding.Internal
                 Using _builder.Indent()
                     For Each line In lines.Skip(1)
                         _builder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append(line)
                     Next
                 End Using
@@ -899,7 +899,7 @@ Namespace Scaffolding.Internal
 
         Private Sub WriteLines(lines As List(Of String))
             For Each line In lines
-                _builder.AppendLine(".")
+                _builder.AppendLine("."c)
                 _builder.Append(line)
             Next
 
@@ -989,13 +989,13 @@ Namespace Scaffolding.Internal
 
             If lines.Count = 1 Then
                 _builder.
-                    Append(".").
+                    Append("."c).
                     Append(lines(0))
             Else
                 Using _builder.Indent()
                     For Each line In lines
                         _builder.
-                            AppendLine(".").
+                            AppendLine("."c).
                             Append(line)
                     Next
                 End Using

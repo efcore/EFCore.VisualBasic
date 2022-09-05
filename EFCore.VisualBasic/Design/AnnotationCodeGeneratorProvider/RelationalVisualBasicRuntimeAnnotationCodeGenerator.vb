@@ -80,12 +80,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             If TypeOf [function] Is IConventionDbFunction Then
-
                 Dim conventionFunction = DirectCast([function], IConventionDbFunction)
 
                 If conventionFunction.GetTypeMappingConfigurationSource() IsNot Nothing Then
                     Throw New InvalidOperationException(RelationalStrings.CompiledModelFunctionTypeMapping(
-                [function].Name, "Customize()", parameters.ClassName))
+                        [function].Name, "Customize()", parameters.ClassName))
                 End If
             End If
 
@@ -99,22 +98,22 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Dim mainBuilder = parameters.MainBuilder
             With mainBuilder
                 .Append("Dim ").Append(functionVariable).AppendLine(" As New RuntimeDbFunction(").IncrementIndent()
-                .Append(code.Literal([function].ModelName)).AppendLine(",")
-                .Append(parameters.TargetName).AppendLine(",")
-                .Append(code.Literal([function].ReturnType)).AppendLine(",")
+                .Append(code.Literal([function].ModelName)).AppendLine(","c)
+                .Append(parameters.TargetName).AppendLine(","c)
+                .Append(code.Literal([function].ReturnType)).AppendLine(","c)
                 .Append(code.Literal([function].Name))
             End With
 
             If [function].Schema IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("schema:=").
                     Append(code.Literal([function].Schema))
             End If
 
             If [function].StoreType IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("storeType:=").
                     Append(code.Literal([function].StoreType))
             End If
@@ -122,45 +121,45 @@ Namespace Design.AnnotationCodeGeneratorProvider
             If [function].MethodInfo IsNot Nothing Then
                 Dim method = [function].MethodInfo
                 With mainBuilder
-                    .AppendLine(",")
+                    .AppendLine(","c)
                     .Append("methodInfo:=").Append(code.Literal(method.DeclaringType)).AppendLine(".GetMethod(").IncrementIndent()
-                    .Append(code.Literal(method.Name)).AppendLine(",")
+                    .Append(code.Literal(method.Name)).AppendLine(","c)
                     .Append(If(method.IsPublic, "BindingFlags.Public", "BindingFlags.NonPublic"))
                     .Append(If(method.IsStatic, " Or BindingFlags.Static", " Or BindingFlags.Instance"))
                     .AppendLine(" Or BindingFlags.DeclaredOnly,")
                     .AppendLine("Nothing,")
-                    .Append("{").Append(String.Join(", ", method.GetParameters().Select(Function(p) code.Literal(p.ParameterType)))).AppendLine("},")
+                    .Append("{"c).Append(String.Join(", ", method.GetParameters().Select(Function(p) code.Literal(p.ParameterType)))).AppendLine("},")
                     .Append("Nothing)").DecrementIndent()
                 End With
             End If
 
             If [function].IsScalar Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("scalar:=").
                     Append(code.Literal([function].IsScalar))
             End If
 
             If [function].IsAggregate Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("aggregate:=").
                     Append(code.Literal([function].IsAggregate))
             End If
 
             If [function].IsNullable Then
-                mainBuilder.AppendLine(",").Append("nullable:=").Append(code.Literal([function].IsNullable))
+                mainBuilder.AppendLine(","c).Append("nullable:=").Append(code.Literal([function].IsNullable))
             End If
 
             If [function].IsBuiltIn Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("builtIn:=").
                     Append(code.Literal([function].IsBuiltIn))
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent().
                 AppendLine()
 
@@ -181,7 +180,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             mainBuilder.
                 Append(functionsVariable).
-                Append("(").
+                Append("("c).
                 Append(code.Literal([function].ModelName)).
                 Append(") = ").
                 AppendLine(functionVariable).
@@ -221,13 +220,13 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine(".AddParameter(").
                 IncrementIndent().
                 Append(code.Literal(parameter.Name)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal(parameter.ClrType)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal(parameter.PropagatesNullability)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal(parameter.StoreType)).
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(parameter,
@@ -259,55 +258,55 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine(" As New RuntimeSequence(").
                 IncrementIndent().
                 Append(code.Literal(aSequence.Name)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(parameters.TargetName).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal(aSequence.Type))
 
             If aSequence.Schema IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("schema:=").
                     Append(code.Literal(aSequence.Schema))
             End If
 
             If aSequence.StartValue <> Sequence.DefaultStartValue Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("startValue:=").
                     Append(code.Literal(aSequence.StartValue))
             End If
 
             If aSequence.IncrementBy <> Sequence.DefaultIncrementBy Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("incrementBy:=").
                     Append(code.Literal(aSequence.IncrementBy))
             End If
 
             If aSequence.IsCyclic Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("cyclic:=").
                     Append(code.Literal(aSequence.IsCyclic))
             End If
 
             If aSequence.MinValue IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("minValue:=").
                     Append(code.Literal(aSequence.MinValue))
             End If
 
             If aSequence.MaxValue IsNot Nothing Then
                 mainBuilder.
-                    AppendLine(",").
+                    AppendLine(","c).
                     Append("maxValue:=").
                     Append(code.Literal(aSequence.MaxValue))
             End If
 
             mainBuilder.
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent().
                 AppendLine()
 
@@ -450,14 +449,14 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine(" As New RuntimeEntityTypeMappingFragment(").
                 IncrementIndent().
                 Append(parameters.TargetName).
-                AppendLine(",")
+                AppendLine(","c)
 
             AppendLiteral(storeObject, mainBuilder, code)
 
             mainBuilder.
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal(fragment.IsTableExcludedFromMigrations)).
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(fragment,
@@ -494,11 +493,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.Append("Dim ").Append(triggerVariable).AppendLine(" As New RuntimeTrigger(").
                 IncrementIndent().
-                Append(parameters.TargetName).AppendLine(",").
-                Append(VBCode.Literal(trigger.ModelName)).AppendLine(",").
-                Append(VBCode.Literal(trigger.Name)).AppendLine(",").
-                Append(VBCode.Literal(trigger.TableName)).AppendLine(",").
-                Append(VBCode.Literal(trigger.TableSchema)).AppendLine(")").
+                Append(parameters.TargetName).AppendLine(","c).
+                Append(VBCode.Literal(trigger.ModelName)).AppendLine(","c).
+                Append(VBCode.Literal(trigger.Name)).AppendLine(","c).
+                Append(VBCode.Literal(trigger.TableName)).AppendLine(","c).
+                Append(VBCode.Literal(trigger.TableSchema)).AppendLine(")"c).
                 DecrementIndent().
                 AppendLine()
 
@@ -510,7 +509,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             mainBuilder.
                 Append(triggersVariable).
-                Append("(").
+                Append("("c).
                 Append(VBCode.Literal(trigger.ModelName)).
                 Append(") = ").
                 AppendLine(triggerVariable).
@@ -534,11 +533,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             mainBuilder.
             Append("Dim ").Append(sprocVariable).AppendLine(" As New RuntimeStoredProcedure(").
                 IncrementIndent().
-                Append(parameters.TargetName).AppendLine(",").
-                Append(code.Literal(storedProcedure.Name)).AppendLine(",").
-                Append(code.Literal(storedProcedure.Schema)).AppendLine(",").
+                Append(parameters.TargetName).AppendLine(","c).
+                Append(code.Literal(storedProcedure.Name)).AppendLine(","c).
+                Append(code.Literal(storedProcedure.Schema)).AppendLine(","c).
                 Append(code.Literal(storedProcedure.AreTransactionsSuppressed)).
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent().
                 AppendLine()
 
@@ -547,7 +546,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     Append(sprocVariable).
                     Append(".AddParameter(").
                     Append(code.Literal(parameter)).
-                    AppendLine(")")
+                    AppendLine(")"c)
             Next
 
             For Each resultColumn In storedProcedure.ResultColumns
@@ -555,7 +554,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     Append(sprocVariable).
                     Append(".AddResultColumn(").
                     Append(code.Literal(resultColumn)).
-                    AppendLine(")")
+                    AppendLine(")"c)
             Next
 
             CreateAnnotations(storedProcedure,
@@ -646,16 +645,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(overrideVariable).
                 AppendLine(" As New RuntimeRelationalPropertyOverrides(").
                 IncrementIndent().
-                Append(parameters.TargetName).AppendLine(",")
+                Append(parameters.TargetName).AppendLine(","c)
 
             AppendLiteral(storeObject, mainBuilder, code)
 
             mainBuilder.
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal([overrides].IsColumnNameOverridden)).
-                AppendLine(",").
+                AppendLine(","c).
                 Append(code.Literal([overrides].ColumnName)).
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations([overrides],
@@ -768,45 +767,52 @@ Namespace Design.AnnotationCodeGeneratorProvider
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
                         Append(code.Literal(storeObject.Schema)).
-                        Append(")")
+                        Append(")"c)
+
                 Case StoreObjectType.View
                     builder.
                         Append("View(").
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
                         Append(code.Literal(storeObject.Schema)).
-                        Append(")")
+                        Append(")"c)
+
                 Case StoreObjectType.SqlQuery
                     builder.
                         Append("SqlQuery(").
                         Append(code.Literal(storeObject.Name)).
-                        Append(")")
+                        Append(")"c)
+
                 Case StoreObjectType.Function
                     builder.
                         Append("DbFunction(").
                         Append(code.Literal(storeObject.Name)).
-                        Append(")")
+                        Append(")"c)
+
                 Case StoreObjectType.InsertStoredProcedure
                     builder.
                         Append("InsertStoredProcedure(").
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
                         Append(code.Literal(storeObject.Schema)).
-                        Append(")")
+                        Append(")"c)
+
                 Case StoreObjectType.DeleteStoredProcedure
                     builder.
                         Append("DeleteStoredProcedure(").
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
                         Append(code.Literal(storeObject.Schema)).
-                        Append(")")
+                        Append(")"c)
+
                 Case StoreObjectType.UpdateStoredProcedure
                     builder.
                         Append("UpdateStoredProcedure(").
                         Append(code.Literal(storeObject.Name)).
                         Append(", ").
                         Append(code.Literal(storeObject.Schema)).
-                        Append(")")
+                        Append(")"c)
+
                 Case Else
                     DebugAssert(True, "Unexpected StoreObjectType: " & storeObject.StoreObjectType)
             End Select

@@ -38,10 +38,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     parameters.Namespaces.Add(GetType(BindingFlags).Namespace)
                     Dim functionsVariable = VBCode.Identifier("functions", parameters.ScopeVariables, capitalize:=False)
                     parameters.
-                    MainBuilder.
-                    Append("Dim ").
-                    Append(functionsVariable).
-                    AppendLine(" As New SortedDictionary(Of String, IDbFunction)()")
+                        MainBuilder.
+                            Append("Dim ").
+                            Append(functionsVariable).
+                            AppendLine(" As New SortedDictionary(Of String, IDbFunction)()")
 
                     For Each func In functions.Values
                         Create(func, functionsVariable, parameters)
@@ -57,8 +57,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     parameters.Namespaces.Add(GetType(SortedDictionary(Of,)).Namespace)
                     Dim sequencesVariable = VBCode.Identifier("sequences", parameters.ScopeVariables, capitalize:=False)
                     parameters.
-                    MainBuilder.
-                    Append("Dim ").Append(sequencesVariable).AppendLine(" As New SortedDictionary(Of (String, String), ISequence)()")
+                        MainBuilder.
+                            Append("Dim ").Append(sequencesVariable).AppendLine(" As New SortedDictionary(Of (String, String), ISequence)()")
 
                     For Each sequencePair In sequences
                         Create(sequencePair.Value, sequencesVariable, parameters)
@@ -107,16 +107,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             If [function].Schema IsNot Nothing Then
                 mainBuilder.
-                AppendLine(",").
-                Append("schema:=").
-                Append(code.Literal([function].Schema))
+                    AppendLine(",").
+                    Append("schema:=").
+                    Append(code.Literal([function].Schema))
             End If
 
             If [function].StoreType IsNot Nothing Then
                 mainBuilder.
-                AppendLine(",").
-                Append("storeType:=").
-                Append(code.Literal([function].StoreType))
+                    AppendLine(",").
+                    Append("storeType:=").
+                    Append(code.Literal([function].StoreType))
             End If
 
             If [function].MethodInfo IsNot Nothing Then
@@ -136,16 +136,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             If [function].IsScalar Then
                 mainBuilder.
-                AppendLine(",").
-                Append("scalar:=").
-                Append(code.Literal([function].IsScalar))
+                    AppendLine(",").
+                    Append("scalar:=").
+                    Append(code.Literal([function].IsScalar))
             End If
 
             If [function].IsAggregate Then
                 mainBuilder.
-                AppendLine(",").
-                Append("aggregate:=").
-                Append(code.Literal([function].IsAggregate))
+                    AppendLine(",").
+                    Append("aggregate:=").
+                    Append(code.Literal([function].IsAggregate))
             End If
 
             If [function].IsNullable Then
@@ -154,15 +154,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             If [function].IsBuiltIn Then
                 mainBuilder.
-                AppendLine(",").
-                Append("builtIn:=").
-                Append(code.Literal([function].IsBuiltIn))
+                    AppendLine(",").
+                    Append("builtIn:=").
+                    Append(code.Literal([function].IsBuiltIn))
             End If
 
             mainBuilder.
-            AppendLine(")").
-            DecrementIndent().
-            AppendLine()
+                AppendLine(")").
+                DecrementIndent().
+                AppendLine()
 
             Dim parameterParameters = parameters.Cloner.
                                                  WithTargetName(functionVariable).
@@ -214,21 +214,21 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Dim mainBuilder = parameters.MainBuilder
             Dim parameterVariable = code.Identifier(parameter.Name, parameters.ScopeVariables, capitalize:=False)
             mainBuilder.
-            Append("Dim ").
-            Append(parameterVariable).
-            Append(" = ").
-            Append(parameters.TargetName).
-            AppendLine(".AddParameter(").
-            IncrementIndent().
-            Append(code.Literal(parameter.Name)).
-            AppendLine(",").
-            Append(code.Literal(parameter.ClrType)).
-            AppendLine(",").
-            Append(code.Literal(parameter.PropagatesNullability)).
-            AppendLine(",").
-            Append(code.Literal(parameter.StoreType)).
-            AppendLine(")").
-            DecrementIndent()
+                Append("Dim ").
+                Append(parameterVariable).
+                Append(" = ").
+                Append(parameters.TargetName).
+                AppendLine(".AddParameter(").
+                IncrementIndent().
+                Append(code.Literal(parameter.Name)).
+                AppendLine(",").
+                Append(code.Literal(parameter.ClrType)).
+                AppendLine(",").
+                Append(code.Literal(parameter.PropagatesNullability)).
+                AppendLine(",").
+                Append(code.Literal(parameter.StoreType)).
+                AppendLine(")").
+                DecrementIndent()
 
             CreateAnnotations(parameter,
                               AddressOf Generate,
@@ -254,62 +254,62 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-            Append("Dim ").
-            Append(sequenceVariable).
-            AppendLine(" As New RuntimeSequence(").
-            IncrementIndent().
-            Append(code.Literal(aSequence.Name)).
-            AppendLine(",").
-            Append(parameters.TargetName).
-            AppendLine(",").
-            Append(code.Literal(aSequence.Type))
+                Append("Dim ").
+                Append(sequenceVariable).
+                AppendLine(" As New RuntimeSequence(").
+                IncrementIndent().
+                Append(code.Literal(aSequence.Name)).
+                AppendLine(",").
+                Append(parameters.TargetName).
+                AppendLine(",").
+                Append(code.Literal(aSequence.Type))
 
             If aSequence.Schema IsNot Nothing Then
                 mainBuilder.
-                AppendLine(",").
-                Append("schema:=").
-                Append(code.Literal(aSequence.Schema))
+                    AppendLine(",").
+                    Append("schema:=").
+                    Append(code.Literal(aSequence.Schema))
             End If
 
             If aSequence.StartValue <> Sequence.DefaultStartValue Then
                 mainBuilder.
-                AppendLine(",").
-                Append("startValue:=").
-                Append(code.Literal(aSequence.StartValue))
+                    AppendLine(",").
+                    Append("startValue:=").
+                    Append(code.Literal(aSequence.StartValue))
             End If
 
             If aSequence.IncrementBy <> Sequence.DefaultIncrementBy Then
                 mainBuilder.
-                AppendLine(",").
-                Append("incrementBy:=").
-                Append(code.Literal(aSequence.IncrementBy))
+                    AppendLine(",").
+                    Append("incrementBy:=").
+                    Append(code.Literal(aSequence.IncrementBy))
             End If
 
             If aSequence.IsCyclic Then
                 mainBuilder.
-                AppendLine(",").
-                Append("cyclic:=").
-                Append(code.Literal(aSequence.IsCyclic))
+                    AppendLine(",").
+                    Append("cyclic:=").
+                    Append(code.Literal(aSequence.IsCyclic))
             End If
 
             If aSequence.MinValue IsNot Nothing Then
                 mainBuilder.
-                AppendLine(",").
-                Append("minValue:=").
-                Append(code.Literal(aSequence.MinValue))
+                    AppendLine(",").
+                    Append("minValue:=").
+                    Append(code.Literal(aSequence.MinValue))
             End If
 
             If aSequence.MaxValue IsNot Nothing Then
                 mainBuilder.
-                AppendLine(",").
-                Append("maxValue:=").
-                Append(code.Literal(aSequence.MaxValue))
+                    AppendLine(",").
+                    Append("maxValue:=").
+                    Append(code.Literal(aSequence.MaxValue))
             End If
 
             mainBuilder.
-            AppendLine(")").
-            DecrementIndent().
-            AppendLine()
+                AppendLine(")").
+                DecrementIndent().
+                AppendLine()
 
             CreateAnnotations(aSequence,
                               AddressOf Generate,
@@ -318,11 +318,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                                          Clone())
 
             mainBuilder.
-            Append(sequencesVariable).
-            Append("((").Append(code.Literal(aSequence.Name)).Append(", ").
-            Append(code.Literal(aSequence.Schema)).Append(")) = ").
-            AppendLine(sequenceVariable).
-            AppendLine()
+                Append(sequencesVariable).
+                Append("((").Append(code.Literal(aSequence.Name)).Append(", ").
+                Append(code.Literal(aSequence.Schema)).Append(")) = ").
+                AppendLine(sequenceVariable).
+                AppendLine()
         End Sub
 
         ''' <summary>

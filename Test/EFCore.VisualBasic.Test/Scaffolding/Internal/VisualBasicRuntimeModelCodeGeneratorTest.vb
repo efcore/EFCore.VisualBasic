@@ -923,8 +923,8 @@ Namespace TestNamespace
             DependentDerivedEntityType.CreateAnnotations(dependentDerived)
             PrincipalDerivedEntityType.CreateAnnotations(principalDerived)
 
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -2329,10 +2329,10 @@ Namespace TestNamespace
 
             sequences(("PrincipalBaseSequence", "TPC")) = principalBaseSequence
 
-            Me.AddAnnotation("Relational:Sequences", sequences)
-            Me.AddAnnotation("Relational:DefaultSchema", "TPC")
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:Sequences", sequences)
+            AddAnnotation("Relational:DefaultSchema", "TPC")
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -3118,9 +3118,9 @@ Namespace TestNamespace
 
             functions("GetBlobs()") = getBlobs
 
-            Me.AddAnnotation("Relational:DbFunctions", functions)
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:DbFunctions", functions)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -3522,9 +3522,9 @@ Namespace TestNamespace
 
             sequences(("Long", Nothing)) = [long]
 
-            Me.AddAnnotation("Relational:Sequences", sequences)
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:Sequences", sequences)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -3707,9 +3707,9 @@ Namespace TestNamespace
 
             sequences(("KeySeq", "KeySeqSchema")) = keySeq
 
-            Me.AddAnnotation("Relational:Sequences", sequences)
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:Sequences", sequences)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -3868,8 +3868,8 @@ Namespace TestNamespace
 
             DataEntityType.CreateAnnotations(data)
 
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -4013,8 +4013,8 @@ Namespace TestNamespace
 
             DataEntityType.CreateAnnotations(data)
 
-            Me.AddAnnotation("Relational:MaxIdentifierLength", 128)
-            Me.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
         End Sub
     End Class
 End Namespace
@@ -4357,7 +4357,7 @@ Namespace TestNamespace
 
             DataEntityType.CreateAnnotations(data)
 
-            Me.AddAnnotation("Cosmos:ContainerName", "Default")
+            AddAnnotation("Cosmos:ContainerName", "Default")
         End Sub
     End Class
 End Namespace

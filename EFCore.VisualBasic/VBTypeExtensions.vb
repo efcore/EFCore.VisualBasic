@@ -4,11 +4,6 @@ Imports System.Text
 Friend Module VBTypeExtensions
 
     <Extension()>
-    Public Function IsDefaultValue(type As Type, value As Object) As Boolean
-        Return (value Is Nothing) OrElse value.Equals(type.GetDefaultValue())
-    End Function
-
-    <Extension()>
     Public Function ShortDisplayName(type As Type) As String
         Return type.DisplayName(fullName:=False)
     End Function
@@ -18,7 +13,7 @@ Friend Module VBTypeExtensions
                                 Optional fullName As Boolean = True,
                                 Optional compilable As Boolean = False) As String
 
-        Dim stringBuilder = New StringBuilder()
+        Dim stringBuilder As New StringBuilder()
         ProcessType(stringBuilder, type, fullName, compilable)
         Return stringBuilder.ToString()
     End Function
@@ -132,5 +127,4 @@ Friend Module VBTypeExtensions
 
         builder.Append(")"c)
     End Sub
-
 End Module

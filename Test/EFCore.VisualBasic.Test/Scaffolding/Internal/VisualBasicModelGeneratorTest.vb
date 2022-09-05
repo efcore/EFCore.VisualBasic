@@ -1,5 +1,4 @@
-﻿
-Imports System.IO
+﻿Imports System.IO
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.TestUtilities
@@ -26,14 +25,13 @@ Namespace Scaffolding.Internal
         <ConditionalFact>
         Public Sub WriteCode_works()
             Dim generator = CreateGenerator()
-            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder()
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
 
             modelBuilder.Entity("TestEntity").Property(Of Integer)("Id")
 
             Dim result = generator.GenerateModel(
                 modelBuilder.FinalizeModel(designTime:=True),
-                New ModelCodeGenerationOptions With
-                {
+                New ModelCodeGenerationOptions With {
                     .ModelNamespace = "TestNamespace",
                     .ContextNamespace = "ContextNameSpace",
                     .ContextDir = Path.Combine("..", "TestContextDir" & Path.DirectorySeparatorChar),
@@ -100,7 +98,5 @@ Namespace Scaffolding.Internal
             If r Is Nothing Then Throw New InvalidOperationException($"Could Not find method '{name}' on type '{type}'")
             Return r
         End Function
-
     End Class
-
 End Namespace

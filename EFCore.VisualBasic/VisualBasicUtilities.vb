@@ -211,7 +211,7 @@ Public Module VisualBasicUtilities
                 Return ch >= "0"c AndAlso ch <= "9"c
             End If
 
-            Return ch <= "Z"c
+            Return ch <= "Z"c OrElse ch = "_"c
         End If
 
         If ch <= "z"c Then
@@ -222,26 +222,25 @@ Public Module VisualBasicUtilities
             Return False
         End If
 
-        Dim cat = CharUnicodeInfo.GetUnicodeCategory(ch)
-        If IsLetterChar(cat) Then
+        Dim category = CharUnicodeInfo.GetUnicodeCategory(ch)
+        If IsLetterChar(category) Then
             Return True
         End If
 
-        Return cat = UnicodeCategory.DecimalDigitNumber OrElse
-               cat = UnicodeCategory.ConnectorPunctuation OrElse
-               cat = UnicodeCategory.NonSpacingMark OrElse
-               cat = UnicodeCategory.SpacingCombiningMark OrElse
-               cat = UnicodeCategory.Format
-
+        Return category = UnicodeCategory.DecimalDigitNumber OrElse
+               category = UnicodeCategory.ConnectorPunctuation OrElse
+               category = UnicodeCategory.NonSpacingMark OrElse
+               category = UnicodeCategory.SpacingCombiningMark OrElse
+               category = UnicodeCategory.Format
     End Function
 
-    Public Function IsLetterChar(cat As UnicodeCategory) As Boolean
-        Return cat = UnicodeCategory.UppercaseLetter OrElse
-                cat = UnicodeCategory.LowercaseLetter OrElse
-                cat = UnicodeCategory.TitlecaseLetter OrElse
-                cat = UnicodeCategory.ModifierLetter OrElse
-                cat = UnicodeCategory.OtherLetter OrElse
-                cat = UnicodeCategory.LetterNumber
+    Public Function IsLetterChar(category As UnicodeCategory) As Boolean
+        Return category = UnicodeCategory.UppercaseLetter OrElse
+               category = UnicodeCategory.LowercaseLetter OrElse
+               category = UnicodeCategory.TitlecaseLetter OrElse
+               category = UnicodeCategory.ModifierLetter OrElse
+               category = UnicodeCategory.OtherLetter OrElse
+               category = UnicodeCategory.LetterNumber
     End Function
 
     Public Function RemoveRootNamespaceFromNamespace(rootNamespace As String, FullNamespace As String) As String
@@ -312,5 +311,4 @@ Public Module VisualBasicUtilities
     End Sub
 
 #End Region
-
 End Module

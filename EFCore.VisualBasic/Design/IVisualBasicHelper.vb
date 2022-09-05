@@ -18,7 +18,7 @@ Namespace Design
         '''     <see langword="True" />if the method call should be type-qualified, <see langword="False" />for instance/extension syntax.
         ''' </param>
         ''' <returns>The fragment.</returns>
-        Function Fragment(frag As MethodCallCodeFragment,
+        Function Fragment(frag As IMethodCallCodeFragment,
                           instanceIdentifier As String,
                           typeQualified As Boolean) As String
 
@@ -28,18 +28,25 @@ Namespace Design
         ''' <param name="frag">The method call. If null, no code Is generated.</param>
         ''' <param name="indent">The indentation level to use when multiple lines are generated.</param>
         ''' <returns>The fragment.</returns>
-        Function Fragment(frag As MethodCallCodeFragment,
+        Function Fragment(frag As IMethodCallCodeFragment,
                           Optional indent As Integer = 0,
                           Optional startWithDot As Boolean = True) As String
 
         ''' <summary>
-        ''' Generates a lambda code fragment.
+        '''     Generates a lambda code fragment.
         ''' </summary>
         ''' <param name="frag">The lambda.</param>
         ''' <param name="indent">The indentation level to use when multiple lines are generated.</param>
         ''' <returns>The fragment.</returns>
         Function Fragment(frag As NestedClosureCodeFragment,
                           Optional indent As Integer = 0) As String
+
+        ''' <summary>
+        '''     Generates a property accessor lambda code fragment.
+        ''' </summary>
+        ''' <param name="frag">The property accessor lambda.</param>
+        ''' <returns>A code representation of the lambda.</returns>
+        Function Fragment(frag As PropertyAccessorCodeFragment) As String
 
         ''' <summary>
         '''     Generates a valid Visual Basic identifier from the specified string unique to the scope.
@@ -283,18 +290,56 @@ Namespace Design
         Function UnknownLiteral(value As Object) As String
 
         ''' <summary>
-        ''' Generates an attribute specification.
+        '''     Generates an attribute specification.
         ''' </summary>
         ''' <param name="frag">The attribute code fragment.</param>
         ''' <returns>The attribute specification code.</returns>
         Function Fragment(frag As AttributeCodeFragment) As String
 
         ''' <summary>
-        ''' Generates an XML documentation comment. Handles escaping And newlines.
+        '''     Generates an XML documentation comment. Handles escaping And newlines.
         ''' </summary>
         ''' <param name="comment">The comment.</param>
         ''' <param name="indent">The indentation level to use when multiple lines are generated.</param>
         ''' <returns>The comment.</returns>
         Function XmlComment(comment As String, Optional indent As Integer = 0) As String
+
+        ''' <summary>
+        '''     Generates a comma-sepearated argument list of values.
+        ''' </summary>
+        ''' <param name="values">The values.</param>
+        ''' <returns>The argument list.</returns>
+        Function Arguments(values As IEnumerable(Of Object)) As String
+
+        ''' <summary>
+        '''     Gets the imports statements required when referencing a type.
+        ''' </summary>
+        ''' <param name="type">The type.</param>
+        ''' <returns>The imports.</returns>
+        Function GetRequiredImports(type As Type) As IEnumerable(Of String)
+
+        ''' <summary>
+        '''     Get the fully qualified namespace from then projet root namespace and the type namespace hint
+        ''' </summary>
+        ''' <param name="rootNamespace">The projet root namespace</param>
+        ''' <param name="namespaceHint">The type namespace hint</param>
+        ''' <returns>The fully qualified namespace</returns>
+        Function FullyQualifiedNamespace(rootNamespace As String, namespaceHint As String) As String
+
+        ''' <summary>
+        '''     Generate the identifier for a Namespace statement
+        ''' </summary>
+        ''' <param name="rootNamespace">The projet root namespace</param>
+        ''' <param name="namespaceHint">The type namespace hint</param>
+        ''' <returns></returns>
+        Function NamespaceIdentifier(rootNamespace As String, namespaceHint As String) As String
+
+        ''' <summary>
+        '''     Generate the identifier for an Imports statement
+        ''' </summary>
+        ''' <param name="currentTypeNamespace">The fully qualified namespace of the current type</param>
+        ''' <param name="importedTypeNamespace">The fully qualified namespace of the imported type</param>
+        ''' <returns></returns>
+        Function ImportsClause(currentTypeNamespace As String, importedTypeNamespace As String) As String
     End Interface
 End Namespace

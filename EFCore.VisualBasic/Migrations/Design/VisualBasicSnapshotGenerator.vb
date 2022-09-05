@@ -191,8 +191,6 @@ Namespace Migrations.Design
 
                     GenerateEntityTypeAnnotations(entityTypeBuilderName, entityType, stringBuilder)
 
-                    GenerateCheckConstraints(entityTypeBuilderName, entityType, stringBuilder)
-
                     If ownerNavigation IsNot Nothing Then
                         GenerateRelationships(entityTypeBuilderName, entityType, stringBuilder)
                         GenerateNavigations(entityTypeBuilderName, entityType.GetDeclaredNavigations().
@@ -920,14 +918,38 @@ Namespace Migrations.Design
             Dim tableNameAnnotation As IAnnotation = Nothing
             annotations.TryGetAndRemove(RelationalAnnotationNames.TableName, tableNameAnnotation)
 
-            Dim schemaAnnotation As IAnnotation = Nothing
-            annotations.TryGetAndRemove(RelationalAnnotationNames.Schema, schemaAnnotation)
-
             Dim table = StoreObjectIdentifier.Create(entityType, StoreObjectType.Table)
             Dim tableName = If(CStr(tableNameAnnotation?.Value), table?.Name)
-            If tableNameAnnotation Is Nothing AndAlso
-               entityType.BaseType IsNot Nothing AndAlso
-               entityType.BaseType.GetTableName() = tableName Then
+
+            Dim explicitName = tableNameAnnotation IsNot Nothing OrElse
+                entityType.BaseType Is Nothing OrElse
+                entityType.BaseType.GetTableName() <> tableName
+
+            Dim schemaAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.Schema, schemaAnnotation)
+            Dim schema = If(CStr(schemaAnnotation?.Value), table?.Schema)
+
+            Dim isExcludedAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.IsTableExcludedFromMigrations, isExcludedAnnotation)
+            Dim isExcludedFromMigrationsValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean?, DirectCast(isExcludedAnnotation?.Value, Boolean?), Nothing)
+            Dim isExcludedFromMigrations = isExcludedFromMigrationsValue.HasValue AndAlso isExcludedFromMigrationsValue.Value
+
+            Dim commentAnnotation As IAnnotation = Nothing
+            annotations.TryGetAndRemove(RelationalAnnotationNames.Comment, commentAnnotation)
+            Dim comment = CStr(commentAnnotation?.Value)
+
+            Dim hasTriggers = entityType.GetTriggers().Any(Function(t) t.TableName = tableName AndAlso t.TableSchema = schema)
+            Dim hasOverrides = table IsNot Nothing AndAlso
+                               entityType.GetProperties().Select(Function(p) p.FindOverrides(table.Value)).
+                                                          Any(Function(o) o IsNot Nothing)
+
+            Dim requiresTableBuilder = isExcludedFromMigrations OrElse
+                                       comment IsNot Nothing OrElse
+                                       hasTriggers OrElse
+                                       hasOverrides OrElse
+                                       entityType.GetCheckConstraints().Any()
+
+            If Not explicitName AndAlso Not requiresTableBuilder Then
                 Exit Sub
             End If
 
@@ -936,52 +958,42 @@ Namespace Migrations.Design
                 Append(entityTypeBuilderName).
                 Append(".ToTable(")
 
-            Dim schema = If(CStr(schemaAnnotation?.Value), table?.Schema)
-            If tableName Is Nothing AndAlso
-               (schemaAnnotation Is Nothing OrElse schema Is Nothing) Then
-                stringBuilder.
-                    Append("DirectCast(").
-                    Append(VBCode.Literal(tableName)).
-                    Append(", String)")
-            Else
-                stringBuilder.Append(VBCode.Literal(tableName))
-            End If
-
-            Dim isExcludedAnnotation As IAnnotation = Nothing
-            annotations.TryGetAndRemove(RelationalAnnotationNames.IsTableExcludedFromMigrations, isExcludedAnnotation)
-
-            Dim isExcludedFromMigrationsValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean?, DirectCast(isExcludedAnnotation?.Value, Boolean?), Nothing)
-            Dim isExcludedFromMigrations = isExcludedFromMigrationsValue.HasValue AndAlso isExcludedFromMigrationsValue.Value
-
-            If isExcludedAnnotation IsNot Nothing Then
-                annotations.Remove(isExcludedAnnotation.Name)
-            End If
-
-            Dim hasTriggers = entityType.GetTriggers().Any(Function(t) t.TableName = tableName AndAlso t.TableSchema = schema)
-            Dim hasOverrides = table IsNot Nothing AndAlso
-                               entityType.GetProperties().
-                                          Select(Function(p) p.FindOverrides(table.Value)).
-                                          Any(Function(o) o IsNot Nothing)
-
-            Dim requiresTableBuilder = isExcludedFromMigrations OrElse hasTriggers OrElse hasOverrides
-
-            If schema IsNot Nothing OrElse
-               (schemaAnnotation IsNot Nothing AndAlso tableName IsNot Nothing) Then
-
-                stringBuilder.Append(", ")
-
-                If schema Is Nothing AndAlso Not requiresTableBuilder Then
+            If explicitName Then
+                If tableName Is Nothing AndAlso
+                   (schemaAnnotation Is Nothing OrElse schema Is Nothing) Then
                     stringBuilder.
+                        Append("DirectCast(").
+                        Append(VBCode.Literal(tableName)).
+                        Append(", String)")
+                Else
+                    stringBuilder.Append(VBCode.Literal(tableName))
+                End If
+
+                If isExcludedAnnotation IsNot Nothing Then
+                    annotations.Remove(isExcludedAnnotation.Name)
+                End If
+
+                If schema IsNot Nothing OrElse
+                   (schemaAnnotation IsNot Nothing AndAlso tableName IsNot Nothing) Then
+
+                    stringBuilder.Append(", ")
+
+                    If schema Is Nothing AndAlso Not requiresTableBuilder Then
+                        stringBuilder.
                         Append("DirectCast(").
                         Append(VBCode.Literal(schema)).
                         Append(", String)")
-                Else
-                    stringBuilder.Append(VBCode.Literal(schema))
+                    Else
+                        stringBuilder.Append(VBCode.Literal(schema))
+                    End If
                 End If
             End If
 
             If requiresTableBuilder Then
-                stringBuilder.AppendLine(","c)
+
+                If explicitName Then
+                    stringBuilder.AppendLine(","c)
+                End If
 
                 Using stringBuilder.Indent()
                     stringBuilder.AppendLine("Sub(t)")
@@ -990,8 +1002,16 @@ Namespace Migrations.Design
                         If isExcludedFromMigrations Then
                             stringBuilder.
                                 AppendLine("t.ExcludeFromMigrations()").
-                            AppendLine()
+                                AppendLine()
                         End If
+
+                        If comment IsNot Nothing Then
+                            stringBuilder.
+                                AppendLine().
+                                AppendLine($"t.{NameOf(TableBuilder.HasComment)}({VBCode.Literal(comment)})")
+                        End If
+
+                        GenerateCheckConstraints("t", entityType, stringBuilder)
 
                         If hasTriggers Then
                             GenerateTriggers("t", entityType, tableName, schema, stringBuilder)
@@ -1006,7 +1026,7 @@ Namespace Migrations.Design
                 End Using
             End If
 
-            stringBuilder.AppendLine(")"c)
+                stringBuilder.AppendLine(")"c)
         End Sub
 
         Private Sub GenerateSplitTableMapping(entityTypeBuilderName As String,
@@ -1200,10 +1220,10 @@ Namespace Migrations.Design
                 Append(".HasCheckConstraint(").
                 Append(VBCode.Literal(checkConstraint.ModelName)).
                 Append(", ").
-                Append(VBCode.Literal(checkConstraint.Sql))
+                Append(VBCode.Literal(checkConstraint.Sql)).
+                Append(")"c)
 
             GenerateCheckConstraintAnnotations(checkConstraint, stringBuilder)
-            stringBuilder.AppendLine(")"c)
         End Sub
 
         ''' <summary>
@@ -1221,31 +1241,17 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(checkConstraint.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            If annotations.Count > 0 OrElse hasNonDefaultName Then
-                If annotations.Count > 0 Then
-                    stringBuilder.
-                        AppendLine(","c).
-                        IncrementIndent().
-                        AppendLine("Sub(c)")
-                Else
-                    stringBuilder.Append(", Sub(c) ")
-                End If
+            If hasNonDefaultName Then
+                stringBuilder.
+                    AppendLine("."c).
+                    Append("HasName(").
+                    Append(VBCode.Literal(checkConstraint.Name)).
+                    Append(")"c)
+            End If
 
-                If hasNonDefaultName Then
-                    stringBuilder.
-                        Append("c.HasName(").
-                        Append(VBCode.Literal(checkConstraint.Name)).
-                        Append(")"c)
-                End If
-
-                If annotations.Count > 0 Then
-                    Using stringBuilder.Indent
-                        GenerateAnnotations("c", checkConstraint, stringBuilder, annotations, inChainedCall:=False)
-                    End Using
-                    stringBuilder.
-                        DecrementIndent().
-                        Append("End Sub")
-                End If
+            If annotations.Count > 0 Then
+                GenerateAnnotations("t", checkConstraint, stringBuilder, annotations, inChainedCall:=True)
+                stringBuilder.IncrementIndent()
             End If
         End Sub
 
@@ -1820,7 +1826,7 @@ Namespace Migrations.Design
             For Each c In fluentApiCalls
                 If c.MethodInfo IsNot Nothing AndAlso
                    c.MethodInfo.IsStatic AndAlso
-                   c.MethodInfo.DeclaringType Is Nothing OrElse c.MethodInfo.DeclaringType.Assembly <> GetType(RelationalModelBuilderExtensions).Assembly Then
+                   (c.MethodInfo.DeclaringType Is Nothing OrElse c.MethodInfo.DeclaringType.Assembly <> GetType(RelationalModelBuilderExtensions).Assembly) Then
 
                     typeQualifiedCalls.Add(c)
                 Else
@@ -1840,10 +1846,10 @@ Namespace Migrations.Design
                     If chainedCall.ChainedCall Is Nothing Then
                         stringBuilder.
                             AppendLine("."c).
-                            Append(VBCode.Fragment(chainedCall, stringBuilder.CurrentIndent, startWithDot:=False))
+                            Append(VBCode.Fragment(chainedCall, stringBuilder.IndentCount, startWithDot:=False))
                     Else
                         stringBuilder.
-                            Append(VBCode.Fragment(chainedCall, stringBuilder.CurrentIndent))
+                            Append(VBCode.Fragment(chainedCall, stringBuilder.IndentCount))
                     End If
                 Else
                     If leadingNewline Then
@@ -1851,7 +1857,7 @@ Namespace Migrations.Design
                     End If
 
                     stringBuilder.Append(builderName)
-                    stringBuilder.AppendLine(VBCode.Fragment(chainedCall, stringBuilder.CurrentIndent + 1))
+                    stringBuilder.AppendLine(VBCode.Fragment(chainedCall, stringBuilder.IndentCount + 1))
                 End If
 
                 leadingNewline = True

@@ -93,8 +93,8 @@ Namespace Migrations.Design
 
             namespaces.AddRange(GetNamespaces(upOperations.Concat(downOperations)))
             For Each n In namespaces.
-                          Where(Function(x) Not {"System", "System.Collections.Generic"}.Contains(x)).
                           OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
+
                 builder.
                     Append("Imports ").
                     AppendLine(n)
@@ -196,8 +196,8 @@ Namespace Migrations.Design
 
             namespaces.AddRange(GetNamespaces(targetModel))
             For Each n In namespaces.
-                          Where(Function(x) Not {"System", "System.Collections.Generic"}.Contains(x)).
                           OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
+
                 builder.Append("Imports ").
                     AppendLine(n)
             Next
@@ -277,8 +277,8 @@ Namespace Migrations.Design
 
             namespaces.AddRange(GetNamespaces(model))
             For Each n In namespaces.
-                          Where(Function(x) Not {"System", "System.Collections.Generic"}.Contains(x)).
                           OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
+
                 builder.
                     Append("Imports ").
                     AppendLine(n)

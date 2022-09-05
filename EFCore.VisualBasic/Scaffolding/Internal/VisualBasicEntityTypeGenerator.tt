@@ -36,9 +36,11 @@
         importsList.Add("Microsoft.EntityFrameworkCore") ' For attributes coming out of Abstractions
     End If
 
-    If Not String.IsNullOrEmpty(NamespaceHint) Then
+    Dim FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint)
+
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
 #>
-Namespace <#= NamespaceHint #>
+Namespace <#= FileNamespaceIdentifier #>
 <#
     End If
 
@@ -76,7 +78,9 @@ Namespace <#= NamespaceHint #>
 
         If Options.UseDataAnnotations Then
             Dim dataAnnotations = prop.GetDataAnnotations(annotationCodeGenerator).
-                                        Where(Function(a) Not (a.Type = GetType(RequiredAttribute) AndAlso Options.UseNullableReferenceTypes AndAlso Not prop.ClrType.IsValueType))
+                                        Where(Function(a) Not (a.Type = GetType(RequiredAttribute) AndAlso 
+                                                          Options.UseNullableReferenceTypes AndAlso 
+                                                          Not prop.ClrType.IsValueType))
             For Each dataAnnotation in dataAnnotations
 #>
         <#= code.Fragment(dataAnnotation) #>
@@ -131,7 +135,7 @@ Namespace <#= NamespaceHint #>
 #>
     End Class
 <#
-    If Not String.IsNullOrEmpty(NamespaceHint) Then
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
 #>
 End Namespace
 <#
@@ -141,7 +145,9 @@ End Namespace
     Dim previousOutput = GenerationEnvironment
     GenerationEnvironment = New StringBuilder()
 
-    For Each ns in importsList.Distinct().OrderBy(Function(x) x, New NamespaceComparer())
+    For Each ns in importsList.Where(Function(x) Not String.IsNullOrWhiteSpace(x)).
+                               Distinct().
+                               OrderBy(Function(x) x, New NamespaceComparer())
 #>
 Imports <#= ns #>
 <#

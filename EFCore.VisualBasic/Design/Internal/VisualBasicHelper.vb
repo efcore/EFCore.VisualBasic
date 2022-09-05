@@ -154,7 +154,9 @@ Namespace Design.Internal
                 builder.Append(name.Substring(partStart))
             End If
 
-            If builder.Length = 0 OrElse Not IsIdentifierStartCharacter(builder(0)) Then
+            If builder.Length = 0 Then
+                builder.Insert(0, "_0")
+            ElseIf Not IsIdentifierStartCharacter(builder(0)) Then
                 builder.Insert(0, "_")
             End If
 
@@ -203,6 +205,7 @@ Namespace Design.Internal
             Dim namespaces = New StringBuilder()
             For Each piece In name.Where(Function(p) Not String.IsNullOrEmpty(p)).
                                    SelectMany(Function(p) p.Split({"."c}, StringSplitOptions.RemoveEmptyEntries))
+
                 Dim identify = Identifier(piece)
 
                 If Not String.IsNullOrEmpty(identify) Then
@@ -210,7 +213,7 @@ Namespace Design.Internal
                 End If
             Next
 
-            Return If(namespaces.Length > 0, namespaces.Remove(namespaces.Length - 1, 1).ToString(), "_")
+            Return If(namespaces.Length > 0, namespaces.Remove(namespaces.Length - 1, 1).ToString(), "Empty")
         End Function
 
         ''' <summary>
@@ -1174,5 +1177,122 @@ Namespace Design.Internal
             Return type.GetNamespaces()
         End Function
 
+#Region "VB Namespace"
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Function FullyQualifiedNamespace(rootNamespace As String, namespaceHint As String) As String _
+        Implements IVisualBasicHelper.FullyQualifiedNamespace
+
+            rootNamespace = If(rootNamespace, "")
+            Dim result = GetNamespaceIdentifier(rootNamespace, namespaceHint)
+
+            Dim nsIdentifier = result.Identifier
+            If result.isInGlobal Then
+                ' Remove Global.
+                nsIdentifier = nsIdentifier.Substring(6).TrimStart("."c)
+            End If
+
+            If rootNamespace = "" AndAlso nsIdentifier = "" Then Return Nothing
+
+            If rootNamespace = "" OrElse
+               result.isInGlobal AndAlso nsIdentifier <> "" Then Return nsIdentifier
+
+            If nsIdentifier = "" Then
+                Return rootNamespace
+            End If
+
+            Return $"{rootNamespace}.{nsIdentifier}"
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Function NamespaceIdentifier(rootNamespace As String, namespaceHint As String) As String _
+        Implements IVisualBasicHelper.NamespaceIdentifier
+            Return GetNamespaceIdentifier(rootNamespace, namespaceHint).Identifier
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Function ImportsClause(currentTypeNamespace As String, importedTypeNamespace As String) As String _
+            Implements IVisualBasicHelper.ImportsClause
+
+            Dim currentParts = GetNamespaceParts(currentTypeNamespace)
+            Dim importedParts = GetNamespaceParts(importedTypeNamespace)
+
+            If importedParts.Length <= currentParts.Length Then
+                Dim isInside = True
+                For i = 0 To importedParts.Length - 1
+                    If Not importedParts(i).Equals(currentParts(i), StringComparison.OrdinalIgnoreCase) Then
+                        isInside = False
+                        Exit For
+                    End If
+                Next
+                If isInside Then Return Nothing
+            End If
+
+            Return GenerateNamespace(importedParts)
+        End Function
+
+        Private Function GetNamespaceIdentifier(rootNamespace As String, namespaceHint As String) As (Identifier As String, isInGlobal As Boolean)
+            If namespaceHint = "" Then Return Nothing
+
+            rootNamespace = If(rootNamespace, "")
+
+            Dim parts = GetNamespaceParts(namespaceHint)
+
+            If parts.Length = 0 Then Return Nothing
+
+            Dim inGlobal = False
+            If namespaceHint.Equals("Global", StringComparison.OrdinalIgnoreCase) OrElse
+               namespaceHint.StartsWith("Global.", StringComparison.OrdinalIgnoreCase) Then
+                inGlobal = True
+                parts = parts.Skip(1).ToArray
+            End If
+
+            Dim rootParts = GetNamespaceParts(rootNamespace)
+
+            If rootParts.Length <= parts.Length Then
+                Dim trim = True
+                For i = 0 To rootParts.Length - 1
+                    If Not parts(i).Equals(rootParts(i), StringComparison.OrdinalIgnoreCase) Then
+                        trim = False
+                        Exit For
+                    End If
+                Next
+                If trim Then
+                    parts = parts.Skip(rootParts.Length).ToArray
+                    inGlobal = False
+                End If
+            End If
+
+            Return (GenerateNamespace(parts, inGlobal), inGlobal)
+        End Function
+
+        Private Shared Function GetNamespaceParts([namespace] As String) As String()
+            If [namespace] Is Nothing Then Return Array.Empty(Of String)
+
+            Return [namespace].Split("."c, StringSplitOptions.RemoveEmptyEntries).
+                               Select(Function(p) p.TrimStart("["c).TrimEnd("]"c).Trim()).
+                               ToArray()
+        End Function
+
+        Private Function GenerateNamespace(parts As String(), Optional inGlobal As Boolean = False) As String
+            If parts.Length = 0 Then Return If(inGlobal, "Global", Nothing)
+
+            Return If(inGlobal, "Global.", "") & [Namespace](parts)
+        End Function
+#End Region
     End Class
 End Namespace

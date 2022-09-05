@@ -21,7 +21,7 @@
     <ProjectReference Include="..\EFCore.VisualBasic\EFCore.VisualBasic.vbproj" />
   </ItemGroup>
 
-  <ItemGroup>    
+  <ItemGroup>
     <None Update="northwind.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -40,15 +40,20 @@ Namespace Scaffolding.Internal
         "Microsoft.EntityFrameworkCore"
     }
 
-    If NamespaceHint <> Options.ModelNamespace AndAlso
-       Not String.IsNullOrEmpty(Options.ModelNamespace) Then
-        importsList.Add(Options.ModelNamespace)
+    Dim FullyQualifiedContextNamespace = code.FullyQualifiedNamespace(Options.RootNamespace, NamespaceHint)
+    Dim FullyQualifiedModelNamespace = code.FullyQualifiedNamespace(Options.RootNamespace, Options.ModelNamespace)
+    Dim ImportsClauseName = code.ImportsClause(FullyQualifiedContextNamespace, FullyQualifiedModelNamespace)
+
+    If ImportsClauseName IsNot Nothing Then
+        importsList.Add(FullyQualifiedModelNamespace)
     End If
 
-    If Not string.IsNullOrEmpty(NamespaceHint) Then
+    Dim FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint)
+
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
 
             Me.Write("Namespace ")
-            Me.Write(Me.ToStringHelper.ToStringWithCulture(NamespaceHint))
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(FileNamespaceIdentifier))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
     End If
@@ -359,7 +364,7 @@ Namespace Scaffolding.Internal
                     "ial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"        En"& _ 
                     "d Sub"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"    End Class"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
-    If Not String.IsNullOrEmpty(NamespaceHint) Then
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
 
             Me.Write("End Namespace"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
@@ -369,7 +374,9 @@ Namespace Scaffolding.Internal
     mainEnvironment = GenerationEnvironment
     GenerationEnvironment = New StringBuilder()
 
-    For Each ns in importsList.Distinct().OrderBy(Function(x) x, new NamespaceComparer())
+    For Each ns in importsList.Where(Function(x) Not String.IsNullOrWhiteSpace(x)).
+                               Distinct().
+                               OrderBy(Function(x) x, New NamespaceComparer())
 
             Me.Write("Imports ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(ns))

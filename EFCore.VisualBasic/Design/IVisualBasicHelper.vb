@@ -315,7 +315,31 @@ Namespace Design
         '''     Gets the imports statements required when referencing a type.
         ''' </summary>
         ''' <param name="type">The type.</param>
-        ''' <returns>The usings.</returns>
+        ''' <returns>The imports.</returns>
         Function GetRequiredImports(type As Type) As IEnumerable(Of String)
+
+        ''' <summary>
+        '''     Get the fully qualified namespace from then projet root namespace and the type namespace hint
+        ''' </summary>
+        ''' <param name="rootNamespace">The projet root namespace</param>
+        ''' <param name="namespaceHint">The type namespace hint</param>
+        ''' <returns>The fully qualified namespace</returns>
+        Function FullyQualifiedNamespace(rootNamespace As String, namespaceHint As String) As String
+
+        ''' <summary>
+        '''     Generate the identifier for a Namespace statement
+        ''' </summary>
+        ''' <param name="rootNamespace">The projet root namespace</param>
+        ''' <param name="namespaceHint">The type namespace hint</param>
+        ''' <returns></returns>
+        Function NamespaceIdentifier(rootNamespace As String, namespaceHint As String) As String
+
+        ''' <summary>
+        '''     Generate the identifier for an Imports statement
+        ''' </summary>
+        ''' <param name="currentTypeNamespace">The fully qualified namespace of the current type</param>
+        ''' <param name="importedTypeNamespace">The fully qualified namespace of the imported type</param>
+        ''' <returns></returns>
+        Function ImportsClause(currentTypeNamespace As String, importedTypeNamespace As String) As String
     End Interface
 End Namespace

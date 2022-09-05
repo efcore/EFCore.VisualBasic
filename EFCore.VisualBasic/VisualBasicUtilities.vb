@@ -311,5 +311,4 @@ Public Module VisualBasicUtilities
     End Sub
 
 #End Region
-
 End Module

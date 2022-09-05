@@ -49,10 +49,12 @@ Namespace Scaffolding.Internal
         importsList.Add("Microsoft.EntityFrameworkCore") ' For attributes coming out of Abstractions
     End If
 
-    If Not String.IsNullOrEmpty(NamespaceHint) Then
+    Dim FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint)
+
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
 
             Me.Write("Namespace ")
-            Me.Write(Me.ToStringHelper.ToStringWithCulture(NamespaceHint))
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(FileNamespaceIdentifier))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
     End If
@@ -95,7 +97,9 @@ Namespace Scaffolding.Internal
 
         If Options.UseDataAnnotations Then
             Dim dataAnnotations = prop.GetDataAnnotations(annotationCodeGenerator).
-                                        Where(Function(a) Not (a.Type = GetType(RequiredAttribute) AndAlso Options.UseNullableReferenceTypes AndAlso Not prop.ClrType.IsValueType))
+                                        Where(Function(a) Not (a.Type = GetType(RequiredAttribute) AndAlso 
+                                                          Options.UseNullableReferenceTypes AndAlso 
+                                                          Not prop.ClrType.IsValueType))
             For Each dataAnnotation in dataAnnotations
 
             Me.Write("        ")
@@ -176,7 +180,7 @@ Namespace Scaffolding.Internal
 
             Me.Write("    End Class"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
-    If Not String.IsNullOrEmpty(NamespaceHint) Then
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
 
             Me.Write("End Namespace"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
@@ -186,7 +190,9 @@ Namespace Scaffolding.Internal
     Dim previousOutput = GenerationEnvironment
     GenerationEnvironment = New StringBuilder()
 
-    For Each ns in importsList.Distinct().OrderBy(Function(x) x, New NamespaceComparer())
+    For Each ns in importsList.Where(Function(x) Not String.IsNullOrWhiteSpace(x)).
+                               Distinct().
+                               OrderBy(Function(x) x, New NamespaceComparer())
 
             Me.Write("Imports ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(ns))

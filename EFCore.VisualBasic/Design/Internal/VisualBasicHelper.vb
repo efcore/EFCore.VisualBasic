@@ -43,6 +43,7 @@ Namespace Design.Internal
             {GetType(Integer), Function(c, v) c.Literal(CInt(v))},
             {GetType(Long), Function(c, v) c.Literal(CLng(v))},
             {GetType(NestedClosureCodeFragment), Function(c, v) c.Fragment(DirectCast(v, NestedClosureCodeFragment))},
+            {GetType(PropertyAccessorCodeFragment), Function(c, v) c.Fragment(DirectCast(v, PropertyAccessorCodeFragment))},
             {GetType(Object()), Function(c, v) c.Literal(CType(v, Object()))},
             {GetType(Object(,)), Function(c, v) c.Literal(CType(v, Object(,)))},
             {GetType(SByte), Function(c, v) c.Literal(CSByte(v))},
@@ -61,7 +62,9 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Lambda(properties As IReadOnlyList(Of String), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
+        Public Overridable Function Lambda(properties As IReadOnlyList(Of String),
+                                           Optional lambdaIdentifier As String = Nothing) As String _
+        Implements IVisualBasicHelper.Lambda
 
             NotNull(properties, NameOf(properties))
             NullButNotEmpty(lambdaIdentifier, NameOf(lambdaIdentifier))
@@ -93,7 +96,9 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Lambda(properties As IEnumerable(Of IProperty), Optional lambdaIdentifier As String = Nothing) As String Implements IVisualBasicHelper.Lambda
+        Public Overridable Function Lambda(properties As IEnumerable(Of IProperty),
+                                           Optional lambdaIdentifier As String = Nothing) As String _
+        Implements IVisualBasicHelper.Lambda
             Return Lambda(properties.Select(Function(p) p.Name).ToList(), lambdaIdentifier)
         End Function
 
@@ -149,7 +154,9 @@ Namespace Design.Internal
                 builder.Append(name.Substring(partStart))
             End If
 
-            If builder.Length = 0 OrElse Not IsIdentifierStartCharacter(builder(0)) Then
+            If builder.Length = 0 Then
+                builder.Insert(0, "_0")
+            ElseIf Not IsIdentifierStartCharacter(builder(0)) Then
                 builder.Insert(0, "_")
             End If
 
@@ -198,6 +205,7 @@ Namespace Design.Internal
             Dim namespaces = New StringBuilder()
             For Each piece In name.Where(Function(p) Not String.IsNullOrEmpty(p)).
                                    SelectMany(Function(p) p.Split({"."c}, StringSplitOptions.RemoveEmptyEntries))
+
                 Dim identify = Identifier(piece)
 
                 If Not String.IsNullOrEmpty(identify) Then
@@ -205,9 +213,8 @@ Namespace Design.Internal
                 End If
             Next
 
-            Return If(namespaces.Length > 0, namespaces.Remove(namespaces.Length - 1, 1).ToString(), "_")
+            Return If(namespaces.Length > 0, namespaces.Remove(namespaces.Length - 1, 1).ToString(), "Empty")
         End Function
-
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
@@ -221,7 +228,6 @@ Namespace Design.Internal
                                 Replace(vbCr, """ & vbCr & """).
                                 Replace(vbLf, """ & vbLf & """) & """"
         End Function
-
 
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -378,9 +384,10 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As TimeOnly) As String Implements IVisualBasicHelper.Literal
-            Dim result = If(value.Millisecond = 0,
-                                String.Format(CultureInfo.InvariantCulture, "New TimeOnly({0}, {1}, {2})", value.Hour, value.Minute, value.Second),
-                                String.Format(CultureInfo.InvariantCulture, "New TimeOnly({0}, {1}, {2}, {3})", value.Hour, value.Minute, value.Second, value.Millisecond))
+            Dim result =
+                If(value.Millisecond = 0,
+                    String.Format(CultureInfo.InvariantCulture, "New TimeOnly({0}, {1}, {2})", value.Hour, value.Minute, value.Second),
+                    String.Format(CultureInfo.InvariantCulture, "New TimeOnly({0}, {1}, {2}, {3})", value.Hour, value.Minute, value.Second, value.Millisecond))
 
             If value.Ticks Mod 10000 > 0 Then
                 result &= String.Format(
@@ -762,7 +769,10 @@ Namespace Design.Internal
             Throw New InvalidOperationException(VBDesignStrings.UnknownLiteral(value.GetType()))
         End Function
 
-        Private Function HandleExpression(exp As Expression, builder As StringBuilder, Optional simple As Boolean = False) As Boolean
+        Private Function HandleExpression(exp As Expression,
+                                          builder As StringBuilder,
+                                          Optional simple As Boolean = False) As Boolean
+
             ' Only handle trivially simple cases for `new` and factory methods
 
             Select Case exp.NodeType
@@ -855,7 +865,8 @@ Namespace Design.Internal
             Return False
         End Function
 
-        Private Function HandleArguments(argumentExpressions As IEnumerable(Of Expression), builder As StringBuilder) As Boolean
+        Private Function HandleArguments(argumentExpressions As IEnumerable(Of Expression),
+                                         builder As StringBuilder) As Boolean
             builder.Append("("c)
 
             If Not HandleList(argumentExpressions, builder) Then
@@ -867,7 +878,10 @@ Namespace Design.Internal
             Return True
         End Function
 
-        Private Function HandleList(argumentExpressions As IEnumerable(Of Expression), builder As StringBuilder, Optional simple As Boolean = False) As Boolean
+        Private Function HandleList(argumentExpressions As IEnumerable(Of Expression),
+                                    builder As StringBuilder,
+                                    Optional simple As Boolean = False) As Boolean
+
             Dim separator As String = String.Empty
 
             For Each exp In argumentExpressions
@@ -889,7 +903,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Fragment(frag As MethodCallCodeFragment,
+        Public Overridable Function Fragment(frag As IMethodCallCodeFragment,
                                              instanceIdentifier As String,
                                              typeQualified As Boolean) As String _
         Implements IVisualBasicHelper.Fragment
@@ -898,7 +912,7 @@ Namespace Design.Internal
 
             If typeQualified Then
                 If instanceIdentifier Is Nothing OrElse
-                   frag.MethodInfo Is Nothing OrElse
+                   frag.DeclaringType Is Nothing OrElse
                    frag.ChainedCall IsNot Nothing Then
 
                     Throw New ArgumentException(DesignStrings.CannotGenerateTypeQualifiedMethodCall)
@@ -911,14 +925,14 @@ Namespace Design.Internal
                     Append("("c).
                     Append(instanceIdentifier)
 
-                For i = 0 To frag.Arguments.Count - 1
+                For Each argument In frag.Arguments
                     builder.Append(", ")
 
-                    If TypeOf frag.Arguments(i) Is NestedClosureCodeFragment Then
-                        Dim nestedFragment = DirectCast(frag.Arguments(i), NestedClosureCodeFragment)
+                    If TypeOf argument Is NestedClosureCodeFragment Then
+                        Dim nestedFragment = DirectCast(argument, NestedClosureCodeFragment)
                         builder.Append(Fragment(nestedFragment, 1))
                     Else
-                        builder.Append(UnknownLiteral(frag.Arguments(i)))
+                        builder.Append(UnknownLiteral(argument))
                     End If
                 Next
 
@@ -942,7 +956,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Public Overridable Function Fragment(frag As MethodCallCodeFragment,
+        Public Overridable Function Fragment(frag As IMethodCallCodeFragment,
                                              Optional indent As Integer = 0,
                                              Optional startWithDot As Boolean = True) As String _
         Implements IVisualBasicHelper.Fragment
@@ -978,22 +992,36 @@ Namespace Design.Internal
             Return builder.ToString()
         End Function
 
-        Private Sub AppendMethodCall(current As MethodCallCodeFragment, indent As Integer, builder As IndentedStringBuilder)
+        Private Sub AppendMethodCall(current As IMethodCallCodeFragment,
+                                     indent As Integer,
+                                     builder As IndentedStringBuilder)
 
             builder.
-                Append(current.Method).
+                Append(current.Method)
+
+            If current.TypeArguments.Any() Then
+                builder.
+                    Append("(Of ").
+                    Append(String.Join(", ", current.TypeArguments)).
+                    Append(")")
+            End If
+
+            builder.
                 Append("("c)
 
-            For i = 0 To current.Arguments.Count - 1
-                If i <> 0 Then
+            Dim first = True
+            For Each argument In current.Arguments
+                If first Then
+                    first = False
+                Else
                     builder.Append(", ")
                 End If
 
-                If TypeOf current.Arguments(i) Is NestedClosureCodeFragment Then
-                    Dim nestedFragment = DirectCast(current.Arguments(i), NestedClosureCodeFragment)
+                If TypeOf argument Is NestedClosureCodeFragment Then
+                    Dim nestedFragment = DirectCast(argument, NestedClosureCodeFragment)
                     builder.Append(Fragment(nestedFragment, indent + 1))
                 Else
-                    builder.Append(UnknownLiteral(current.Arguments(i)))
+                    builder.Append(UnknownLiteral(argument))
                 End If
             Next
 
@@ -1032,6 +1060,16 @@ Namespace Design.Internal
             builder.Append("End Sub")
 
             Return builder.ToString()
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function Fragment(frag As PropertyAccessorCodeFragment) As String Implements IVisualBasicHelper.Fragment
+            Return Lambda(frag.Properties, frag.Parameter)
         End Function
 
         ''' <summary>
@@ -1116,5 +1154,145 @@ Namespace Design.Internal
 
             Return builder.ToString()
         End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function Arguments(values As IEnumerable(Of Object)) As String _
+        Implements IVisualBasicHelper.Arguments
+            Return String.Join(", ", values.Select(AddressOf UnknownLiteral))
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Overridable Function GetRequiredImports(type As Type) As IEnumerable(Of String) _
+        Implements IVisualBasicHelper.GetRequiredImports
+            Return type.GetNamespaces()
+        End Function
+
+#Region "VB Namespace"
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Function FullyQualifiedNamespace(rootNamespace As String, namespaceHint As String) As String _
+        Implements IVisualBasicHelper.FullyQualifiedNamespace
+
+            rootNamespace = If(rootNamespace, "")
+            Dim result = GetNamespaceIdentifier(rootNamespace, namespaceHint)
+
+            Dim nsIdentifier = result.Identifier
+            If result.isInGlobal Then
+                ' Remove Global.
+                nsIdentifier = nsIdentifier.Substring(6).TrimStart("."c)
+            End If
+
+            If rootNamespace = "" AndAlso nsIdentifier = "" Then Return Nothing
+
+            If rootNamespace = "" OrElse
+               result.isInGlobal AndAlso nsIdentifier <> "" Then Return nsIdentifier
+
+            If nsIdentifier = "" Then
+                Return rootNamespace
+            End If
+
+            Return $"{rootNamespace}.{nsIdentifier}"
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Function NamespaceIdentifier(rootNamespace As String, namespaceHint As String) As String _
+        Implements IVisualBasicHelper.NamespaceIdentifier
+            Return GetNamespaceIdentifier(rootNamespace, namespaceHint).Identifier
+        End Function
+
+        ''' <summary>
+        '''     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        '''     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        '''     any release. You should only use it directly in your code with extreme caution and knowing that
+        '''     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ''' </summary>
+        Public Function ImportsClause(currentTypeNamespace As String, importedTypeNamespace As String) As String _
+            Implements IVisualBasicHelper.ImportsClause
+
+            Dim currentParts = GetNamespaceParts(currentTypeNamespace)
+            Dim importedParts = GetNamespaceParts(importedTypeNamespace)
+
+            If importedParts.Length <= currentParts.Length Then
+                Dim isInside = True
+                For i = 0 To importedParts.Length - 1
+                    If Not importedParts(i).Equals(currentParts(i), StringComparison.OrdinalIgnoreCase) Then
+                        isInside = False
+                        Exit For
+                    End If
+                Next
+                If isInside Then Return Nothing
+            End If
+
+            Return GenerateNamespace(importedParts)
+        End Function
+
+        Private Function GetNamespaceIdentifier(rootNamespace As String, namespaceHint As String) As (Identifier As String, isInGlobal As Boolean)
+            If namespaceHint = "" Then Return Nothing
+
+            rootNamespace = If(rootNamespace, "")
+
+            Dim parts = GetNamespaceParts(namespaceHint)
+
+            If parts.Length = 0 Then Return Nothing
+
+            Dim inGlobal = False
+            If namespaceHint.Equals("Global", StringComparison.OrdinalIgnoreCase) OrElse
+               namespaceHint.StartsWith("Global.", StringComparison.OrdinalIgnoreCase) Then
+                inGlobal = True
+                parts = parts.Skip(1).ToArray
+            End If
+
+            Dim rootParts = GetNamespaceParts(rootNamespace)
+
+            If rootParts.Length <= parts.Length Then
+                Dim trim = True
+                For i = 0 To rootParts.Length - 1
+                    If Not parts(i).Equals(rootParts(i), StringComparison.OrdinalIgnoreCase) Then
+                        trim = False
+                        Exit For
+                    End If
+                Next
+                If trim Then
+                    parts = parts.Skip(rootParts.Length).ToArray
+                    inGlobal = False
+                End If
+            End If
+
+            Return (GenerateNamespace(parts, inGlobal), inGlobal)
+        End Function
+
+        Private Shared Function GetNamespaceParts([namespace] As String) As String()
+            If [namespace] Is Nothing Then Return Array.Empty(Of String)
+
+            Return [namespace].Split("."c, StringSplitOptions.RemoveEmptyEntries).
+                               Select(Function(p) p.TrimStart("["c).TrimEnd("]"c).Trim()).
+                               ToArray()
+        End Function
+
+        Private Function GenerateNamespace(parts As String(), Optional inGlobal As Boolean = False) As String
+            If parts.Length = 0 Then Return If(inGlobal, "Global", Nothing)
+
+            Return If(inGlobal, "Global.", "") & [Namespace](parts)
+        End Function
+#End Region
     End Class
 End Namespace

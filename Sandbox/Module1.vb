@@ -29,7 +29,7 @@ Module Module1
         '-------------------------------------
         'Compiled Models
         '-------------------------------------
-        'dotnet ef dbContext optimize --output-dir MyCompiledModels --namespace MyCompiledModels --project Sandbox --context northwindContext
+        'Optimize-DbContext -Project Sandbox -Context northwindContext -OutputDir MyCompiledModels -Namespace MyCompiledModels
 
         Using dbContext As New SchoolContext()
             dbContext.Students.Add(

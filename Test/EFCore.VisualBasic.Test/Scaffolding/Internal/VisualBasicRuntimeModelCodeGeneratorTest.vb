@@ -223,6 +223,46 @@ End Namespace
         End Class
 
         <ConditionalFact>
+        Public Sub Lazy_loading_proxies()
+            Test(
+                New LazyLoadingProxiesContext(),
+                CreateCompiledModelCodeGenerationOptions(),
+                assertModel:=
+                    Sub(Model)
+                        Assert.Equal(
+                        GetType(ILazyLoader), Model.FindEntityType(GetType(LazyProxiesEntity1)).GetServiceProperties().Single().ClrType)
+                        Assert.Equal(
+                        GetType(ILazyLoader), Model.FindEntityType(GetType(LazyProxiesEntity1)).GetServiceProperties().Single().ClrType)
+                    End Sub)
+        End Sub
+
+        Public Class LazyLoadingProxiesContext
+            Inherits ContextBase
+            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+                MyBase.OnModelCreating(modelBuilder)
+
+                modelBuilder.Entity(Of LazyProxiesEntity1)()
+            End Sub
+
+            Protected Overrides Sub OnConfiguring(options As DbContextOptionsBuilder)
+                MyBase.OnConfiguring(options.UseLazyLoadingProxies())
+            End Sub
+        End Class
+
+        Public Class LazyProxiesEntity1
+            Public Property Id As Integer
+
+            Public Overridable Property ReferenceNavigation As LazyProxiesEntity2
+        End Class
+
+            Public Class LazyProxiesEntity2
+            Public Property Loader As ILazyLoader
+
+            Public Property Id As Integer
+            Public Overridable Property CollectionNavigation As ICollection(Of LazyProxiesEntity1)
+        End Class
+
+        <ConditionalFact>
         Public Sub Throws_for_query_filter()
             Test(New QueryFilterContext(),
                  CreateCompiledModelCodeGenerationOptions(),
@@ -2209,15 +2249,14 @@ End Namespace
 
                         eb.OwnsMany(GetType(OwnedType).FullName, "ManyOwned",
                                     Sub(ob)
-                                        ob.IsMemoryOptimized()
-                                        ob.ToTable("ManyOwned", Sub(t) t.ExcludeFromMigrations())
+                                        ob.ToTable("ManyOwned", Sub(t) t.IsMemoryOptimized().ExcludeFromMigrations())
                                     End Sub)
 
                         eb.HasMany(Function(e) e.Principals).
                            WithMany(Function(e) DirectCast(e.Deriveds, ICollection(Of PrincipalDerived(Of DependentBase(Of Byte?))))).
                            UsingEntity(
                             Sub(jb)
-                                jb.HasComment("Join table")
+                                jb.ToTable(Function(tb) tb.HasComment("Join table"))
                                 jb.Property(Of Byte())("rowid").
                                    IsRowVersion().
                                    HasComment("RowVersion").
@@ -2450,13 +2489,12 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
-            Dim idDerivedInsert As New RuntimeRelationalPropertyOverrides(
+            Dim idDerived_Insert As New RuntimeRelationalPropertyOverrides(
                 id,
                 StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"),
                 True,
                 "DerivedId")
-            idDerivedInsert.AddAnnotation("foo", "bar3")
-            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"), idDerivedInsert})
+            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("Derived_Insert", "TPC"), idDerived_Insert})
             Dim idPrincipalBaseView As New RuntimeRelationalPropertyOverrides(
                 id,
                 StoreObjectIdentifier.View("PrincipalBaseView", "TPC"),
@@ -2464,14 +2502,6 @@ Namespace TestNamespace
                 Nothing)
             idPrincipalBaseView.AddAnnotation("foo", "bar2")
             [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.View("PrincipalBaseView", "TPC"), idPrincipalBaseView})
-            Dim idPrincipalBaseInsert As New RuntimeRelationalPropertyOverrides(
-                id,
-                StoreObjectIdentifier.InsertStoredProcedure("PrincipalBase_Insert", "TPC"),
-                True,
-                "BaseId")
-            idPrincipalBaseInsert.AddAnnotation("foo", "bar")
-            idPrincipalBaseInsert.AddAnnotation("Relational:ParameterDirection", ParameterDirection.Output)
-            [overrides].GetType().GetMethod("Add").Invoke([overrides], {StoreObjectIdentifier.InsertStoredProcedure("PrincipalBase_Insert", "TPC"), idPrincipalBaseInsert})
             id.AddAnnotation("Relational:RelationalOverrides", [overrides])
 
             id.AddAnnotation("Relational:DefaultValueSql", "NEXT VALUE FOR [TPC].[PrincipalBaseSequence]")
@@ -2537,11 +2567,16 @@ Namespace TestNamespace
                 entityType,
                 "PrincipalBase_Insert",
                 "TPC",
+                False,
                 True)
 
-            insertSproc.AddParameter("PrincipalBaseId")
-            insertSproc.AddParameter("PrincipalDerivedId")
-            insertSproc.AddParameter("Id")
+            Dim principalBaseId = insertSproc.AddParameter(
+                "PrincipalBaseId", ParameterDirection.Input, False, "PrincipalBaseId", False)
+            Dim principalDerivedId = insertSproc.AddParameter(
+                "PrincipalDerivedId", ParameterDirection.Input, False, "PrincipalDerivedId", False)
+            Dim baseId = insertSproc.AddParameter(
+                "BaseId", ParameterDirection.Output, False, "Id", False)
+            baseId.AddAnnotation("foo", "bar")
             insertSproc.AddAnnotation("foo", "bar1")
             entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
 
@@ -2549,20 +2584,26 @@ Namespace TestNamespace
                 entityType,
                 "PrincipalBase_Delete",
                 "TPC",
+                True,
                 False)
 
-            deleteSproc.AddParameter("Id")
+            Dim id = deleteSproc.AddParameter(
+                "Id", ParameterDirection.Input, False, "Id", False)
             entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
 
             Dim updateSproc As New RuntimeStoredProcedure(
                 entityType,
                 "PrincipalBase_Update",
                 "TPC",
+                False,
                 False)
 
-            updateSproc.AddParameter("PrincipalBaseId")
-            updateSproc.AddParameter("PrincipalDerivedId")
-            updateSproc.AddParameter("Id")
+            Dim principalBaseId0 = updateSproc.AddParameter(
+                "PrincipalBaseId", ParameterDirection.Input, False, "PrincipalBaseId", False)
+            Dim principalDerivedId0 = updateSproc.AddParameter(
+                "PrincipalDerivedId", ParameterDirection.Input, False, "PrincipalDerivedId", False)
+            Dim id0 = updateSproc.AddParameter(
+                "Id", ParameterDirection.Input, False, "Id", False)
             entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
 
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
@@ -2586,6 +2627,7 @@ End Namespace
             Dim e3 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Data
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -2608,31 +2650,42 @@ Namespace TestNamespace
                 entityType,
                 "Derived_Insert",
                 "TPC",
+                False,
                 False)
 
-            insertSproc.AddParameter("PrincipalBaseId")
-            insertSproc.AddParameter("PrincipalDerivedId")
-            insertSproc.AddResultColumn("Id")
+            Dim principalBaseId = insertSproc.AddParameter(
+                "PrincipalBaseId", ParameterDirection.Input, False, "PrincipalBaseId", False)
+            Dim principalDerivedId = insertSproc.AddParameter(
+                "PrincipalDerivedId", ParameterDirection.Input, False, "PrincipalDerivedId", False)
+            Dim derivedId = insertSproc.AddResultColumn(
+                "DerivedId", False, "Id")
+            derivedId.AddAnnotation("foo", "bar3")
             entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
 
             Dim deleteSproc As New RuntimeStoredProcedure(
                 entityType,
                 "Derived_Delete",
                 "TPC",
+                False,
                 False)
 
-            deleteSproc.AddParameter("Id")
+            Dim id = deleteSproc.AddParameter(
+                "Id", ParameterDirection.Input, False, "Id", False)
             entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
 
             Dim updateSproc As New RuntimeStoredProcedure(
                 entityType,
                 "Derived_Update",
                 "Derived",
+                False,
                 False)
 
-            updateSproc.AddParameter("PrincipalBaseId")
-            updateSproc.AddParameter("PrincipalDerivedId")
-            updateSproc.AddParameter("Id")
+            Dim principalBaseId0 = updateSproc.AddParameter(
+                "PrincipalBaseId", ParameterDirection.Input, False, "PrincipalBaseId", False)
+            Dim principalDerivedId0 = updateSproc.AddParameter(
+                "PrincipalDerivedId", ParameterDirection.Input, False, "PrincipalDerivedId", False)
+            Dim id0 = updateSproc.AddParameter(
+                "Id", ParameterDirection.Input, False, "Id", False)
             entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
 
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
@@ -2685,33 +2738,37 @@ End Namespace
                     Dim insertSproc = PrincipalBase.GetInsertStoredProcedure()
                     Assert.Equal("PrincipalBase_Insert", insertSproc.Name)
                     Assert.Equal("TPC", insertSproc.Schema)
-                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, insertSproc.Parameters)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, insertSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(insertSproc.ResultColumns)
                     Assert.True(insertSproc.AreTransactionsSuppressed)
+                    Assert.False(insertSproc.IsRowsAffectedReturned)
                     Assert.Equal("bar1", insertSproc("foo"))
                     Assert.Same(PrincipalBase, insertSproc.EntityType)
-                    Assert.Equal("BaseId", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.InsertStoredProcedure).Value))
-                    Assert.Equal("bar",
-                        id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.InsertStoredProcedure).Value)("foo"))
+                    Assert.Equal("BaseId", insertSproc.Parameters.Last().Name)
+                    Assert.Equal("bar", insertSproc.Parameters.Last()("foo"))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.InsertStoredProcedure).Value))
 
                     Dim updateSproc = PrincipalBase.GetUpdateStoredProcedure()
                     Assert.Equal("PrincipalBase_Update", updateSproc.Name)
                     Assert.Equal("TPC", updateSproc.Schema)
-                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, updateSproc.Parameters)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, updateSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(updateSproc.ResultColumns)
                     Assert.False(updateSproc.AreTransactionsSuppressed)
+                    Assert.False(updateSproc.IsRowsAffectedReturned)
                     Assert.Empty(updateSproc.GetAnnotations())
                     Assert.Same(PrincipalBase, updateSproc.EntityType)
-                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.UpdateStoredProcedure).Value))
+                    Assert.Equal("Id", updateSproc.Parameters.Last().Name)
                     Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.UpdateStoredProcedure).Value))
 
                     Dim deleteSproc = PrincipalBase.GetDeleteStoredProcedure()
                     Assert.Equal("PrincipalBase_Delete", deleteSproc.Name)
                     Assert.Equal("TPC", deleteSproc.Schema)
-                    Assert.Equal({"Id"}, deleteSproc.Parameters)
+                    Assert.Equal({"Id"}, deleteSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(deleteSproc.ResultColumns)
+                    Assert.False(deleteSproc.AreTransactionsSuppressed)
+                    Assert.True(deleteSproc.IsRowsAffectedReturned)
                     Assert.Same(PrincipalBase, deleteSproc.EntityType)
-                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.DeleteStoredProcedure).Value))
+                    Assert.Equal("Id", deleteSproc.Parameters.Last().Name)
                     Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.DeleteStoredProcedure).Value))
 
                     Assert.Equal("PrincipalBase", PrincipalBase.GetDiscriminatorValue())
@@ -2736,34 +2793,35 @@ End Namespace
                     insertSproc = PrincipalDerived.GetInsertStoredProcedure()
                     Assert.Equal("Derived_Insert", insertSproc.Name)
                     Assert.Equal("TPC", insertSproc.Schema)
-                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId"}, insertSproc.Parameters)
-                    Assert.Equal({"Id"}, insertSproc.ResultColumns)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId"}, insertSproc.Parameters.Select(Function(p) p.PropertyName))
+                    Assert.Equal({"Id"}, insertSproc.ResultColumns.Select(Function(p) p.PropertyName))
                     Assert.False(insertSproc.AreTransactionsSuppressed)
                     Assert.Null(insertSproc("foo"))
                     Assert.Same(PrincipalDerived, insertSproc.EntityType)
+                    Assert.Equal("DerivedId", insertSproc.ResultColumns.Last().Name)
                     Assert.Equal("DerivedId", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.InsertStoredProcedure).Value))
-                    Assert.Equal("bar3",
-                        id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.InsertStoredProcedure).Value)("foo"))
+                    Assert.Equal("bar3", insertSproc.ResultColumns.Last()("foo"))
+                    Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.InsertStoredProcedure).Value)("foo"))
 
                     updateSproc = PrincipalDerived.GetUpdateStoredProcedure()
                     Assert.Equal("Derived_Update", updateSproc.Name)
                     Assert.Equal("Derived", updateSproc.Schema)
-                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, updateSproc.Parameters)
+                    Assert.Equal({"PrincipalBaseId", "PrincipalDerivedId", "Id"}, updateSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(updateSproc.ResultColumns)
                     Assert.False(updateSproc.AreTransactionsSuppressed)
                     Assert.Empty(updateSproc.GetAnnotations())
                     Assert.Same(PrincipalDerived, updateSproc.EntityType)
-                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.UpdateStoredProcedure).Value))
+                    Assert.Equal("Id", updateSproc.Parameters.Last().Name)
                     Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.UpdateStoredProcedure).Value))
 
                     deleteSproc = PrincipalDerived.GetDeleteStoredProcedure()
                     Assert.Equal("Derived_Delete", deleteSproc.Name)
                     Assert.Equal("TPC", deleteSproc.Schema)
-                    Assert.Equal({"Id"}, deleteSproc.Parameters)
+                    Assert.Equal({"Id"}, deleteSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(deleteSproc.ResultColumns)
                     Assert.False(deleteSproc.AreTransactionsSuppressed)
                     Assert.Same(PrincipalDerived, deleteSproc.EntityType)
-                    Assert.Equal("Id", id.GetColumnName(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.DeleteStoredProcedure).Value))
+                    Assert.Equal("Id", deleteSproc.Parameters.Last().Name)
                     Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.DeleteStoredProcedure).Value))
 
                     Assert.Equal("PrincipalDerived<DependentBase<byte?>>", PrincipalDerived.GetDiscriminatorValue())
@@ -2844,6 +2902,7 @@ End Namespace
                             HasParameter("PrincipalDerivedId").
                             HasParameter(Function(p) p.Id))
                         eb.DeleteUsingStoredProcedure(Sub(s) s.
+                            HasRowsAffectedReturnValue().
                             HasParameter(Function(p) p.Id))
                     End Sub)
 
@@ -3953,12 +4012,13 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
-                modelBuilder.Entity(Of Data)(Sub(eb)
-                                                 eb.Property(Of Integer)("Id")
-                                                 eb.HasKey("Id")
-                                                 eb.HasCheckConstraint("idConstraint", "Id <> 0")
-                                                 eb.HasCheckConstraint("anotherConstraint", "Id <> -1")
-                                             End Sub)
+                modelBuilder.Entity(Of Data)(
+                    Sub(eb)
+                        eb.Property(Of Integer)("Id")
+                        eb.HasKey("Id")
+                        eb.ToTable(Function(tb) tb.HasCheckConstraint("idConstraint", "Id <> 0"))
+                        eb.ToTable(Function(tb) tb.HasCheckConstraint("anotherConstraint", "Id <> -1"))
+                    End Sub)
             End Sub
         End Class
 
@@ -4401,23 +4461,23 @@ Namespace TestNamespace
                 nullable:=True)
             blob.AddAnnotation("Cosmos:PropertyName", "JsonBlob")
 
-            Dim id0 = entityType.AddProperty(
+            Dim __id = entityType.AddProperty(
                 "__id",
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New IdValueGeneratorFactory().Create)
-            id0.AddAnnotation("Cosmos:PropertyName", "id")
+            __id.AddAnnotation("Cosmos:PropertyName", "id")
 
-            Dim jObject = entityType.AddProperty(
+            Dim __jObject = entityType.AddProperty(
                 "__jObject",
                 GetType(JObject),
                 nullable:=True,
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            jObject.AddAnnotation("Cosmos:PropertyName", "")
+            __jObject.AddAnnotation("Cosmos:PropertyName", "")
 
-            Dim etag = entityType.AddProperty(
+            Dim _etag = entityType.AddProperty(
                 "_etag",
                 GetType(String),
                 nullable:=True,
@@ -4431,7 +4491,7 @@ Namespace TestNamespace
             entityType.SetPrimaryKey(key)
 
             Dim key0 = entityType.AddKey(
-                {id0, partitionId})
+                {__id, partitionId})
 
             Return entityType
         End Function
@@ -4481,7 +4541,7 @@ End Namespace
             Assert.Equal(ValueGenerated.Never, id.ValueGenerated)
             Assert.Equal(PropertySaveBehavior.Throw, id.GetAfterSaveBehavior())
             Assert.Equal(PropertySaveBehavior.Save, id.GetBeforeSaveBehavior())
-            Assert.Equal("Id", id.GetJsonPropertyName())
+            Assert.Equal("Id", CosmosPropertyExtensions.GetJsonPropertyName(id))
             Assert.Null(id.GetValueGeneratorFactory())
             Assert.Null(id.GetValueConverter())
             Assert.NotNull(id.GetValueComparer())
@@ -4496,7 +4556,7 @@ End Namespace
             Assert.Equal(ValueGenerated.Never, storeId.ValueGenerated)
             Assert.Equal(PropertySaveBehavior.Throw, storeId.GetAfterSaveBehavior())
             Assert.Equal(PropertySaveBehavior.Save, storeId.GetBeforeSaveBehavior())
-            Assert.Equal("id", storeId.GetJsonPropertyName())
+            Assert.Equal("id", CosmosPropertyExtensions.GetJsonPropertyName(storeId))
             Assert.IsType(Of IdValueGenerator)(storeId.GetValueGeneratorFactory()(storeId, dataEntity))
             Assert.Null(storeId.GetValueConverter())
             Assert.NotNull(storeId.GetValueComparer())
@@ -4511,7 +4571,7 @@ End Namespace
             Assert.Equal(ValueGenerated.Never, partitionId.ValueGenerated)
             Assert.Equal(PropertySaveBehavior.Throw, partitionId.GetAfterSaveBehavior())
             Assert.Equal(PropertySaveBehavior.Save, partitionId.GetBeforeSaveBehavior())
-            Assert.Equal("PartitionId", partitionId.GetJsonPropertyName())
+            Assert.Equal("PartitionId", CosmosPropertyExtensions.GetJsonPropertyName(partitionId))
             Assert.Null(partitionId.GetValueGeneratorFactory())
             Assert.Null(partitionId.GetValueConverter())
             Assert.IsType(Of NumberToStringConverter(Of Long))(partitionId.FindTypeMapping().Converter)
@@ -4527,7 +4587,7 @@ End Namespace
             Assert.Equal(ValueGenerated.OnAddOrUpdate, eTag.ValueGenerated)
             Assert.Equal(PropertySaveBehavior.Ignore, eTag.GetAfterSaveBehavior())
             Assert.Equal(PropertySaveBehavior.Ignore, eTag.GetBeforeSaveBehavior())
-            Assert.Equal("_etag", eTag.GetJsonPropertyName())
+            Assert.Equal("_etag", CosmosPropertyExtensions.GetJsonPropertyName(eTag))
             Assert.Null(eTag.GetValueGeneratorFactory())
             Assert.Null(eTag.GetValueConverter())
             Assert.NotNull(eTag.GetValueComparer())
@@ -4544,7 +4604,7 @@ End Namespace
             Assert.Equal(ValueGenerated.Never, blob.ValueGenerated)
             Assert.Equal(PropertySaveBehavior.Save, blob.GetAfterSaveBehavior())
             Assert.Equal(PropertySaveBehavior.Save, blob.GetBeforeSaveBehavior())
-            Assert.Equal("JsonBlob", blob.GetJsonPropertyName())
+            Assert.Equal("JsonBlob", CosmosPropertyExtensions.GetJsonPropertyName(blob))
             Assert.Null(blob.GetValueGeneratorFactory())
             Assert.Null(blob.GetValueConverter())
             Assert.NotNull(blob.GetValueComparer())
@@ -4559,7 +4619,7 @@ End Namespace
             Assert.Equal(ValueGenerated.OnAddOrUpdate, jObject.ValueGenerated)
             Assert.Equal(PropertySaveBehavior.Ignore, jObject.GetAfterSaveBehavior())
             Assert.Equal(PropertySaveBehavior.Ignore, jObject.GetBeforeSaveBehavior())
-            Assert.Equal("", jObject.GetJsonPropertyName())
+            Assert.Equal("", CosmosPropertyExtensions.GetJsonPropertyName(jObject))
             Assert.Null(jObject.GetValueGeneratorFactory())
             Assert.Null(jObject.GetValueConverter())
             Assert.NotNull(jObject.GetValueComparer())
@@ -4681,6 +4741,7 @@ End Namespace
                 .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
                 .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"))
                 .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Proxies"))
                 .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
                 .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"))
                 .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"))

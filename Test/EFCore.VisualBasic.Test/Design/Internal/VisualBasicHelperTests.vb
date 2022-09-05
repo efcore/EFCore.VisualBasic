@@ -402,7 +402,8 @@ string with """,
         <InlineData("spac ed", "spaced")>
         <InlineData("1nders", "_1nders")>
         <InlineData("Name.space", "[Namespace]")>
-        <InlineData("$", "_")>
+        <InlineData("$Foo", "Foo")>
+        <InlineData("$", "_0")>
         Public Sub Identifier_works(input As String, expected As String)
             Assert.Equal(expected, New VisualBasicHelper(TypeMappingSource).Identifier(input))
         End Sub
@@ -418,12 +419,59 @@ string with """,
         <InlineData({"WebApplication1", "Migration"}, "WebApplication1.Migration")>
         <InlineData({"WebApplication1.Migration"}, "WebApplication1.Migration")>
         <InlineData({"ef-xplat.Namespace"}, "efxplat.[Namespace]")>
-        <InlineData({"#", "$"}, "_._")>
-        <InlineData({""}, "_")>
-        <InlineData(New String() {}, "_")>
-        <InlineData(New String() {Nothing}, "_")>
+        <InlineData({"#", "$"}, "_0._0")>
+        <InlineData({""}, "Empty")>
+        <InlineData(New String() {}, "Empty")>
+        <InlineData(New String() {Nothing}, "Empty")>
         Public Sub Namespace_works(input As String(), excepted As String)
             Assert.Equal(excepted, New VisualBasicHelper(TypeMappingSource).Namespace(input))
+        End Sub
+
+        <ConditionalTheory>
+        <InlineData("Foo.Bar", CStr(Nothing), "Foo.Bar")>
+        <InlineData("Foo.Bar", "", "Foo.Bar")>
+        <InlineData("Foo.Bar", "Foo.Bar", "Foo.Bar")>
+        <InlineData("Foo.Bar", ".Foo.Bar", "Foo.Bar")>
+        <InlineData("Foo.Bar", "Toto", "Foo.Bar.Toto")>
+        <InlineData("integer.Foo", "Bar", "integer.Foo.Bar")>
+        <InlineData("Foo.Bar", "Foo.Bar.Foo.integer", "Foo.Bar.Foo.[integer]")>
+        <InlineData("Foo.Bar", "Global", "Foo.Bar")>
+        <InlineData("Foo.Bar", "Global.Foo.Bar.Toto", "Foo.Bar.Toto")>
+        <InlineData("Foo.Bar", "Global.Bar.Foo.Toto", "Bar.Foo.Toto")>
+        <InlineData("Foo.Bar", "Foo.Bar.Foo.Bar.Toto", "Foo.Bar.Foo.Bar.Toto")>
+        <InlineData("Global.Foo.Bar", "[Global].Foo.Bar", "Global.Foo.Bar")>
+        <InlineData("global.Foo.Bar", "[Global].Foo.Bar.Toto", "global.Foo.Bar.Toto")>
+        <InlineData("Global.Foo.Bar", "global.Global.Foo.Bar.Toto ", "Global.Foo.Bar.Toto")>
+        Public Sub FullyQualifiedNamespace_works(rootNamespace As String, namespaceHint As String, excepted As String)
+            Assert.Equal(excepted, New VisualBasicHelper(TypeMappingSource).FullyQualifiedNamespace(rootNamespace, namespaceHint))
+        End Sub
+
+        <ConditionalTheory>
+        <InlineData("Foo.Bar", CStr(Nothing), Nothing)>
+        <InlineData("Foo.Bar", "", Nothing)>
+        <InlineData("Foo.Bar", "Foo.Bar", Nothing)>
+        <InlineData("Foo.Bar", ".Foo.Bar", Nothing)>
+        <InlineData("Foo.Bar", "Toto", "Toto")>
+        <InlineData("Foo.Bar", "Foo.Bar.integer", "[integer]")>
+        <InlineData("Foo.Bar", "Foo.Bar.Foo.integer", "Foo.[integer]")>
+        <InlineData("Foo.Bar", "Global", "Global")>
+        <InlineData("Foo.Bar", "Global.Foo.Bar.Toto", "Toto")>
+        <InlineData("Foo.Bar", "Global.Bar.Foo.Toto", "Global.Bar.Foo.Toto")>
+        <InlineData("Foo.Bar", "Foo.Bar.Foo.Bar.Toto", "Foo.Bar.Toto")>
+        <InlineData("Global.Foo.Bar", "[Global].Foo.Bar", Nothing)>
+        <InlineData("global.Foo.Bar", "[Global].Foo.Bar.Toto", "Toto")>
+        <InlineData("Global.Foo.Bar", "global.Global.Foo.Bar.Toto ", "Toto")>
+        Public Sub NamespaceIdentifier_works(rootNamespace As String, namespaceHint As String, excepted As String)
+            Assert.Equal(excepted, New VisualBasicHelper(TypeMappingSource).NamespaceIdentifier(rootNamespace, namespaceHint))
+        End Sub
+
+        <ConditionalTheory>
+        <InlineData("Foo.Bar", "Foo", Nothing)>
+        <InlineData("Foo.Bar", "Foo.Bar", Nothing)>
+        <InlineData("Foo.Bar", "Foo.Bar.Toto", "Foo.Bar.Toto")>
+        <InlineData("Foo.Bar", "Toto.Foo.Bar", "Toto.Foo.Bar")>
+        Public Sub ImportsClause_works(currentTypeNamespace As String, importedTypeNamespace As String, excepted As String)
+            Assert.Equal(excepted, New VisualBasicHelper(TypeMappingSource).ImportsClause(currentTypeNamespace, importedTypeNamespace))
         End Sub
 
         <ConditionalFact>

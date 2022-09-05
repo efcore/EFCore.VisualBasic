@@ -1,0 +1,159 @@
+﻿<#@ template language="VB" hostSpecific="true" linePragmas="false" #>
+<#@ output extension=".vb" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
+<#@ assembly name="Microsoft.Extensions.DependencyInjection.Abstractions" #>
+<#@ parameter name="EntityType" type="Microsoft.EntityFrameworkCore.Metadata.IEntityType" #>
+<#@ parameter name="Options" type="Microsoft.EntityFrameworkCore.Scaffolding.ModelCodeGenerationOptions" #>
+<#@ parameter name="NamespaceHint" type="System.String" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="EntityFrameworkCore.VisualBasic.Design" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore.Design" #>
+<#@ import namespace="Microsoft.Extensions.DependencyInjection" #>
+<#
+    If EntityType.IsSimpleManyToManyJoinEntityType() Then
+        ' Don't scaffold these
+        Return ""
+    End If
+
+    Dim services = DirectCast(Host, IServiceProvider)
+    Dim annotationCodeGenerator = services.GetRequiredService(Of IAnnotationCodeGenerator)()
+    Dim code = services.GetRequiredService(Of IVisualBasicHelper)()
+
+    Dim importsList = New List(Of String) From {
+        "System",
+        "System.Collections.Generic"
+    }
+
+    If Options.UseDataAnnotations Then
+        importsList.Add("System.ComponentModel.DataAnnotations")
+        importsList.Add("System.ComponentModel.DataAnnotations.Schema")
+        importsList.Add("Microsoft.EntityFrameworkCore") ' For attributes coming out of Abstractions
+    End If
+
+    Dim FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint)
+
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
+#>
+Namespace <#= FileNamespaceIdentifier #>
+<#
+    End If
+
+    If Not String.IsNullOrEmpty(EntityType.GetComment()) Then
+#>
+    ''' <summary>
+    ''' <#= code.XmlComment(EntityType.GetComment(), indent:= 1) #>
+    ''' </summary>
+<#
+    End If
+
+    If Options.UseDataAnnotations Then
+        For Each dataAnnotation in EntityType.GetDataAnnotations(annotationCodeGenerator)
+#>
+    <#= code.Fragment(dataAnnotation) #>
+<#
+        Next
+    End If
+#>
+    Partial Public Class <#= EntityType.Name #>
+<#
+    Dim firstProperty = true
+    For Each prop In entityType.GetProperties().OrderBy(Function(p) If(p.GetColumnOrder(), -1))
+        If Not firstProperty Then
+            WriteLine("")
+        End If
+
+        If Not String.IsNullOrEmpty(prop.GetComment()) Then
+#>
+        ''' <summary>
+        ''' <#= code.XmlComment(prop.GetComment(), indent:= 2) #>
+        ''' </summary>
+<#
+        End If
+
+        If Options.UseDataAnnotations Then
+            Dim dataAnnotations = prop.GetDataAnnotations(annotationCodeGenerator).
+                                        Where(Function(a) Not (a.Type = GetType(RequiredAttribute) AndAlso 
+                                                          Options.UseNullableReferenceTypes AndAlso 
+                                                          Not prop.ClrType.IsValueType))
+            For Each dataAnnotation in dataAnnotations
+#>
+        <#= code.Fragment(dataAnnotation) #>
+<#
+            Next
+        End If
+
+        importsList.AddRange(code.GetRequiredImports(prop.ClrType))
+#>
+        Public Property <#= code.Identifier(prop.Name) #> As <#= code.Reference(prop.ClrType) #>
+<#
+        firstProperty = false
+    Next
+
+    For Each navigation in EntityType.GetNavigations()
+        WriteLine("")
+
+        If Options.UseDataAnnotations Then
+            For Each dataAnnotation in navigation.GetDataAnnotations(annotationCodeGenerator)
+#>
+        <#= code.Fragment(dataAnnotation) #>
+<#
+            Next
+        End If
+
+        Dim targetType = navigation.TargetEntityType.Name
+        If navigation.IsCollection Then
+#>
+        Public Overridable ReadOnly Property <#= code.Identifier(navigation.Name) #> As ICollection(Of <#= targetType #>) = New List(Of <#= targetType #>)()
+<#
+        Else
+#>
+        Public Overridable Property <#= code.Identifier(navigation.Name) #> As <#= targetType #>
+<#
+        End If
+    Next
+
+    For Each skipNavigation in EntityType.GetSkipNavigations()
+        WriteLine("")
+
+        If Options.UseDataAnnotations Then
+            For Each dataAnnotation in skipNavigation.GetDataAnnotations(annotationCodeGenerator)
+#>
+        <#= code.Fragment(dataAnnotation) #>
+<#
+            Next
+        End If
+#>
+        Public Overridable ReadOnly Property <#= code.Identifier(skipNavigation.Name) #> As ICollection(Of <#= skipNavigation.TargetEntityType.Name #>) = New List(Of <#= skipNavigation.TargetEntityType.Name #>)()
+<#
+    Next
+#>
+    End Class
+<#
+    If Not String.IsNullOrEmpty(FileNamespaceIdentifier) Then
+#>
+End Namespace
+<#
+    End If
+#>
+<#
+    Dim previousOutput = GenerationEnvironment
+    GenerationEnvironment = New StringBuilder()
+
+    For Each ns in importsList.Where(Function(x) Not String.IsNullOrWhiteSpace(x)).
+                               Distinct().
+                               OrderBy(Function(x) x, New NamespaceComparer())
+#>
+Imports <#= ns #>
+<#
+    Next
+
+    WriteLine("")
+
+    GenerationEnvironment.Append(previousOutput)
+#>

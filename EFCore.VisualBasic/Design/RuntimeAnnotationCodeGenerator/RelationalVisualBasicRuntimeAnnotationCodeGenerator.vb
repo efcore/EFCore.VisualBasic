@@ -1,4 +1,5 @@
-﻿Imports System.Reflection
+﻿Imports System.Data
+Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Infrastructure
@@ -163,20 +164,17 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 DecrementIndent().
                 AppendLine()
 
-            Dim parameterParameters = parameters.Cloner.
-                                                 WithTargetName(functionVariable).
-                                                 Clone()
+            parameters = parameters.Cloner.
+                                    WithTargetName(functionVariable).
+                                    Clone()
 
             For Each parameter In [function].Parameters
-                Create(parameter, parameterParameters)
+                Create(parameter, parameters)
             Next
 
-            CreateAnnotations(
-            [function],
-            AddressOf Generate,
-             parameters.Cloner.
-                        WithTargetName(functionVariable).
-                        Clone())
+            CreateAnnotations([function],
+                              AddressOf Generate,
+                              parameters)
 
             mainBuilder.
                 Append(functionsVariable).
@@ -527,6 +525,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
         Private Sub Create(storedProcedure As IStoredProcedure, sprocVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             AddNamespace(GetType(RuntimeStoredProcedure), parameters.Namespaces)
+            AddNamespace(GetType(ParameterDirection), parameters.Namespaces)
+
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
 
@@ -536,32 +536,27 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(parameters.TargetName).AppendLine(","c).
                 Append(code.Literal(storedProcedure.Name)).AppendLine(","c).
                 Append(code.Literal(storedProcedure.Schema)).AppendLine(","c).
+                Append(code.Literal(storedProcedure.IsRowsAffectedReturned)).AppendLine(","c).
                 Append(code.Literal(storedProcedure.AreTransactionsSuppressed)).
                 AppendLine(")"c).
                 DecrementIndent().
                 AppendLine()
 
+            parameters = parameters.Cloner.
+                                    WithTargetName(sprocVariable).
+                                    Clone
+
             For Each parameter In storedProcedure.Parameters
-                mainBuilder.
-                    Append(sprocVariable).
-                    Append(".AddParameter(").
-                    Append(code.Literal(parameter)).
-                    AppendLine(")"c)
+                Create(parameter, parameters)
             Next
 
             For Each resultColumn In storedProcedure.ResultColumns
-                mainBuilder.
-                    Append(sprocVariable).
-                    Append(".AddResultColumn(").
-                    Append(code.Literal(resultColumn)).
-                    AppendLine(")"c)
+                Create(resultColumn, parameters)
             Next
 
             CreateAnnotations(storedProcedure,
                               AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(sprocVariable).
-                                         Clone())
+                              parameters)
         End Sub
 
         ''' <summary>
@@ -570,6 +565,68 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' <param name="storedProcedure">The stored procedure to which the annotations are applied.</param>
         ''' <param name="parameters">Additional parameters used during code generation.</param>
         Public Overridable Overloads Sub Generate(storedProcedure As IStoredProcedure, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            GenerateSimpleAnnotations(parameters)
+        End Sub
+
+        Private Sub Create(parameter As IStoredProcedureParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim code = VBCode
+            Dim mainBuilder = parameters.MainBuilder
+            Dim parameterVariable = code.Identifier(parameter.Name, parameters.ScopeVariables, capitalize:=False)
+
+            mainBuilder.
+                Append("Dim ").Append(parameterVariable).Append(" = ").
+                Append(parameters.TargetName).AppendLine(".AddParameter(").IncrementIndent().
+                Append(code.Literal(parameter.Name)).Append(", ").
+                Append(code.Literal(DirectCast(parameter.Direction, [Enum]))).Append(", ").
+                Append(code.Literal(parameter.ForRowsAffected)).Append(", ").
+                Append(code.Literal(parameter.PropertyName)).Append(", ").
+                Append(code.Literal(parameter.ForOriginalValue)).
+                AppendLine(")").DecrementIndent()
+
+            CreateAnnotations(parameter,
+                              AddressOf Generate,
+                              parameters.Cloner.
+                                         WithTargetName(parameterVariable).
+                                         Clone)
+        End Sub
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="storedProcedure">The stored procedure to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Public Overridable Overloads Sub Generate(storedProcedure As IStoredProcedureParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            GenerateSimpleAnnotations(parameters)
+        End Sub
+
+        Private Sub Create(resultColumn As IStoredProcedureResultColumn, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim code = VBCode
+            Dim mainBuilder = parameters.MainBuilder
+            Dim resultColumnVariable = code.Identifier(resultColumn.Name, parameters.ScopeVariables, capitalize:=False)
+
+            mainBuilder.
+                Append("Dim ").Append(resultColumnVariable).Append(" = ").
+                Append(parameters.TargetName).AppendLine(".AddResultColumn(").IncrementIndent().
+                Append(code.Literal(resultColumn.Name)).Append(", ").
+                Append(code.Literal(resultColumn.ForRowsAffected)).Append(", ").
+                Append(code.Literal(resultColumn.PropertyName)).
+                AppendLine(")").DecrementIndent()
+
+            CreateAnnotations(resultColumn,
+                              AddressOf Generate,
+                                parameters.Cloner.
+                                           WithTargetName(resultColumnVariable).
+                                           Clone)
+        End Sub
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="storedProcedure">The stored procedure to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Public Overridable Overloads Sub Generate(storedProcedure As IStoredProcedureResultColumn, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
 

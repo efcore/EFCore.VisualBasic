@@ -590,7 +590,9 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String _
+        Implements IVisualBasicHelper.Literal
+
             Return ListLitetal(GetType(T), values, vertical)
         End Function
 
@@ -602,6 +604,44 @@ Namespace Design.Internal
                 Append("New List(Of ").
                 Append(Reference(type)).
                 Append(")"c)
+
+            Return HandleEnumerable(builder, vertical, values, Sub(value)
+                                                                   builder.Append(UnknownLiteral(value))
+                                                               End Sub)
+        End Function
+
+        ''' <summary>
+        '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
+        '''     directly from your code. This API may change Or be removed in future releases.
+        ''' </summary>
+        Public Overridable Function Literal(Of TKey, TValue)(values As Dictionary(Of TKey, TValue), Optional vertical As Boolean = False) As String _
+        Implements IVisualBasicHelper.Literal
+
+            Return Dictionary(GetType(TKey), GetType(TValue), values, vertical)
+        End Function
+
+        Private Function Dictionary(keyType As Type, valueType As Type, dict As IDictionary, Optional vertical As Boolean = False) As String
+
+            Dim builder As New IndentedStringBuilder()
+
+            builder.
+                Append("New Dictionary(Of ").
+                Append(Reference(keyType)).
+                Append(", ").
+                Append(Reference(valueType)).
+                Append(")")
+
+            Return HandleEnumerable(builder, vertical, dict.Keys, Sub(key)
+                                                                      builder.
+                                                                          Append("{").
+                                                                          Append(UnknownLiteral(key)).
+                                                                          Append(", ").
+                                                                          Append(UnknownLiteral(dict(key))).
+                                                                          Append("}")
+                                                                  End Sub)
+        End Function
+
+        Private Shared Function HandleEnumerable(builder As IndentedStringBuilder, vertical As Boolean, values As IEnumerable, handleValue As Action(Of Object)) As String
 
             Dim hasData = False
             Dim first = True
@@ -625,7 +665,7 @@ Namespace Design.Internal
                     End If
                 End If
 
-                builder.Append(UnknownLiteral(value))
+                handleValue(value)
             Next
 
             If hasData Then
@@ -744,11 +784,17 @@ Namespace Design.Internal
                 Return ArrayLitetal(LiteralType.GetElementType(), DirectCast(value, Array))
             End If
 
-            If TypeOf value Is IList AndAlso
-               value.GetType().IsGenericType AndAlso
-               value.GetType().GetGenericTypeDefinition() Is GetType(List(Of)) Then
+            Dim valueType = value.GetType()
+            If valueType.IsGenericType AndAlso
+               Not valueType.IsGenericTypeDefinition Then
 
-                Return ListLitetal(value.GetType().GetGenericArguments()(0), DirectCast(value, IList))
+                Dim genericArguments = valueType.GetGenericArguments()
+
+                If genericArguments.Length = 1 AndAlso valueType.GetGenericTypeDefinition() = GetType(List(Of)) Then
+                    Return ListLitetal(genericArguments(0), DirectCast(value, IList))
+                ElseIf genericArguments.Length = 2 AndAlso valueType.GetGenericTypeDefinition() = GetType(Dictionary(Of,)) Then
+                    Return Dictionary(genericArguments(0), genericArguments(1), DirectCast(value, IDictionary))
+                End If
             End If
 
             Dim mapping = _typeMappingSource.FindMapping(LiteralType)

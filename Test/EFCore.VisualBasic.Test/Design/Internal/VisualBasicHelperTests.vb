@@ -112,43 +112,97 @@ Namespace Design.Internal
         <ConditionalFact>
         Public Sub Literal_works_when_single_ByteArray()
             Literal_works(
-                    New Byte() {1},
-                    "New Byte() {1}")
+                New Byte() {1},
+                "New Byte() {1}")
         End Sub
 
         <ConditionalFact>
         Public Sub Literal_works_when_many_ByteArray()
             Literal_works(
-                    New Byte() {1, 2},
-                    "New Byte() {1, 2}")
+                New Byte() {1, 2},
+                "New Byte() {1, 2}")
         End Sub
 
         <ConditionalFact>
         Public Sub Literal_works_when_empty_list()
             Literal_works(
-            New List(Of String),
-            "New List(Of String)")
+                New List(Of String),
+                "New List(Of String)")
         End Sub
 
         <ConditionalFact>
         Public Sub Literal_works_when_list_with_single_element()
             Literal_works(
-            New List(Of String) From {"one"},
-            "New List(Of String) From {""one""}")
+                New List(Of String) From {"one"},
+                "New List(Of String) From {""one""}")
         End Sub
 
         <ConditionalFact>
         Public Sub Literal_works_when_list_of_mixed_objects()
             Literal_works(
-            New List(Of Object) From {1, "two"},
-            "New List(Of Object) From {1, ""two""}")
+                New List(Of Object) From {1, "two"},
+                "New List(Of Object) From {1, ""two""}")
         End Sub
 
         <ConditionalFact>
         Public Sub Literal_works_when_list_with_ctor_arguments()
             Literal_works(
-            New List(Of String)({"one"}) From {"two", "three"},
-            "New List(Of String) From {""one"", ""two"", ""three""}")
+                New List(Of String)({"one"}) From {"two", "three"},
+                "New List(Of String) From {""one"", ""two"", ""three""}")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_list_in_vertical()
+
+            Dim listToTest As New List(Of Object) From {New List(Of Integer)({1}), "two", 3}
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Literal(listToTest, True)
+
+            Assert.Equal(
+"New List(Of Object) From {
+    New List(Of Integer) From {1},
+    ""two"",
+    3
+}",
+            result,
+            ignoreLineEndingDifferences:=True)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_empty_dictionary()
+            Literal_works(
+                New Dictionary(Of String, Integer),
+                "New Dictionary(Of String, Integer)")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_dictionary_with_single_element()
+            Literal_works(
+                New Dictionary(Of String, String) From {{"one", "value"}},
+                "New Dictionary(Of String, String) From {{""one"", ""value""}}")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_dictionary_of_mixed_objects()
+            Literal_works(
+                New Dictionary(Of String, Object) From {{"one", 1}, {"two", "Two"}},
+                "New Dictionary(Of String, Object) From {{""one"", 1}, {""two"", ""Two""}}")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_dictionary_vertical()
+
+            Dim dictToTest As New Dictionary(Of Integer, Object) From {{1, 1}, {2, "Two"}}
+
+            Dim result = New VisualBasicHelper(TypeMappingSource).Literal(dictToTest, True)
+
+            Assert.Equal(
+"New Dictionary(Of Integer, Object) From {
+    {1, 1},
+    {2, ""Two""}
+}",
+            result,
+            ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -276,23 +330,6 @@ string with """,
 "New Object(,) {
     {""A"", 1},
     {""B"", 2}
-}",
-            result,
-            ignoreLineEndingDifferences:=True)
-        End Sub
-
-        <ConditionalFact>
-        Public Sub Literal_works_when_list_in_vertical()
-
-            Dim listToTest As New List(Of Object) From {New List(Of Integer)({1}), "two", 3}
-
-            Dim result = New VisualBasicHelper(TypeMappingSource).Literal(listToTest, True)
-
-            Assert.Equal(
-"New List(Of Object) From {
-    New List(Of Integer) From {1},
-    ""two"",
-    3
 }",
             result,
             ignoreLineEndingDifferences:=True)

@@ -1,5 +1,4 @@
-﻿Imports EntityFrameworkCore.VisualBasic.Design.Internal
-Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports Microsoft.EntityFrameworkCore.Metadata
 
 Namespace Design
     ''' <summary>
@@ -73,6 +72,13 @@ Namespace Design
         ''' <param name="index">The index to which the annotations are applied.</param>
         ''' <param name="parameters">Additional parameters used during code generation.</param>
         Sub Generate(index As IIndex, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="trigger">The trigger to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Sub Generate(trigger As ITrigger, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
         ''' <summary>
         '''     Generates code to create the given annotations.

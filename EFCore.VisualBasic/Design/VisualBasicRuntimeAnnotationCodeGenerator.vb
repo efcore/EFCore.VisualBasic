@@ -1,5 +1,6 @@
 ﻿Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+Imports Microsoft.Identity.Client.ApiConfig
 
 Namespace Design
     ''' <summary>
@@ -161,6 +162,24 @@ Namespace Design
                 For Each annotation In parameters.Annotations
                     If CoreAnnotationNames.AllNames.Contains(annotation.Key) Then
                         parameters.Annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
+
+            GenerateSimpleAnnotations(parameters)
+        End Sub
+
+        ''' <inheritdoc />
+        Public Overridable Sub Generate(trigger As ITrigger, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
+            Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
+
+            If Not parameters.IsRuntime Then
+                Dim annotations = parameters.Annotations
+                For Each annotation In annotations
+                    Dim Key = annotation.Key
+
+                    If CoreAnnotationNames.AllNames.Contains(Key) Then
+                        annotations.Remove(Key)
                     End If
                 Next
             End If

@@ -1376,11 +1376,11 @@ End Namespace
                 End Sub,
                 Sub(Model)
                     Dim EntityType = Model.FindEntityType("TestNamespace.Employee")
-                    Dim triggers = EntityType.GetTriggers()
+                    Dim triggers = EntityType.GetDeclaredTriggers()
 
-                    Assert.Collection(triggers.OrderBy(Function(t) t.Name),
-                        Sub(t) Assert.Equal("Trigger1", t.Name),
-                        Sub(t) Assert.Equal("Trigger2", t.Name))
+                    Assert.Collection(triggers,
+                        Sub(t) Assert.Equal("Trigger1", t.GetDatabaseName),
+                        Sub(t) Assert.Equal("Trigger2", t.GetDatabaseName))
                 End Sub)
         End Sub
 

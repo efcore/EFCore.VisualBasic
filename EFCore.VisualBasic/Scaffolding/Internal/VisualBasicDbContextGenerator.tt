@@ -115,8 +115,7 @@ Namespace <#= FileNamespaceIdentifier #>
         If key IsNot Nothing Then
             Dim keyFluentApiCalls = key.GetFluentApiCalls(annotationCodeGenerator)
             If keyFluentApiCalls IsNot Nothing OrElse
-               key.Properties.Count > 1 OrElse
-               (Not key.IsHandledByConventions() AndAlso Not Options.UseDataAnnotations)
+               (Not key.IsHandledByConvention() AndAlso Not Options.UseDataAnnotations)
 
                 If keyFluentApiCalls IsNot Nothing Then
                     importsList.AddRange(keyFluentApiCalls.GetRequiredUsings())
@@ -129,7 +128,7 @@ Namespace <#= FileNamespaceIdentifier #>
         End If
 
         Dim entityTypeFluentApiCalls = entityType.GetFluentApiCalls(annotationCodeGenerator)?.
-                                           FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.HasDataAnnotation))
+                                           FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations))
 
         If entityTypeFluentApiCalls IsNot Nothing Then
             importsList.AddRange(entityTypeFluentApiCalls.GetRequiredUsings())
@@ -144,7 +143,7 @@ Namespace <#= FileNamespaceIdentifier #>
         End If
 
         For Each index in entityType.GetIndexes().
-                                     Where(Function(i) Not (Options.UseDataAnnotations AndAlso i.HasDataAnnotation(annotationCodeGenerator)))
+                                     Where(Function(i) Not (Options.UseDataAnnotations AndAlso i.IsHandledByDataAnnotations(annotationCodeGenerator)))
 
             If anyEntityTypeConfiguration Then
                 WriteLine("")
@@ -163,7 +162,7 @@ Namespace <#= FileNamespaceIdentifier #>
         Dim firstProperty = True
         For Each prop in entityType.GetProperties()
             Dim propertyFluentApiCalls = prop.GetFluentApiCalls(annotationCodeGenerator)?.
-                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.HasDataAnnotation) AndAlso
+                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations) AndAlso
                                               Not (c.Method = "IsRequired" AndAlso Options.UseNullableReferenceTypes AndAlso Not prop.ClrType.IsValueType))
 
             If propertyFluentApiCalls Is Nothing Then
@@ -184,7 +183,7 @@ Namespace <#= FileNamespaceIdentifier #>
 
         For Each foreignKey in entityType.GetForeignKeys()
             Dim foreignKeyFluentApiCalls = foreignKey.GetFluentApiCalls(annotationCodeGenerator)?.
-                                                      FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.HasDataAnnotation))
+                                                      FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations))
 
             If foreignKeyFluentApiCalls Is Nothing Then
                 Continue For

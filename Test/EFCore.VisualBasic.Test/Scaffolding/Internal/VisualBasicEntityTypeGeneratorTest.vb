@@ -561,7 +561,7 @@ End Namespace
         End Sub
 
         <ConditionalFact>
-        Public Sub KeyAttribute_is_generated_on_multiple_properties_but_configuring_Imports_fluent_api_for_composite_key()
+        Public Sub KeyAttribute_is_generated_on_multiple_properties_but_and_uses_PrimaryKeyAttribute_for_composite_key()
 
             Dim expectedCode =
 "Imports System
@@ -571,6 +571,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
 
 Namespace TestNamespace
+    <PrimaryKey(""Key"", ""Serial"")>
     Partial Public Class Post
         <Key>
         Public Property Key As Integer
@@ -605,11 +606,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Post)(
-                Sub(entity)
-                    entity.HasKey(Function(e) New With {{e.Key, e.Serial}})
-                End Sub)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -1322,11 +1318,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Blog)(
-                Sub(entity)
-                    entity.HasKey(Function(e) New With {{e.Id1, e.Id2}})
-                End Sub)
-
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()

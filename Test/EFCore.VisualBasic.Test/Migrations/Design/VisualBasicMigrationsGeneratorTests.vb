@@ -114,8 +114,8 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.ModelDependencies,
                 RelationalAnnotationNames.FieldValueGetter,
                 RelationalAnnotationNames.JsonPropertyName,
-                RelationalAnnotationNames.JsonColumnName, ' Appears On entity type but requires specific model (i.e. owned types that can map To json, otherwise validation throws)
-                RelationalAnnotationNames.JsonColumnTypeMapping}
+                RelationalAnnotationNames.ContainerColumnName, ' Appears On entity type but requires specific model (i.e. owned types that can map To json, otherwise validation throws)
+                RelationalAnnotationNames.ContainerColumnTypeMapping}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -269,10 +269,9 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
                 RelationalAnnotationNames.ModelDependencies,
-                RelationalAnnotationNames.Triggers,
                 RelationalAnnotationNames.FieldValueGetter,
-                RelationalAnnotationNames.JsonColumnName,
-                RelationalAnnotationNames.JsonColumnTypeMapping,
+                RelationalAnnotationNames.ContainerColumnName,
+                RelationalAnnotationNames.ContainerColumnTypeMapping,
                 RelationalAnnotationNames.JsonPropertyName}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
@@ -615,7 +614,7 @@ End Namespace
                     migrationCode,
                     ignoreLineEndingDifferences:=True)
 
-            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(configureModel:=Sub(c) c.RemoveAllConventions())
+            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(configureConventions:=Sub(c) c.RemoveAllConventions())
             modelBuilder.HasAnnotation("Some:EnumValue", RegexOptions.Multiline)
             modelBuilder.HasAnnotation(RelationalAnnotationNames.DbFunctions, New SortedDictionary(Of String, IDbFunction)())
             modelBuilder.Entity("T1", Sub(eb)

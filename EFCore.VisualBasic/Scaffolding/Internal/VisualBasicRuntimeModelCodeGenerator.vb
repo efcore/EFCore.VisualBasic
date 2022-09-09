@@ -3,7 +3,6 @@ Imports System.Text
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
-Imports Microsoft.EntityFrameworkCore.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -562,6 +561,10 @@ $"    Dim model As New {className}()
 
                 For Each index In entityType.GetDeclaredIndexes()
                     Create(index, propertyVariables, parameters)
+                Next
+
+                For Each trigger In entityType.GetDeclaredTriggers()
+                    Create(trigger, parameters)
                 Next
 
                 mainBuilder.
@@ -1389,6 +1392,28 @@ $"    Dim model As New {className}()
                 AppendLine("End Function")
         End Sub
 
+        Private Sub Create(trigger As ITrigger, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim triggerVariable = _code.Identifier(trigger.ModelName, parameters.ScopeVariables, capitalize:=False)
+
+            Dim mainBuilder = parameters.MainBuilder
+            mainBuilder.
+                Append("Dim ").Append(triggerVariable).Append(" = ").Append(parameters.TargetName).AppendLine(".AddTrigger(").
+                IncrementIndent().
+                Append(_code.Literal(trigger.ModelName)).
+                AppendLine(")").
+                DecrementIndent()
+
+            CreateAnnotations(
+                trigger,
+                AddressOf _annotationCodeGenerator.Generate,
+                parameters.Cloner.
+                           WithTargetName(triggerVariable).
+                           Clone)
+
+            mainBuilder.AppendLine()
+        End Sub
+
         Private Sub CreateAnnotations(entityType As IEntityType,
                                       mainBuilder As IndentedStringBuilder,
                                       methodBuilder As IndentedStringBuilder,
@@ -1469,5 +1494,4 @@ $"    Dim model As New {className}()
             End If
         End Sub
     End Class
-
 End Namespace

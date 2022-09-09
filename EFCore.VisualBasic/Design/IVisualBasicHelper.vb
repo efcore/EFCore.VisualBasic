@@ -82,12 +82,12 @@ Namespace Design
         Function Literal(values As Object(,)) As String
 
         ''' <summary>
-        '''     Generates a list literal.
+        '''     Generates a nullable literal.
         ''' </summary>
-        ''' <param name="values">The list.</param>
-        ''' <param name="vertical">A value indicating whether to layout the literal vertically.</param>
+        ''' <typeparam name="T">The underlying type of the nullable type.</typeparam>
+        ''' <param name="value">The nullable value.</param>
         ''' <returns>The literal.</returns>
-        Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String
+        Function Literal(Of T As Structure)(value As T?) As String
 
         ''' <summary>
         '''     Generates a BigInteger literal.
@@ -95,14 +95,6 @@ Namespace Design
         ''' <param name="value">The BigInteger</param>
         ''' <returns>The literal.</returns>
         Function Literal(value As BigInteger) As String
-
-        ''' <summary>
-        '''     Generates a nullable literal.
-        ''' </summary>
-        ''' <typeparam name="T">The underlying type of the nullable type.</typeparam>
-        ''' <param name="value">The nullable value.</param>
-        ''' <returns>The literal.</returns>
-        Function Literal(Of T As Structure)(value As T?) As String
 
         ''' <summary>
         '''     Generates a bool literal.
@@ -266,6 +258,22 @@ Namespace Design
         ''' <param name="vertical">A value indicating whether to layout the literal vertically.</param>
         ''' <returns>The literal.</returns>
         Function Literal(Of T)(values As T(), Optional vertical As Boolean = False) As String
+
+        ''' <summary>
+        '''     Generates a list literal.
+        ''' </summary>
+        ''' <param name="values">The list.</param>
+        ''' <param name="vertical">A value indicating whether to layout the literal vertically.</param>
+        ''' <returns>The literal.</returns>
+        Function Literal(Of T)(values As List(Of T), Optional vertical As Boolean = False) As String
+
+        ''' <summary>
+        '''     Generates a dictionary literal.
+        ''' </summary>
+        ''' <param name="values">The dictionary.</param>
+        ''' <param name="vertical">A value indicating whether to layout the literal vertically.</param>
+        ''' <returns>The literal.</returns>
+        Function Literal(Of TKey, TValue)(values As Dictionary(Of TKey, TValue), Optional vertical As Boolean = False) As String
 
         ''' <summary>
         '''     Generates a valid Visual Basic namespace from the specified parts.

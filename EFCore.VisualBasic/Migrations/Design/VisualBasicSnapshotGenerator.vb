@@ -383,12 +383,10 @@ Namespace Migrations.Design
                 Append("("c).
                 Append(VBCode.Literal(sequence.Name))
 
-            If Not String.IsNullOrEmpty(sequence.Schema) AndAlso
-               sequence.Model.GetDefaultSchema() <> sequence.Schema Then
-
+            If Not String.IsNullOrEmpty(sequence.ModelSchema) Then
                 sequenceBuilderNameBuilder.
                     Append(", ").
-                    Append(VBCode.Literal(sequence.Schema))
+                    Append(VBCode.Literal(sequence.ModelSchema))
             End If
 
             sequenceBuilderNameBuilder.Append(")"c)
@@ -938,7 +936,7 @@ Namespace Migrations.Design
             annotations.TryGetAndRemove(RelationalAnnotationNames.Comment, commentAnnotation)
             Dim comment = CStr(commentAnnotation?.Value)
 
-            Dim hasTriggers = entityType.GetTriggers().Any(Function(t) t.TableName = tableName AndAlso t.TableSchema = schema)
+            Dim hasTriggers = entityType.GetDeclaredTriggers().Any(Function(t) t.GetTableName() = tableName AndAlso t.GetTableSchema() = schema)
             Dim hasOverrides = table IsNot Nothing AndAlso
                                entityType.GetProperties().Select(Function(p) p.FindOverrides(table.Value)).
                                                           Any(Function(o) o IsNot Nothing)
@@ -1269,9 +1267,9 @@ Namespace Migrations.Design
                                                    schema As String,
                                                    stringBuilder As IndentedStringBuilder)
 
-            For Each trigger In entityType.GetTriggers()
+            For Each trigger In entityType.GetDeclaredTriggers()
 
-                If trigger.TableName <> table OrElse trigger.TableSchema <> schema Then
+                If trigger.GetTableName() <> table OrElse trigger.GetTableSchema() <> schema Then
                     Continue For
                 End If
 
@@ -1298,14 +1296,6 @@ Namespace Migrations.Design
             ' Note that GenerateAnnotations below does the corresponding decrement
             stringBuilder.IncrementIndent()
 
-            If trigger.Name <> trigger.GetDefaultName() Then
-                stringBuilder.
-                    AppendLine().
-                    Append(".HasName(").
-                    Append(VBCode.Literal(trigger.Name)).
-                    Append(")"c)
-            End If
-
             GenerateTriggerAnnotations(triggerBuilderName, trigger, stringBuilder)
         End Sub
 
@@ -1322,6 +1312,18 @@ Namespace Migrations.Design
             Dim annotations = AnnotationCodeGenerator.
                                 FilterIgnoredAnnotations(trigger.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
+
+            Dim nameAnnotation As IAnnotation = Nothing
+            If annotations.TryGetAndRemove(RelationalAnnotationNames.Name, nameAnnotation) Then
+                stringBuilder.
+                    AppendLine().
+                    Append(".HasDatabaseName(").
+                    Append(VBCode.Literal(CStr(nameAnnotation.Value))).
+                    Append(")"c)
+            End If
+
+            annotations.Remove(RelationalAnnotationNames.TableName)
+            annotations.Remove(RelationalAnnotationNames.Schema)
 
             GenerateAnnotations(triggerBuilderName, trigger, stringBuilder, annotations, inChainedCall:=True)
         End Sub

@@ -1,0 +1,181 @@
+﻿<#@ template language="C#" hostSpecific="true" linePragmas="false" #>
+<#@ output extension=".vb" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
+<#@ assembly name="Microsoft.Extensions.DependencyInjection.Abstractions" #>
+<#@ parameter name="EntityType" type="Microsoft.EntityFrameworkCore.Metadata.IEntityType" #>
+<#@ parameter name="Options" type="Microsoft.EntityFrameworkCore.Scaffolding.ModelCodeGenerationOptions" #>
+<#@ parameter name="NamespaceHint" type="System.String" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="EntityFrameworkCore.VisualBasic.Design" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore.Design" #>
+<#@ import namespace="Microsoft.Extensions.DependencyInjection" #>
+<#
+    if (EntityType.IsSimpleManyToManyJoinEntityType())
+    {
+        // Don't scaffold these
+        return "";
+    }
+
+    var services = (IServiceProvider)Host;
+    var annotationCodeGenerator = services.GetRequiredService<IAnnotationCodeGenerator>();
+    var code = services.GetRequiredService<IVisualBasicHelper>();
+
+    var importsList = new List<string>
+    {
+        "System",
+        "System.Collections.Generic"
+    };
+
+    if (Options.UseDataAnnotations)
+    {
+        importsList.Add("System.ComponentModel.DataAnnotations");
+        importsList.Add("System.ComponentModel.DataAnnotations.Schema");
+        importsList.Add("Microsoft.EntityFrameworkCore");
+    }
+
+    var FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint);
+
+    if (!string.IsNullOrEmpty(FileNamespaceIdentifier))
+    {
+#>
+Namespace <#= FileNamespaceIdentifier #>
+<#
+    }
+
+    if (!string.IsNullOrEmpty(EntityType.GetComment()))
+    {
+#>
+    ''' <summary>
+    ''' <#= code.XmlComment(EntityType.GetComment(), indent:= 1) #>
+    ''' </summary>
+<#
+    }
+
+    if (Options.UseDataAnnotations)
+    {
+        foreach (var dataAnnotation in EntityType.GetDataAnnotations(annotationCodeGenerator))
+        {
+#>
+    <#= code.Fragment(dataAnnotation) #>
+<#
+        }
+    }
+#>
+    Partial Public Class <#= EntityType.Name #>
+{
+<#
+    var firstProperty = true;
+    foreach (var property in EntityType.GetProperties().OrderBy(p => p.GetColumnOrder() ?? -1))
+    {
+        if (!firstProperty)
+        {
+            WriteLine("");
+        }
+
+        if (!string.IsNullOrEmpty(property.GetComment()))
+        {
+#>
+        ''' <summary>
+        ''' <#= code.XmlComment(prop.GetComment(), indent:= 2) #>
+        ''' </summary>
+<#
+        }
+
+        if (Options.UseDataAnnotations)
+        {
+            var dataAnnotations = property.GetDataAnnotations(annotationCodeGenerator)
+                .Where(a => !(a.Type == typeof(RequiredAttribute) && Options.UseNullableReferenceTypes && !property.ClrType.IsValueType));
+
+            foreach (var dataAnnotation in dataAnnotations)
+            {
+#>
+        <#= code.Fragment(dataAnnotation) #>
+<#
+            }
+        }
+
+        importsList.AddRange(code.GetRequiredUsings(property.ClrType));
+#>
+        Public Property <#= code.Identifier(prop.Name) #> As <#= code.Reference(prop.ClrType) #>
+<#
+        firstProperty = false;
+    }
+
+    foreach (var navigation in EntityType.GetNavigations())
+    {
+        WriteLine("");
+
+        if (Options.UseDataAnnotations)
+        {
+            foreach (var dataAnnotation in navigation.GetDataAnnotations(annotationCodeGenerator))
+            {
+#>
+        <#= code.Fragment(dataAnnotation) #>
+<#
+            }
+        }
+
+        var targetType = navigation.TargetEntityType.Name;
+        if (navigation.IsCollection)
+        {
+#>
+        Public Overridable ReadOnly Property <#= code.Identifier(navigation.Name) #> As ICollection(Of <#= targetType #>) = New List(Of <#= targetType #>)()
+<#
+        }
+        else
+        {
+            var needsNullable = Options.UseNullableReferenceTypes && !(navigation.ForeignKey.IsRequired && navigation.IsOnDependent);
+            var needsInitializer = Options.UseNullableReferenceTypes && navigation.ForeignKey.IsRequired && navigation.IsOnDependent;
+#>
+        Public Overridable Property <#= code.Identifier(navigation.Name) #> As <#= targetType #>
+<#
+        }
+    }
+
+    foreach (var skipNavigation in EntityType.GetSkipNavigations())
+    {
+        WriteLine("");
+
+        if (Options.UseDataAnnotations)
+        {
+            foreach (var dataAnnotation in skipNavigation.GetDataAnnotations(annotationCodeGenerator))
+            {
+#>
+        <#= code.Fragment(dataAnnotation) #>
+<#
+            }
+        }
+#>
+        Public Overridable ReadOnly Property <#= code.Identifier(skipNavigation.Name) #> As ICollection(Of <#= skipNavigation.TargetEntityType.Name #>) = New List(Of <#= skipNavigation.TargetEntityType.Name #>)()
+<#
+    }
+#>
+    End Class
+<#
+    if (!string.IsNullOrEmpty(FileNamespaceIdentifier))
+    {
+#>
+End Namespace
+<#
+    }
+<#
+    var previousOutput = GenerationEnvironment;
+    GenerationEnvironment = new StringBuilder();
+
+    foreach (var ns in importsList.Distinct().OrderBy(x => x, new NamespaceComparer()))
+    {
+#>
+Imports <#= ns #>
+<#
+    }
+
+    WriteLine("");
+
+    GenerationEnvironment.Append(previousOutput);
+#>

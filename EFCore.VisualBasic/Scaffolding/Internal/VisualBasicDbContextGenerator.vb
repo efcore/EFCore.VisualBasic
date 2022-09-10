@@ -297,6 +297,7 @@ Namespace Scaffolding.Internal
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
             Dim joinEntityTypeFluentApiCalls = joinEntityType.GetFluentApiCalls(annotationCodeGenerator)
+
             If joinEntityTypeFluentApiCalls IsNot Nothing Then
                 importsList.AddRange(joinEntityTypeFluentApiCalls.GetRequiredUsings())
 

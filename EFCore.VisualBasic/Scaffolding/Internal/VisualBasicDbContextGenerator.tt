@@ -236,6 +236,7 @@ Namespace <#= FileNamespaceIdentifier #>
                                 j.HasKey(<#= code.Arguments(joinKey.Properties.Select(Function(e) e.Name)) #>)<#= code.Fragment(joinKeyFluentApiCalls, indent:=8) #>
 <#
             Dim joinEntityTypeFluentApiCalls = joinEntityType.GetFluentApiCalls(annotationCodeGenerator)
+
             If joinEntityTypeFluentApiCalls IsNot Nothing Then
                 importsList.AddRange(joinEntityTypeFluentApiCalls.GetRequiredUsings())
 #>

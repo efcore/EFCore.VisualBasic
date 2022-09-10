@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Brice Lambson, et al.",
+  "classifications": [
+    "EFCore",
+    "Scaffolding"
+  ],
+  "groupIdentity": "Microsoft.EntityFrameworkCore.Templates.ef-templates",
+  "precedence": "7000",
+  "identity": "EntityFrameworkCore.VisualBasic.Templates.ef-templates",
+  "name": "Entity Framework Core Scaffolding Templates",
+  "shortName": "ef-templates",
+  "tags": {
+    "language": "VB",
+    "type": "item"
+  }
+}

@@ -13,28 +13,25 @@ Imports Xunit.Abstractions
 
 Namespace Scaffolding.Internal
 
+    <Collection(NameOf(ModelCodeGeneratorTestCollection))>
     Public MustInherit Class VisualBasicModelCodeGeneratorTestBase
 
+        Private ReadOnly _fixture As ModelCodeGeneratorTestFixture
         Private ReadOnly _output As ITestOutputHelper
 
-        Protected Sub New(output As ITestOutputHelper)
+        Protected Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
+            _fixture = fixture
             _output = output
         End Sub
 
         Sub Test(buildModel As Action(Of ModelBuilder),
-             options As ModelCodeGenerationOptions,
-             assertScaffold As Action(Of ScaffoldedModel),
-             assertModel As Action(Of IModel),
-             Optional skipBuild As Boolean = False)
+                 options As ModelCodeGenerationOptions,
+                 assertScaffold As Action(Of ScaffoldedModel),
+                 assertModel As Action(Of IModel),
+                 Optional skipBuild As Boolean = False)
 
             Dim designServices = New ServiceCollection()
             AddModelServices(designServices)
-
-            Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
-            mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-            buildModel(mb)
-
-            Dim model = mb.FinalizeModel(designTime:=True, skipValidation:=True)
 
             Dim services = CreateServices()
             AddScaffoldingServices(services)
@@ -42,16 +39,42 @@ Namespace Scaffolding.Internal
             Dim generators = services.BuildServiceProvider(validateScopes:=True).
                                       GetServices(Of IModelCodeGenerator)()
 
-            Dim generator = If(Random.Shared.Next() Mod 6 <> -1, ' :-P
-                                generators.Last(Function(g) TypeOf g Is VisualBasicModelGenerator),
-                                generators.Last(Function(g) TypeOf g Is TextTemplatingModelGenerator))
-
             options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
             options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
             options.ContextName = "TestDbContext"
             options.ConnectionString = "Initial Catalog=TestDatabase"
+            options.ProjectDir = _fixture.ProjectDir
 
-            Dim scaffoldedModel = generator.GenerateModel(model, options)
+            For Each generator In {generators.Last(Function(g) TypeOf g Is VisualBasicModelGenerator),
+                                   generators.Last(Function(g) TypeOf g Is TextTemplatingModelGenerator)}
+
+                _output.WriteLine($"Test with {generator.GetType()}")
+
+                Test(buildModel,
+                     options,
+                     assertScaffold,
+                     assertModel,
+                     generator,
+                     designServices,
+                     skipBuild)
+            Next
+        End Sub
+
+        Private Sub Test(buildModel As Action(Of ModelBuilder),
+                         options As ModelCodeGenerationOptions,
+                         assertScaffold As Action(Of ScaffoldedModel),
+                         assertModel As Action(Of IModel),
+                         modelGenerator As IModelCodeGenerator,
+                         designServices As ServiceCollection,
+                         Optional skipBuild As Boolean = False)
+
+            Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
+            mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
+            buildModel(mb)
+
+            Dim model = mb.FinalizeModel(designTime:=True, skipValidation:=True)
+
+            Dim scaffoldedModel = modelGenerator.GenerateModel(model, options)
 
             assertScaffold(scaffoldedModel)
 
@@ -88,7 +111,7 @@ Namespace Scaffolding.Internal
             Dim testAssembly = GetType(VisualBasicModelCodeGeneratorTestBase).Assembly
             Dim reporter = New TestOperationReporter(_output)
             Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
-            CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer")
+                CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer")
 
             Dim vbServices As New EFCoreVisualBasicServices
             vbServices.ConfigureDesignTimeServices(services)

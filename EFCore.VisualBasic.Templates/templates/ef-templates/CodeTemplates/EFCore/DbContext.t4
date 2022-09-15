@@ -1,5 +1,6 @@
 ﻿<#@ template language="C#" hostSpecific="true" linePragmas="false" #>
 <#@ output extension=".vb" #>
+<#@ assembly name="EntityFrameworkCore.VisualBasic" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
@@ -10,11 +11,11 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
+<#@ import namespace="global::EntityFrameworkCore.VisualBasic.Design" #>
 <#@ import namespace="Microsoft.EntityFrameworkCore" #>
 <#@ import namespace="Microsoft.EntityFrameworkCore.Design" #>
 <#@ import namespace="Microsoft.EntityFrameworkCore.Scaffolding" #>
 <#@ import namespace="Microsoft.Extensions.DependencyInjection" #>
-<#@ import namespace="EntityFrameworkCore.VisualBasic.Design" #>
 <#
     var services = (IServiceProvider)Host;
     var providerCode = services.GetRequiredService<IProviderConfigurationCodeGenerator>();
@@ -84,7 +85,7 @@ Namespace <#= FileNamespaceIdentifier #>
 <#
     }
 #>
-            optionsBuilder<#= code.Fragment(providerCode.GenerateUseProvider(Options.ConnectionString), indent:=4) #>
+            optionsBuilder<#= code.Fragment(providerCode.GenerateUseProvider(Options.ConnectionString), indent: 4) #>
         End Sub
 
 <#
@@ -100,7 +101,7 @@ Namespace <#= FileNamespaceIdentifier #>
     {
         importsList.AddRange(modelFluentApiCalls.GetRequiredUsings());
 #>
-            modelBuilder<#= code.Fragment(modelFluentApiCalls, indent:=4) #>
+            modelBuilder<#= code.Fragment(modelFluentApiCalls, indent: 4) #>
 <#
         anyConfiguration = true;
     }
@@ -134,7 +135,7 @@ Namespace <#= FileNamespaceIdentifier #>
                     importsList.AddRange(keyFluentApiCalls.GetRequiredUsings());
                 }
 #>
-                    entity.HasKey(<#= code.Lambda(key.Properties, "e") #>)<#= code.Fragment(keyFluentApiCalls, indent:=6) #>
+                    entity.HasKey(<#= code.Lambda(key.Properties, "e") #>)<#= code.Fragment(keyFluentApiCalls, indent: 6) #>
 <#
                 anyEntityTypeConfiguration = true;
             }
@@ -152,7 +153,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 WriteLine("");
             }
 #>
-                    entity<#= code.Fragment(entityTypeFluentApiCalls, indent:=5) #>
+                    entity<#= code.Fragment(entityTypeFluentApiCalls, indent: 5) #>
 <#
             anyEntityTypeConfiguration = true;
         }
@@ -171,7 +172,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 importsList.AddRange(indexFluentApiCalls.GetRequiredUsings());
             }
 #>
-                    entity.HasIndex(<#= code.Lambda(index.Properties, "e") #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent:=6) #>
+                    entity.HasIndex(<#= code.Lambda(index.Properties, "e") #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent: 6) #>
 <#
             anyEntityTypeConfiguration = true;
         }
@@ -195,7 +196,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 WriteLine("");
             }
 #>
-                    entity.Property(Function(e) e.<#= code.Identifier(prop.Name) #>)<#= code.Fragment(propertyFluentApiCalls, indent:=6) #>
+                    entity.Property(Function(e) e.<#= code.Identifier(property.Name) #>)<#= code.Fragment(propertyFluentApiCalls, indent: 6) #>
 <#
             anyEntityTypeConfiguration = true;
             firstProperty = false;
@@ -218,7 +219,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 WriteLine("");
             }
 #>
-                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= If(foreignKey.IsUnique, "WithOne", "WithMany") #>(Function(p) p.<#= foreignKey.PrincipalToDependent.Name #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent:=6) #>
+                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= foreignKey.IsUnique ? "WithOne" : "WithMany" #>(Function(p) p.<#= foreignKey.PrincipalToDependent.Name #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent: 6) #>
 <#
             anyEntityTypeConfiguration = true;
         }
@@ -249,8 +250,8 @@ Namespace <#= FileNamespaceIdentifier #>
                     entity.HasMany(Function(d) d.<#= skipNavigation.Name #>).WithMany(Function(p) p.<#= skipNavigation.Inverse.Name #>).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             <#= code.Literal(joinEntityType.Name) #>,
-                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent:=7) #>,
-                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent:=7) #>,
+                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent: 7) #>,
+                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent: 7) #>,
                             Sub(j)
 <#
             var joinKey = joinEntityType.FindPrimaryKey();
@@ -261,7 +262,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 importsList.AddRange(joinKeyFluentApiCalls.GetRequiredUsings());
             }
 #>
-                                j.HasKey(<#= code.Arguments(joinKey.Properties.Select(Function(e) e.Name)) #>)<#= code.Fragment(joinKeyFluentApiCalls, indent:=8) #>
+                                j.HasKey(<#= code.Arguments(joinKey.Properties.Select((e) => e.Name)) #>)<#= code.Fragment(joinKeyFluentApiCalls, indent: 8) #>
 <#
             var joinEntityTypeFluentApiCalls = joinEntityType.GetFluentApiCalls(annotationCodeGenerator);
 
@@ -269,7 +270,7 @@ Namespace <#= FileNamespaceIdentifier #>
             {
                 importsList.AddRange(joinEntityTypeFluentApiCalls.GetRequiredUsings());
 #>
-                                j<#= code.Fragment(joinEntityTypeFluentApiCalls, indent:=8) #>
+                                j<#= code.Fragment(joinEntityTypeFluentApiCalls, indent: 8) #>
 <#
             }
 
@@ -281,16 +282,16 @@ Namespace <#= FileNamespaceIdentifier #>
                     importsList.AddRange(indexFluentApiCalls.GetRequiredUsings());
                 }
 #>
-                                j.HasIndex(<#= code.Literal(index.Properties.Select(Function(e) e.Name).ToArray()) #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent:=8) #>
+                                j.HasIndex(<#= code.Literal(index.Properties.Select((e) => e.Name).ToArray()) #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent: 8) #>
 <#
             }
 #>
-                    });
+                            End Sub)
 <#
             anyEntityTypeConfiguration = true;
         }
 #>
-        });
+                End Sub)
 <#
         // If any signicant code was generated, append it to the main environment
         if (anyEntityTypeConfiguration)
@@ -309,7 +310,7 @@ Namespace <#= FileNamespaceIdentifier #>
         var needsSchema = !string.IsNullOrEmpty(sequence.Schema) && sequence.Schema != sequence.Model.GetDefaultSchema();
         var sequenceFluentApiCalls = sequence.GetFluentApiCalls(annotationCodeGenerator);
 #>
-            modelBuilder.HasSequence<#= If(needsType, $"(Of {code.Reference(sequence.Type)})", "") #>(<#= code.Literal(sequence.Name) #><#= If(needsSchema, $", {code.Literal(sequence.Schema)}", "") #>)<#= code.Fragment(sequenceFluentApiCalls, indent:=4) #>
+            modelBuilder.HasSequence<#= needsType ? $"(Of {code.Reference(sequence.Type)})" : "" #>(<#= code.Literal(sequence.Name) #><#= needsSchema ? $", {code.Literal(sequence.Schema)}" : "" #>)<#= code.Fragment(sequenceFluentApiCalls, indent: 4) #>
 <#
     }
 
@@ -324,7 +325,6 @@ Namespace <#= FileNamespaceIdentifier #>
         Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
         End Sub
     End Class
-}
 <#
     if (!string.IsNullOrEmpty(FileNamespaceIdentifier))
     {
@@ -333,7 +333,6 @@ End Namespace
 <#
     }
 #>
-
 <#
     mainEnvironment = GenerationEnvironment;
     GenerationEnvironment = new StringBuilder();

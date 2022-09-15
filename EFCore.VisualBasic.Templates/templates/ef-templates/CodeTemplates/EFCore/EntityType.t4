@@ -1,5 +1,6 @@
 ﻿<#@ template language="C#" hostSpecific="true" linePragmas="false" #>
 <#@ output extension=".vb" #>
+<#@ assembly name="EntityFrameworkCore.VisualBasic" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
@@ -11,7 +12,7 @@
 <#@ import namespace="System.ComponentModel.DataAnnotations" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
-<#@ import namespace="EntityFrameworkCore.VisualBasic.Design" #>
+<#@ import namespace="global::EntityFrameworkCore.VisualBasic.Design" #>
 <#@ import namespace="Microsoft.EntityFrameworkCore" #>
 <#@ import namespace="Microsoft.EntityFrameworkCore.Design" #>
 <#@ import namespace="Microsoft.Extensions.DependencyInjection" #>
@@ -52,7 +53,7 @@ Namespace <#= FileNamespaceIdentifier #>
     {
 #>
     ''' <summary>
-    ''' <#= code.XmlComment(EntityType.GetComment(), indent:= 1) #>
+    ''' <#= code.XmlComment(EntityType.GetComment(), indent: 1) #>
     ''' </summary>
 <#
     }
@@ -68,7 +69,6 @@ Namespace <#= FileNamespaceIdentifier #>
     }
 #>
     Partial Public Class <#= EntityType.Name #>
-{
 <#
     var firstProperty = true;
     foreach (var property in EntityType.GetProperties().OrderBy(p => p.GetColumnOrder() ?? -1))
@@ -82,7 +82,7 @@ Namespace <#= FileNamespaceIdentifier #>
         {
 #>
         ''' <summary>
-        ''' <#= code.XmlComment(prop.GetComment(), indent:= 2) #>
+        ''' <#= code.XmlComment(property.GetComment(), indent: 2) #>
         ''' </summary>
 <#
         }
@@ -100,9 +100,9 @@ Namespace <#= FileNamespaceIdentifier #>
             }
         }
 
-        importsList.AddRange(code.GetRequiredUsings(property.ClrType));
+        importsList.AddRange(code.GetRequiredImports(property.ClrType));
 #>
-        Public Property <#= code.Identifier(prop.Name) #> As <#= code.Reference(prop.ClrType) #>
+        Public Property <#= code.Identifier(property.Name) #> As <#= code.Reference(property.ClrType) #>
 <#
         firstProperty = false;
     }
@@ -164,7 +164,7 @@ Namespace <#= FileNamespaceIdentifier #>
 End Namespace
 <#
     }
-<#
+
     var previousOutput = GenerationEnvironment;
     GenerationEnvironment = new StringBuilder();
 

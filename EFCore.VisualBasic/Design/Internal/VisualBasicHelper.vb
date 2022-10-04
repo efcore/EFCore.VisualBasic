@@ -605,9 +605,10 @@ Namespace Design.Internal
                 Append(Reference(type)).
                 Append(")"c)
 
-            Return HandleEnumerable(builder, vertical, values, Sub(value)
-                                                                   builder.Append(UnknownLiteral(value))
-                                                               End Sub)
+            Return HandleEnumerable(
+                builder, vertical, values, Sub(value)
+                                               builder.Append(UnknownLiteral(value))
+                                           End Sub)
         End Function
 
         ''' <summary>
@@ -631,14 +632,15 @@ Namespace Design.Internal
                 Append(Reference(valueType)).
                 Append(")")
 
-            Return HandleEnumerable(builder, vertical, dict.Keys, Sub(key)
-                                                                      builder.
-                                                                          Append("{").
-                                                                          Append(UnknownLiteral(key)).
-                                                                          Append(", ").
-                                                                          Append(UnknownLiteral(dict(key))).
-                                                                          Append("}")
-                                                                  End Sub)
+            Return HandleEnumerable(
+                builder, vertical, dict.Keys, Sub(key)
+                                                  builder.
+                                                      Append("{").
+                                                      Append(UnknownLiteral(key)).
+                                                      Append(", ").
+                                                      Append(UnknownLiteral(dict(key))).
+                                                      Append("}")
+                                              End Sub)
         End Function
 
         Private Shared Function HandleEnumerable(builder As IndentedStringBuilder, vertical As Boolean, values As IEnumerable, handleValue As Action(Of Object)) As String

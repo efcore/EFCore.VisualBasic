@@ -710,7 +710,7 @@ $"    Dim model As New {className}()
                     prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
             End If
 
-            Dim valueConverterType = TryCast(prop(CoreAnnotationNames.ValueConverterType), Type)
+            Dim valueConverterType = GetValueConverterType(prop)
 
             If valueConverterType Is Nothing AndAlso
                prop.GetValueConverter() IsNot Nothing Then
@@ -872,6 +872,39 @@ $"    Dim model As New {className}()
             mainBuilder.
                 AppendLine()
         End Sub
+
+        Private Shared Function GetValueConverterType(prop As IProperty) As Type
+            Dim type = TryCast(prop(CoreAnnotationNames.ValueConverterType), Type)
+
+            If type IsNot Nothing Then
+                Return type
+            End If
+
+            Dim principalProperty = prop
+            For i = 0 To 10000 - 1
+                For Each foreignKey In principalProperty.GetContainingForeignKeys()
+                    For propertyIndex = 0 To foreignKey.Properties.Count - 1
+                        If principalProperty Is foreignKey.Properties(propertyIndex) Then
+                            Dim newPrincipalProperty = foreignKey.PrincipalKey.Properties(propertyIndex)
+                            If prop Is principalProperty OrElse
+                               newPrincipalProperty Is principalProperty Then
+
+                                Exit For
+                            End If
+
+                            principalProperty = newPrincipalProperty
+
+                            type = TryCast(principalProperty(CoreAnnotationNames.ValueConverterType), Type)
+                            If type IsNot Nothing Then
+                                Return type
+                            End If
+                        End If
+                    Next
+                Next
+            Next
+
+            Return Nothing
+        End Function
 
         Private Sub PropertyBaseParameters(Prop As IPropertyBase,
                                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters,

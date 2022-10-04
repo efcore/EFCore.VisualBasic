@@ -1281,7 +1281,7 @@ End Namespace
                         IncrementsBy(2).
                         HasMin(2).
                         HasMax(100).
-                        IsCyclic(True)
+                        IsCyclic()
                 End Sub,
                 New ModelCodeGenerationOptions(),
                 Sub(code)
@@ -1378,7 +1378,8 @@ End Namespace
                     Dim EntityType = Model.FindEntityType("TestNamespace.Employee")
                     Dim triggers = EntityType.GetDeclaredTriggers()
 
-                    Assert.Collection(triggers,
+                    Assert.Collection(
+                        triggers,
                         Sub(t) Assert.Equal("Trigger1", t.GetDatabaseName),
                         Sub(t) Assert.Equal("Trigger2", t.GetDatabaseName))
                 End Sub)
@@ -1445,6 +1446,27 @@ End Namespace
                     Dim entityType = Assert.Single(model.GetEntityTypes())
                     Dim prop = Assert.Single(entityType.GetProperties())
                     Assert.Equal(SqlServerValueGenerationStrategy.None, prop.GetValueGenerationStrategy())
+                End Sub)
+        End Sub
+
+        <ConditionalTheory>
+        <InlineData(False)>
+        <InlineData(True)>
+        Public Sub ColumnOrder_is_ignored(useDataAnnotations As Boolean)
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.Entity("Entity").Property(Of String)("Property").HasColumnOrder(1)
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = useDataAnnotations
+                },
+                Sub(code)
+                    Assert.DoesNotContain(".HasColumnOrder(1)", code.ContextFile.Code)
+                    Assert.DoesNotContain("[Column(Order = 1)]", code.AdditionalFiles(0).Code)
+                End Sub,
+                Sub(Model)
+                    Dim entity = Model.FindEntityType("TestNamespace.Entity")
+                    Assert.Null(entity.GetProperty("Property").GetColumnOrder())
                 End Sub)
         End Sub
 

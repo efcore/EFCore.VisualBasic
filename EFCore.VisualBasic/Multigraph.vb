@@ -223,7 +223,7 @@ Namespace Utilities
                                 ' TODO: Optimization : Instead of currentBatchSet, store a batch counter On Each vertex, And check if later
                                 ' vertexes have a boundary-requiring dependency on a vertex with the same batch counter.
                                 If withBatching AndAlso
-                               _predecessorMap(successor).Any(
+                                   _predecessorMap(successor).Any(
                                     Function(kv)
 
                                         If TypeOf kv.Value Is Edge Then

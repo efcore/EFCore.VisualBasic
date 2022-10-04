@@ -51,7 +51,6 @@ Namespace Global
 End Namespace
 
 Namespace Scaffolding.Internal
-
     Public Class VisualBasicRuntimeModelCodeGeneratorTest
 
         <ConditionalFact>
@@ -256,7 +255,7 @@ End Namespace
             Public Overridable Property ReferenceNavigation As LazyProxiesEntity2
         End Class
 
-            Public Class LazyProxiesEntity2
+        Public Class LazyProxiesEntity2
             Public Property Loader As ILazyLoader
 
             Public Property Id As Integer
@@ -2542,7 +2541,7 @@ Namespace TestNamespace
                 True)
 
             Dim id0 = deleteSproc.AddParameter(
-                "Id", ParameterDirection.Input, False, "Id", False)
+                "Id_Original", ParameterDirection.Input, False, "Id", True)
             entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
 
             Dim updateSproc As New RuntimeStoredProcedure(
@@ -2556,7 +2555,7 @@ Namespace TestNamespace
             Dim principalDerivedId0 = updateSproc.AddParameter(
                 "PrincipalDerivedId", ParameterDirection.Input, False, "PrincipalDerivedId", False)
             Dim id1 = updateSproc.AddParameter(
-                "Id", ParameterDirection.Input, False, "Id", False)
+                "Id_Original", ParameterDirection.Input, False, "Id", True)
             entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
 
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
@@ -2621,7 +2620,7 @@ Namespace TestNamespace
                 False)
 
             Dim id = deleteSproc.AddParameter(
-                "Id", ParameterDirection.Input, False, "Id", False)
+                "Id_Original", ParameterDirection.Input, False, "Id", True)
             entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
 
             Dim updateSproc As New RuntimeStoredProcedure(
@@ -2635,7 +2634,7 @@ Namespace TestNamespace
             Dim principalDerivedId0 = updateSproc.AddParameter(
                 "PrincipalDerivedId", ParameterDirection.Input, False, "PrincipalDerivedId", False)
             Dim id0 = updateSproc.AddParameter(
-                "Id", ParameterDirection.Input, False, "Id", False)
+                "Id_Original", ParameterDirection.Input, False, "Id", True)
             entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
 
             entityType.AddAnnotation("Relational:FunctionName", Nothing)
@@ -2748,17 +2747,17 @@ End Namespace
                     Assert.False(updateSproc.IsRowsAffectedReturned)
                     Assert.Empty(updateSproc.GetAnnotations())
                     Assert.Same(PrincipalBase, updateSproc.EntityType)
-                    Assert.Equal("Id", updateSproc.Parameters.Last().Name)
+                    Assert.Equal("Id_Original", updateSproc.Parameters.Last().Name)
                     Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.UpdateStoredProcedure).Value))
 
                     Dim deleteSproc = PrincipalBase.GetDeleteStoredProcedure()
                     Assert.Equal("PrincipalBase_Delete", deleteSproc.Name)
                     Assert.Equal("TPC", deleteSproc.Schema)
-                    Assert.Equal({"Id"}, deleteSproc.Parameters.Select(Function(p) p.PropertyName))
+                    Assert.Equal({"Id_Original"}, deleteSproc.Parameters.Select(Function(p) p.Name))
                     Assert.Empty(deleteSproc.ResultColumns)
                     Assert.True(deleteSproc.IsRowsAffectedReturned)
                     Assert.Same(PrincipalBase, deleteSproc.EntityType)
-                    Assert.Equal("Id", deleteSproc.Parameters.Last().Name)
+                    Assert.Equal("Id_Original", deleteSproc.Parameters.Last().Name)
                     Assert.Null(id.FindOverrides(StoreObjectIdentifier.Create(PrincipalBase, StoreObjectType.DeleteStoredProcedure).Value))
 
                     Assert.Equal("PrincipalBase", PrincipalBase.GetDiscriminatorValue())
@@ -2804,7 +2803,7 @@ End Namespace
                     Assert.Empty(updateSproc.ResultColumns)
                     Assert.Empty(updateSproc.GetAnnotations())
                     Assert.Same(PrincipalDerived, updateSproc.EntityType)
-                    Assert.Equal("Id", updateSproc.Parameters.Last().Name)
+                    Assert.Equal("Id_Original", updateSproc.Parameters.Last().Name)
                     Assert.Null(
                         id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.UpdateStoredProcedure).Value))
 
@@ -2814,7 +2813,7 @@ End Namespace
                     Assert.Equal({"Id"}, deleteSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(deleteSproc.ResultColumns)
                     Assert.Same(PrincipalDerived, deleteSproc.EntityType)
-                    Assert.Equal("Id", deleteSproc.Parameters.Last().Name)
+                    Assert.Equal("Id_Original", deleteSproc.Parameters.Last().Name)
                     Assert.Null(
                         id.FindOverrides(StoreObjectIdentifier.Create(PrincipalDerived, StoreObjectType.DeleteStoredProcedure).Value))
 
@@ -2900,10 +2899,11 @@ End Namespace
                         eb.UpdateUsingStoredProcedure(Sub(s) s.
                             HasParameter("PrincipalBaseId").
                             HasParameter("PrincipalDerivedId").
-                            HasParameter(Function(p) p.Id))
+                            HasOriginalValueParameter(Function(p) p.Id))
                         eb.DeleteUsingStoredProcedure(Sub(s) s.
                             HasRowsAffectedReturnValue().
-                            HasParameter(Function(p) p.Id))
+                            HasOriginalValueParameter(Function(p) p.Id))
+
                         eb.HasIndex({"PrincipalBaseId"}, "PrincipalIndex").
                             IsUnique().
                             HasDatabaseName("PIX").
@@ -2932,9 +2932,9 @@ End Namespace
                         eb.UpdateUsingStoredProcedure("Derived_Update", "Derived", Sub(s) s.
                             HasParameter("PrincipalBaseId").
                             HasParameter("PrincipalDerivedId").
-                            HasParameter(Function(p) p.Id))
+                            HasOriginalValueParameter(Function(p) p.Id))
                         eb.DeleteUsingStoredProcedure("Derived_Delete", Sub(s) s.
-                            HasParameter(Function(p) p.Id))
+                            HasOriginalValueParameter(Function(p) p.Id))
                     End Sub)
 
                 modelBuilder.Entity(Of DependentBase(Of Byte?))(
@@ -4198,7 +4198,7 @@ End Namespace
         End Class
 
         <ConditionalFact>
-            Public Sub Sqlite()
+        Public Sub Sqlite()
 
             Dim rm1 =
             <![CDATA[' <auto-generated />
@@ -4870,7 +4870,7 @@ Namespace Scaffolding.TestModel.Internal
                 Sub(eb)
                     eb.Property(Function(e) e.Collection).HasConversion(GetType(SelfReferentialPropertyValueConverter))
                 End Sub)
-        End sub
+        End Sub
     End Class
 
     Public Class SelfReferentialPropertyValueConverter

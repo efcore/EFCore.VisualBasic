@@ -45,16 +45,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.0-rc.2.22457.11">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.0-rtm.22501.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-rc.2.22457.11">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-rtm.22501.1">
       <IncludeAssets>all</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0.0-rc.2.22457.11">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0.0-rtm.22501.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-rc.2.22457.11">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-rtm.22501.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

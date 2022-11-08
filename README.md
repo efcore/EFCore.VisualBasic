@@ -11,7 +11,7 @@ Installation
 The latest version is available on [NuGet](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic).
 
 ```sh
-dotnet add package EntityFrameworkCore.VisualBasic --prerelease
+dotnet add package EntityFrameworkCore.VisualBasic
 ```
 
 Usage

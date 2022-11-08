@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>EntityFrameworkCore.VisualBasic.Templates</PackageId>
+    <Authors>Brice Lambson, et al.</Authors>
+    <Description>
+      Entity Framework Core templates for dotnet-new.
+
+      Enables these commonly used templates:
+      ef-templates
+    </Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>7.0.0-alpha.1</Version>
+    <Copyright>© 2022 Brice Lambson, et al. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/efcore/EFCore.VisualBasic</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/efcore/EFCore.VisualBasic.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>EFCore;VB;VisualBasic</PackageTags>
+    <PackageReleaseNotes>https://github.com/efcore/EFCore.VisualBasic/releases</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>

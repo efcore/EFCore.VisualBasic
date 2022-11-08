@@ -14,6 +14,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Design.Tests.Shared"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6E650A1B-2917-4775-9008-80EBE29734C8}"
 EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "EFCore.VisualBasic.Templates", "EFCore.VisualBasic.Templates\EFCore.VisualBasic.Templates.vbproj", "{A8B0C6D4-CABD-4165-A1FB-36D109202506}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,18 @@ Global
 		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x64.Build.0 = Release|Any CPU
 		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D1FF18B-3AC2-43C5-959A-A3273A8977ED}.Release|x86.Build.0 = Release|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Release|x64.Build.0 = Release|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8B0C6D4-CABD-4165-A1FB-36D109202506}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

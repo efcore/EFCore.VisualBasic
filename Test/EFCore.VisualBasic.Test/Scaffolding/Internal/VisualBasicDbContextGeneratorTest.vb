@@ -19,8 +19,8 @@ Namespace Scaffolding.Internal
     Public Class VisualBasicDbContextGeneratorTest
         Inherits VisualBasicModelCodeGeneratorTestBase
 
-        Public Sub New(output As ITestOutputHelper)
-            MyBase.New(output)
+        Public Sub New(fixture As ModelCodeGeneratorTestFixture, output As ITestOutputHelper)
+            MyBase.New(fixture, output)
         End Sub
 
         <ConditionalFact>

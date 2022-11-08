@@ -1,5 +1,4 @@
 ﻿<#@ template language="VB" hostSpecific="true" linePragmas="false" #>
-<#@ output extension=".vb" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
 <#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
@@ -236,6 +235,7 @@ Namespace <#= FileNamespaceIdentifier #>
                                 j.HasKey(<#= code.Arguments(joinKey.Properties.Select(Function(e) e.Name)) #>)<#= code.Fragment(joinKeyFluentApiCalls, indent:=8) #>
 <#
             Dim joinEntityTypeFluentApiCalls = joinEntityType.GetFluentApiCalls(annotationCodeGenerator)
+
             If joinEntityTypeFluentApiCalls IsNot Nothing Then
                 importsList.AddRange(joinEntityTypeFluentApiCalls.GetRequiredUsings())
 #>

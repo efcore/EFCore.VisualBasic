@@ -46,7 +46,7 @@ Namespace Scaffolding.Internal
     If Options.UseDataAnnotations Then
         importsList.Add("System.ComponentModel.DataAnnotations")
         importsList.Add("System.ComponentModel.DataAnnotations.Schema")
-        importsList.Add("Microsoft.EntityFrameworkCore") ' For attributes coming out of Abstractions
+        importsList.Add("Microsoft.EntityFrameworkCore")
     End If
 
     Dim FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint)

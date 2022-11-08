@@ -1,0 +1,351 @@
+﻿<# // For now, VB templates must be written in C# #>
+<#@ template language="C#" hostSpecific="true" linePragmas="false" #>
+<#@ output extension=".vb" #>
+<#@ assembly name="EntityFrameworkCore.VisualBasic" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Design" #>
+<#@ assembly name="Microsoft.EntityFrameworkCore.Relational" #>
+<#@ assembly name="Microsoft.Extensions.DependencyInjection.Abstractions" #>
+<#@ parameter name="Model" type="Microsoft.EntityFrameworkCore.Metadata.IModel" #>
+<#@ parameter name="Options" type="Microsoft.EntityFrameworkCore.Scaffolding.ModelCodeGenerationOptions" #>
+<#@ parameter name="NamespaceHint" type="System.String" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="global::EntityFrameworkCore.VisualBasic.Design" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore.Design" #>
+<#@ import namespace="Microsoft.EntityFrameworkCore.Scaffolding" #>
+<#@ import namespace="Microsoft.Extensions.DependencyInjection" #>
+<#
+    var services = (IServiceProvider)Host;
+    var providerCode = services.GetRequiredService<IProviderConfigurationCodeGenerator>();
+    var annotationCodeGenerator = services.GetRequiredService<IAnnotationCodeGenerator>();
+    var code = services.GetRequiredService<IVisualBasicHelper>();
+
+    var importsList = new List<string>
+    {
+        "System",
+        "System.Collections.Generic",
+        "Microsoft.EntityFrameworkCore"
+    };
+
+    var FullyQualifiedContextNamespace = code.FullyQualifiedNamespace(Options.RootNamespace, NamespaceHint);
+    var FullyQualifiedModelNamespace = code.FullyQualifiedNamespace(Options.RootNamespace, Options.ModelNamespace);
+    var ImportsClauseName = code.ImportsClause(FullyQualifiedContextNamespace, FullyQualifiedModelNamespace);
+
+    if (ImportsClauseName != null)
+    {
+        importsList.Add(FullyQualifiedModelNamespace);
+    }
+
+    var FileNamespaceIdentifier = code.NamespaceIdentifier(Options.RootNamespace, NamespaceHint);
+
+    if (!string.IsNullOrEmpty(FileNamespaceIdentifier))
+    {
+#>
+Namespace <#= FileNamespaceIdentifier #>
+<#
+    }
+#>
+    Partial Public Class <#= Options.ContextName #>
+        Inherits DbContext
+
+<#
+    if (!Options.SuppressOnConfiguring)
+    {
+#>
+        Public Sub New()
+        End Sub
+
+<#
+    }
+#>
+        Public Sub New(options As DbContextOptions(Of <#= Options.ContextName #>))
+            MyBase.New(options)
+        End Sub
+
+<#
+    foreach (var entityType in Model.GetEntityTypes().Where(e => !e.IsSimpleManyToManyJoinEntityType()))
+    {
+#>
+        Public Overridable Property <#= code.Identifier(entityType.GetDbSetName()) #> As DbSet(Of <#= entityType.Name #>)
+
+<#
+    }
+
+    if (!Options.SuppressOnConfiguring)
+    {
+#>
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+<#
+    if (!Options.SuppressConnectionStringWarning)
+    {
+#>
+            'TODO /!\ To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+<#
+    }
+#>
+            optionsBuilder<#= code.Fragment(providerCode.GenerateUseProvider(Options.ConnectionString), indent: 4) #>
+        End Sub
+
+<#
+    }
+
+#>
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+<#
+    var anyConfiguration = false;
+
+    var modelFluentApiCalls = Model.GetFluentApiCalls(annotationCodeGenerator);
+    if (modelFluentApiCalls != null)
+    {
+        importsList.AddRange(modelFluentApiCalls.GetRequiredUsings());
+#>
+            modelBuilder<#= code.Fragment(modelFluentApiCalls, indent: 4) #>
+<#
+        anyConfiguration = true;
+    }
+
+    StringBuilder mainEnvironment;
+    foreach (var entityType in Model.GetEntityTypes().Where(e => !e.IsSimpleManyToManyJoinEntityType()))
+    {
+        // Save all previously generated code, and start generating into a new temporary environment
+        mainEnvironment = GenerationEnvironment;
+        GenerationEnvironment = new StringBuilder();
+
+        if (anyConfiguration)
+        {
+            WriteLine("");
+        }
+
+        var anyEntityTypeConfiguration = false;
+#>
+            modelBuilder.Entity(Of <#= entityType.Name #>)(
+                Sub(entity)
+<#
+        var key = entityType.FindPrimaryKey();
+        if (key != null)
+        {
+            var keyFluentApiCalls = key.GetFluentApiCalls(annotationCodeGenerator);
+            if (keyFluentApiCalls != null
+                || (!key.IsHandledByConvention() && !Options.UseDataAnnotations))
+            {
+                if (keyFluentApiCalls != null)
+                {
+                    importsList.AddRange(keyFluentApiCalls.GetRequiredUsings());
+                }
+#>
+                    entity.HasKey(<#= code.Lambda(key.Properties, "e") #>)<#= code.Fragment(keyFluentApiCalls, indent: 6) #>
+<#
+                anyEntityTypeConfiguration = true;
+            }
+        }
+
+        var entityTypeFluentApiCalls = entityType.GetFluentApiCalls(annotationCodeGenerator)
+            ?.FilterChain(c => !(Options.UseDataAnnotations && c.IsHandledByDataAnnotations));
+
+        if (entityTypeFluentApiCalls != null)
+        {
+            importsList.AddRange(entityTypeFluentApiCalls.GetRequiredUsings());
+
+            if (anyEntityTypeConfiguration)
+            {
+                WriteLine("");
+            }
+#>
+                    entity<#= code.Fragment(entityTypeFluentApiCalls, indent: 5) #>
+<#
+            anyEntityTypeConfiguration = true;
+        }
+
+        foreach (var index in entityType.GetIndexes()
+            .Where(i => !(Options.UseDataAnnotations && i.IsHandledByDataAnnotations(annotationCodeGenerator))))
+        {
+            if (anyEntityTypeConfiguration)
+            {
+                WriteLine("");
+            }
+
+            var indexFluentApiCalls = index.GetFluentApiCalls(annotationCodeGenerator);
+            if (indexFluentApiCalls != null)
+            {
+                importsList.AddRange(indexFluentApiCalls.GetRequiredUsings());
+            }
+#>
+                    entity.HasIndex(<#= code.Lambda(index.Properties, "e") #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent: 6) #>
+<#
+            anyEntityTypeConfiguration = true;
+        }
+
+        var firstProperty = true;
+        foreach (var property in entityType.GetProperties())
+        {
+            var propertyFluentApiCalls = property.GetFluentApiCalls(annotationCodeGenerator)
+                ?.FilterChain(c => !(Options.UseDataAnnotations && c.IsHandledByDataAnnotations)
+                    && !(c.Method == "IsRequired" && Options.UseNullableReferenceTypes && !property.ClrType.IsValueType));
+
+            if (propertyFluentApiCalls == null)
+            {
+                continue;
+            }
+
+            importsList.AddRange(propertyFluentApiCalls.GetRequiredUsings());
+
+            if (anyEntityTypeConfiguration && firstProperty)
+            {
+                WriteLine("");
+            }
+#>
+                    entity.Property(Function(e) e.<#= code.Identifier(property.Name) #>)<#= code.Fragment(propertyFluentApiCalls, indent: 6) #>
+<#
+            anyEntityTypeConfiguration = true;
+            firstProperty = false;
+        }
+
+        foreach (var foreignKey in entityType.GetForeignKeys())
+        {
+            var foreignKeyFluentApiCalls = foreignKey.GetFluentApiCalls(annotationCodeGenerator)
+                ?.FilterChain(c => !(Options.UseDataAnnotations && c.IsHandledByDataAnnotations));
+
+            if (foreignKeyFluentApiCalls == null)
+            {
+                continue;
+            }
+
+            importsList.AddRange(foreignKeyFluentApiCalls.GetRequiredUsings());
+
+            if (anyEntityTypeConfiguration)
+            {
+                WriteLine("");
+            }
+#>
+                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= foreignKey.IsUnique ? "WithOne" : "WithMany" #>(Function(p) p.<#= foreignKey.PrincipalToDependent.Name #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent: 6) #>
+<#
+            anyEntityTypeConfiguration = true;
+        }
+
+        foreach (var skipNavigation in entityType.GetSkipNavigations().Where(n => n.IsLeftNavigation()))
+        {
+            if (anyEntityTypeConfiguration)
+            {
+                WriteLine("");
+            }
+
+            var left = skipNavigation.ForeignKey;
+            var leftFluentApiCalls = left.GetFluentApiCalls(annotationCodeGenerator, useStrings: true);
+            var right = skipNavigation.Inverse.ForeignKey;
+            var rightFluentApiCalls = right.GetFluentApiCalls(annotationCodeGenerator, useStrings: true);
+            var joinEntityType = skipNavigation.JoinEntityType;
+
+            if (leftFluentApiCalls != null)
+            {
+                importsList.AddRange(leftFluentApiCalls.GetRequiredUsings());
+            }
+
+            if (rightFluentApiCalls != null)
+            {
+                importsList.AddRange(rightFluentApiCalls.GetRequiredUsings());
+            }
+#>
+                    entity.HasMany(Function(d) d.<#= skipNavigation.Name #>).WithMany(Function(p) p.<#= skipNavigation.Inverse.Name #>).
+                        UsingEntity(Of Dictionary(Of String, Object))(
+                            <#= code.Literal(joinEntityType.Name) #>,
+                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent: 7) #>,
+                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent: 7) #>,
+                            Sub(j)
+<#
+            var joinKey = joinEntityType.FindPrimaryKey();
+            var joinKeyFluentApiCalls = joinKey.GetFluentApiCalls(annotationCodeGenerator);
+
+            if (joinKeyFluentApiCalls != null)
+            {
+                importsList.AddRange(joinKeyFluentApiCalls.GetRequiredUsings());
+            }
+#>
+                                j.HasKey(<#= code.Arguments(joinKey.Properties.Select((e) => e.Name)) #>)<#= code.Fragment(joinKeyFluentApiCalls, indent: 8) #>
+<#
+            var joinEntityTypeFluentApiCalls = joinEntityType.GetFluentApiCalls(annotationCodeGenerator);
+
+            if (joinEntityTypeFluentApiCalls != null)
+            {
+                importsList.AddRange(joinEntityTypeFluentApiCalls.GetRequiredUsings());
+#>
+                                j<#= code.Fragment(joinEntityTypeFluentApiCalls, indent: 8) #>
+<#
+            }
+
+            foreach (var index in joinEntityType.GetIndexes())
+            {
+                var indexFluentApiCalls = index.GetFluentApiCalls(annotationCodeGenerator);
+                if (indexFluentApiCalls != null)
+                {
+                    importsList.AddRange(indexFluentApiCalls.GetRequiredUsings());
+                }
+#>
+                                j.HasIndex(<#= code.Literal(index.Properties.Select((e) => e.Name).ToArray()) #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent: 8) #>
+<#
+            }
+#>
+                            End Sub)
+<#
+            anyEntityTypeConfiguration = true;
+        }
+#>
+                End Sub)
+<#
+        // If any signicant code was generated, append it to the main environment
+        if (anyEntityTypeConfiguration)
+        {
+            mainEnvironment.Append(GenerationEnvironment);
+            anyConfiguration = true;
+        }
+
+        // Resume generating code into the main environment
+        GenerationEnvironment = mainEnvironment;
+    }
+
+    foreach (var sequence in Model.GetSequences())
+    {
+        var needsType = sequence.Type != typeof(long);
+        var needsSchema = !string.IsNullOrEmpty(sequence.Schema) && sequence.Schema != sequence.Model.GetDefaultSchema();
+        var sequenceFluentApiCalls = sequence.GetFluentApiCalls(annotationCodeGenerator);
+#>
+            modelBuilder.HasSequence<#= needsType ? $"(Of {code.Reference(sequence.Type)})" : "" #>(<#= code.Literal(sequence.Name) #><#= needsSchema ? $", {code.Literal(sequence.Schema)}" : "" #>)<#= code.Fragment(sequenceFluentApiCalls, indent: 4) #>
+<#
+    }
+
+    if (anyConfiguration)
+    {
+        WriteLine("");
+    }
+#>
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+<#
+    if (!string.IsNullOrEmpty(FileNamespaceIdentifier))
+    {
+#>
+End Namespace
+<#
+    }
+#>
+<#
+    mainEnvironment = GenerationEnvironment;
+    GenerationEnvironment = new StringBuilder();
+
+    foreach (var ns in importsList.Distinct().OrderBy(x => x, new NamespaceComparer()))
+    {
+#>
+Imports <#= ns #>
+<#
+    }
+
+    WriteLine("");
+
+    GenerationEnvironment.Append(mainEnvironment);
+#>

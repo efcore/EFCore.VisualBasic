@@ -70,9 +70,9 @@ Namespace Utilities
                     successorEdges([to]) = edgeList
                 End If
 
-                edgeList.Add(Edge)
+                edgeList.Add(edge)
             Else
-                successorEdges.Add([to], Edge)
+                successorEdges.Add([to], edge)
             End If
 
             Dim predecessorEdges As Dictionary(Of TVertex, Object) = Nothing
@@ -214,39 +214,8 @@ Namespace Utilities
 
                             ' If the successor has no other predecessors, add it for processing in the next roots pass.
                             If predecessorCounts(successor) = 0 Then
-
                                 nextRootsQueue.Add(successor)
-
-                                ' Detect batch boundary (if batching Is enabled).
-                                ' If the successor has any predecessor where the edge requires a batching boundary, And that predecessor Is
-                                ' already in the current batch, then the next batch will have to be executed in a separate batch.
-                                ' TODO: Optimization : Instead of currentBatchSet, store a batch counter On Each vertex, And check if later
-                                ' vertexes have a boundary-requiring dependency on a vertex with the same batch counter.
-                                If withBatching AndAlso
-                                   _predecessorMap(successor).Any(
-                                    Function(kv)
-
-                                        If TypeOf kv.Value Is Edge Then
-                                            If DirectCast(kv.Value, Edge).RequiresBatchingBoundary Then
-                                                Return True
-                                            End If
-                                        End If
-
-                                        If TypeOf kv.Value Is IEnumerable(Of Edge) Then
-                                            Dim edges = DirectCast(kv.Value, IEnumerable(Of Edge))
-
-                                            If edges.Any(Function(e) e.RequiresBatchingBoundary) AndAlso
-                                               currentBatchSet.Contains(kv.Key) Then
-
-                                                Return True
-                                            End If
-                                        End If
-
-                                        Return False
-                                    End Function) Then
-
-                                    batchBoundaryRequired = True
-                                End If
+                                CheckBatchingBoundary(successor, withBatching, currentBatchSet, batchBoundaryRequired)
                             End If
                         Next
                     Next
@@ -256,7 +225,7 @@ Namespace Utilities
                     currentRootsQueue = nextRootsQueue
                     nextRootsQueue = temp
                     nextRootsQueue.Clear()
-            End While
+                End While
 
                 ' We have no more roots to process. That either means we're done, or that there's a cycle which we need to break
                 If vertexesProcessed < _vertices.Count Then
@@ -293,6 +262,7 @@ Namespace Utilities
                             predecessorCounts(candidateVertex) -= 1
                             If predecessorCounts(candidateVertex) = 0 Then
                                 currentRootsQueue.Add(candidateVertex)
+                                CheckBatchingBoundary(candidateVertex, withBatching, currentBatchSet, batchBoundaryRequired)
                                 broken = True
                             End If
                             Continue While
@@ -350,6 +320,37 @@ Namespace Utilities
             Return result
         End Function
 
+        ' Detect batch boundary (if batching Is enabled).
+        ' If the successor has any predecessor where the edge requires a batching boundary, And that predecessor Is
+        ' already in the current batch, then the next batch will have to be executed in a separate batch.
+        ' TODO: Optimization: Instead of currentBatchSet, store a batch counter on each vertex, And check if later
+        ' vertexes have a boundary-requiring dependency on a vertex with the same batch counter.
+        Private Sub CheckBatchingBoundary(vertex As TVertex,
+                                          withBatching As Boolean,
+                                          currentBatchSet As HashSet(Of TVertex),
+                                          ByRef batchBoundaryRequired As Boolean)
+            If withBatching AndAlso
+               _predecessorMap(vertex).Any(
+                    Function(kv)
+                        If TypeOf kv.Value Is Edge Then
+                            If DirectCast(kv.Value, Edge).RequiresBatchingBoundary Then
+                                Return True
+                            End If
+                        End If
+
+                        Dim edges = TryCast(kv.Value, IEnumerable(Of Edge))
+                        If edges IsNot Nothing AndAlso
+                           edges.Any(Function(e) e.RequiresBatchingBoundary) AndAlso
+                           currentBatchSet.Contains(kv.Key) Then
+                            Return True
+                        End If
+
+                        Return False
+                    End Function) Then
+                batchBoundaryRequired = True
+            End If
+        End Sub
+
         Private Sub ThrowCycle(cycle As List(Of TVertex),
                                formatCycle As Func(Of IReadOnlyList(Of Tuple(Of TVertex, TVertex, IEnumerable(Of TEdge))), String),
                                Optional formatException As Func(Of String, String) = Nothing)
@@ -389,7 +390,7 @@ Namespace Utilities
         Public Overrides Function GetIncomingNeighbors([to] As TVertex) As IEnumerable(Of TVertex)
             Dim predecessors As Dictionary(Of TVertex, Object) = Nothing
             Return If(_predecessorMap.TryGetValue([to], predecessors),
-                        predecessors.keys,
+                        predecessors.Keys,
                         Enumerable.Empty(Of TVertex)())
         End Function
 

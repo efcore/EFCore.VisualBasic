@@ -1,7 +1,7 @@
 EntityFrameworkCore.VisualBasic
 ===============================
 
-![build status](https://img.shields.io/github/workflow/status/efcore/EFCore.VisualBasic/.NET/master) [![latest version](https://img.shields.io/nuget/v/EntityFrameworkCore.VisualBasic)](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic) [![downloads](https://img.shields.io/nuget/dt/EntityFrameworkCore.VisualBasic)](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic) ![license](https://img.shields.io/github/license/efcore/EFCore.VisualBasic)
+![build status](https://img.shields.io/github/actions/workflow/status/efcore/EFCore.VisualBasic/dotnet.yml?branch=master) [![latest version](https://img.shields.io/nuget/v/EntityFrameworkCore.VisualBasic)](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic) [![downloads](https://img.shields.io/nuget/dt/EntityFrameworkCore.VisualBasic)](https://www.nuget.org/packages/EntityFrameworkCore.VisualBasic) ![license](https://img.shields.io/github/license/efcore/EFCore.VisualBasic)
 
 Adds VB design-time support to EF Core.
 

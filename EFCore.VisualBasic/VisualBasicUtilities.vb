@@ -243,22 +243,6 @@ Public Module VisualBasicUtilities
                category = UnicodeCategory.LetterNumber
     End Function
 
-    Public Function RemoveRootNamespaceFromNamespace(rootNamespace As String, FullNamespace As String) As String
-        If String.IsNullOrWhiteSpace(rootNamespace) Then Return FullNamespace
-
-        Dim finalNamespace = FullNamespace
-
-        If FullNamespace.StartsWith(rootNamespace, StringComparison.OrdinalIgnoreCase) Then
-            If FullNamespace.Length > rootNamespace.Length Then
-                finalNamespace = FullNamespace.Substring(rootNamespace.Length + 1)
-            Else
-                finalNamespace = String.Empty
-            End If
-        End If
-
-        Return finalNamespace
-    End Function
-
 #Region "Guards"
     <DebuggerStepThrough>
     Public Function NotNull(Of T)(value As T, parameterName As String) As T

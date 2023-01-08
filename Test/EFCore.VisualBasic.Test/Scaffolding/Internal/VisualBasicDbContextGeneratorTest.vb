@@ -1470,6 +1470,88 @@ End Namespace
                 End Sub)
         End Sub
 
+        <Fact>
+        Sub IsRequired_is_generated_no_matter_NRT_option()
+            ' UseNullableReferenceTypes option should be ignored for VB
+
+            Dim expected =
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Color As DbSet(Of Color)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of Color)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                    entity.Property(Function(e) e.ColorCode).IsRequired()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Dim mb As Action(Of ModelBuilder) =
+                Sub(modelBuilder As ModelBuilder)
+                    modelBuilder.Entity(
+                        "Color",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of String)("ColorCode").IsRequired()
+                        End Sub)
+                End Sub
+
+            Test(
+                mb,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = False,
+                    .UseNullableReferenceTypes = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expected,
+                        code.ContextFile)
+                End Sub,
+                Sub(model)
+                End Sub)
+
+            Test(
+                mb,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = False,
+                    .UseNullableReferenceTypes = False
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expected,
+                        code.ContextFile)
+                End Sub,
+                Sub(model)
+                End Sub)
+        End Sub
+
         Protected Overrides Sub AddModelServices(services As IServiceCollection)
             services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, TestModelAnnotationProvider)())
         End Sub

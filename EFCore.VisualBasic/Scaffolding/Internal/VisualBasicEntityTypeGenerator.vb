@@ -96,10 +96,8 @@ Namespace Scaffolding.Internal
         End If
 
         If Options.UseDataAnnotations Then
-            Dim dataAnnotations = prop.GetDataAnnotations(annotationCodeGenerator).
-                                        Where(Function(a) Not (a.Type = GetType(RequiredAttribute) AndAlso 
-                                                          Options.UseNullableReferenceTypes AndAlso 
-                                                          Not prop.ClrType.IsValueType))
+            Dim dataAnnotations = prop.GetDataAnnotations(annotationCodeGenerator)
+
             For Each dataAnnotation in dataAnnotations
 
             Me.Write("        ")

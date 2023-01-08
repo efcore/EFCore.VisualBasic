@@ -90,8 +90,7 @@ Namespace <#= FileNamespaceIdentifier #>
 
         if (Options.UseDataAnnotations)
         {
-            var dataAnnotations = property.GetDataAnnotations(annotationCodeGenerator)
-                .Where(a => !(a.Type == typeof(RequiredAttribute) && Options.UseNullableReferenceTypes && !property.ClrType.IsValueType));
+            var dataAnnotations = property.GetDataAnnotations(annotationCodeGenerator);
 
             foreach (var dataAnnotation in dataAnnotations)
             {
@@ -131,8 +130,6 @@ Namespace <#= FileNamespaceIdentifier #>
         }
         else
         {
-            var needsNullable = Options.UseNullableReferenceTypes && !(navigation.ForeignKey.IsRequired && navigation.IsOnDependent);
-            var needsInitializer = Options.UseNullableReferenceTypes && navigation.ForeignKey.IsRequired && navigation.IsOnDependent;
 #>
         Public Overridable Property <#= code.Identifier(navigation.Name) #> As <#= targetType #>
 <#

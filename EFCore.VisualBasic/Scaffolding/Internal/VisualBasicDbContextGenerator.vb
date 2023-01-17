@@ -197,8 +197,7 @@ Namespace Scaffolding.Internal
         Dim firstProperty = True
         For Each prop in entityType.GetProperties()
             Dim propertyFluentApiCalls = prop.GetFluentApiCalls(annotationCodeGenerator)?.
-                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations) AndAlso
-                                              Not (c.Method = "IsRequired" AndAlso Options.UseNullableReferenceTypes AndAlso Not prop.ClrType.IsValueType))
+                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations))
 
             If propertyFluentApiCalls Is Nothing Then
                 Continue For
@@ -238,8 +237,8 @@ Namespace Scaffolding.Internal
             Me.Write(Me.ToStringHelper.ToStringWithCulture(foreignKey.DependentToPrincipal.Name))
             Me.Write(").")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(If(foreignKey.IsUnique, "WithOne", "WithMany")))
-            Me.Write("(Function(p) p.")
-            Me.Write(Me.ToStringHelper.ToStringWithCulture(foreignKey.PrincipalToDependent.Name))
+            Me.Write("(")
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(If(foreignKey.PrincipalToDependent IsNot Nothing, $"Function(p) p.{foreignKey.PrincipalToDependent.Name}", "")))
             Me.Write(")")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(foreignKeyFluentApiCalls, indent:=6)))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
@@ -276,11 +275,11 @@ Namespace Scaffolding.Internal
             Me.Write(","&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"                            Function(r) r.HasOne(Of ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(right.PrincipalEntityType.Name))
             Me.Write(")().WithMany()")
-            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(rightFluentApiCalls, indent:=7)))
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(rightFluentApiCalls, indent:=8)))
             Me.Write(","&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"                            Function(l) l.HasOne(Of ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(left.PrincipalEntityType.Name))
             Me.Write(")().WithMany()")
-            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(leftFluentApiCalls, indent:=7)))
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(leftFluentApiCalls, indent:=8)))
             Me.Write(","&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"                            Sub(j)"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
             Dim joinKey = joinEntityType.FindPrimaryKey()
@@ -319,6 +318,24 @@ Namespace Scaffolding.Internal
             Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Literal(index.GetDatabaseName())))
             Me.Write(")")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(indexFluentApiCalls, indent:=8)))
+            Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
+
+            Next
+
+            For Each prop in joinEntityType.GetProperties()
+                Dim propertyFluentApiCalls = prop.GetFluentApiCalls(annotationCodeGenerator)
+                If propertyFluentApiCalls Is Nothing Then
+                    Continue For
+                End If
+
+                importsList.AddRange(propertyFluentApiCalls.GetRequiredUsings())
+
+            Me.Write("                                j.IndexerProperty(Of ")
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Reference(prop.ClrType)))
+            Me.Write(")(")
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Literal(prop.Name)))
+            Me.Write(")")
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(propertyFluentApiCalls, indent:=8)))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
             Next

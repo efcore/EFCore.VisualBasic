@@ -3,6 +3,7 @@ Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Scaffolding
 Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
@@ -68,12 +69,11 @@ Namespace TestNamespace
 End Namespace
 "
 
-
             Test(
                 Function(modelBuilder) modelBuilder.Entity("Vista").HasNoKey(),
-New ModelCodeGenerationOptions With
-{
-                .UseDataAnnotations = True},
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
                 Sub(code)
                     AssertFileContents(
                         expectedCode,
@@ -107,6 +107,7 @@ Namespace TestNamespace
     End Class
 End Namespace
 "
+
             Test(
                 Sub(modelBuilder)
                     modelBuilder.Entity(
@@ -1336,24 +1337,24 @@ End Namespace
             Test(
                 Function(modelBuilder)
                     Return modelBuilder _
-  .Entity(
-      "Blog",
-      Sub(x)
-          x.Property(Of Integer)("Id1")
-          x.Property(Of Integer)("Id2")
-          x.HasKey("Id1", "Id2")
-      End Sub) _
-  .Entity(
-      "Post",
-      Sub(x)
-          x.Property(Of Integer)("Id")
+                    .Entity(
+                        "Blog",
+                        Sub(x)
+                            x.Property(Of Integer)("Id1")
+                            x.Property(Of Integer)("Id2")
+                            x.HasKey("Id1", "Id2")
+                        End Sub) _
+                    .Entity(
+                        "Post",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
 
-          x.HasOne("Blog", "BlogNavigation").WithMany("Posts").HasForeignKey("BlogId1", "BlogId2")
-      End Sub)
+                            x.HasOne("Blog", "BlogNavigation").WithMany("Posts").HasForeignKey("BlogId1", "BlogId2")
+                        End Sub)
                 End Function,
-New ModelCodeGenerationOptions With
-{
-                .UseDataAnnotations = True},
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
                 Sub(code)
                     AssertFileContents(
                         expectedCode,
@@ -1371,7 +1372,7 @@ New ModelCodeGenerationOptions With
                 End Sub)
         End Sub
 
-        <ConditionalFact>
+        <ConditionalFact(Skip:="EF fix required, efcore/pull/29731")>
         Public Sub ForeignKeyAttribute_InversePropertyAttribute_is_not_generated_for_alternate_key()
 
             Dim expectedCode =
@@ -1430,7 +1431,9 @@ Namespace TestNamespace
                 Sub(entity)
                     entity.Property(Function(e) e.Id).UseIdentityColumn()
 
-                    entity.HasOne(Function(d) d.BlogNavigation).WithMany(Function(p) p.Posts).HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}})
+                    entity.HasOne(Function(d) d.BlogNavigation).WithMany(Function(p) p.Posts).
+                        HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}}).
+                        HasForeignKey(Function(d) New With {{d.BlogId1, d.BlogId2}})
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1441,7 +1444,6 @@ Namespace TestNamespace
     End Class
 End Namespace
 "
-
 
             Test(
                 Function(modelBuilder)
@@ -1457,9 +1459,9 @@ End Namespace
                     Sub(x)
                         x.Property(Of Integer)("Id")
 
-                        x.HasOne("Blog", "BlogNavigation").WithMany("Posts") _
-                            .HasPrincipalKey("Id1", "Id2") _
-                            .HasForeignKey("BlogId1", "BlogId2")
+                        x.HasOne("Blog", "BlogNavigation").WithMany("Posts").
+                            HasPrincipalKey("Id1", "Id2").
+                            HasForeignKey("BlogId1", "BlogId2")
                     End Sub)
                 End Function,
                 New ModelCodeGenerationOptions With {
@@ -1480,6 +1482,250 @@ End Namespace
                     Assert.Equal("TestNamespace.Blog", blogNavigation.ForeignKey.PrincipalEntityType.Name)
                     Assert.Equal({"BlogId1", "BlogId2"}, blogNavigation.ForeignKey.Properties.[Select](Function(p) p.Name))
                     Assert.Equal({"Id1", "Id2"}, blogNavigation.ForeignKey.PrincipalKey.Properties.[Select](Function(p) p.Name))
+                End Sub)
+        End Sub
+
+        <ConditionalFact(Skip:="EF fix required, efcore/pull/29731")>
+        Public Sub ForeignKeyAttribute_is_generated_for_fk_referencing_ak()
+
+            Dim expectedColorCode =
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class Color
+        <Key>
+        Public Property Id As Integer
+
+        <Required>
+        Public Property ColorCode As String
+
+        Public Overridable ReadOnly Property Cars As ICollection(Of Car) = New List(Of Car)()
+    End Class
+End Namespace
+"
+
+            Dim expectedCarCode =
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class Car
+        <Key>
+        Public Property Id As Integer
+
+        Public Property ColorCode As String
+
+        Public Overridable Property Color As Color
+    End Class
+End Namespace
+"
+
+            Dim expectedDbContextCode =
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Car As DbSet(Of Car)
+
+        Public Overridable Property Color As DbSet(Of Color)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of Car)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                    entity.HasOne(Function(d) d.Color).WithMany(Function(p) p.Cars).
+                        HasPrincipalKey(Function(p) p.ColorCode).
+                        HasForeignKey(Function(d) d.ColorCode)
+                End Sub)
+
+            modelBuilder.Entity(Of Color)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Function(modelBuilder)
+                    Return modelBuilder.Entity(
+                        "Color",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of String)("ColorCode")
+                        End Sub) _
+                    .Entity(
+                        "Car",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+
+                            x.HasOne("Color", "Color").WithMany("Cars").
+                              HasPrincipalKey("ColorCode").
+                              HasForeignKey("ColorCode")
+                        End Sub)
+                End Function,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedColorCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "Color.vb"))
+
+                    AssertFileContents(
+                        expectedCarCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "Car.vb"))
+
+                    AssertFileContents(
+                        expectedDbContextCode,
+                        code.ContextFile)
+                End Sub,
+                Sub(model)
+                    Dim carType = model.FindEntityType("TestNamespace.Car")
+                    Dim colorNavigation = carType.FindNavigation("Color")
+                    Assert.Equal("TestNamespace.Color", colorNavigation.ForeignKey.PrincipalEntityType.Name)
+                    Assert.Equal({"ColorCode"}, colorNavigation.ForeignKey.Properties.Select(Function(p) p.Name))
+                    Assert.Equal({"ColorCode"}, colorNavigation.ForeignKey.PrincipalKey.Properties.Select(Function(p) p.Name))
+                End Sub)
+        End Sub
+        <ConditionalFact>
+        Public Sub Foreign_key_from_keyless_table()
+
+            Dim expectedDbContextCode =
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Blog As DbSet(Of Blog)
+
+        Public Overridable Property Post As DbSet(Of Post)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of Blog)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            modelBuilder.Entity(Of Post)(
+                Sub(entity)
+                    entity.HasNoKey()
+
+                    entity.HasIndex(Function(e) e.BlogId, ""IX_Post_BlogId"")
+
+                    entity.HasOne(Function(d) d.Blog).WithMany().HasForeignKey(Function(d) d.BlogId)
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Dim expectedBlogCode =
+"Imports System
+Imports System.Collections.Generic
+
+Namespace TestNamespace
+    Partial Public Class Blog
+        Public Property Id As Integer
+    End Class
+End Namespace
+"
+
+            Dim expectedPostCode =
+"Imports System
+Imports System.Collections.Generic
+
+Namespace TestNamespace
+    Partial Public Class Post
+        Public Property BlogId As Integer?
+
+        Public Overridable Property Blog As Blog
+    End Class
+End Namespace
+"
+
+            Test(
+                Function(modelBuilder)
+                    Return modelBuilder.Entity(
+                        "Blog",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                        End Sub) _
+                    .Entity(
+                        "Post",
+                        Sub(x)
+                            x.HasOne("Blog", "Blog").WithMany()
+                        End Sub)
+                End Function,
+                New ModelCodeGenerationOptions,
+                Sub(code)
+                    AssertFileContents(
+                        expectedDbContextCode,
+                        code.ContextFile)
+
+                    AssertFileContents(
+                        expectedBlogCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "Blog.vb"))
+
+                    AssertFileContents(
+                        expectedPostCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "Post.vb"))
+                End Sub,
+                Sub(model)
+                    Dim post = model.FindEntityType("TestNamespace.Post")
+                    Dim foreignKey = Assert.Single(post.GetForeignKeys())
+                    Assert.Equal("Blog", foreignKey.DependentToPrincipal.Name)
+                    Assert.Null(foreignKey.PrincipalToDependent)
                 End Sub)
         End Sub
 
@@ -1510,19 +1756,19 @@ End Namespace
             Test(
                 Function(modelBuilder)
                     Return modelBuilder _
-  .Entity(
-      "Blog",
-      Function(x) x.Property(Of Integer)("Id")) _
-  .Entity(
-      "Post",
-      Sub(x)
-          x.Property(Of Integer)("Id")
-          x.HasOne("Blog", "Blog").WithMany("Posts")
-      End Sub)
+                    .Entity(
+                        "Blog",
+                        Function(x) x.Property(Of Integer)("Id")) _
+                    .Entity(
+                        "Post",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.HasOne("Blog", "Blog").WithMany("Posts")
+                        End Sub)
                 End Function,
-New ModelCodeGenerationOptions With
-{
-                .UseDataAnnotations = True},
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
                 Sub(code)
                     AssertFileContents(
                         expectedCode,
@@ -1568,14 +1814,14 @@ End Namespace
             Test(
                 Function(modelBuilder)
                     Return modelBuilder.Entity(
-                      "Blog",
-                      Function(x) x.Property(Of Integer)("Id")) _
-                  .Entity(
-                      "Post",
-                      Sub(x)
-                          x.Property(Of Integer)("Id")
-                          x.HasOne("Blog", "BlogNavigation").WithMany("Posts").HasForeignKey("Blog")
-                      End Sub)
+                        "Blog",
+                        Function(x) x.Property(Of Integer)("Id")) _
+                    .Entity(
+                        "Post",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.HasOne("Blog", "BlogNavigation").WithMany("Posts").HasForeignKey("Blog")
+                        End Sub)
                 End Function,
                 New ModelCodeGenerationOptions With {
                     .UseDataAnnotations = True
@@ -1632,7 +1878,8 @@ End Namespace
                 Function(modelBuilder)
                     Return modelBuilder.Entity(
                         "Blog",
-                        Function(x) x.Property(Of Integer)("Id")).Entity(
+                        Function(x) x.Property(Of Integer)("Id")) _
+                    .Entity(
                         "Post",
                         Sub(x)
                             x.Property(Of Integer)("Id")
@@ -1668,6 +1915,57 @@ End Namespace
                     Dim originalInverseNavigation = originalBlogNavigation.Inverse
                     Assert.Equal("TestNamespace.Blog", originalInverseNavigation.DeclaringEntityType.Name)
                     Assert.Equal("OriginalPosts", originalInverseNavigation.Name)
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub InverseProperty_when_navigation_property_and_keyless()
+
+            Dim expectedCode =
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    <Keyless>
+    Partial Public Class Post
+        Public Property BlogId As Integer?
+
+        <ForeignKey(""BlogId"")>
+        Public Overridable Property Blog As Blog
+    End Class
+End Namespace
+"
+            Test(
+                Function(modelBuilder)
+                    Return modelBuilder.Entity(
+                        "Blog",
+                        Function(x) x.Property(Of Integer)("Id")) _
+                    .Entity(
+                        "Post",
+                        Sub(x)
+                            x.HasNoKey()
+                            x.HasOne("Blog", "Blog").WithMany()
+                        End Sub)
+                End Function,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedCode,
+                        code.AdditionalFiles.Single(Function(f) f.Path = "Post.vb"))
+                End Sub,
+                Sub(model)
+                    Dim postType = model.FindEntityType("TestNamespace.Post")
+                    Dim blogNavigation = postType.FindNavigation("Blog")
+
+                    Dim foreignKeyProperty = Assert.Single(blogNavigation.ForeignKey.Properties)
+                    Assert.Equal("BlogId", foreignKeyProperty.Name)
+
+                    Assert.Null(blogNavigation.Inverse)
                 End Sub)
         End Sub
 
@@ -2200,9 +2498,9 @@ End Namespace
                         Entity("BlogPost", Sub(x)
                                            End Sub).
                         Entity("Blog").
-                        HasMany("Post", "Posts").
-                        WithMany("Blogs").
-                        UsingEntity("BlogPost")
+                            HasMany("Post", "Posts").
+                            WithMany("Blogs").
+                            UsingEntity("BlogPost")
                 End Sub,
                 New ModelCodeGenerationOptions With {
                     .UseDataAnnotations = True
@@ -2241,6 +2539,375 @@ End Namespace
                     Assert.Equal(GetType(Dictionary(Of String, Object)), joinEntityType.ClrType)
                     Assert.Single(joinEntityType.GetIndexes())
                     Assert.Equal(2, joinEntityType.GetForeignKeys().Count())
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Scaffold_skip_navigations_alternate_key_data_annotations()
+
+            Dim expectedDbContextCode =
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Blog As DbSet(Of Blog)
+
+        Public Overridable Property Post As DbSet(Of Post)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of Blog)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                    entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
+                        UsingEntity(Of Dictionary(Of String, Object))(
+                            ""BlogPost"",
+                            Function(r) r.HasOne(Of Post)().WithMany().HasForeignKey(""PostsId""),
+                            Function(l) l.HasOne(Of Blog)().WithMany().
+                                HasPrincipalKey(""Key"").
+                                HasForeignKey(""BlogsKey""),
+                            Sub(j)
+                                j.HasKey(""BlogsKey"", ""PostsId"")
+                                j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
+                            End Sub)
+                End Sub)
+
+            modelBuilder.Entity(Of Post)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Dim expectedBlogCode =
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class Blog
+        <Key>
+        Public Property Id As Integer
+
+        Public Property Key As Integer
+
+        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
+    End Class
+End Namespace
+"
+
+            Dim expectedPostCode =
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class Post
+        <Key>
+        Public Property Id As Integer
+
+        <ForeignKey(""PostsId"")>
+        <InverseProperty(""Posts"")>
+        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.
+                        Entity("Blog",
+                            Sub(x)
+                                x.Property(Of Integer)("Id")
+                                x.Property(Of Integer)("Key")
+                            End Sub).
+                        Entity("Post",
+                            Sub(x)
+                                x.Property(Of Integer)("Id")
+                            End Sub).
+                        Entity("Blog").HasMany("Post", "Posts").WithMany("Blogs").
+                        UsingEntity("BlogPost",
+                                    Function(r) r.HasOne("Post").WithMany(),
+                                    Function(l) l.HasOne("Blog").WithMany().HasPrincipalKey("Key"))
+                End Sub,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expectedDbContextCode,
+                        code.ContextFile)
+
+                    AssertFileContents(
+                        expectedBlogCode,
+                        code.AdditionalFiles.Single(Function(e) e.Path = "Blog.vb"))
+
+                    AssertFileContents(
+                        expectedPostCode,
+                        code.AdditionalFiles.Single(Function(e) e.Path = "Post.vb"))
+
+                    Assert.Equal(2, code.AdditionalFiles.Count)
+                End Sub,
+                Sub(model)
+                    Dim blogType = model.FindEntityType("TestNamespace.Blog")
+                    Assert.Empty(blogType.GetNavigations())
+                    Dim postsNavigation = Assert.Single(blogType.GetSkipNavigations())
+                    Assert.Equal("Posts", postsNavigation.Name)
+
+                    Dim postType = model.FindEntityType("TestNamespace.Post")
+                    Assert.Empty(postType.GetNavigations())
+                    Dim blogsNavigation = Assert.Single(postType.GetSkipNavigations())
+                    Assert.Equal("Blogs", blogsNavigation.Name)
+
+                    Assert.Equal(postsNavigation, blogsNavigation.Inverse)
+                    Assert.Equal(blogsNavigation, postsNavigation.Inverse)
+
+                    Dim joinEntityType = blogsNavigation.ForeignKey.DeclaringEntityType
+                    Assert.Equal("BlogPost", joinEntityType.Name)
+                    Assert.Equal(GetType(Dictionary(Of String, Object)), joinEntityType.ClrType)
+                    Assert.Single(joinEntityType.GetIndexes())
+                    Assert.Equal(2, joinEntityType.GetForeignKeys().Count())
+
+                    Dim fk = Assert.Single(joinEntityType.FindDeclaredForeignKeys({joinEntityType.GetProperty("BlogsKey")}))
+                    Assert.False(fk.PrincipalKey.IsPrimaryKey())
+                End Sub)
+        End Sub
+
+        <ConditionalFact(Skip:="EF fix required, efcore/pull/29793")>
+        Public Sub Many_to_many_ef6()
+
+            Dim expectedDbContextCode =
+$"Imports System
+Imports System.Collections.Generic
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class TestDbContext
+        Inherits DbContext
+
+        Public Sub New()
+        End Sub
+
+        Public Sub New(options As DbContextOptions(Of TestDbContext))
+            MyBase.New(options)
+        End Sub
+
+        Public Overridable Property Blogs As DbSet(Of Blog)
+
+        Public Overridable Property Posts As DbSet(Of Post)
+
+        Protected Overrides Sub OnConfiguring(optionsBuilder As DbContextOptionsBuilder)
+            'TODO /!\ {DesignStrings.SensitiveInformationWarning}
+            optionsBuilder.UseSqlServer(""Initial Catalog=TestDatabase"")
+        End Sub
+
+        Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+            modelBuilder.Entity(Of Blog)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+
+                    entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
+                        UsingEntity(Of Dictionary(Of String, Object))(
+                            ""PostBlog"",
+                            Function(r) r.HasOne(Of Post)().WithMany().
+                                HasForeignKey(""PostId"").
+                                HasConstraintName(""Post_Blogs_Source""),
+                            Function(l) l.HasOne(Of Blog)().WithMany().
+                                HasForeignKey(""BlogId"").
+                                HasConstraintName(""Post_Blogs_Target""),
+                            Sub(j)
+                                j.HasKey(""BlogId"", ""PostId"")
+                                j.ToTable(""PostBlogs"")
+                                j.HasIndex({{""PostId""}}, ""IX_PostBlogs_Post_Id"")
+                                j.IndexerProperty(Of Integer)(""BlogId"").HasColumnName(""Blog_Id"")
+                                j.IndexerProperty(Of Integer)(""PostId"").HasColumnName(""Post_Id"")
+                            End Sub)
+                End Sub)
+
+            modelBuilder.Entity(Of Post)(
+                Sub(entity)
+                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                End Sub)
+
+            OnModelCreatingPartial(modelBuilder)
+        End Sub
+
+        Partial Private Sub OnModelCreatingPartial(modelBuilder As ModelBuilder)
+        End Sub
+    End Class
+End Namespace
+"
+
+            Test(
+                Sub(ModelBuilder)
+                    ModelBuilder.
+                        Entity(
+                            "Blog",
+                            Sub(x)
+                                x.ToTable("Blogs")
+                                x.HasAnnotation(ScaffoldingAnnotationNames.DbSetName, "Blogs")
+                                x.Property(Of Integer)("Id")
+                            End Sub).
+                        Entity(
+                            "Post",
+                            Sub(x)
+                                x.ToTable("Posts")
+                                x.HasAnnotation(ScaffoldingAnnotationNames.DbSetName, "Posts")
+
+                                x.Property(Of Integer)("Id")
+
+                                x.HasMany("Blog", "Blogs").WithMany("Posts").
+                                    UsingEntity(
+                                        "PostBlog",
+                                        Function(r) r.HasOne("Blog", Nothing).WithMany().HasForeignKey("BlogId").HasConstraintName("Post_Blogs_Target"),
+                                        Function(l) l.HasOne("Post", Nothing).WithMany().HasForeignKey("PostId").HasConstraintName("Post_Blogs_Source"),
+                                        Sub(j)
+                                            j.ToTable("PostBlogs")
+                                            j.HasAnnotation(ScaffoldingAnnotationNames.DbSetName, "PostBlogs")
+
+                                            j.Property(Of Integer)("BlogId").HasColumnName("Blog_Id")
+                                            j.Property(Of Integer)("PostId").HasColumnName("Post_Id")
+                                        End Sub)
+                            End Sub)
+                End Sub,
+                New ModelCodeGenerationOptions(),
+                Sub(code)
+                    AssertFileContents(
+                        expectedDbContextCode,
+                        code.ContextFile)
+                End Sub,
+                Sub(model)
+                    Assert.Collection(
+                        model.GetEntityTypes().OrderBy(Function(e) e.Name),
+                        Sub(t1)
+                            Assert.Equal("PostBlog", t1.Name)
+                            Assert.Equal("PostBlogs", t1.GetTableName())
+                            Assert.Collection(
+                                t1.GetForeignKeys().OrderBy(Function(fk) fk.GetConstraintName()),
+                                Sub(fk1)
+                                    Assert.Equal("Post_Blogs_Source", fk1.GetConstraintName())
+                                    Dim prop = Assert.Single(fk1.Properties)
+                                    Assert.Equal("PostId", prop.Name)
+                                    Assert.Equal("Post_Id", prop.GetColumnName(StoreObjectIdentifier.Table(t1.GetTableName())))
+                                    Assert.Equal("TestNamespace.Post", fk1.PrincipalEntityType.Name)
+                                    Assert.Equal(DeleteBehavior.Cascade, fk1.DeleteBehavior)
+                                End Sub,
+                                Sub(fk2)
+                                    Assert.Equal("Post_Blogs_Target", fk2.GetConstraintName())
+                                    Dim prop = Assert.Single(fk2.Properties)
+                                    Assert.Equal("BlogId", prop.Name)
+                                    Assert.Equal("Blog_Id", prop.GetColumnName(StoreObjectIdentifier.Table(t1.GetTableName())))
+                                    Assert.Equal("TestNamespace.Blog", fk2.PrincipalEntityType.Name)
+                                    Assert.Equal(DeleteBehavior.Cascade, fk2.DeleteBehavior)
+                                End Sub)
+                        End Sub,
+                        Sub(t2)
+                            Assert.Equal("TestNamespace.Blog", t2.Name)
+                            Assert.Equal("Blogs", t2.GetTableName())
+                            Assert.Empty(t2.GetDeclaredForeignKeys())
+                            Dim SkipNavigation = Assert.Single(t2.GetSkipNavigations())
+                            Assert.Equal("Posts", SkipNavigation.Name)
+                            Assert.Equal("Blogs", SkipNavigation.Inverse.Name)
+                            Assert.Equal("PostBlog", SkipNavigation.JoinEntityType.Name)
+                            Assert.Equal("Post_Blogs_Target", SkipNavigation.ForeignKey.GetConstraintName())
+                        End Sub,
+                        Sub(t3)
+                            Assert.Equal("TestNamespace.Post", t3.Name)
+                            Assert.Equal("Posts", t3.GetTableName())
+                            Assert.Empty(t3.GetDeclaredForeignKeys())
+                            Dim SkipNavigation = Assert.Single(t3.GetSkipNavigations())
+                            Assert.Equal("Blogs", SkipNavigation.Name)
+                            Assert.Equal("Posts", SkipNavigation.Inverse.Name)
+                            Assert.Equal("PostBlog", SkipNavigation.JoinEntityType.Name)
+                            Assert.Equal("Post_Blogs_Source", SkipNavigation.ForeignKey.GetConstraintName())
+                        End Sub)
+                End Sub)
+        End Sub
+
+        <Fact>
+        Public Sub RequiredAttribute_is_generated_no_matter_NRT_option()
+            ' UseNullableReferenceTypes option should be ignored for VB
+
+            Dim expected =
+"Imports System
+Imports System.Collections.Generic
+Imports System.ComponentModel.DataAnnotations
+Imports System.ComponentModel.DataAnnotations.Schema
+Imports Microsoft.EntityFrameworkCore
+
+Namespace TestNamespace
+    Partial Public Class Color
+        <Key>
+        Public Property Id As Integer
+
+        <Required>
+        Public Property ColorCode As String
+    End Class
+End Namespace
+"
+            Dim mb As Action(Of ModelBuilder) =
+                Sub(modelBuilder As ModelBuilder)
+                    modelBuilder.Entity(
+                        "Color",
+                        Sub(x)
+                            x.Property(Of Integer)("Id")
+                            x.Property(Of String)("ColorCode").IsRequired()
+                        End Sub)
+                End Sub
+
+            Test(
+                mb,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True,
+                    .UseNullableReferenceTypes = True
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expected,
+                        code.AdditionalFiles.First())
+                End Sub,
+                Sub(model)
+                End Sub)
+
+            Test(
+                mb,
+                New ModelCodeGenerationOptions With {
+                    .UseDataAnnotations = True,
+                    .UseNullableReferenceTypes = False
+                },
+                Sub(code)
+                    AssertFileContents(
+                        expected,
+                        code.AdditionalFiles.First())
+                End Sub,
+                Sub(model)
                 End Sub)
         End Sub
 

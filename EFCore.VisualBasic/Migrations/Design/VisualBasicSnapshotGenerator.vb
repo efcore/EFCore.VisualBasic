@@ -919,27 +919,37 @@ Namespace Migrations.Design
             Dim table = StoreObjectIdentifier.Create(entityType, StoreObjectType.Table)
             Dim tableName = If(CStr(tableNameAnnotation?.Value), table?.Name)
 
-            Dim explicitName = tableNameAnnotation IsNot Nothing OrElse
-                entityType.BaseType Is Nothing OrElse
-                entityType.BaseType.GetTableName() <> tableName
-
             Dim schemaAnnotation As IAnnotation = Nothing
             annotations.TryGetAndRemove(RelationalAnnotationNames.Schema, schemaAnnotation)
             Dim schema = If(CStr(schemaAnnotation?.Value), table?.Schema)
 
             Dim isExcludedAnnotation As IAnnotation = Nothing
             annotations.TryGetAndRemove(RelationalAnnotationNames.IsTableExcludedFromMigrations, isExcludedAnnotation)
-            Dim isExcludedFromMigrationsValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean?, DirectCast(isExcludedAnnotation?.Value, Boolean?), Nothing)
-            Dim isExcludedFromMigrations = isExcludedFromMigrationsValue.HasValue AndAlso isExcludedFromMigrationsValue.Value
+
+            Dim isExcludedFromMigrationsValue = If(TypeOf isExcludedAnnotation?.Value Is Boolean?,
+                                                    DirectCast(isExcludedAnnotation?.Value, Boolean?),
+                                                    Nothing)
+
+            Dim isExcludedFromMigrations = isExcludedFromMigrationsValue.HasValue AndAlso
+                                           isExcludedFromMigrationsValue.Value
 
             Dim commentAnnotation As IAnnotation = Nothing
             annotations.TryGetAndRemove(RelationalAnnotationNames.Comment, commentAnnotation)
+
             Dim comment = CStr(commentAnnotation?.Value)
 
-            Dim hasTriggers = entityType.GetDeclaredTriggers().Any(Function(t) t.GetTableName() = tableName AndAlso t.GetTableSchema() = schema)
+            Dim hasTriggers = entityType.GetDeclaredTriggers().
+                                         Any(Function(t) t.GetTableName() = tableName AndAlso
+                                                         t.GetTableSchema() = schema)
+
             Dim hasOverrides = table IsNot Nothing AndAlso
                                entityType.GetProperties().Select(Function(p) p.FindOverrides(table.Value)).
                                                           Any(Function(o) o IsNot Nothing)
+
+            Dim explicitName = tableNameAnnotation IsNot Nothing OrElse
+                               entityType.BaseType Is Nothing OrElse
+                               entityType.BaseType.GetTableName() <> tableName OrElse
+                               hasOverrides
 
             Dim requiresTableBuilder = isExcludedFromMigrations OrElse
                                        comment IsNot Nothing OrElse

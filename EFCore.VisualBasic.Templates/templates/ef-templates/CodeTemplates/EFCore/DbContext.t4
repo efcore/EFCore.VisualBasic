@@ -182,8 +182,7 @@ Namespace <#= FileNamespaceIdentifier #>
         foreach (var property in entityType.GetProperties())
         {
             var propertyFluentApiCalls = property.GetFluentApiCalls(annotationCodeGenerator)
-                ?.FilterChain(c => !(Options.UseDataAnnotations && c.IsHandledByDataAnnotations)
-                    && !(c.Method == "IsRequired" && Options.UseNullableReferenceTypes && !property.ClrType.IsValueType));
+                ?.FilterChain(c => !(Options.UseDataAnnotations && c.IsHandledByDataAnnotations));
 
             if (propertyFluentApiCalls == null)
             {
@@ -220,7 +219,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 WriteLine("");
             }
 #>
-                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= foreignKey.IsUnique ? "WithOne" : "WithMany" #>(Function(p) p.<#= foreignKey.PrincipalToDependent.Name #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent: 6) #>
+                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= foreignKey.IsUnique ? "WithOne" : "WithMany" #>(<#= foreignKey.PrincipalToDependent != null ? $"Function(p) p.{foreignKey.PrincipalToDependent.Name}" : "" #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent: 6) #>
 <#
             anyEntityTypeConfiguration = true;
         }
@@ -251,8 +250,8 @@ Namespace <#= FileNamespaceIdentifier #>
                     entity.HasMany(Function(d) d.<#= skipNavigation.Name #>).WithMany(Function(p) p.<#= skipNavigation.Inverse.Name #>).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             <#= code.Literal(joinEntityType.Name) #>,
-                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent: 7) #>,
-                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent: 7) #>,
+                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent: 8) #>,
+                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent: 8) #>,
                             Sub(j)
 <#
             var joinKey = joinEntityType.FindPrimaryKey();
@@ -284,6 +283,20 @@ Namespace <#= FileNamespaceIdentifier #>
                 }
 #>
                                 j.HasIndex(<#= code.Literal(index.Properties.Select((e) => e.Name).ToArray()) #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent: 8) #>
+<#
+            }
+
+            foreach (var property in joinEntityType.GetProperties())
+            {
+                var propertyFluentApiCalls = property.GetFluentApiCalls(annotationCodeGenerator);
+                if (propertyFluentApiCalls == null)
+                {
+                    continue;
+                }
+
+                importsList.AddRange(propertyFluentApiCalls.GetRequiredUsings());
+#>
+                                j.IndexerProperty(Of <#= code.Reference(property.ClrType) #>)(<#= code.Literal(property.Name) #>)<#= code.Fragment(propertyFluentApiCalls, indent: 8) #>
 <#
             }
 #>

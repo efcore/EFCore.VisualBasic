@@ -161,8 +161,7 @@ Namespace <#= FileNamespaceIdentifier #>
         Dim firstProperty = True
         For Each prop in entityType.GetProperties()
             Dim propertyFluentApiCalls = prop.GetFluentApiCalls(annotationCodeGenerator)?.
-                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations) AndAlso
-                                              Not (c.Method = "IsRequired" AndAlso Options.UseNullableReferenceTypes AndAlso Not prop.ClrType.IsValueType))
+                                              FilterChain(Function(c) Not (Options.UseDataAnnotations AndAlso c.IsHandledByDataAnnotations))
 
             If propertyFluentApiCalls Is Nothing Then
                 Continue For
@@ -194,7 +193,7 @@ Namespace <#= FileNamespaceIdentifier #>
                 WriteLine("")
             End If
 #>
-                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= If(foreignKey.IsUnique, "WithOne", "WithMany") #>(Function(p) p.<#= foreignKey.PrincipalToDependent.Name #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent:=6) #>
+                    entity.HasOne(Function(d) d.<#= foreignKey.DependentToPrincipal.Name #>).<#= If(foreignKey.IsUnique, "WithOne", "WithMany") #>(<#= If(foreignKey.PrincipalToDependent IsNot Nothing, $"Function(p) p.{foreignKey.PrincipalToDependent.Name}", "") #>)<#= code.Fragment(foreignKeyFluentApiCalls, indent:=6) #>
 <#
             anyEntityTypeConfiguration = True
         Next
@@ -221,8 +220,8 @@ Namespace <#= FileNamespaceIdentifier #>
                     entity.HasMany(Function(d) d.<#= skipNavigation.Name #>).WithMany(Function(p) p.<#= skipNavigation.Inverse.Name #>).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             <#= code.Literal(joinEntityType.Name) #>,
-                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent:=7) #>,
-                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent:=7) #>,
+                            Function(r) r.HasOne(Of <#= right.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(rightFluentApiCalls, indent:=8) #>,
+                            Function(l) l.HasOne(Of <#= left.PrincipalEntityType.Name #>)().WithMany()<#= code.Fragment(leftFluentApiCalls, indent:=8) #>,
                             Sub(j)
 <#
             Dim joinKey = joinEntityType.FindPrimaryKey()
@@ -250,6 +249,18 @@ Namespace <#= FileNamespaceIdentifier #>
                 End If
 #>
                                 j.HasIndex(<#= code.Literal(index.Properties.Select(Function(e) e.Name).ToArray()) #>, <#= code.Literal(index.GetDatabaseName()) #>)<#= code.Fragment(indexFluentApiCalls, indent:=8) #>
+<#
+            Next
+
+            For Each prop in joinEntityType.GetProperties()
+                Dim propertyFluentApiCalls = prop.GetFluentApiCalls(annotationCodeGenerator)
+                If propertyFluentApiCalls Is Nothing Then
+                    Continue For
+                End If
+
+                importsList.AddRange(propertyFluentApiCalls.GetRequiredUsings())
+#>
+                                j.IndexerProperty(Of <#= code.Reference(prop.ClrType) #>)(<#= code.Literal(prop.Name) #>)<#= code.Fragment(propertyFluentApiCalls, indent:=8) #>
 <#
             Next
 #>

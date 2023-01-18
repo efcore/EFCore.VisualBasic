@@ -1,4 +1,4 @@
-﻿<# // For now, VB templates must be written in C# #>
+﻿<# // For now, VB templates must be written in C# (see https://github.com/mono/t4/issues/94) #>
 <#@ template language="C#" hostSpecific="true" linePragmas="false" #>
 <#@ output extension=".vb" #>
 <#@ assembly name="EntityFrameworkCore.VisualBasic" #>

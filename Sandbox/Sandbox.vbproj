@@ -30,6 +30,6 @@
     </None>
   </ItemGroup>
 
-  <Import Project="..\EFCore.VisualBasic\build\net7.0\EntityFrameworkCore.VisualBasic.targets" />
+  <Import Project="..\EFCore.VisualBasic\build\net6.0\EntityFrameworkCore.VisualBasic.targets" />
 
 </Project>

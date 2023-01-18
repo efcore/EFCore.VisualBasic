@@ -17,3 +17,12 @@ dotnet add package EntityFrameworkCore.VisualBasic
 Usage
 -----
 After installing this package, you'll be able to [reverse engineer models](https://docs.microsoft.com/ef/core/managing-schemas/scaffolding) and [add migrations](https://docs.microsoft.com/ef/core/managing-schemas/migrations/) into VB projects.
+
+Custom Templates
+----------------
+VB templates are also available to [cusomize the reverse engineered code](https://learn.microsoft.com/ef/core/managing-schemas/scaffolding/templates).
+
+```sh
+dotnet new install EntityFrameworkCore.VisualBasic.Templates
+dotnet new ef-templates -lang VB
+```

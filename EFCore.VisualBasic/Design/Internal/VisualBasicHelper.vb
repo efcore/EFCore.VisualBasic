@@ -1,13 +1,16 @@
 ﻿Imports System.Globalization
 Imports System.Linq.Expressions
 Imports System.Numerics
+Imports System.Runtime.CompilerServices
 Imports System.Security
 Imports System.Text
 Imports EntityFrameworkCore.VisualBasic
+Imports Microsoft.Azure.Cosmos.Serialization.HybridRow.Layouts
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.Identity.Client.Cache
 Imports IndentedStringBuilder = Microsoft.EntityFrameworkCore.Infrastructure.IndentedStringBuilder
 
 Namespace Design.Internal
@@ -548,6 +551,51 @@ Namespace Design.Internal
             Return builder.ToString()
         End Function
 
+        Private Function ValueTuple(tuple As ITuple) As String
+            Dim builder = New StringBuilder()
+
+            Dim typeArguments As Type() = Nothing
+
+            If tuple.Length = 1 Then
+                builder.Append("ValueTuple.Create(")
+                AppendItem(tuple, builder, typeArguments, 0)
+
+                builder.Append(")"c)
+
+                Return builder.ToString()
+            End If
+
+            builder.Append("("c)
+
+            For i = 0 To tuple.Length - 1
+                If i > 0 Then
+                    builder.Append(", ")
+                End If
+
+                typeArguments = AppendItem(tuple, builder, typeArguments, i)
+            Next
+            builder.Append(")"c)
+
+            Return builder.ToString()
+        End Function
+
+        Private Function AppendItem(tuple As ITuple, builder As StringBuilder, typeArguments() As Type, i As Integer) As Type()
+            If tuple(i) Is Nothing Then
+                typeArguments = If(typeArguments, tuple.GetType().GenericTypeArguments)
+
+                builder.
+                    Append("DirectCast(").
+                    Append(UnknownLiteral(tuple(i))).
+                    Append(", ").
+                    Append(Reference(typeArguments(i))).
+                    Append(")"c)
+            Else
+                builder.Append(UnknownLiteral(tuple(i)))
+            End If
+
+            Return typeArguments
+        End Function
+
         ''' <summary>
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
@@ -786,12 +834,16 @@ Namespace Design.Internal
                 Return ArrayLitetal(LiteralType.GetElementType(), DirectCast(value, Array))
             End If
 
+            If TypeOf value Is ITuple AndAlso
+               value.GetType().FullName?.StartsWith("System.ValueTuple`", StringComparison.Ordinal) = True Then
+                Return ValueTuple(DirectCast(value, ITuple))
+            End If
+
             Dim valueType = value.GetType()
             If valueType.IsGenericType AndAlso
-               Not valueType.IsGenericTypeDefinition Then
+                           Not valueType.IsGenericTypeDefinition Then
 
                 Dim genericArguments = valueType.GetGenericArguments()
-
                 If genericArguments.Length = 1 AndAlso valueType.GetGenericTypeDefinition() = GetType(List(Of)) Then
                     Return ListLitetal(genericArguments(0), DirectCast(value, IList))
                 ElseIf genericArguments.Length = 2 AndAlso valueType.GetGenericTypeDefinition() = GetType(Dictionary(Of,)) Then
@@ -804,11 +856,10 @@ Namespace Design.Internal
                 Dim builder As New StringBuilder
                 Dim expression = mapping.GenerateCodeLiteral(value)
                 Dim handled = HandleExpression(expression, builder)
-
                 If Not handled Then
                     Throw New NotSupportedException(DesignStrings.LiteralExpressionNotSupported(
-                                                    expression.ToString(),
-                                                    LiteralType.ShortDisplayName()))
+                                                                        expression.ToString(),
+                                                                        LiteralType.ShortDisplayName()))
                 End If
 
                 Return builder.ToString()

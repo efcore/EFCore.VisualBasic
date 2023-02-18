@@ -948,6 +948,7 @@ Namespace Migrations.Design
 
             Dim explicitName = tableNameAnnotation IsNot Nothing OrElse
                                entityType.BaseType Is Nothing OrElse
+                               (entityType.GetMappingStrategy() = RelationalAnnotationNames.TpcMappingStrategy AndAlso entityType.IsAbstract()) OrElse
                                entityType.BaseType.GetTableName() <> tableName OrElse
                                hasOverrides
 

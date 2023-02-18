@@ -72,7 +72,7 @@ namespace EFCore.Design.Tests.Shared
             Arg2 = arg2;
         }
 
-        public string Arg1 { get; }
+        public string Arg1 { get; } = null!;
         public int? Arg2 { get; }
     }
 
@@ -87,10 +87,10 @@ namespace EFCore.Design.Tests.Shared
             FactoryArg = factoryArg;
         }
 
-        public string FactoryArg { get; }
+        public string FactoryArg { get; } = null!;
 
         public SimpleTestType Create()
-            => new SimpleTestType();
+            => new();
 
         public object Create(string arg1)
             => new SimpleTestType(arg1);
@@ -99,7 +99,7 @@ namespace EFCore.Design.Tests.Shared
             => new SimpleTestType(arg1, arg2);
 
         public static SimpleTestType StaticCreate()
-            => new SimpleTestType();
+            => new();
 
         public static object StaticCreate(string arg1)
             => new SimpleTestType(arg1);
@@ -107,5 +107,4 @@ namespace EFCore.Design.Tests.Shared
         public static object StaticCreate(string arg1, int? arg2)
             => new SimpleTestType(arg1, arg2);
     }
-
 }

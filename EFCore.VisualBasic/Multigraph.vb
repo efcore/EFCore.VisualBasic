@@ -145,16 +145,16 @@ Namespace Utilities
         End Function
 
         Public Function BatchingTopologicalSort(
-            tryBreakEdge As Func(Of TVertex, TVertex, IEnumerable(Of TEdge), Boolean),
+            canBreakEdges As Func(Of TVertex, TVertex, IEnumerable(Of TEdge), Boolean),
             formatCycle As Func(Of IReadOnlyList(Of Tuple(Of TVertex, TVertex, IEnumerable(Of TEdge))), String),
             Optional formatException As Func(Of String, String) = Nothing) As IReadOnlyList(Of List(Of TVertex))
 
-            Return TopologicalSortCore(withBatching:=True, tryBreakEdge, formatCycle, formatException)
+            Return TopologicalSortCore(withBatching:=True, canBreakEdges, formatCycle, formatException)
         End Function
 
         Private Function TopologicalSortCore(
             withBatching As Boolean,
-            tryBreakEdge As Func(Of TVertex, TVertex, IEnumerable(Of TEdge), Boolean),
+            canBreakEdges As Func(Of TVertex, TVertex, IEnumerable(Of TEdge), Boolean),
             formatCycle As Func(Of IReadOnlyList(Of Tuple(Of TVertex, TVertex, IEnumerable(Of TEdge))), String),
             Optional formatException As Func(Of String, String) = Nothing) As IReadOnlyList(Of List(Of TVertex))
 
@@ -235,8 +235,8 @@ Namespace Utilities
                     Dim candidateIndex = 0
 
                     While candidateIndex < candidateVertices.Count AndAlso
-                                              Not broken AndAlso
-                                              tryBreakEdge IsNot Nothing
+                          Not broken AndAlso
+                          canBreakEdges IsNot Nothing
 
                         Dim candidateVertex = candidateVertices(candidateIndex)
                         If predecessorCounts(candidateVertex) = 0 Then
@@ -252,7 +252,7 @@ Namespace Utilities
                                                                     neighborPredecessors > 0
                                                       End Function)
 
-                        If tryBreakEdge(incomingNeighbor, candidateVertex, GetEdges(incomingNeighbor, candidateVertex)) Then
+                        If canBreakEdges(incomingNeighbor, candidateVertex, GetEdges(incomingNeighbor, candidateVertex)) Then
 
                             Dim removed = _successorMap(incomingNeighbor).Remove(candidateVertex)
                             Debug.Assert(removed, "Candidate vertex not found in successor map")

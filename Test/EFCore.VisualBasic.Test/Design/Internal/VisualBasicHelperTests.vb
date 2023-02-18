@@ -214,6 +214,36 @@ string with """,
         End Sub
 
         <ConditionalFact>
+        Public Sub Literal_works_when_value_tuple()
+            Literal_works((1, "hello"), "(1, ""hello"")")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_value_tuple_with_null_value_type()
+            Literal_works((1, DirectCast(Nothing, Integer()), "hello"), "(1, DirectCast(Nothing, Integer()), ""hello"")")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_value_tuple_with_null_reference_type()
+            Literal_works((1, DirectCast(Nothing, String), "hello"), "(1, DirectCast(Nothing, String), ""hello"")")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_value_tuple_of_length_1()
+            Literal_works(ValueTuple.Create(1), "ValueTuple.Create(1)")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_value_tuple_of_length_1_with_null_valu()
+            Literal_works(ValueTuple.Create(CType(Nothing, String)), "ValueTuple.Create(DirectCast(Nothing, String))")
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Literal_works_when_value_tuple_of_length_9()
+            Literal_works((1, 2, 3, 4, 5, 6, 7, 8, 9), "(1, 2, 3, 4, 5, 6, 7, 8, 9)")
+        End Sub
+
+        <ConditionalFact>
         <UseCulture("fr-CA")>
         Public Sub Literal_works_when_DateOnly()
             Literal_works(
@@ -614,36 +644,36 @@ End Sub)", result)
         End Sub
 
         <ConditionalFact>
-    public Sub Fragment_MethodCallCodeFragment_works_when_nested_closure_with_chain()
-    
-        Dim method As New MethodCallCodeFragment(
+        Public Sub Fragment_MethodCallCodeFragment_works_when_nested_closure_with_chain()
+
+            Dim method As New MethodCallCodeFragment(
             _testFuncMethodInfo,
-            new NestedClosureCodeFragment(
+            New NestedClosureCodeFragment(
                 "x",
-                new MethodCallCodeFragment(_testFuncMethodInfo, "One").
-                    Chain(new MethodCallCodeFragment(_testFuncMethodInfo, "Two"))))
+                New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                    Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Two"))))
 
-        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method)
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
-        Assert.Equal(
+            Assert.Equal(
 ".TestFunc(Sub(x) x.
     TestFunc(""One"").
     TestFunc(""Two""))",
             result,
-            ignoreLineEndingDifferences:= true)
-    end Sub
+            ignoreLineEndingDifferences:=True)
+        End Sub
 
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_with_indent_works_when_nested_closure_with_chain()
 
             Dim method As New MethodCallCodeFragment(
             _testFuncMethodInfo,
-            new NestedClosureCodeFragment(
+            New NestedClosureCodeFragment(
                 "x",
-                new MethodCallCodeFragment(_testFuncMethodInfo, "One").
-                    Chain(new MethodCallCodeFragment(_testFuncMethodInfo, "Two"))))
+                New MethodCallCodeFragment(_testFuncMethodInfo, "One").
+                    Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Two"))))
 
-        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method, indent:= 1)
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, indent:=1)
 
             Assert.Equal(
 ".TestFunc(Sub(x) x.
@@ -658,14 +688,14 @@ End Sub)", result)
 
             Dim method = New MethodCallCodeFragment(_testFuncMethodInfo, "One").
                 Chain(
-                    new MethodCallCodeFragment(
+                    New MethodCallCodeFragment(
                     _testFuncMethodInfo,
-                    new NestedClosureCodeFragment(
+                    New NestedClosureCodeFragment(
                         "x",
-                        new MethodCallCodeFragment(_testFuncMethodInfo, "Two").
-                            Chain(new MethodCallCodeFragment(_testFuncMethodInfo, "Three")))))
+                        New MethodCallCodeFragment(_testFuncMethodInfo, "Two").
+                            Chain(New MethodCallCodeFragment(_testFuncMethodInfo, "Three")))))
 
-        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method, indent:= 1)
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method, indent:=1)
 
             Assert.Equal(
 ".
@@ -679,16 +709,17 @@ End Sub)", result)
 
         <ConditionalFact>
         Public Sub Fragment_MethodCallCodeFragment_works_when_nested_closure_with_two_calls()
+
             Dim method = New MethodCallCodeFragment(
                 _testFuncMethodInfo,
                 New NestedClosureCodeFragment(
                     "x",
                     {
-                        new MethodCallCodeFragment(_testFuncMethodInfo, "One"),
-                        new MethodCallCodeFragment(_testFuncMethodInfo, "Two")
+                        New MethodCallCodeFragment(_testFuncMethodInfo, "One"),
+                        New MethodCallCodeFragment(_testFuncMethodInfo, "Two")
                     }))
 
-        Dim result = new VisualBasicHelper(TypeMappingSource).Fragment(method)
+            Dim result = New VisualBasicHelper(TypeMappingSource).Fragment(method)
 
             Assert.Equal(
 ".TestFunc(Sub(x)
@@ -847,7 +878,7 @@ $"builder.
                                         Function(v)
                                             Return Expression.Call(GetType(SimpleTestTypeFactory).GetMethod(
                                                                      NameOf(SimpleTestTypeFactory.StaticCreate),
-                                                                     New Type() {}))
+                                                                     Type.EmptyTypes))
                                         End Function)
 
             Assert.Equal("EFCore.Design.Tests.Shared.SimpleTestTypeFactory.StaticCreate()",
@@ -1057,7 +1088,6 @@ $"builder.
         Public Shared Sub TestFunc(builder As Object, o1 As Object, o2 As Object, o3 As Object)
             Throw New NotSupportedException()
         End Sub
-
     End Class
 
     Friend Class Generic(Of T)
@@ -1065,5 +1095,4 @@ $"builder.
 
     Friend Class MultiGeneric(Of T1, T2)
     End Class
-
 End Namespace

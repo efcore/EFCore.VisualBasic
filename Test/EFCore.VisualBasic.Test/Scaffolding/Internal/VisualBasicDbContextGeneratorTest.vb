@@ -212,7 +212,7 @@ End Namespace
                     .ConnectionString = "Initial Catalog=TestDatabase"
                 })
 
-            Assert.Contains(
+            AssertContains(
 "optionsBuilder.
                 UseSqlServer(""Initial Catalog=TestDatabase"", Sub(x) x.SetProviderOption()).
                 SetContextOption()",
@@ -347,8 +347,7 @@ End Namespace
                 End Sub,
                 New ModelCodeGenerationOptions,
                 Sub(code)
-                    Assert.Contains($"Property(Function(e) e.ValueGeneratedOnAdd).
-                        ValueGeneratedOnAdd()", code.ContextFile.Code)
+                    Assert.Contains($"Property(Function(e) e.ValueGeneratedOnAdd).ValueGeneratedOnAdd()", code.ContextFile.Code)
                     Assert.Contains("Property(Function(e) e.ValueGeneratedOnAddOrUpdate).ValueGeneratedOnAddOrUpdate()", code.ContextFile.Code)
                     Assert.Contains("Property(Function(e) e.ConcurrencyToken).IsConcurrencyToken()", code.ContextFile.Code)
                     Assert.Contains("Property(Function(e) e.ValueGeneratedOnUpdate).ValueGeneratedOnUpdate()", code.ContextFile.Code)
@@ -545,8 +544,6 @@ Namespace TestNamespace
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
-
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -618,8 +615,6 @@ Namespace TestNamespace
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").
                         HasFilter(""Filter SQL"").
                         HasAnnotation(""AnnotationName"", ""AnnotationValue"")
-
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -697,8 +692,6 @@ Namespace TestNamespace
                     entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_mixed"").IsDescending(False, True, False)
 
                     entity.HasIndex(Function(e) New With {{e.X, e.Y, e.Z}}, ""IX_unspecified"")
-
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -793,8 +786,6 @@ Namespace TestNamespace
                 Sub(entity)
                     entity.HasIndex(Function(e) e.DependentId, ""IX_DependentEntity_DependentId"").IsUnique()
 
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasOne(Function(d) d.NavigationToPrincipal).WithOne(Function(p) p.NavigationToDependent).
                         HasPrincipalKey(Of PrincipalEntity)(Function(p) p.PrincipalId).
                         HasForeignKey(Of DependentEntity)(Function(d) d.DependentId)
@@ -803,8 +794,6 @@ Namespace TestNamespace
             modelBuilder.Entity(Of PrincipalEntity)(
                 Sub(entity)
                     entity.HasKey(Function(e) e.AlternateId)
-
-                    entity.Property(Function(e) e.AlternateId).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -876,7 +865,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Employee)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                     entity.Property(Function(e) e.HireDate).
                         HasColumnType(""date"").
                         HasColumnName(""hiring_date"")
@@ -1231,8 +1219,6 @@ Namespace TestNamespace
                             HasPeriodEnd(""PeriodEnd"").
                             HasColumnName(""PeriodEnd"")
                         End Sub))
-
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1285,7 +1271,7 @@ End Namespace
                 End Sub,
                 New ModelCodeGenerationOptions(),
                 Sub(code)
-                    Assert.Contains(
+                    AssertContains(
 ".HasSequence(Of Integer)(""EvenNumbers"", ""dbo"").
                 StartsAt(2L).
                 IncrementsBy(2).
@@ -1336,12 +1322,12 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Employee)(
                 Sub(entity)
-                    entity.ToTable(Sub(tb)
+                    entity.
+                    ToTable(Sub(tb)
                         tb.HasTrigger(""Trigger1"")
                         tb.HasTrigger(""Trigger2"")
-                    End Sub)
-
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
+                    End Sub).
+                    HasAnnotation(""SqlServer:UseSqlOutputClause"", False)
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1462,7 +1448,7 @@ End Namespace
                 },
                 Sub(code)
                     Assert.DoesNotContain(".HasColumnOrder(1)", code.ContextFile.Code)
-                    Assert.DoesNotContain("[Column(Order = 1)]", code.AdditionalFiles(0).Code)
+                    Assert.DoesNotContain("<Column(Order:=1)>", code.AdditionalFiles(0).Code)
                 End Sub,
                 Sub(Model)
                     Dim entity = Model.FindEntityType("TestNamespace.Entity")
@@ -1500,7 +1486,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Color)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                     entity.Property(Function(e) e.ColorCode).IsRequired()
                 End Sub)
 

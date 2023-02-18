@@ -114,6 +114,7 @@ End Namespace
                         "Vista",
                         Sub(b)
                             b.ToTable("Vistas") ' Default name is "Vista" in the absence of pluralizer
+                            b.HasAnnotation(ScaffoldingAnnotationNames.DbSetName, "Vista")
                             b.Property(Of Integer)("Id")
                             b.HasKey("Id")
                         End Sub)
@@ -439,8 +440,6 @@ Namespace TestNamespace
             modelBuilder.Entity(Of EntityWithIndexes)(
                 Sub(entity)
                     entity.HasIndex(Function(e) New With {{e.B, e.C}}, ""IndexOnBAndC"").HasFilter(""Filter SQL"")
-
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -523,11 +522,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Entity)(
-                Sub(entity)
-                    entity.Property(Function(e) e.PrimaryKey).UseIdentityColumn()
-                End Sub)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -777,11 +771,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Entity)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-                End Sub)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -1319,11 +1308,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Post)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-                End Sub)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -1372,8 +1356,8 @@ End Namespace
                 End Sub)
         End Sub
 
-        <ConditionalFact(Skip:="EF fix required, efcore/pull/29731")>
-        Public Sub ForeignKeyAttribute_InversePropertyAttribute_is_not_generated_for_alternate_key()
+        <ConditionalFact>
+        Public Sub ForeignKeyAttribute_InversePropertyAttribute_when_composite_alternate_key()
 
             Dim expectedCode =
 "Imports System
@@ -1391,6 +1375,8 @@ Namespace TestNamespace
 
         Public Property BlogId2 As Integer?
 
+        <ForeignKey(""BlogId1, BlogId2"")>
+        <InverseProperty(""Posts"")>
         Public Overridable Property BlogNavigation As Blog
     End Class
 End Namespace
@@ -1422,15 +1408,8 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Blog)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-                End Sub)
-
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasOne(Function(d) d.BlogNavigation).WithMany(Function(p) p.Posts).
                         HasPrincipalKey(Function(p) New With {{p.Id1, p.Id2}}).
                         HasForeignKey(Function(d) New With {{d.BlogId1, d.BlogId2}})
@@ -1485,7 +1464,7 @@ End Namespace
                 End Sub)
         End Sub
 
-        <ConditionalFact(Skip:="EF fix required, efcore/pull/29731")>
+        <ConditionalFact>
         Public Sub ForeignKeyAttribute_is_generated_for_fk_referencing_ak()
 
             Dim expectedColorCode =
@@ -1503,6 +1482,7 @@ Namespace TestNamespace
         <Required>
         Public Property ColorCode As String
 
+        <InverseProperty(""Color"")>
         Public Overridable ReadOnly Property Cars As ICollection(Of Car) = New List(Of Car)()
     End Class
 End Namespace
@@ -1522,6 +1502,8 @@ Namespace TestNamespace
 
         Public Property ColorCode As String
 
+        <ForeignKey(""ColorCode"")>
+        <InverseProperty(""Cars"")>
         Public Overridable Property Color As Color
     End Class
 End Namespace
@@ -1555,16 +1537,9 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Car)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasOne(Function(d) d.Color).WithMany(Function(p) p.Cars).
                         HasPrincipalKey(Function(p) p.ColorCode).
                         HasForeignKey(Function(d) d.ColorCode)
-                End Sub)
-
-            modelBuilder.Entity(Of Color)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -1647,11 +1622,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of Blog)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-                End Sub)
-
             modelBuilder.Entity(Of Post)(
                 Sub(entity)
                     entity.HasNoKey()
@@ -2012,11 +1982,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of EntityWithAnnotation)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-                End Sub)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -2094,11 +2059,6 @@ Namespace TestNamespace
         End Sub
 
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-            modelBuilder.Entity(Of EntityWithPropertyAnnotation)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-                End Sub)
-
             OnModelCreatingPartial(modelBuilder)
         End Sub
 
@@ -2164,8 +2124,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
@@ -2175,11 +2133,6 @@ Namespace TestNamespace
                                 j.HasKey(""BlogsId"", ""PostsId"")
                                 j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
                             End Sub)
-                End Sub)
-
-            modelBuilder.Entity(Of Post)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -2303,8 +2256,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
@@ -2423,8 +2374,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
@@ -2434,11 +2383,6 @@ Namespace TestNamespace
                                 j.HasKey(""BlogsId"", ""PostsId"")
                                 j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
                             End Sub)
-                End Sub)
-
-            modelBuilder.Entity(Of Post)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -2573,8 +2517,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""BlogPost"",
@@ -2586,11 +2528,6 @@ Namespace TestNamespace
                                 j.HasKey(""BlogsKey"", ""PostsId"")
                                 j.HasIndex({{""PostsId""}}, ""IX_BlogPost_PostsId"")
                             End Sub)
-                End Sub)
-
-            modelBuilder.Entity(Of Post)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)
@@ -2616,6 +2553,8 @@ Namespace TestNamespace
 
         Public Property Key As Integer
 
+        <ForeignKey(""BlogsKey"")>
+        <InverseProperty(""Blogs"")>
         Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
@@ -2700,7 +2639,7 @@ End Namespace
                 End Sub)
         End Sub
 
-        <ConditionalFact(Skip:="EF fix required, efcore/pull/29793")>
+        <ConditionalFact>
         Public Sub Many_to_many_ef6()
 
             Dim expectedDbContextCode =
@@ -2731,8 +2670,6 @@ Namespace TestNamespace
         Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
             modelBuilder.Entity(Of Blog)(
                 Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
-
                     entity.HasMany(Function(d) d.Posts).WithMany(Function(p) p.Blogs).
                         UsingEntity(Of Dictionary(Of String, Object))(
                             ""PostBlog"",
@@ -2749,11 +2686,6 @@ Namespace TestNamespace
                                 j.IndexerProperty(Of Integer)(""BlogId"").HasColumnName(""Blog_Id"")
                                 j.IndexerProperty(Of Integer)(""PostId"").HasColumnName(""Post_Id"")
                             End Sub)
-                End Sub)
-
-            modelBuilder.Entity(Of Post)(
-                Sub(entity)
-                    entity.Property(Function(e) e.Id).UseIdentityColumn()
                 End Sub)
 
             OnModelCreatingPartial(modelBuilder)

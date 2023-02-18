@@ -1,5 +1,6 @@
 ﻿Imports System.ComponentModel
 Imports System.Data
+Imports System.Diagnostics.CodeAnalysis
 Imports System.Linq.Expressions
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design
@@ -186,9 +187,15 @@ End Namespace
                                  Dim lazyConstructorEntity = Model.FindEntityType(GetType(LazyConstructorEntity))
                                  Dim lazyParameterBinding = lazyConstructorEntity.ConstructorBinding.ParameterBindings.Single()
                                  Assert.Equal(GetType(ILazyLoader), lazyParameterBinding.ParameterType)
+
                                  Dim lazyPropertyEntity = Model.FindEntityType(GetType(LazyPropertyEntity))
                                  Dim lazyServiceProperty = lazyPropertyEntity.GetServiceProperties().Single()
                                  Assert.Equal(GetType(ILazyLoader), lazyServiceProperty.ClrType)
+
+                                 Dim lazyPropertyDelegateEntity = Model.FindEntityType(GetType(LazyPropertyDelegateEntity))
+                                 Assert.Equal(2, lazyPropertyDelegateEntity.GetServiceProperties().Count())
+                                 Assert.Contains(lazyPropertyDelegateEntity.GetServiceProperties(), Function(p) p.ClrType = GetType(ILazyLoader))
+                                 Assert.Contains(lazyPropertyDelegateEntity.GetServiceProperties(), Function(p) p.ClrType = GetType(Action(Of Object, String)))
                              End Sub)
         End Sub
 
@@ -199,6 +206,18 @@ End Namespace
                 MyBase.OnModelCreating(modelBuilder)
 
                 modelBuilder.Entity(Of LazyConstructorEntity)()
+
+                modelBuilder.Entity(Of LazyPropertyDelegateEntity)(
+                    Sub(b)
+                        Dim ServiceProperty = DirectCast(b.Metadata.AddServiceProperty(
+                                                  GetType(ILazyLoader),
+                                                  GetType(LazyPropertyDelegateEntity).GetAnyProperty("LoaderState")),
+                                              ServiceProperty)
+
+                        ServiceProperty.SetParameterBinding(
+                            New DependencyInjectionParameterBinding(GetType(Object), GetType(ILazyLoader), ServiceProperty),
+                            ConfigurationSource.Explicit)
+                    End Sub)
             End Sub
         End Class
 
@@ -212,10 +231,21 @@ End Namespace
             Public Property Id As Integer
 
             Public Property LazyPropertyEntity As LazyPropertyEntity
+            Public Property LazyPropertyDelegateEntity As LazyPropertyDelegateEntity
         End Class
 
         Public Class LazyPropertyEntity
             Public Property Loader As ILazyLoader
+            Public Property Id As Integer
+            Public Property LazyConstructorEntityId As Integer
+
+            Public Property LazyConstructorEntity As LazyConstructorEntity
+        End Class
+
+        Public Class LazyPropertyDelegateEntity
+            Public Property LoaderState As Object
+            Private Property LazyLoader As Action(Of Object, String)
+
             Public Property Id As Integer
             Public Property LazyConstructorEntityId As Integer
 
@@ -883,8 +913,8 @@ End Namespace
 
             Protected Overrides Function ShouldUseFullName(shortTypeName As String) As Boolean
                 Return MyBase.ShouldUseFullName(shortTypeName) OrElse
-                   shortTypeName = NameOf(Index) OrElse
-                   shortTypeName = NameOf(Internal)
+                       shortTypeName = NameOf(Index) OrElse
+                       shortTypeName = NameOf(Internal)
             End Function
         End Class
 
@@ -1060,7 +1090,8 @@ Namespace TestNamespace
                 GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetProperty("Dependent", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("_Dependent", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                eagerLoaded:=True)
+                eagerLoaded:=True,
+                lazyLoadingEnabled:=False)
 
             Return runtimeForeignKey
         End Function
@@ -1273,6 +1304,7 @@ Namespace TestNamespace
 
             Dim context = entityType.AddServiceProperty(
                 "Context",
+                GetType(Microsoft.EntityFrameworkCore.DbContext),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
 
             Dim key = entityType.AddKey(
@@ -1394,6 +1426,7 @@ Namespace TestNamespace
 
             Dim context = entityType.AddServiceProperty(
                 "Context",
+                GetType(Microsoft.EntityFrameworkCore.DbContext),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
 
             Dim key = entityType.AddKey(
@@ -1648,7 +1681,8 @@ Namespace TestNamespace
                 GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetProperty("Principals", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("_Principals", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                eagerLoaded:=True)
+                eagerLoaded:=True,
+                lazyLoadingEnabled:=False)
 
             Dim Inverse = targetEntityType.FindSkipNavigation("Deriveds")
             If Inverse IsNot Nothing Then
@@ -1925,6 +1959,7 @@ End Namespace
                     Assert.Equal("_Dependent", dependentNavigation.FieldInfo.Name)
                     Assert.False(dependentNavigation.IsCollection)
                     Assert.True(dependentNavigation.IsEagerLoaded)
+                    Assert.False(dependentNavigation.LazyLoadingEnabled)
                     Assert.False(dependentNavigation.IsOnDependent)
                     Assert.Equal(principalDerived, dependentNavigation.DeclaringEntityType)
                     Assert.Equal("Principal", dependentNavigation.Inverse.Name)
@@ -1973,6 +2008,7 @@ End Namespace
                     Assert.Equal(GetType(ICollection(Of PrincipalBase)), derivedSkipNavigation.ClrType)
                     Assert.True(derivedSkipNavigation.IsCollection)
                     Assert.True(derivedSkipNavigation.IsEagerLoaded)
+                    Assert.False(derivedSkipNavigation.LazyLoadingEnabled)
                     Assert.False(derivedSkipNavigation.IsOnDependent)
                     Assert.Equal(principalDerived, derivedSkipNavigation.DeclaringEntityType)
                     Assert.Equal("Deriveds", derivedSkipNavigation.Inverse.Name)
@@ -2197,7 +2233,7 @@ End Namespace
                            HasForeignKey(Of DependentBase(Of Byte?))().
                            OnDelete(DeleteBehavior.ClientNoAction)
 
-                        eb.Navigation(Function(e) e.Dependent).AutoInclude()
+                        eb.Navigation(Function(e) e.Dependent).AutoInclude().EnableLazyLoading(False)
 
                         eb.OwnsMany(GetType(OwnedType).FullName, "ManyOwned",
                                     Sub(ob)
@@ -2215,7 +2251,7 @@ End Namespace
                                    HasColumnOrder(1)
                             End Sub)
 
-                        eb.Navigation(Function(e) e.Principals).AutoInclude()
+                        eb.Navigation(Function(e) e.Principals).AutoInclude().EnableLazyLoading(False)
 
                         eb.ToTable("PrincipalDerived")
                     End Sub)
@@ -2835,6 +2871,7 @@ End Namespace
                     Assert.Equal("_Dependent", dependentNavigation.FieldInfo.Name)
                     Assert.False(dependentNavigation.IsCollection)
                     Assert.False(dependentNavigation.IsEagerLoaded)
+                    Assert.True(dependentNavigation.LazyLoadingEnabled)
                     Assert.False(dependentNavigation.IsOnDependent)
                     Assert.Equal(PrincipalDerived, dependentNavigation.DeclaringEntityType)
                     Assert.Equal("Principal", dependentNavigation.Inverse.Name)
@@ -4149,6 +4186,7 @@ Namespace TestNamespace
             entityType.AddAnnotation("Relational:TableName", "Data")
             entityType.AddAnnotation("Relational:ViewName", Nothing)
             entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+            entityType.AddAnnotation("SqlServer:UseSqlOutputClause", False)
 
             Customize(entityType)
         End Sub

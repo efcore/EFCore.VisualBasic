@@ -5,12 +5,10 @@ Imports System.Runtime.CompilerServices
 Imports System.Security
 Imports System.Text
 Imports EntityFrameworkCore.VisualBasic
-Imports Microsoft.Azure.Cosmos.Serialization.HybridRow.Layouts
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Storage
-Imports Microsoft.Identity.Client.Cache
 Imports IndentedStringBuilder = Microsoft.EntityFrameworkCore.Infrastructure.IndentedStringBuilder
 
 Namespace Design.Internal

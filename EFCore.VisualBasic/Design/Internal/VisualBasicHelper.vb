@@ -839,7 +839,7 @@ Namespace Design.Internal
 
             Dim valueType = value.GetType()
             If valueType.IsGenericType AndAlso
-                           Not valueType.IsGenericTypeDefinition Then
+               Not valueType.IsGenericTypeDefinition Then
 
                 Dim genericArguments = valueType.GetGenericArguments()
                 If genericArguments.Length = 1 AndAlso valueType.GetGenericTypeDefinition() = GetType(List(Of)) Then
@@ -856,8 +856,8 @@ Namespace Design.Internal
                 Dim handled = HandleExpression(expression, builder)
                 If Not handled Then
                     Throw New NotSupportedException(DesignStrings.LiteralExpressionNotSupported(
-                                                                        expression.ToString(),
-                                                                        LiteralType.ShortDisplayName()))
+                                                    expression.ToString(),
+                                                    LiteralType.ShortDisplayName()))
                 End If
 
                 Return builder.ToString()

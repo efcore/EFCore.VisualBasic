@@ -135,9 +135,9 @@ All diagnostics:
                                                    "System.Collections.Generic",
                                                    "System.Linq"}),
                 specificDiagnosticOptions:=New Dictionary(Of String, ReportDiagnostic) From {
- _ ' Unused import statement.
+                                                                                             _ ' Unused import statement.
                     {"BC50001", ReportDiagnostic.Suppress},
- _ ' Casing of namespace Namespace does not match casing of namespace Namespace
+                                                           _ ' Casing of namespace Namespace does not match casing of namespace Namespace
                     {"BC40055", ReportDiagnostic.Suppress}
                 })
     End Function

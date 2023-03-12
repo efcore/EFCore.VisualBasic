@@ -1,6 +1,5 @@
 ﻿Imports System.ComponentModel
 Imports System.Data
-Imports System.Diagnostics.CodeAnalysis
 Imports System.Linq.Expressions
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design

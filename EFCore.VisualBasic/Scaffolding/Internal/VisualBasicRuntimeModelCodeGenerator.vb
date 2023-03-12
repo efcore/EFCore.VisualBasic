@@ -3,6 +3,7 @@ Imports System.Text
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Design
+Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
@@ -874,36 +875,52 @@ $"    Dim model As New {className}()
         End Sub
 
         Private Shared Function GetValueConverterType(prop As IProperty) As Type
-            Dim type = TryCast(prop(CoreAnnotationNames.ValueConverterType), Type)
+            Dim annotation = prop.FindAnnotation(CoreAnnotationNames.ValueConverterType)
 
-            If type IsNot Nothing Then
-                Return type
+            If annotation IsNot Nothing Then
+                Return DirectCast(annotation.Value, Type)
             End If
 
             Dim principalProperty = prop
-            For i = 0 To 10000 - 1
+
+            Dim i = 0
+            While i < ForeignKey.LongestFkChainAllowedLength
+                Dim nextProperty As IProperty = Nothing
                 For Each foreignKey In principalProperty.GetContainingForeignKeys()
                     For propertyIndex = 0 To foreignKey.Properties.Count - 1
                         If principalProperty Is foreignKey.Properties(propertyIndex) Then
                             Dim newPrincipalProperty = foreignKey.PrincipalKey.Properties(propertyIndex)
-                            If prop Is principalProperty OrElse
+                            If newPrincipalProperty Is prop OrElse
                                newPrincipalProperty Is principalProperty Then
 
                                 Exit For
                             End If
 
-                            principalProperty = newPrincipalProperty
-
-                            type = TryCast(principalProperty(CoreAnnotationNames.ValueConverterType), Type)
-                            If type IsNot Nothing Then
-                                Return type
+                            annotation = newPrincipalProperty.FindAnnotation(CoreAnnotationNames.ValueConverterType)
+                            If annotation IsNot Nothing Then
+                                Return DirectCast(annotation.Value, Type)
                             End If
+
+                            nextProperty = newPrincipalProperty
                         End If
                     Next
                 Next
-            Next
 
-            Return Nothing
+                If nextProperty Is Nothing Then
+                    Exit While
+                End If
+
+                principalProperty = nextProperty
+                i += 1
+            End While
+
+            If i = ForeignKey.LongestFkChainAllowedLength Then
+                Throw New InvalidOperationException(
+                    CoreStrings.RelationshipCycle(
+                          prop.DeclaringEntityType.DisplayName(), prop.Name, "ValueConverterType"))
+            Else
+                Return Nothing
+            End If
         End Function
 
         Private Sub PropertyBaseParameters(Prop As IPropertyBase,
@@ -1025,7 +1042,9 @@ $"    Dim model As New {className}()
                 Append(parameters.TargetName).
                 AppendLine(".AddServiceProperty(").
                 IncrementIndent().
-                Append(_code.Literal(prop.Name))
+                Append(_code.Literal(prop.Name)).
+                AppendLine(","c).
+                Append("GetType(" & prop.ClrType.DisplayName(fullName:=True, compilable:=True) & ")")
 
             PropertyBaseParameters(prop, parameters, skipType:=True)
 
@@ -1291,6 +1310,13 @@ $"    Dim model As New {className}()
                     Append(_code.Literal(True))
             End If
 
+            If Not navigation.LazyLoadingEnabled Then
+                mainBuilder.
+                    AppendLine(","c).
+                    Append("lazyLoadingEnabled:=").
+                    Append(_code.Literal(False))
+            End If
+
             mainBuilder.
                 AppendLine(")"c).
                 AppendLine().
@@ -1386,6 +1412,13 @@ $"    Dim model As New {className}()
                         AppendLine(","c).
                         Append("eagerLoaded:=").
                         Append(_code.Literal(True))
+                End If
+
+                If Not navigation.LazyLoadingEnabled Then
+                    mainBuilder.
+                        AppendLine(","c).
+                        Append("lazyLoadingEnabled:=").
+                        Append(_code.Literal(False))
                 End If
 
                 mainBuilder.

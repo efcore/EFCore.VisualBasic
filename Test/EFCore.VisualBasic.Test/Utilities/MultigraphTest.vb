@@ -359,7 +359,7 @@ Namespace Utilities
                 CoreStrings.CircularDependency(message),
                 Assert.Throws(Of InvalidOperationException)(Sub() graph.TopologicalSort(formatter)).Message)
 
-                                Assert.Equal(3, cycleData.Count())
+            Assert.Equal(3, cycleData.Count())
 
             Assert.Equal(vertexTwo, cycleData(vertexOne).Item2)
             Assert.Equal({edgeOne}, cycleData(vertexOne).Item3)

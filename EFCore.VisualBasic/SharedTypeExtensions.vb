@@ -1,4 +1,5 @@
-﻿Imports System.Reflection
+﻿Imports System.Diagnostics.CodeAnalysis
+Imports System.Reflection
 Imports System.Runtime.CompilerServices
 
 <DebuggerStepThrough>
@@ -104,8 +105,12 @@ Friend Module SharedTypeExtensions
         Return False
     End Function
 
-    <Extension()>
-    Function GetAnyProperty(type As Type, name As String) As PropertyInfo
+    <Extension>
+    Function GetAnyProperty(<DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties Or
+                                                        DynamicallyAccessedMemberTypes.NonPublicProperties)>
+                            type As Type,
+                            name As String) As PropertyInfo
+
         Dim props = type.GetRuntimeProperties().Where(Function(p) p.Name = name).ToList()
         If props.Count > 1 Then
             Throw New AmbiguousMatchException()
@@ -246,10 +251,10 @@ Friend Module SharedTypeExtensions
         Dim currentType = type
         Do
             Dim typeInfo = currentType.GetTypeInfo()
-            For Each propertyInfo In typeInfo.DeclaredProperties
-                If propertyInfo.Name.Equals(name, StringComparison.Ordinal) AndAlso
-                   Not (If(propertyInfo.GetMethod, propertyInfo.SetMethod)).IsStatic Then
-                    Yield propertyInfo
+            For Each PropertyInfo In typeInfo.DeclaredProperties
+                If PropertyInfo.Name.Equals(name, StringComparison.Ordinal) AndAlso
+                   Not If(PropertyInfo.GetMethod, PropertyInfo.SetMethod).IsStatic Then
+                    Yield PropertyInfo
                 End If
             Next
 

@@ -66,7 +66,7 @@ Namespace Scaffolding.Internal
                          assertModel As Action(Of IModel),
                          modelGenerator As IModelCodeGenerator,
                          designServices As ServiceCollection,
-                         Optional skipBuild As Boolean = False)
+                         skipBuild As Boolean)
 
             Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
             mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
@@ -129,6 +129,18 @@ Namespace Scaffolding.Internal
                                                 file As ScaffoldedFile)
 
             Assert.Equal(expectedCode, file.Code, ignoreLineEndingDifferences:=True)
+        End Sub
+
+        Protected Shared Sub AssertContains(expected As String,
+                                            actual As String)
+
+            ' Normalize line endings to Environment.Newline
+            expected = expected.Replace(vbCrLf, vbLf).
+                                Replace(vbLf & vbCr, vbLf).
+                                Replace(vbCr, vbLf).
+                                Replace(vbLf, Environment.NewLine)
+
+            Assert.Contains(expected, actual)
         End Sub
     End Class
 End Namespace

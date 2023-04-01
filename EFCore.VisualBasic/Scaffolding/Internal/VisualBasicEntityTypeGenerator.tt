@@ -106,7 +106,7 @@ Namespace <#= FileNamespaceIdentifier #>
         Dim targetType = navigation.TargetEntityType.Name
         If navigation.IsCollection Then
 #>
-        Public Overridable ReadOnly Property <#= code.Identifier(navigation.Name) #> As ICollection(Of <#= targetType #>) = New List(Of <#= targetType #>)()
+        Public Overridable Property <#= code.Identifier(navigation.Name) #> As ICollection(Of <#= targetType #>) = New List(Of <#= targetType #>)()
 <#
         Else
 #>
@@ -126,7 +126,7 @@ Namespace <#= FileNamespaceIdentifier #>
             Next
         End If
 #>
-        Public Overridable ReadOnly Property <#= code.Identifier(skipNavigation.Name) #> As ICollection(Of <#= skipNavigation.TargetEntityType.Name #>) = New List(Of <#= skipNavigation.TargetEntityType.Name #>)()
+        Public Overridable Property <#= code.Identifier(skipNavigation.Name) #> As ICollection(Of <#= skipNavigation.TargetEntityType.Name #>) = New List(Of <#= skipNavigation.TargetEntityType.Name #>)()
 <#
     Next
 #>

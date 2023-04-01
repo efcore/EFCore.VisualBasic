@@ -1734,11 +1734,14 @@ Namespace Migrations.Design
                         Append(VBCode.Literal(operation.Schema))
                 End If
 
-                builder.
+                If operation.StartValue.HasValue Then
+                    builder.
                     AppendLine(","c).
                     Append("startValue:=").
-                    Append(VBCode.Literal(operation.StartValue)).
-                    Append(")"c)
+                    Append(VBCode.Literal(operation.StartValue.Value))
+                End If
+
+                builder.Append(")"c)
 
                 Annotations(operation.GetAnnotations(), builder)
             End Using

@@ -1042,11 +1042,13 @@ $"    Dim model As New {className}()
                 Append(parameters.TargetName).
                 AppendLine(".AddServiceProperty(").
                 IncrementIndent().
-                Append(_code.Literal(prop.Name)).
-                AppendLine(","c).
-                Append("GetType(" & prop.ClrType.DisplayName(fullName:=True, compilable:=True) & ")")
+                Append(_code.Literal(prop.Name))
 
             PropertyBaseParameters(prop, parameters, skipType:=True)
+
+            mainBuilder.
+                AppendLine(",").
+                Append("serviceType:=GetType(" & prop.ClrType.DisplayName(fullName:=True, compilable:=True) & ")")
 
             mainBuilder.
                 AppendLine(")"c).
@@ -1427,18 +1429,18 @@ $"    Dim model As New {className}()
 
                 mainBuilder.AppendLine()
 
-                variables.Add("Inverse")
+                variables.Add("inverse")
 
                 mainBuilder.
-                    Append("Dim Inverse = ").Append(targetEntityType).Append(".FindSkipNavigation(").
+                    Append("Dim inverse = ").Append(targetEntityType).Append(".FindSkipNavigation(").
                     Append(_code.Literal(navigation.Inverse.Name)).AppendLine(")"c).
-                    AppendLine("If Inverse IsNot Nothing Then")
+                    AppendLine("If inverse IsNot Nothing Then")
 
                 Using mainBuilder.Indent()
                     mainBuilder.
                         Append(navigationVariable).
-                        AppendLine(".Inverse = Inverse").
-                        Append("Inverse.Inverse = ").AppendLine(navigationVariable)
+                        AppendLine(".Inverse = inverse").
+                        Append("inverse.Inverse = ").AppendLine(navigationVariable)
                 End Using
 
                 mainBuilder.

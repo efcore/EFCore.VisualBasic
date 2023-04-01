@@ -732,14 +732,15 @@ Namespace Design.Internal
         '''     This API supports the Entity Framework Core infrastructure And Is Not intended to be used
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
-        Public Overridable Function Literal(value As [Enum]) As String Implements IVisualBasicHelper.Literal
+        Public Overridable Function Literal(value As [Enum],
+                                            Optional fullName As Boolean = False) As String Implements IVisualBasicHelper.Literal
 
             Dim type = value.GetType()
             Dim name = [Enum].GetName(type, value)
 
             Return If(name Is Nothing,
-                        GetCompositeEnumValue(type, value),
-                        GetSimpleEnumValue(type, name))
+                        GetCompositeEnumValue(type, value, fullName),
+                        GetSimpleEnumValue(type, name, fullName))
         End Function
 
         ''' <summary>
@@ -748,12 +749,11 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Protected Overridable Function GetSimpleEnumValue(type As Type, name As String) As String
-
+        Protected Overridable Function GetSimpleEnumValue(type As Type, name As String, fullName As Boolean) As String
             NotNull(type, NameOf(type))
             NotNull(name, NameOf(name))
 
-            Return Reference(type) & "." & name
+            Return Reference(type, fullName) & "." & name
         End Function
 
         ''' <summary>
@@ -762,8 +762,7 @@ Namespace Design.Internal
         '''     any release. You should only use it directly in your code with extreme caution and knowing that
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
-        Protected Overridable Function GetCompositeEnumValue(type As Type, flags As [Enum]) As String
-
+        Protected Overridable Function GetCompositeEnumValue(type As Type, flags As [Enum], fullName As Boolean) As String
             NotNull(type, NameOf(type))
             NotNull(flags, NameOf(flags))
 
@@ -780,8 +779,8 @@ Namespace Design.Internal
                         Nothing,
                         Function(previous, current)
                             Return If(previous Is Nothing,
-                                        GetSimpleEnumValue(type, [Enum].GetName(type, current)),
-                                        previous & " Or " & GetSimpleEnumValue(type, [Enum].GetName(type, current)))
+                                        GetSimpleEnumValue(type, [Enum].GetName(type, current), fullName),
+                                        previous & " Or " & GetSimpleEnumValue(type, [Enum].GetName(type, current), fullName))
                         End Function)
         End Function
 
@@ -886,16 +885,19 @@ Namespace Design.Internal
 
                     Return True
 
-                Case ExpressionType.Convert
-                    builder.Append("CType(")
+                Case ExpressionType.Convert, ExpressionType.ConvertChecked
+                    Dim unaryExpression = DirectCast(exp, UnaryExpression)
 
-                    Dim b = HandleExpression(CType(exp, UnaryExpression).Operand, builder)
-
-                    builder.Append(", ").
+                    If unaryExpression.Method?.Name <> "op_Implicit" Then
+                        builder.Append("CType(")
+                        Dim handleResult = HandleExpression(unaryExpression.Operand, builder)
+                        builder.Append(", ").
                         Append(Reference(exp.Type, fullName:=True)).
                         Append(")"c)
-
-                    Return b
+                        Return handleResult
+                    Else
+                        Return HandleExpression(unaryExpression.Operand, builder)
+                    End If
 
                 Case ExpressionType.New
                     builder.
@@ -906,6 +908,7 @@ Namespace Design.Internal
 
                 Case ExpressionType.Call
                     Dim callExpression = CType(exp, MethodCallExpression)
+
                     If callExpression.Method.IsStatic Then
                         builder.
                           Append(Reference(callExpression.Method.DeclaringType, fullName:=True))
@@ -950,6 +953,7 @@ Namespace Design.Internal
 
                 Case ExpressionType.Add
                     Dim binaryExpression = CType(exp, BinaryExpression)
+
                     If Not HandleExpression(binaryExpression.Left, builder) Then
                         Return False
                     End If

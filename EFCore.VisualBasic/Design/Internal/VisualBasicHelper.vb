@@ -885,7 +885,7 @@ Namespace Design.Internal
 
                     Return True
 
-                Case ExpressionType.Convert, ExpressionType.ConvertChecked
+                Case ExpressionType.Convert
                     Dim unaryExpression = DirectCast(exp, UnaryExpression)
 
                     If unaryExpression.Method?.Name <> "op_Implicit" Then

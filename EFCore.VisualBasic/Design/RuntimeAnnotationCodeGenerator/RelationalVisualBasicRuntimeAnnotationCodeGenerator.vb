@@ -101,8 +101,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            mainBuilder.
-                AppendLine("Private Function CreateRelationalModel() As IRelationalModel")
+            mainBuilder.AppendLine("Private Function CreateRelationalModel() As IRelationalModel")
 
             Using mainBuilder.Indent()
 
@@ -219,11 +218,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                             AppendLine($"{code.Literal(RelationalAnnotationNames.InsertStoredProcedureMappings)}, {insertSprocMappingsVariable})")
 
                         For Each mapping In entityType.GetInsertStoredProcedureMappings()
-                            Create(mapping,
-                                   insertSprocMappingsVariable,
-                                   StoreObjectType.InsertStoredProcedure,
-                                   metadataVariables,
-                                   relationalModelParameters)
+                            Create(
+                                mapping,
+                                insertSprocMappingsVariable,
+                                StoreObjectType.InsertStoredProcedure,
+                                metadataVariables,
+                                relationalModelParameters)
                         Next
                     End If
 
@@ -628,9 +628,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Next
 
             CreateAnnotations(
-            storeStoredProcedure,
-            AddressOf Generate,
-            sprocParameters)
+                storeStoredProcedure,
+                AddressOf Generate,
+                sprocParameters)
 
             mainBuilder.
             Append($"{parameters.TargetName}.StoredProcedures.Add(").
@@ -1475,7 +1475,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                 If tableMapping.IsSharedTablePrincipal.HasValue Then
                     mainBuilder.
-                        Append(".IsSharedTablePrincipal = ").Append(code.Literal(tableMapping.IsSharedTablePrincipal))
+                        Append(".IsSharedTablePrincipal = ").
+                        Append(code.Literal(tableMapping.IsSharedTablePrincipal))
                     AddComma = True
                 End If
 
@@ -1483,7 +1484,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     If AddComma Then mainBuilder.AppendLine(","c)
 
                     mainBuilder.
-                        Append(".IsSplitEntityTypePrincipal = ").Append(code.Literal(tableMapping.IsSplitEntityTypePrincipal))
+                        Append(".IsSplitEntityTypePrincipal = ").
+                        Append(code.Literal(tableMapping.IsSplitEntityTypePrincipal))
                 End If
 
                 mainBuilder.
@@ -1780,8 +1782,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-
-        ''' <inheritdoc/>
+        ''' <inheritdoc />
         Public Overrides Sub Generate(entityType As IEntityType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             Dim annotations = parameters.Annotations
 
@@ -2034,7 +2035,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        '' <inheritdoc/>
+        '' <inheritdoc />
         Public Overrides Sub Generate([Property] As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim annotations = parameters.Annotations
@@ -2138,8 +2139,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-
-        ''' <inheritdoc/>
+        ''' <inheritdoc />
         Public Overrides Sub Generate(key As IKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             If parameters.IsRuntime Then
                 parameters.Annotations.Remove(RelationalAnnotationNames.UniqueConstraintMappings)
@@ -2148,7 +2148,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(key, parameters)
         End Sub
 
-        ''' <inheritdoc/>
+        ''' <inheritdoc />
         Public Overrides Sub Generate(foreignKey As IForeignKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             If parameters.IsRuntime Then
@@ -2158,7 +2158,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(foreignKey, parameters)
         End Sub
 
-        '''<inheritdoc/>
+        '''<inheritdoc />
         Public Overrides Sub Generate(index As IIndex, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             Dim annotations = parameters.Annotations
             If parameters.IsRuntime Then
@@ -2171,9 +2171,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
         End Sub
 
         Private Shared Sub CreateAnnotations(Of TAnnotatable As IAnnotatable)(
-        Annotatable As TAnnotatable,
-        process As Action(Of TAnnotatable, VisualBasicRuntimeAnnotationCodeGeneratorParameters),
-        parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            Annotatable As TAnnotatable,
+            process As Action(Of TAnnotatable, VisualBasicRuntimeAnnotationCodeGeneratorParameters),
+            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             process(
                 Annotatable,
@@ -2205,7 +2205,6 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                     Return Char.ToUpperInvariant(str(0)) & str.Substring(1)
             End Select
-
         End Function
 
         Private Shared Sub AppendLiteral(storeObject As StoreObjectIdentifier, builder As IndentedStringBuilder, code As IVisualBasicHelper)

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.Design.Tests.Shared
 {

@@ -210,7 +210,7 @@ Namespace Migrations.Design
             If modelBuilderName.StartsWith("b", StringComparison.Ordinal) Then
                 Dim counter = 1
                 If modelBuilderName.Length > 1 AndAlso
-                   Integer.TryParse(modelBuilderName.Substring(1, modelBuilderName.Length - 1), counter) Then
+                   Integer.TryParse(modelBuilderName.AsSpan(1, modelBuilderName.Length - 1), counter) Then
                     counter += 1
                 End If
 

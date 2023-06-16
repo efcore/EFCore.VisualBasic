@@ -1,7 +1,6 @@
 ﻿Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal
-Imports Microsoft.Identity.Client.ApiConfig
 
 Namespace Design.AnnotationCodeGeneratorProvider
 
@@ -138,9 +137,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 With parameters.Annotations
                     .Remove(SqlServerAnnotationNames.TemporalHistoryTableName)
                     .Remove(SqlServerAnnotationNames.TemporalHistoryTableSchema)
-                    .Remove(SqlServerAnnotationNames.TemporalPeriodEndColumnName)
                     .Remove(SqlServerAnnotationNames.TemporalPeriodEndPropertyName)
-                    .Remove(SqlServerAnnotationNames.TemporalPeriodStartColumnName)
                     .Remove(SqlServerAnnotationNames.TemporalPeriodStartPropertyName)
                 End With
             End If

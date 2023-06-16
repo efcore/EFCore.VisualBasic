@@ -1736,9 +1736,9 @@ Namespace Migrations.Design
 
                 If operation.StartValue.HasValue Then
                     builder.
-                    AppendLine(","c).
-                    Append("startValue:=").
-                    Append(VBCode.Literal(operation.StartValue.Value))
+                        AppendLine(","c).
+                        Append("startValue:=").
+                        Append(VBCode.Literal(operation.StartValue.Value))
                 End If
 
                 builder.Append(")"c)

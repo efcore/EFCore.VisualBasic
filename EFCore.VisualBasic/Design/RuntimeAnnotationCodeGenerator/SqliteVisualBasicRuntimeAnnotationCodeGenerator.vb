@@ -23,6 +23,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
         End Sub
 
         ''' <inheritdoc/>
+        Public Overrides Sub Generate(model As IRelationalModel, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            Dim annotations = parameters.Annotations
+            If Not parameters.IsRuntime Then
+                annotations.Remove(SqliteAnnotationNames.InitSpatialMetaData)
+            End If
+
+            MyBase.Generate(model, parameters)
+        End Sub
+
+        ''' <inheritdoc/>
         Public Overrides Sub Generate([property] As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             Dim annotations = parameters.Annotations
             If Not parameters.IsRuntime Then
@@ -30,6 +40,17 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             MyBase.Generate([property], parameters)
+        End Sub
+
+        ''' <inheritdoc/>
+        Public Overrides Sub Generate(column As IColumn, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            Dim annotations = parameters.Annotations
+            If Not parameters.IsRuntime Then
+                annotations.Remove(SqliteAnnotationNames.Autoincrement)
+                annotations.Remove(SqliteAnnotationNames.Srid)
+            End If
+
+            MyBase.Generate(column, parameters)
         End Sub
     End Class
 End Namespace

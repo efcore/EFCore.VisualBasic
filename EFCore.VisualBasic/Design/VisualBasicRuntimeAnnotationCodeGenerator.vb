@@ -1,6 +1,5 @@
 ﻿Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
-Imports Microsoft.Identity.Client.ApiConfig
 
 Namespace Design
     ''' <summary>

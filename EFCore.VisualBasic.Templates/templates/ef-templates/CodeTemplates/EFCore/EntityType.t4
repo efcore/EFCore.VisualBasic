@@ -125,7 +125,7 @@ Namespace <#= FileNamespaceIdentifier #>
         if (navigation.IsCollection)
         {
 #>
-        Public Overridable ReadOnly Property <#= code.Identifier(navigation.Name) #> As ICollection(Of <#= targetType #>) = New List(Of <#= targetType #>)()
+        Public Overridable Property <#= code.Identifier(navigation.Name) #> As ICollection(Of <#= targetType #>) = New List(Of <#= targetType #>)()
 <#
         }
         else
@@ -150,7 +150,7 @@ Namespace <#= FileNamespaceIdentifier #>
             }
         }
 #>
-        Public Overridable ReadOnly Property <#= code.Identifier(skipNavigation.Name) #> As ICollection(Of <#= skipNavigation.TargetEntityType.Name #>) = New List(Of <#= skipNavigation.TargetEntityType.Name #>)()
+        Public Overridable Property <#= code.Identifier(skipNavigation.Name) #> As ICollection(Of <#= skipNavigation.TargetEntityType.Name #>) = New List(Of <#= skipNavigation.TargetEntityType.Name #>)()
 <#
     }
 #>

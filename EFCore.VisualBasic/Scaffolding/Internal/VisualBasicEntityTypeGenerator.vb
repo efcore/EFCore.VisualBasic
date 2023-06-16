@@ -134,7 +134,7 @@ Namespace Scaffolding.Internal
         Dim targetType = navigation.TargetEntityType.Name
         If navigation.IsCollection Then
 
-            Me.Write("        Public Overridable ReadOnly Property ")
+            Me.Write("        Public Overridable Property ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Identifier(navigation.Name)))
             Me.Write(" As ICollection(Of ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(targetType))
@@ -166,7 +166,7 @@ Namespace Scaffolding.Internal
             Next
         End If
 
-            Me.Write("        Public Overridable ReadOnly Property ")
+            Me.Write("        Public Overridable Property ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Identifier(skipNavigation.Name)))
             Me.Write(" As ICollection(Of ")
             Me.Write(Me.ToStringHelper.ToStringWithCulture(skipNavigation.TargetEntityType.Name))

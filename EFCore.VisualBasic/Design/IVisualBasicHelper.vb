@@ -152,12 +152,13 @@ Namespace Design
         ''' <returns>The literal.</returns>
         Function Literal(value As Double) As String
 
-        '''<summary>
+        ''' <summary>
         '''     Generates an enum literal.
         ''' </summary>
-        '''<param name= "value" >The value.</param>
-        '''<returns>The literal.</returns>
-        Function Literal(value As [Enum]) As String
+        ''' <param name= "value" >The value.</param>
+        ''' <param name="fullName">Whether the type should be namespace-qualified.</param>
+        ''' <returns>The literal.</returns>
+        Function Literal(value As [Enum], Optional fullName As Boolean = False) As String
 
         ''' <summary>
         '''     Generates a float literal.

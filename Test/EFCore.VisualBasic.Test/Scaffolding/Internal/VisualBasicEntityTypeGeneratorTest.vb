@@ -1171,7 +1171,7 @@ End Namespace
         End Sub
 
         <ConditionalFact>
-        Public Sub Navigation_properties_are_sorted_after_properties_and_collection_are_initialized()
+        Public Sub Navigation_properties_are_sorted_after_properties_and_collection_are_initialized_in_ctor()
 
             Dim expectedCodePost =
 "Imports System
@@ -1192,7 +1192,7 @@ Namespace TestNamespace
         Public Overridable Property Author As Person
 
         <InverseProperty(""Post"")>
-        Public Overridable ReadOnly Property Contributions As ICollection(Of Contribution) = New List(Of Contribution)()
+        Public Overridable Property Contributions As ICollection(Of Contribution) = New List(Of Contribution)()
     End Class
 End Namespace
 "
@@ -1210,7 +1210,7 @@ Namespace TestNamespace
         Public Property Id As Integer
 
         <InverseProperty(""Author"")>
-        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
+        Public Overridable Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
@@ -1483,7 +1483,7 @@ Namespace TestNamespace
         Public Property ColorCode As String
 
         <InverseProperty(""Color"")>
-        Public Overridable ReadOnly Property Cars As ICollection(Of Car) = New List(Of Car)()
+        Public Overridable Property Cars As ICollection(Of Car) = New List(Of Car)()
     End Class
 End Namespace
 "
@@ -2144,7 +2144,7 @@ Namespace TestNamespace
 End Namespace
 "
 
-            Dim expectedEntityCode1 =
+            Dim expectedEntityBlog =
 "Imports System
 Imports System.Collections.Generic
 
@@ -2152,12 +2152,12 @@ Namespace TestNamespace
     Partial Public Class Blog
         Public Property Id As Integer
 
-        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
+        Public Overridable Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
 
-            Dim expectedEntityCode2 =
+            Dim expectedEntityPost =
 "Imports System
 Imports System.Collections.Generic
 
@@ -2165,7 +2165,7 @@ Namespace TestNamespace
     Partial Public Class Post
         Public Property Id As Integer
 
-        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
+        Public Overridable Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "
@@ -2194,11 +2194,11 @@ End Namespace
                         code.ContextFile)
 
                     AssertFileContents(
-                        expectedEntityCode1,
+                        expectedEntityBlog,
                         code.AdditionalFiles.Single(Function(e) e.Path = "Blog.vb"))
 
                     AssertFileContents(
-                        expectedEntityCode2,
+                        expectedEntityPost,
                         code.AdditionalFiles.Single(Function(e) e.Path = "Post.vb"))
 
                     Assert.Equal(2, code.AdditionalFiles.Count)
@@ -2284,7 +2284,7 @@ Namespace TestNamespace
     Partial Public Class Blog
         Public Property Id As Integer
 
-        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
+        Public Overridable Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
@@ -2296,7 +2296,7 @@ Namespace TestNamespace
     Partial Public Class Post
         Public Property Id As String
 
-        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
+        Public Overridable Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "
@@ -2394,7 +2394,7 @@ Namespace TestNamespace
 End Namespace
 "
 
-            Dim expectedEntity1Code =
+            Dim expectedEntityBlog =
 "Imports System
 Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
@@ -2408,12 +2408,12 @@ Namespace TestNamespace
 
         <ForeignKey(""BlogsId"")>
         <InverseProperty(""Blogs"")>
-        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
+        Public Overridable Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
 
-            Dim expectedEntity2Code =
+            Dim expectedEntityPost =
 "Imports System
 Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
@@ -2427,7 +2427,7 @@ Namespace TestNamespace
 
         <ForeignKey(""PostsId"")>
         <InverseProperty(""Posts"")>
-        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
+        Public Overridable Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "
@@ -2455,11 +2455,11 @@ End Namespace
                         code.ContextFile)
 
                     AssertFileContents(
-                        expectedEntity1Code,
+                        expectedEntityBlog,
                         code.AdditionalFiles.Single(Function(e) e.Path = "Blog.vb"))
 
                     AssertFileContents(
-                        expectedEntity2Code,
+                        expectedEntityPost,
                         code.AdditionalFiles.Single(Function(e) e.Path = "Post.vb"))
 
                     Assert.Equal(2, code.AdditionalFiles.Count)
@@ -2555,7 +2555,7 @@ Namespace TestNamespace
 
         <ForeignKey(""BlogsKey"")>
         <InverseProperty(""Blogs"")>
-        Public Overridable ReadOnly Property Posts As ICollection(Of Post) = New List(Of Post)()
+        Public Overridable Property Posts As ICollection(Of Post) = New List(Of Post)()
     End Class
 End Namespace
 "
@@ -2574,7 +2574,7 @@ Namespace TestNamespace
 
         <ForeignKey(""PostsId"")>
         <InverseProperty(""Posts"")>
-        Public Overridable ReadOnly Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
+        Public Overridable Property Blogs As ICollection(Of Blog) = New List(Of Blog)()
     End Class
 End Namespace
 "

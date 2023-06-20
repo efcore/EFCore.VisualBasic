@@ -20,7 +20,7 @@ After installing this package, you'll be able to [reverse engineer models](https
 
 Custom Templates
 ----------------
-VB templates are also available to [cusomize the reverse engineered code](https://learn.microsoft.com/ef/core/managing-schemas/scaffolding/templates).
+VB templates are also available to [customize the reverse engineered code](https://learn.microsoft.com/ef/core/managing-schemas/scaffolding/templates).
 
 ```sh
 dotnet new install EntityFrameworkCore.VisualBasic.Templates

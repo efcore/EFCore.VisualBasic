@@ -3,6 +3,7 @@ Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
+Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.TestUtilities
@@ -24,7 +25,8 @@ Namespace Migrations.Design
                 New VisualBasicHelper(
                 New SqlServerTypeMappingSource(
                     TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                    TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())))
+                    TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+                    New SqlServerSingletonOptions())))
 
             Dim builder = New IndentedStringBuilder()
 
@@ -3409,7 +3411,8 @@ mb.Sql(""-- close to me"")"
                         New RelationalTypeMappingSourceDependencies(
                             New IRelationalTypeMappingSourcePlugin() {
                             New SqlServerNetTopologySuiteTypeMappingSourcePlugin(NtsGeometryServices.Instance)
-                            }))))
+                            }),
+                        New SqlServerSingletonOptions())))
 
             Dim builder = New IndentedStringBuilder()
             generator.Generate("mb", {operation}, builder)

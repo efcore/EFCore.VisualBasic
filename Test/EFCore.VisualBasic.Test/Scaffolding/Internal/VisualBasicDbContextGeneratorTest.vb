@@ -413,6 +413,63 @@ End Namespace
         End Sub
 
         <ConditionalFact>
+        Public Sub Column_with_default_value_only_uses_default_value()
+            Test(
+                Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
+                    BuildModelWithColumn("nvarchar(max)", Nothing, "Hot"), New ModelReverseEngineerOptions()),
+                New ModelCodeGenerationOptions(),
+                Sub(code) Assert.Contains($" HasDefaultValue(""Hot"")", code.ContextFile.Code),
+                Sub(model)
+                    Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")
+                    Assert.Equal("Hot", [property].GetDefaultValue())
+                    Assert.Null([property].FindAnnotation(RelationalAnnotationNames.DefaultValueSql))
+                End Sub)
+        End sub
+
+        <ConditionalFact>
+        Public Sub Column_with_default_value_sql_only_uses_default_value_sql()
+             Test(
+                Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
+                    BuildModelWithColumn("nvarchar(max)", "('Hot')", nothing), new ModelReverseEngineerOptions()),
+                new ModelCodeGenerationOptions(),
+                Sub(code) Assert.Contains($" HasDefaultValueSql(""('Hot')"")", code.ContextFile.Code),
+                sub(model)
+                
+                    Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")
+                    Assert.Equal("('Hot')", [property].GetDefaultValueSql())
+                    Assert.Null([property].FindAnnotation(RelationalAnnotationNames.DefaultValue))
+                End sub)
+                End sub
+
+        <ConditionalFact>
+        public Sub Column_with_default_value_sql_and_default_value_uses_default_value()
+            Test(
+                Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
+                    BuildModelWithColumn("nvarchar(max)", "('Hot')", "Hot"), New ModelReverseEngineerOptions()),
+                New ModelCodeGenerationOptions(),
+                Sub(code) Assert.Contains($" HasDefaultValue(""Hot"")", code.ContextFile.Code),
+                Sub(model)
+                    Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")
+                    Assert.Equal("Hot", [property].GetDefaultValue())
+                    Assert.Null([property].FindAnnotation(RelationalAnnotationNames.DefaultValueSql))
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
+        Public Sub Column_with_default_value_sql_and_default_value_where_value_is_CLR_default_uses_neither()
+            Test(
+                Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
+                    BuildModelWithColumn("int", "((0))", 0), New ModelReverseEngineerOptions()),
+                New ModelCodeGenerationOptions(),
+                Sub(code) Assert.DoesNotContain("HasDefaultValue", code.ContextFile.Code),
+                Sub(model)
+                    Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")
+                    Assert.Null([property].FindAnnotation(RelationalAnnotationNames.DefaultValue))
+                    Assert.Null([property].FindAnnotation(RelationalAnnotationNames.DefaultValueSql))
+                End Sub)
+        End Sub
+
+        <ConditionalFact>
         Public Sub IsUnicode_works()
             Test(
                 Sub(modelBuilder)

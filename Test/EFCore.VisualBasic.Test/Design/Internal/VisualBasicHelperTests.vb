@@ -6,6 +6,7 @@ Imports EntityFrameworkCore.VisualBasic.TestUtilities.Xunit
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.TestUtilities
@@ -1076,7 +1077,8 @@ $"builder.
 
             Return New SqlServerTypeMappingSource(
                             TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                            New RelationalTypeMappingSourceDependencies(plugins)
+                            New RelationalTypeMappingSourceDependencies(plugins),
+                            New SqlServerSingletonOptions()
                        )
         End Function
 

@@ -739,7 +739,9 @@ Namespace Design.Internal
             Dim name = [Enum].GetName(type, value)
 
             Return If(name Is Nothing,
-                        GetCompositeEnumValue(type, value, fullName),
+                        If(type.IsDefined(GetType(FlagsAttribute), False),
+                            GetCompositeEnumValue(type, value, fullName),
+                            $"CType({UnknownLiteral(Convert.ChangeType(value, [Enum].GetUnderlyingType(type)))}, {Reference(type)})"),
                         GetSimpleEnumValue(type, name, fullName))
         End Function
 

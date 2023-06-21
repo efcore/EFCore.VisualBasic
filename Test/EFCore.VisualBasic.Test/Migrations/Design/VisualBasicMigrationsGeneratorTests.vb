@@ -18,6 +18,7 @@ Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
@@ -369,7 +370,8 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+                New SqlServerSingletonOptions())
 
             Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
                 New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
@@ -473,7 +475,8 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+                New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
 
@@ -520,7 +523,8 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+               New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -1134,7 +1138,8 @@ End Namespace
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+               New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -1185,7 +1190,8 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+               New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 

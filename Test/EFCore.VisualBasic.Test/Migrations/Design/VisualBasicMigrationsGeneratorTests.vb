@@ -18,6 +18,7 @@ Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
@@ -369,7 +370,8 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+                New SqlServerSingletonOptions())
 
             Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
                 New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
@@ -473,7 +475,8 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+                New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
 
@@ -520,7 +523,8 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+               New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -1109,8 +1113,8 @@ End Namespace
                          }
                     })"
 
-            Assert.Contains(expectedCode, SnapshotCode)
-            Assert.Contains(expectedCode, migrationMetadataCode)
+            AssertContains(expectedCode, SnapshotCode)
+            AssertContains(expectedCode, migrationMetadataCode)
         End Sub
 
         Private Class SimpleEntity
@@ -1134,7 +1138,8 @@ End Namespace
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+               New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -1161,8 +1166,7 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
     IsCyclic()
 "
 
-            Assert.Equal(expected, sb.ToString())
-
+            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -1185,7 +1189,8 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
+               New SqlServerSingletonOptions())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -1211,7 +1216,7 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
     HasAnnotation(""MyAnnotation"", ""ABC"")
 "
 
-            Assert.Equal(expected, sb.ToString())
+            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
         End Sub
 
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator
@@ -1229,5 +1234,17 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
                 BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IMigrationsCodeGenerator)()
         End Function
+
+        Private Shared Sub AssertContains(expected As String,
+                                         actual As String)
+
+            ' Normalize line endings to Environment.Newline
+            expected = expected.Replace(vbCrLf, vbLf).
+                                Replace(vbLf & vbCr, vbLf).
+                                Replace(vbCr, vbLf).
+                                Replace(vbLf, Environment.NewLine)
+
+            Assert.Contains(expected, actual)
+        End Sub
     End Class
 End Namespace

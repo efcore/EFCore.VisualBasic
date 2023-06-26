@@ -860,6 +860,37 @@ $"    Dim model As New {className}()
                     Append("()")
             End If
 
+            Dim jsonValueReaderWriterType = DirectCast(prop(CoreAnnotationNames.JsonValueReaderWriterType), Type)
+            If jsonValueReaderWriterType IsNot Nothing Then
+
+                AddNamespace(jsonValueReaderWriterType, parameters.Namespaces)
+
+                Dim instanceProperty = jsonValueReaderWriterType.GetAnyProperty("Instance")
+                If instanceProperty IsNot Nothing AndAlso
+                   instanceProperty.IsStatic() AndAlso
+                   instanceProperty.GetMethod?.IsPublic = True AndAlso
+                   jsonValueReaderWriterType.IsAssignableFrom(instanceProperty.PropertyType) Then
+
+                    mainBuilder.AppendLine(",").
+                        Append("jsonValueReaderWriter:=").
+                        Append(_code.Reference(jsonValueReaderWriterType)).
+                        Append(".Instance")
+
+                Else
+                    mainBuilder.AppendLine(",").
+                        Append("jsonValueReaderWriter:=New ").
+                        Append(_code.Reference(jsonValueReaderWriterType)).
+                        Append("()")
+                End If
+            End If
+
+            Dim sentinel = prop.Sentinel
+            If sentinel IsNot Nothing Then
+                mainBuilder.AppendLine(","c).
+                Append("sentinel:=").
+                Append(_code.UnknownLiteral(sentinel))
+            End If
+
             mainBuilder.
                 AppendLine(")"c).
                 DecrementIndent()

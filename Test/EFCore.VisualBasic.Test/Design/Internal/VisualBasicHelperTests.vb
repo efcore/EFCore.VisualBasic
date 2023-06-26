@@ -208,9 +208,9 @@ Namespace Design.Internal
 
         <ConditionalFact>
         Public Sub Literal_works_when_multiline_string()
+            Dim nl = Environment.NewLine
             Literal_works(
-"multi-line
-string with """,
+$"multi-line{nl}string with """,
 """multi-line"" & " & If(Environment.NewLine = vbCrLf, "vbCrLf", "vbLf") & " & ""string with """"""")
         End Sub
 
@@ -578,7 +578,7 @@ string with """,
             Assert.Equal(
 ".
 TestFunc().
-TestFunc()", result)
+TestFunc()", result, ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -593,7 +593,7 @@ TestFunc()", result)
 ".
 TestFunc(""One"").
 TestFunc(""Two"").
-TestFunc(""Three"")", result)
+TestFunc(""Three"")", result, ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -611,7 +611,7 @@ TestFunc(""Three"")", result)
 TestFunc(""One"").
 TestFunc(""Two"").
 TestFunc(""Three"").
-TestFunc(""Four"")", result)
+TestFunc(""Four"")", result, ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -641,7 +641,7 @@ TestFunc(""Four"")", result)
     tb.TestFunc()
     tb.TestFunc(True, 42)
     tb.TestFunc(Sub(ttb) ttb.TestFunc())
-End Sub)", result)
+End Sub)", result, ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -776,7 +776,7 @@ End Sub)",
             Assert.Equal(
 $"builder.
     TestFunc(""One"").
-    TestFunc()", result)
+    TestFunc()", result, ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -826,7 +826,7 @@ $"builder.
             tb.TestFunc(4)
             tb.TestFunc(5)
         End Sub)
-    End Sub)", result)
+    End Sub)", result, ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>

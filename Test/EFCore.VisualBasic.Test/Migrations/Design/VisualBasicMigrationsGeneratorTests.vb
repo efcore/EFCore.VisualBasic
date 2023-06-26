@@ -1113,8 +1113,8 @@ End Namespace
                          }
                     })"
 
-            Assert.Contains(expectedCode, SnapshotCode)
-            Assert.Contains(expectedCode, migrationMetadataCode)
+            AssertContains(expectedCode, SnapshotCode)
+            AssertContains(expectedCode, migrationMetadataCode)
         End Sub
 
         Private Class SimpleEntity
@@ -1166,8 +1166,7 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
     IsCyclic()
 "
 
-            Assert.Equal(expected, sb.ToString())
-
+            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
         End Sub
 
         <ConditionalFact>
@@ -1217,7 +1216,7 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
     HasAnnotation(""MyAnnotation"", ""ABC"")
 "
 
-            Assert.Equal(expected, sb.ToString())
+            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
         End Sub
 
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator
@@ -1235,5 +1234,17 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
                 BuildServiceProvider(validateScopes:=True).
                 GetRequiredService(Of IMigrationsCodeGenerator)()
         End Function
+
+        Private Shared Sub AssertContains(expected As String,
+                                         actual As String)
+
+            ' Normalize line endings to Environment.Newline
+            expected = expected.Replace(vbCrLf, vbLf).
+                                Replace(vbLf & vbCr, vbLf).
+                                Replace(vbCr, vbLf).
+                                Replace(vbLf, Environment.NewLine)
+
+            Assert.Contains(expected, actual)
+        End Sub
     End Class
 End Namespace

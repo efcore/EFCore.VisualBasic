@@ -24,36 +24,6 @@ Namespace Scaffolding.Internal
             _output = output
         End Sub
 
-        'Sub Test(buildModel As Action(Of ModelBuilder),
-        '         options As ModelCodeGenerationOptions,
-        '         assertScaffold As Action(Of ScaffoldedModel),
-        '         assertModel As Action(Of IModel),
-        '         Optional skipBuild As Boolean = False)
-
-        '    Dim designServices = New ServiceCollection()
-        '    AddModelServices(designServices)
-
-        '    Dim services = CreateServices()
-        '    AddScaffoldingServices(services)
-
-        '    Dim generators = services.BuildServiceProvider(validateScopes:=True).
-        '                              GetServices(Of IModelCodeGenerator)()
-
-        '    options.ModelNamespace = If(options.ModelNamespace, "TestNamespace")
-        '    options.ContextNamespace = If(options.ContextNamespace, options.ModelNamespace)
-        '    options.ContextName = "TestDbContext"
-        '    options.ConnectionString = "Initial Catalog=TestDatabase"
-        '    options.ProjectDir = _fixture.ProjectDir
-
-        '    For Each generator In {generators.Last(Function(g) TypeOf g Is VisualBasicModelGenerator),
-        '                           generators.Last(Function(g) TypeOf g Is TextTemplatingModelGenerator)}
-
-        '        _output.WriteLine($"Test with {generator.GetType()}")
-
-        '        Test(buildModel, options, assertScaffold, assertModel, generator, designServices, skipBuild)
-        '    Next
-        'End Sub
-
         Protected Sub Test(buildModel As Action(Of ModelBuilder),
                            options As ModelCodeGenerationOptions,
                            assertScaffold As Action(Of ScaffoldedModel),
@@ -92,60 +62,12 @@ Namespace Scaffolding.Internal
             Test(serviceProvider, Model, options, assertScaffold, assertModel, skipBuild)
         End Sub
 
-
-        'Private Sub Test(buildModel As Action(Of ModelBuilder),
-        '                 options As ModelCodeGenerationOptions,
-        '                 assertScaffold As Action(Of ScaffoldedModel),
-        '                 assertModel As Action(Of IModel),
-        '                 modelGenerator As IModelCodeGenerator,
-        '                 designServices As ServiceCollection,
-        '                 skipBuild As Boolean)
-
-        '    Dim mb = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
-        '    mb.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-        '    buildModel(mb)
-
-        '    Dim model = mb.FinalizeModel(designTime:=True, skipValidation:=True)
-
-        '    Dim scaffoldedModel = modelGenerator.GenerateModel(model, options)
-
-        '    assertScaffold(scaffoldedModel)
-
-        '    Dim build As New BuildSource(options.RootNamespace) With {
-        '        .Sources = {scaffoldedModel.ContextFile}.
-        '                        Concat(scaffoldedModel.AdditionalFiles).
-        '                        ToDictionary(Function(f) f.Path, Function(f) f.Code)
-        '    }
-
-        '    With build.References
-        '        .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
-        '        .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
-        '        .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
-        '        .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
-        '        '.Add(BuildReference.ByName("System.ComponentModel.DataAnnotations"))
-        '        '.Add(BuildReference.ByName("System.ComponentModel.Primitives"))
-        '    End With
-
-        '    If Not skipBuild Then
-        '        Dim assembly = build.BuildInMemory()
-
-        '        If assertModel IsNot Nothing Then
-        '            Dim dbContextNameSpace = assembly.ExportedTypes.FirstOrDefault(Function(t) t.Name = options.ContextName)?.FullName
-
-        '            Dim context = CType(assembly.CreateInstance(dbContextNameSpace), DbContext)
-
-        '            Dim compiledModel = context.GetService(Of IDesignTimeModel)().Model
-        '            assertModel(compiledModel)
-        '        End If
-        '    End If
-        'End Sub
-
         Protected Sub Test(serviceProvider As IServiceProvider,
-                                model As IModel,
-                                options As ModelCodeGenerationOptions,
-                                assertScaffold As Action(Of ScaffoldedModel),
-                                assertModel As Action(Of IModel),
-                                Optional skipBuild As Boolean = False)
+                           model As IModel,
+                           options As ModelCodeGenerationOptions,
+                           assertScaffold As Action(Of ScaffoldedModel),
+                           assertModel As Action(Of IModel),
+                           Optional skipBuild As Boolean = False)
 
             Dim generators = serviceProvider.GetServices(Of IModelCodeGenerator)()
 

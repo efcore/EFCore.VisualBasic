@@ -1,4 +1,5 @@
 ﻿Imports System.ComponentModel
+Imports System.ComponentModel.DataAnnotations.Schema
 Imports System.Data
 Imports System.Linq.Expressions
 Imports System.Reflection
@@ -1038,7 +1039,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("PrincipalId", principalIdColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(dependentBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
@@ -1086,7 +1087,7 @@ Namespace TestNamespace
             Dim dependentBasebyteTableMapping As New TableMapping(dependentBase, dependentBasebyteTable, True) With {
                 .IsSharedTablePrincipal = True
             }
-            dependentBasebyteTable.AddEntityTypeMapping(dependentBasebyteTableMapping, False)
+            dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping, False)
             tableMappings.Add(dependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentBase.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
@@ -1098,7 +1099,7 @@ Namespace TestNamespace
             Dim defaultTableMappings0 As New List(Of TableMappingBase(Of ColumnMappingBase))()
             dependentDerived.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings0)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(dependentDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
@@ -1112,7 +1113,7 @@ Namespace TestNamespace
             Dim dependentBasebyteTableMapping0 As New TableMapping(dependentDerived, dependentBasebyteTable, True) With {
                 .IsSharedTablePrincipal = False
             }
-            dependentBasebyteTable.AddEntityTypeMapping(dependentBasebyteTableMapping0, False)
+            dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping0, False)
             tableMappings0.Add(dependentBasebyteTableMapping0)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentDerived.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping0)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentDerived.FindProperty("PrincipalId"), dependentBasebyteTableMapping0)
@@ -1146,7 +1147,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Point", pointColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings1.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
@@ -1211,7 +1212,7 @@ Namespace TestNamespace
             Dim principalBaseTableMapping As New TableMapping(principalBase, principalBaseTable, True) With {
                 .IsSharedTablePrincipal = True
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings1.Add(principalBaseTableMapping)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalBase.FindProperty("AlternateId"), principalBaseTableMapping)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
@@ -1238,7 +1239,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("PrincipalBaseId", principalBaseIdColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase As New TableMappingBase(Of ColumnMappingBase)(ownedType, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase, False)
             defaultTableMappings2.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.FindColumn("PrincipalBaseAlternateId"), ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("PrincipalBaseAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
@@ -1251,7 +1252,7 @@ Namespace TestNamespace
                 .IsSharedTablePrincipal = False,
                 .IsSplitEntityTypePrincipal = True
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping0, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping0, False)
             tableMappings2.Add(principalBaseTableMapping0)
             principalBaseTable.AddRowInternalForeignKey(ownedType, RelationalModel.GetForeignKey(Me,
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType",
@@ -1282,7 +1283,7 @@ Namespace TestNamespace
             Dim detailsTableMapping As New TableMapping(ownedType, detailsTable, True) With {
                 .IsSplitEntityTypePrincipal = False
             }
-            detailsTable.AddEntityTypeMapping(detailsTableMapping, False)
+            detailsTable.AddTypeMapping(detailsTableMapping, False)
             tableMappings2.Add(detailsTableMapping)
             RelationalModel.CreateColumnMapping(detailsTable.FindColumn("PrincipalBaseAlternateId"), ownedType.FindProperty("PrincipalBaseAlternateId"), detailsTableMapping)
             RelationalModel.CreateColumnMapping(detailsTable.FindColumn("PrincipalBaseId"), ownedType.FindProperty("PrincipalBaseId"), detailsTableMapping)
@@ -1293,7 +1294,7 @@ Namespace TestNamespace
             Dim defaultTableMappings3 As New List(Of TableMappingBase(Of ColumnMappingBase))()
             principalDerived.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings3)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, False)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
             defaultTableMappings3.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
@@ -1312,7 +1313,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("Id", idColumnBase1)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings4.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
@@ -1322,7 +1323,7 @@ Namespace TestNamespace
             Dim principalBaseTableMapping1 As New TableMapping(principalDerived, principalBaseTable, False) With {
                 .IsSharedTablePrincipal = False
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping1, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping1, False)
             tableMappings3.Add(principalBaseTableMapping1)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalDerived.FindProperty("AlternateId"), principalBaseTableMapping1)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalBaseTableMapping1)
@@ -1361,7 +1362,7 @@ Namespace TestNamespace
             principalDerivedTable.Indexes.Add("IX_PrincipalDerived_AlternateId_DerivedId", iX_PrincipalDerived_AlternateId_DerivedId)
             relationalModel.Tables.Add(("PrincipalDerived", Nothing), principalDerivedTable)
             Dim principalDerivedTableMapping As New TableMapping(principalDerived, principalDerivedTable, True)
-            principalDerivedTable.AddEntityTypeMapping(principalDerivedTableMapping, False)
+            principalDerivedTable.AddTypeMapping(principalDerivedTableMapping, False)
             tableMappings3.Add(principalDerivedTableMapping)
             RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("AlternateId"), principalDerived.FindProperty("AlternateId"), principalDerivedTableMapping)
             RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("DerivedId"), principalDerived.FindProperty("Id"), principalDerivedTableMapping)
@@ -1385,7 +1386,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>.ManyOwned#OwnedType", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase As New TableMappingBase(Of ColumnMappingBase)(ownedType0, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase, False)
             defaultTableMappings5.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("PrincipalDerived<DependentBase<byte?>>AlternateId"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("PrincipalDerivedAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
@@ -1418,7 +1419,7 @@ Namespace TestNamespace
             manyOwnedTable.UniqueConstraints.Add("PK_ManyOwned", pK_ManyOwned)
             relationalModel.Tables.Add(("ManyOwned", Nothing), manyOwnedTable)
             Dim manyOwnedTableMapping As New TableMapping(ownedType0, manyOwnedTable, True)
-            manyOwnedTable.AddEntityTypeMapping(manyOwnedTableMapping, False)
+            manyOwnedTable.AddTypeMapping(manyOwnedTableMapping, False)
             tableMappings4.Add(manyOwnedTableMapping)
             RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("Id"), ownedType0.FindProperty("Id"), manyOwnedTableMapping)
             RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("PrincipalDerived<DependentBase<byte?>>AlternateId"), ownedType0.FindProperty("PrincipalDerivedAlternateId"), manyOwnedTableMapping)
@@ -1445,7 +1446,7 @@ Namespace TestNamespace
             principalBasePrincipalDerivedDependentBasebyteTableBase.Columns.Add("rowid", rowidColumnBase)
             relationalModel.DefaultTables.Add("PrincipalBasePrincipalDerived<DependentBase<byte?>>", principalBasePrincipalDerivedDependentBasebyteTableBase)
             Dim principalBasePrincipalDerivedDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTableBase, True)
-            principalBasePrincipalDerivedDependentBasebyteTableBase.AddEntityTypeMapping(principalBasePrincipalDerivedDependentBasebyteMappingBase, False)
+            principalBasePrincipalDerivedDependentBasebyteTableBase.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteMappingBase, False)
             defaultTableMappings6.Add(principalBasePrincipalDerivedDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsAlternateId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
@@ -1486,7 +1487,7 @@ Namespace TestNamespace
             principalBasePrincipalDerivedDependentBasebyteTable.Indexes.Add("IX_PrincipalBasePrincipalDerived<DependentBase<byte?>>_PrincipalsId_PrincipalsAlternateId", iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipalsId_PrincipalsAlternateId)
             relationalModel.Tables.Add(("PrincipalBasePrincipalDerived<DependentBase<byte?>>", Nothing), principalBasePrincipalDerivedDependentBasebyteTable)
             Dim principalBasePrincipalDerivedDependentBasebyteTableMapping As New TableMapping(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTable, True)
-            principalBasePrincipalDerivedDependentBasebyteTable.AddEntityTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, False)
+            principalBasePrincipalDerivedDependentBasebyteTable.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, False)
             tableMappings5.Add(principalBasePrincipalDerivedDependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
@@ -1909,7 +1910,7 @@ Namespace TestNamespace
                 "Details",
                 GetType(String),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
 
@@ -1936,7 +1937,7 @@ Namespace TestNamespace
             Dim context = entityType.AddServiceProperty(
                 "Context",
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(Microsoft.EntityFrameworkCore.DbContext))
+                serviceType:=GetType(DbContext))
 
             Dim key = entityType.AddKey(
                 {principalBaseId, principalBaseAlternateId})
@@ -2047,7 +2048,7 @@ Namespace TestNamespace
                 "Details",
                 GetType(String),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -2062,7 +2063,7 @@ Namespace TestNamespace
             Dim context = entityType.AddServiceProperty(
                 "Context",
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(Microsoft.EntityFrameworkCore.DbContext))
+                serviceType:=GetType(DbContext))
 
             Dim key = entityType.AddKey(
                 {principalDerivedId, principalDerivedAlternateId, id})
@@ -2502,7 +2503,9 @@ End Namespace
                     Assert.False(referenceOwnedType.IsMemoryOptimized())
                     Assert.IsType(Of ConstructorBinding)(referenceOwnedType.ConstructorBinding)
                     Assert.Null(referenceOwnedType.FindIndexerPropertyInfo())
-                    Assert.Equal(ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues, referenceOwnedType.GetChangeTrackingStrategy())
+                    Assert.Equal(
+                        ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues,
+                        referenceOwnedType.GetChangeTrackingStrategy())
                     Assert.Null(referenceOwnedType.GetQueryFilter())
                     Assert.Null(referenceOwnedType(CoreAnnotationNames.PropertyAccessMode))
                     Assert.Null(referenceOwnedType(CoreAnnotationNames.NavigationAccessMode))
@@ -2909,7 +2912,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("PrincipalId", principalIdColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(dependentBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
@@ -2957,7 +2960,7 @@ Namespace TestNamespace
             Dim dependentBasebyteTableMapping As New TableMapping(dependentBase, dependentBasebyteTable, True) With {
                 .IsSharedTablePrincipal = True
             }
-            dependentBasebyteTable.AddEntityTypeMapping(dependentBasebyteTableMapping, False)
+            dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping, False)
             tableMappings.Add(dependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentBase.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
@@ -2969,7 +2972,7 @@ Namespace TestNamespace
             Dim defaultTableMappings0 As New List(Of TableMappingBase(Of ColumnMappingBase))()
             dependentDerived.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings0)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(dependentDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
@@ -2983,7 +2986,7 @@ Namespace TestNamespace
             Dim dependentBasebyteTableMapping0 As New TableMapping(dependentDerived, dependentBasebyteTable, True) With {
                 .IsSharedTablePrincipal = False
             }
-            dependentBasebyteTable.AddEntityTypeMapping(dependentBasebyteTableMapping0, False)
+            dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping0, False)
             tableMappings0.Add(dependentBasebyteTableMapping0)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentDerived.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping0)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentDerived.FindProperty("PrincipalId"), dependentBasebyteTableMapping0)
@@ -3019,7 +3022,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Point", pointColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings1.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
@@ -3086,7 +3089,7 @@ Namespace TestNamespace
             Dim principalBaseTableMapping As New TableMapping(principalBase, principalBaseTable, True) With {
                 .IsSharedTablePrincipal = True
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings1.Add(principalBaseTableMapping)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalBase.FindProperty("AlternateId"), principalBaseTableMapping)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
@@ -3106,7 +3109,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("Owned", ownedColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase As New TableMappingBase(Of ColumnMappingBase)(ownedType, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase, False)
             defaultTableMappings2.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
 
             Dim tableMappings2 As New List(Of TableMapping)()
@@ -3114,7 +3117,7 @@ Namespace TestNamespace
             Dim principalBaseTableMapping0 As New TableMapping(ownedType, principalBaseTable, True) With {
                 .IsSharedTablePrincipal = False
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping0, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping0, False)
             tableMappings2.Add(principalBaseTableMapping0)
             principalBaseTable.AddRowInternalForeignKey(ownedType, RelationalModel.GetForeignKey(Me,
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType",
@@ -3127,7 +3130,7 @@ Namespace TestNamespace
             Dim defaultTableMappings3 As New List(Of TableMappingBase(Of ColumnMappingBase))()
             principalDerived.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings3)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
             defaultTableMappings3.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
@@ -3143,7 +3146,7 @@ Namespace TestNamespace
             Dim principalBaseTableMapping1 As New TableMapping(principalDerived, principalBaseTable, True) With {
                 .IsSharedTablePrincipal = False
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping1, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping1, False)
             tableMappings3.Add(principalBaseTableMapping1)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalDerived.FindProperty("AlternateId"), principalBaseTableMapping1)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalBaseTableMapping1)
@@ -3165,7 +3168,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("ManyOwned", manyOwnedColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>.ManyOwned#OwnedType", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase As New TableMappingBase(Of ColumnMappingBase)(ownedType0, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase, False)
             defaultTableMappings4.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
 
             Dim tableMappings4 As New List(Of TableMapping)()
@@ -3173,7 +3176,7 @@ Namespace TestNamespace
             Dim principalBaseTableMapping2 As New TableMapping(ownedType0, principalBaseTable, True) With {
                 .IsSharedTablePrincipal = False
             }
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping2, True)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping2, True)
             tableMappings4.Add(principalBaseTableMapping2)
             principalBaseTable.AddRowInternalForeignKey(ownedType0, RelationalModel.GetForeignKey(Me,
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>.ManyOwned#OwnedType",
@@ -3200,7 +3203,7 @@ Namespace TestNamespace
             principalBasePrincipalDerivedDependentBasebyteTableBase.Columns.Add("rowid", rowidColumnBase)
             relationalModel.DefaultTables.Add("PrincipalBasePrincipalDerived<DependentBase<byte?>>", principalBasePrincipalDerivedDependentBasebyteTableBase)
             Dim principalBasePrincipalDerivedDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTableBase, True)
-            principalBasePrincipalDerivedDependentBasebyteTableBase.AddEntityTypeMapping(principalBasePrincipalDerivedDependentBasebyteMappingBase, False)
+            principalBasePrincipalDerivedDependentBasebyteTableBase.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteMappingBase, False)
             defaultTableMappings5.Add(principalBasePrincipalDerivedDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsAlternateId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
@@ -3241,7 +3244,7 @@ Namespace TestNamespace
             principalBasePrincipalDerivedDependentBasebyteTable.Indexes.Add("IX_PrincipalBasePrincipalDerived<DependentBase<byte?>>_PrincipalsId_PrincipalsAlternateId", iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipalsId_PrincipalsAlternateId)
             relationalModel.Tables.Add(("PrincipalBasePrincipalDerived<DependentBase<byte?>>", Nothing), principalBasePrincipalDerivedDependentBasebyteTable)
             Dim principalBasePrincipalDerivedDependentBasebyteTableMapping As New TableMapping(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTable, True)
-            principalBasePrincipalDerivedDependentBasebyteTable.AddEntityTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, False)
+            principalBasePrincipalDerivedDependentBasebyteTable.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, False)
             tableMappings5.Add(principalBasePrincipalDerivedDependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
@@ -3609,7 +3612,7 @@ Namespace TestNamespace
                 "Details",
                 GetType(String),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
@@ -3626,7 +3629,7 @@ Namespace TestNamespace
             Dim context = entityType.AddServiceProperty(
                 "Context",
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(Microsoft.EntityFrameworkCore.DbContext))
+                serviceType:=GetType(DbContext))
 
             Dim key = entityType.AddKey(
                 {principalBaseId, principalBaseAlternateId})
@@ -3719,7 +3722,7 @@ Namespace TestNamespace
                 "Details",
                 GetType(String),
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -3734,7 +3737,7 @@ Namespace TestNamespace
             Dim context = entityType.AddServiceProperty(
                 "Context",
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(Microsoft.EntityFrameworkCore.DbContext))
+                serviceType:=GetType(DbContext))
 
             Dim key = entityType.AddKey(
                 {principalDerivedId, principalDerivedAlternateId, id})
@@ -4443,6 +4446,986 @@ End Namespace
                 GetType(SqlServerNetTopologySuiteDesignTimeServices))
         End Sub
 
+        <ConditionalFact>
+        Public Sub ComplexTypes()
+
+            Dim ComplexTypesContextModel = <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.ComplexTypesContext))>
+    Public Partial Class ComplexTypesContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As ComplexTypesContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New ComplexTypesContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim ComplexTypesContextModelBuilder = <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+Imports Microsoft.EntityFrameworkCore.Migrations
+
+Namespace TestNamespace
+    Public Partial Class ComplexTypesContextModel
+
+        Private Sub Initialize()
+            Dim principalBase = PrincipalBaseEntityType.Create(Me)
+            Dim principalDerived = PrincipalDerivedEntityType.Create(Me, principalBase)
+
+            PrincipalBaseEntityType.CreateForeignKey1(principalBase, principalBase)
+
+            PrincipalBaseEntityType.CreateAnnotations(principalBase)
+            PrincipalDerivedEntityType.CreateAnnotations(principalDerived)
+
+            Dim functions As New SortedDictionary(Of String, IDbFunction)()
+            Dim principalBaseTvf As New RuntimeDbFunction(
+                "PrincipalBaseTvf",
+                Me,
+                GetType(IQueryable(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+                "PrincipalBaseTvf",
+                schema:="dbo")
+
+            functions("PrincipalBaseTvf") = principalBaseTvf
+
+            AddAnnotation("Relational:DbFunctions", functions)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel())
+        End Sub
+
+        Private Function CreateRelationalModel() As IRelationalModel
+            Dim relationalModel As New RelationalModel(Me)
+
+            Dim principalBase = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase")
+
+            Dim defaultTableMappings As New List(Of TableMappingBase(Of ColumnMappingBase))()
+            principalBase.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings)
+            Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase As New TableBase("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", Nothing, relationalModel)
+            Dim discriminatorColumnBase As New ColumnBase(Of ColumnMappingBase)("Discriminator", "nvarchar(55)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Discriminator", discriminatorColumnBase)
+            Dim enum1ColumnBase As New ColumnBase(Of ColumnMappingBase)("Enum1", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Enum1", enum1ColumnBase)
+            Dim enum2ColumnBase As New ColumnBase(Of ColumnMappingBase)("Enum2", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Enum2", enum2ColumnBase)
+            Dim flagsEnum1ColumnBase As New ColumnBase(Of ColumnMappingBase)("FlagsEnum1", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("FlagsEnum1", flagsEnum1ColumnBase)
+            Dim flagsEnum2ColumnBase As New ColumnBase(Of ColumnMappingBase)("FlagsEnum2", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("FlagsEnum2", flagsEnum2ColumnBase)
+            Dim idColumnBase As New ColumnBase(Of ColumnMappingBase)("Id", "bigint", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Id", idColumnBase)
+            Dim principalBaseIdColumnBase As New ColumnBase(Of ColumnMappingBase)("PrincipalBaseId", "bigint", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("PrincipalBaseId", principalBaseIdColumnBase)
+            relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
+            Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
+            defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Discriminator"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+
+            Dim tableMappings As New List(Of TableMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
+            Dim principalBaseTable As New Table("PrincipalBase", Nothing, relationalModel)
+            Dim idColumn As New Column("Id", "bigint", principalBaseTable)
+            principalBaseTable.Columns.Add("Id", idColumn)
+            Dim deetsColumn As New Column("Deets", "varchar(64)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Deets", deetsColumn)
+            Dim discriminatorColumn As New Column("Discriminator", "nvarchar(55)", principalBaseTable)
+            principalBaseTable.Columns.Add("Discriminator", discriminatorColumn)
+            Dim enum1Column As New Column("Enum1", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("Enum1", enum1Column)
+            Dim enum2Column As New Column("Enum2", "int", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Enum2", enum2Column)
+            Dim flagsEnum1Column As New Column("FlagsEnum1", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("FlagsEnum1", flagsEnum1Column)
+            Dim flagsEnum2Column As New Column("FlagsEnum2", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("FlagsEnum2", flagsEnum2Column)
+            Dim owned_NumberColumn As New Column("Owned_Number", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("Owned_Number", owned_NumberColumn)
+            Dim owned_Principal_AlternateIdColumn As New Column("Owned_Principal_AlternateId", "uniqueidentifier", principalBaseTable)
+            principalBaseTable.Columns.Add("Owned_Principal_AlternateId", owned_Principal_AlternateIdColumn)
+            Dim owned_Principal_Enum1Column As New Column("Owned_Principal_Enum1", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("Owned_Principal_Enum1", owned_Principal_Enum1Column)
+            Dim owned_Principal_Enum2Column As New Column("Owned_Principal_Enum2", "int", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_Enum2", owned_Principal_Enum2Column)
+            Dim owned_Principal_FlagsEnum1Column As New Column("Owned_Principal_FlagsEnum1", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("Owned_Principal_FlagsEnum1", owned_Principal_FlagsEnum1Column)
+            Dim owned_Principal_FlagsEnum2Column As New Column("Owned_Principal_FlagsEnum2", "int", principalBaseTable)
+            principalBaseTable.Columns.Add("Owned_Principal_FlagsEnum2", owned_Principal_FlagsEnum2Column)
+            Dim owned_Principal_IdColumn As New Column("Owned_Principal_Id", "bigint", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_Id", owned_Principal_IdColumn)
+            Dim principalBaseIdColumn As New Column("PrincipalBaseId", "bigint", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("PrincipalBaseId", principalBaseIdColumn)
+            Dim pK_PrincipalBase As New UniqueConstraint("PK_PrincipalBase", principalBaseTable, {idColumn})
+            principalBaseTable.PrimaryKey = pK_PrincipalBase
+            Dim pK_PrincipalBaseUc = RelationalModel.GetKey(Me,
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
+                {"Id"})
+            pK_PrincipalBase.MappedKeys.Add(pK_PrincipalBaseUc)
+            RelationalModel.GetOrCreateUniqueConstraints(pK_PrincipalBaseUc).Add(pK_PrincipalBase)
+            principalBaseTable.UniqueConstraints.Add("PK_PrincipalBase", pK_PrincipalBase)
+            Dim iX_PrincipalBase_PrincipalBaseId As New TableIndex(
+            "IX_PrincipalBase_PrincipalBaseId", principalBaseTable, {principalBaseIdColumn}, False)
+            Dim iX_PrincipalBase_PrincipalBaseIdIx = RelationalModel.GetIndex(Me,
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
+                {"PrincipalBaseId"})
+            iX_PrincipalBase_PrincipalBaseId.MappedIndexes.Add(iX_PrincipalBase_PrincipalBaseIdIx)
+            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalBase_PrincipalBaseIdIx).Add(iX_PrincipalBase_PrincipalBaseId)
+            principalBaseTable.Indexes.Add("IX_PrincipalBase_PrincipalBaseId", iX_PrincipalBase_PrincipalBaseId)
+            relationalModel.Tables.Add(("PrincipalBase", Nothing), principalBaseTable)
+            Dim principalBaseTableMapping As New TableMapping(principalBase, principalBaseTable, True) With {
+                .IsSharedTablePrincipal = True
+            }
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
+            tableMappings.Add(principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseTableMapping)
+
+            Dim viewMappings As New List(Of ViewMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:ViewMappings", viewMappings)
+            Dim principalBaseViewView As New View("PrincipalBaseView", Nothing, relationalModel)
+            Dim discriminatorViewColumn As New ViewColumn("Discriminator", "nvarchar(55)", principalBaseViewView)
+            principalBaseViewView.Columns.Add("Discriminator", discriminatorViewColumn)
+            Dim enum1ViewColumn As New ViewColumn("Enum1", "int", principalBaseViewView)
+            principalBaseViewView.Columns.Add("Enum1", enum1ViewColumn)
+            Dim enum2ViewColumn As New ViewColumn("Enum2", "int", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("Enum2", enum2ViewColumn)
+            Dim flagsEnum1ViewColumn As New ViewColumn("FlagsEnum1", "int", principalBaseViewView)
+            principalBaseViewView.Columns.Add("FlagsEnum1", flagsEnum1ViewColumn)
+            Dim flagsEnum2ViewColumn As New ViewColumn("FlagsEnum2", "int", principalBaseViewView)
+            principalBaseViewView.Columns.Add("FlagsEnum2", flagsEnum2ViewColumn)
+            Dim idViewColumn As New ViewColumn("Id", "bigint", principalBaseViewView)
+            principalBaseViewView.Columns.Add("Id", idViewColumn)
+            Dim principalBaseIdViewColumn As New ViewColumn("PrincipalBaseId", "bigint", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("PrincipalBaseId", principalBaseIdViewColumn)
+            relationalModel.Views.Add(("PrincipalBaseView", Nothing), principalBaseViewView)
+            Dim principalBaseViewViewMapping As New ViewMapping(principalBase, principalBaseViewView, True)
+            principalBaseViewView.AddTypeMapping(principalBaseViewViewMapping, False)
+            viewMappings.Add(principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseViewViewMapping)
+
+            Dim sqlQueryMappings As New List(Of SqlQueryMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:SqlQueryMappings", sqlQueryMappings)
+            Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery As New SqlQuery("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.MappedSqlQuery", relationalModel, "select * from PrincipalBase")
+            Dim discriminatorSqlQueryColumn As New SqlQueryColumn("Discriminator", "nvarchar(55)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("Discriminator", discriminatorSqlQueryColumn)
+            Dim enum1SqlQueryColumn As New SqlQueryColumn("Enum1", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("Enum1", enum1SqlQueryColumn)
+            Dim enum2SqlQueryColumn As New SqlQueryColumn("Enum2", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("Enum2", enum2SqlQueryColumn)
+            Dim flagsEnum1SqlQueryColumn As New SqlQueryColumn("FlagsEnum1", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("FlagsEnum1", flagsEnum1SqlQueryColumn)
+            Dim flagsEnum2SqlQueryColumn As New SqlQueryColumn("FlagsEnum2", "int", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("FlagsEnum2", flagsEnum2SqlQueryColumn)
+            Dim idSqlQueryColumn As New SqlQueryColumn("Id", "bigint", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("Id", idSqlQueryColumn)
+            Dim principalBaseIdSqlQueryColumn As New SqlQueryColumn("PrincipalBaseId", "bigint", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("PrincipalBaseId", principalBaseIdSqlQueryColumn)
+            relationalModel.Queries.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.MappedSqlQuery", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
+            Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping As New SqlQueryMapping(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery, True)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping, False)
+            sqlQueryMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping.IsDefaultSqlQueryMapping = True
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Id"), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+
+            Dim functionMappings As New List(Of FunctionMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:FunctionMappings", functionMappings)
+            Dim principalBaseTvf = DirectCast(Me.FindDbFunction("PrincipalBaseTvf"), IRuntimeDbFunction)
+            Dim principalBaseTvfFunction As New StoreFunction(principalBaseTvf, relationalModel)
+            Dim discriminatorFunctionColumn As New FunctionColumn("Discriminator", "nvarchar(55)", principalBaseTvfFunction)
+            principalBaseTvfFunction.Columns.Add("Discriminator", discriminatorFunctionColumn)
+            Dim enum1FunctionColumn As New FunctionColumn("Enum1", "int", principalBaseTvfFunction)
+            principalBaseTvfFunction.Columns.Add("Enum1", enum1FunctionColumn)
+            Dim enum2FunctionColumn As New FunctionColumn("Enum2", "int", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("Enum2", enum2FunctionColumn)
+            Dim flagsEnum1FunctionColumn As New FunctionColumn("FlagsEnum1", "int", principalBaseTvfFunction)
+            principalBaseTvfFunction.Columns.Add("FlagsEnum1", flagsEnum1FunctionColumn)
+            Dim flagsEnum2FunctionColumn As New FunctionColumn("FlagsEnum2", "int", principalBaseTvfFunction)
+            principalBaseTvfFunction.Columns.Add("FlagsEnum2", flagsEnum2FunctionColumn)
+            Dim idFunctionColumn As New FunctionColumn("Id", "bigint", principalBaseTvfFunction)
+            principalBaseTvfFunction.Columns.Add("Id", idFunctionColumn)
+            Dim principalBaseIdFunctionColumn As New FunctionColumn("PrincipalBaseId", "bigint", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("PrincipalBaseId", principalBaseIdFunctionColumn)
+            relationalModel.Functions.Add(
+                ("PrincipalBaseTvf", "dbo", New String() {}),
+                principalBaseTvfFunction)
+            Dim principalBaseTvfFunctionMapping As New FunctionMapping(principalBase, principalBaseTvfFunction, principalBaseTvf, True)
+            principalBaseTvfFunction.AddTypeMapping(principalBaseTvfFunctionMapping, False)
+            functionMappings.Add(principalBaseTvfFunctionMapping)
+            principalBaseTvfFunctionMapping.IsDefaultFunctionMapping = True
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseTvfFunctionMapping)
+
+            Dim deleteSprocMappings As New List(Of StoredProcedureMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:DeleteStoredProcedureMappings", deleteSprocMappings)
+            Dim principalBase_DeleteStoreSproc As New StoreStoredProcedure("PrincipalBase_Delete", Nothing, relationalModel)
+            principalBase_DeleteStoreSproc.ReturnValue = New StoreStoredProcedureReturnValue("", "int", principalBase_DeleteStoreSproc)
+            Dim id_OriginalParameter As New StoreStoredProcedureParameter("Id_Original", "bigint", 0, principalBase_DeleteStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_DeleteStoreSproc.AddParameter(id_OriginalParameter)
+            principalBase_DeleteStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure))
+            relationalModel.StoredProcedures.Add(("PrincipalBase_Delete", Nothing), principalBase_DeleteStoreSproc)
+            Dim principalBase_DeleteDSproc = DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure)
+            Dim principalBase_DeleteSprocMapping As New StoredProcedureMapping(principalBase, principalBase_DeleteStoreSproc, DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping, True)
+            principalBase_DeleteStoreSproc.AddTypeMapping(principalBase_DeleteSprocMapping, False)
+            deleteSprocMappings.Add(principalBase_DeleteSprocMapping)
+            principalBaseTableMapping.DeleteStoredProcedureMapping = principalBase_DeleteSprocMapping
+            RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter, principalBase_DeleteDSproc.FindParameter("Id_Original"), principalBase.FindProperty("Id"), principalBase_DeleteSprocMapping)
+
+            Dim insertSprocMappings As New List(Of StoredProcedureMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:InsertStoredProcedureMappings", insertSprocMappings)
+            Dim principalBase_InsertStoreSproc As New StoreStoredProcedure("PrincipalBase_Insert", Nothing, relationalModel)
+            Dim principalBaseIdParameter As New StoreStoredProcedureParameter("PrincipalBaseId", "bigint", 0, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(principalBaseIdParameter)
+            Dim enum1Parameter As New StoreStoredProcedureParameter("Enum1", "int", 1, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_InsertStoreSproc.AddParameter(enum1Parameter)
+            Dim enum2Parameter As New StoreStoredProcedureParameter("Enum2", "int", 2, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(enum2Parameter)
+            Dim flagsEnum1Parameter As New StoreStoredProcedureParameter("FlagsEnum1", "int", 3, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_InsertStoreSproc.AddParameter(flagsEnum1Parameter)
+            Dim flagsEnum2Parameter As New StoreStoredProcedureParameter("FlagsEnum2", "int", 4, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_InsertStoreSproc.AddParameter(flagsEnum2Parameter)
+            Dim discriminatorParameter As New StoreStoredProcedureParameter("Discriminator", "nvarchar(55)", 5, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_InsertStoreSproc.AddParameter(discriminatorParameter)
+            Dim idParameter As New StoreStoredProcedureParameter("Id", "bigint", 6, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Output)
+            principalBase_InsertStoreSproc.AddParameter(idParameter)
+            principalBase_InsertStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure))
+            relationalModel.StoredProcedures.Add(("PrincipalBase_Insert", Nothing), principalBase_InsertStoreSproc)
+            Dim principalBase_InsertISproc = DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure)
+            Dim principalBase_InsertSprocMapping As New StoredProcedureMapping(principalBase, principalBase_InsertStoreSproc, DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping, True)
+            principalBase_InsertStoreSproc.AddTypeMapping(principalBase_InsertSprocMapping, False)
+            insertSprocMappings.Add(principalBase_InsertSprocMapping)
+            principalBaseTableMapping.InsertStoredProcedureMapping = principalBase_InsertSprocMapping
+            RelationalModel.CreateStoredProcedureParameterMapping(idParameter, principalBase_InsertISproc.FindParameter("Id"), principalBase.FindProperty("Id"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(discriminatorParameter, principalBase_InsertISproc.FindParameter("Discriminator"), principalBase.FindProperty("Discriminator"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum1Parameter, principalBase_InsertISproc.FindParameter("Enum1"), principalBase.FindProperty("Enum1"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum2Parameter, principalBase_InsertISproc.FindParameter("Enum2"), principalBase.FindProperty("Enum2"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter, principalBase_InsertISproc.FindParameter("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter, principalBase_InsertISproc.FindParameter("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter, principalBase_InsertISproc.FindParameter("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBase_InsertSprocMapping)
+
+            Dim updateSprocMappings As New List(Of StoredProcedureMapping)()
+            principalBase.SetRuntimeAnnotation("Relational:UpdateStoredProcedureMappings", updateSprocMappings)
+            Dim principalBase_UpdateStoreSproc As New StoreStoredProcedure("PrincipalBase_Update", Nothing, relationalModel)
+            Dim principalBaseIdParameter0 As New StoreStoredProcedureParameter("PrincipalBaseId", "bigint", 0, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(principalBaseIdParameter0)
+            Dim enum1Parameter0 As New StoreStoredProcedureParameter("Enum1", "int", 1, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_UpdateStoreSproc.AddParameter(enum1Parameter0)
+            Dim enum2Parameter0 As New StoreStoredProcedureParameter("Enum2", "int", 2, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(enum2Parameter0)
+            Dim flagsEnum1Parameter0 As New StoreStoredProcedureParameter("FlagsEnum1", "int", 3, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_UpdateStoreSproc.AddParameter(flagsEnum1Parameter0)
+            Dim flagsEnum2Parameter0 As New StoreStoredProcedureParameter("FlagsEnum2", "int", 4, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_UpdateStoreSproc.AddParameter(flagsEnum2Parameter0)
+            Dim id_OriginalParameter0 As New StoreStoredProcedureParameter("Id_Original", "bigint", 5, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            principalBase_UpdateStoreSproc.AddParameter(id_OriginalParameter0)
+            principalBase_UpdateStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure))
+            relationalModel.StoredProcedures.Add(("PrincipalBase_Update", Nothing), principalBase_UpdateStoreSproc)
+            Dim principalBase_UpdateUSproc = DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure)
+            Dim principalBase_UpdateSprocMapping As New StoredProcedureMapping(principalBase, principalBase_UpdateStoreSproc, DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping, True)
+            principalBase_UpdateStoreSproc.AddTypeMapping(principalBase_UpdateSprocMapping, False)
+            updateSprocMappings.Add(principalBase_UpdateSprocMapping)
+            principalBaseTableMapping.UpdateStoredProcedureMapping = principalBase_UpdateSprocMapping
+            RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter0, principalBase_UpdateUSproc.FindParameter("Id_Original"), principalBase.FindProperty("Id"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum1Parameter0, principalBase_UpdateUSproc.FindParameter("Enum1"), principalBase.FindProperty("Enum1"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum2Parameter0, principalBase_UpdateUSproc.FindParameter("Enum2"), principalBase.FindProperty("Enum2"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter0, principalBase_UpdateUSproc.FindParameter("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter0, principalBase_UpdateUSproc.FindParameter("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter0, principalBase_UpdateUSproc.FindParameter("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBase_UpdateSprocMapping)
+
+            Dim ownedType = principalBase.FindComplexProperty("Owned").ComplexType
+
+            Dim tableMappings0 As New List(Of TableMapping)()
+            ownedType.SetRuntimeAnnotation("Relational:TableMappings", tableMappings0)
+            Dim principalBaseTableMapping0 As New TableMapping(ownedType, principalBaseTable, True)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping0, False)
+            tableMappings0.Add(principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Deets"), ownedType.FindProperty("Details"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Number"), ownedType.FindProperty("Number"), principalBaseTableMapping0)
+
+            Dim principalBase0 = ownedType.FindComplexProperty("Principal").ComplexType
+
+            Dim tableMappings1 As New List(Of TableMapping)()
+            principalBase0.SetRuntimeAnnotation("Relational:TableMappings", tableMappings1)
+            Dim principalBaseTableMapping1 As New TableMapping(principalBase0, principalBaseTable, True)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping1, False)
+            tableMappings1.Add(principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_AlternateId"), principalBase0.FindProperty("AlternateId"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_Enum1"), principalBase0.FindProperty("Enum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_Enum2"), principalBase0.FindProperty("Enum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_FlagsEnum1"), principalBase0.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_FlagsEnum2"), principalBase0.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_Id"), principalBase0.FindProperty("Id"), principalBaseTableMapping1)
+
+            Dim principalDerived = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>")
+
+            Dim defaultTableMappings0 As New List(Of TableMappingBase(Of ColumnMappingBase))()
+            principalDerived.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings0)
+            Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
+            defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Discriminator"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+
+            Dim tableMappings2 As New List(Of TableMapping)()
+            principalDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings2)
+            Dim principalBaseTableMapping2 As New TableMapping(principalDerived, principalBaseTable, True) With {
+                .IsSharedTablePrincipal = False
+            }
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping2, False)
+            tableMappings2.Add(principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Discriminator"), principalDerived.FindProperty("Discriminator"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalBaseTableMapping2)
+
+            Dim sqlQueryMappings0 As New List(Of SqlQueryMapping)()
+            principalDerived.SetRuntimeAnnotation("Relational:SqlQueryMappings", sqlQueryMappings0)
+            Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0 As New SqlQueryMapping(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery, True)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0, False)
+            sqlQueryMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0.IsDefaultSqlQueryMapping = True
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Id"), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Discriminator"), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+
+            Dim deleteSprocMappings0 As New List(Of StoredProcedureMapping)()
+            principalDerived.SetRuntimeAnnotation("Relational:DeleteStoredProcedureMappings", deleteSprocMappings0)
+            Dim principalBase_DeleteDSproc0 = DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure)
+            Dim principalBase_DeleteSprocMapping0 As New StoredProcedureMapping(principalDerived, principalBase_DeleteStoreSproc, DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping2, True)
+            principalBase_DeleteStoreSproc.AddTypeMapping(principalBase_DeleteSprocMapping0, False)
+            deleteSprocMappings0.Add(principalBase_DeleteSprocMapping0)
+            principalBaseTableMapping2.DeleteStoredProcedureMapping = principalBase_DeleteSprocMapping0
+            RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter, principalBase_DeleteDSproc0.FindParameter("Id_Original"), principalDerived.FindProperty("Id"), principalBase_DeleteSprocMapping0)
+
+            Dim insertSprocMappings0 As New List(Of StoredProcedureMapping)()
+            principalDerived.SetRuntimeAnnotation("Relational:InsertStoredProcedureMappings", insertSprocMappings0)
+            Dim principalBase_InsertISproc0 = DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure)
+            Dim principalBase_InsertSprocMapping0 As New StoredProcedureMapping(principalDerived, principalBase_InsertStoreSproc, DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping2, True)
+            principalBase_InsertStoreSproc.AddTypeMapping(principalBase_InsertSprocMapping0, False)
+            insertSprocMappings0.Add(principalBase_InsertSprocMapping0)
+            principalBaseTableMapping2.InsertStoredProcedureMapping = principalBase_InsertSprocMapping0
+            RelationalModel.CreateStoredProcedureParameterMapping(idParameter, principalBase_InsertISproc0.FindParameter("Id"), principalDerived.FindProperty("Id"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(discriminatorParameter, principalBase_InsertISproc0.FindParameter("Discriminator"), principalDerived.FindProperty("Discriminator"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum1Parameter, principalBase_InsertISproc0.FindParameter("Enum1"), principalDerived.FindProperty("Enum1"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum2Parameter, principalBase_InsertISproc0.FindParameter("Enum2"), principalDerived.FindProperty("Enum2"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter, principalBase_InsertISproc0.FindParameter("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter, principalBase_InsertISproc0.FindParameter("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter, principalBase_InsertISproc0.FindParameter("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalBase_InsertSprocMapping0)
+
+            Dim updateSprocMappings0 As New List(Of StoredProcedureMapping)()
+            principalDerived.SetRuntimeAnnotation("Relational:UpdateStoredProcedureMappings", updateSprocMappings0)
+            Dim principalBase_UpdateUSproc0 = DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure)
+            Dim principalBase_UpdateSprocMapping0 As New StoredProcedureMapping(principalDerived, principalBase_UpdateStoreSproc, DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping2, True)
+            principalBase_UpdateStoreSproc.AddTypeMapping(principalBase_UpdateSprocMapping0, False)
+            updateSprocMappings0.Add(principalBase_UpdateSprocMapping0)
+            principalBaseTableMapping2.UpdateStoredProcedureMapping = principalBase_UpdateSprocMapping0
+            RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter0, principalBase_UpdateUSproc0.FindParameter("Id_Original"), principalDerived.FindProperty("Id"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum1Parameter0, principalBase_UpdateUSproc0.FindParameter("Enum1"), principalDerived.FindProperty("Enum1"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(enum2Parameter0, principalBase_UpdateUSproc0.FindParameter("Enum2"), principalDerived.FindProperty("Enum2"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter0, principalBase_UpdateUSproc0.FindParameter("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter0, principalBase_UpdateUSproc0.FindParameter("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter0, principalBase_UpdateUSproc0.FindParameter("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalBase_UpdateSprocMapping0)
+            Dim fK_PrincipalBase_PrincipalBase_PrincipalBaseId As New ForeignKeyConstraint(
+                "FK_PrincipalBase_PrincipalBase_PrincipalBaseId", principalBaseTable, principalBaseTable,
+                {principalBaseIdColumn},
+                principalBaseTable.FindUniqueConstraint("PK_PrincipalBase"), ReferentialAction.NoAction)
+            Dim fK_PrincipalBase_PrincipalBase_PrincipalBaseIdFk = RelationalModel.GetForeignKey(Me,
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
+                {"PrincipalBaseId"},
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
+                {"Id"})
+            fK_PrincipalBase_PrincipalBase_PrincipalBaseId.MappedForeignKeys.Add(fK_PrincipalBase_PrincipalBase_PrincipalBaseIdFk)
+            RelationalModel.GetOrCreateForeignKeyConstraints(fK_PrincipalBase_PrincipalBase_PrincipalBaseIdFk).Add(fK_PrincipalBase_PrincipalBase_PrincipalBaseId)
+            principalBaseTable.ForeignKeyConstraints.Add(fK_PrincipalBase_PrincipalBase_PrincipalBaseId)
+            principalBaseTable.ReferencingForeignKeyConstraints.Add(fK_PrincipalBase_PrincipalBase_PrincipalBaseId)
+            Return relationalModel.MakeReadOnly()
+        End Function
+    End Class
+End Namespace
+]]>.Value
+
+            Dim PrincipalBaseEntityType = <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.ValueGeneration
+
+Namespace TestNamespace
+    Friend Partial Class PrincipalBaseEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
+                baseEntityType,
+                discriminatorProperty:="Discriminator",
+                discriminatorValue:="PrincipalBase")
+
+            Dim id = entityType.AddProperty(
+                "Id",
+                GetType(Long?),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                valueGenerated:=ValueGenerated.OnAdd,
+                afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+
+            Dim discriminator = entityType.AddProperty(
+                "Discriminator",
+                GetType(String),
+                afterSaveBehavior:=PropertySaveBehavior.Throw,
+                maxLength:=55,
+                valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
+            discriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim enum1 = entityType.AddProperty(
+                "Enum1",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+            enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim enum2 = entityType.AddProperty(
+                "Enum2",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim flagsEnum1 = entityType.AddProperty(
+                "FlagsEnum1",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim flagsEnum2 = entityType.AddProperty(
+                "FlagsEnum2",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim principalBaseId = entityType.AddProperty(
+                "PrincipalBaseId",
+                GetType(Long?),
+                nullable:=True)
+            principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            OwnedComplexProperty.Create(entityType)
+            Dim key = entityType.AddKey(
+                {id})
+            entityType.SetPrimaryKey(key)
+
+            Dim index = entityType.AddIndex(
+                {principalBaseId})
+
+            Return entityType
+        End Function
+
+        Private Class OwnedComplexProperty
+            Public Shared Function Create(declaringType As RuntimeEntityType) As RuntimeComplexProperty
+                Dim complexProperty = declaringType.AddComplexProperty("Owned",
+                    GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
+                    "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType",
+                    GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
+                    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                    propertyAccessMode:=PropertyAccessMode.Field,
+                    changeTrackingStrategy:=ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues)
+
+                Dim complexType = complexProperty.ComplexType
+                Dim details = complexType.AddProperty(
+                    "Details",
+                    GetType(String),
+                    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                    propertyAccessMode:=PropertyAccessMode.FieldDuringConstruction,
+                    nullable:=True,
+                    concurrencyToken:=True,
+                    valueGenerated:=ValueGenerated.OnAddOrUpdate,
+                    beforeSaveBehavior:=PropertySaveBehavior.Ignore,
+                    afterSaveBehavior:=PropertySaveBehavior.Ignore,
+                    maxLength:=64,
+                    unicode:=False,
+                    precision:=3,
+                    scale:=2,
+                    sentinel:="")
+                details.AddAnnotation("foo", "bar")
+                details.AddAnnotation("Relational:ColumnName", "Deets")
+                details.AddAnnotation("Relational:ColumnType", "varchar")
+                details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                Dim number = complexType.AddProperty(
+                    "Number",
+                    GetType(Integer),
+                    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                    sentinel:=0)
+                number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                PrincipalComplexProperty.Create(complexType)
+                complexType.AddAnnotation("go", "brr")
+                complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
+                complexType.AddAnnotation("Relational:Schema", Nothing)
+                complexType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+                complexType.AddAnnotation("Relational:TableName", "PrincipalBase")
+                complexType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+                complexType.AddAnnotation("Relational:ViewSchema", Nothing)
+                complexProperty.AddAnnotation("goo", "ber")
+                Return complexProperty
+            End Function
+
+            Private Class PrincipalComplexProperty
+                Public Shared Function Create(declaringType As RuntimeComplexType) As RuntimeComplexProperty
+                    Dim complexProperty = declaringType.AddComplexProperty("Principal",
+                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
+                        "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType.Principal#PrincipalBase",
+                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
+                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Principal", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Principal", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        nullable:=True)
+
+                    Dim complexType = complexProperty.ComplexType
+                    Dim alternateId = complexType.AddProperty(
+                        "AlternateId",
+                        GetType(Guid),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("AlternateId", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+                    alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                    Dim enum1 = complexType.AddProperty(
+                        "Enum1",
+                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum),
+                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+                    enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                    Dim enum2 = complexType.AddProperty(
+                        "Enum2",
+                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?),
+                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        nullable:=True)
+                    enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                    Dim flagsEnum1 = complexType.AddProperty(
+                        "FlagsEnum1",
+                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
+                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+                    flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                    Dim flagsEnum2 = complexType.AddProperty(
+                        "FlagsEnum2",
+                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
+                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+                    flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                    Dim id = complexType.AddProperty(
+                        "Id",
+                        GetType(Long?),
+                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                        nullable:=True)
+                    id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+                    complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
+                    complexType.AddAnnotation("Relational:Schema", Nothing)
+                    complexType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+                    complexType.AddAnnotation("Relational:TableName", "PrincipalBase")
+                    complexType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+                    complexType.AddAnnotation("Relational:ViewSchema", Nothing)
+                    Return complexProperty
+                End Function
+            End Class
+        End Class
+
+        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId")},
+                principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
+                principalEntityType)
+
+            Dim deriveds = principalEntityType.AddNavigation("Deriveds",
+                runtimeForeignKey,
+                onDependent:=False,
+                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+
+            Return runtimeForeignKey
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+            Dim insertSproc As New RuntimeStoredProcedure(
+                entityType,
+                "PrincipalBase_Insert",
+                Nothing,
+                False)
+
+            Dim principalBaseId = insertSproc.AddParameter(
+                "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
+            Dim enum1 = insertSproc.AddParameter(
+                "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
+            Dim enum2 = insertSproc.AddParameter(
+                "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
+            Dim flagsEnum1 = insertSproc.AddParameter(
+                "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
+            Dim flagsEnum2 = insertSproc.AddParameter(
+                "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+            Dim discriminator = insertSproc.AddParameter(
+                "Discriminator", System.Data.ParameterDirection.Input, False, "Discriminator", False)
+            Dim id = insertSproc.AddParameter(
+                "Id", System.Data.ParameterDirection.Output, False, "Id", False)
+            entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+
+            Dim deleteSproc As New RuntimeStoredProcedure(
+                entityType,
+                "PrincipalBase_Delete",
+                Nothing,
+                True)
+
+            Dim id0 = deleteSproc.AddParameter(
+                "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
+            entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+
+            Dim updateSproc As New RuntimeStoredProcedure(
+                entityType,
+                "PrincipalBase_Update",
+                Nothing,
+                False)
+
+            Dim principalBaseId0 = updateSproc.AddParameter(
+                "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
+            Dim enum10 = updateSproc.AddParameter(
+                "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
+            Dim enum20 = updateSproc.AddParameter(
+                "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
+            Dim flagsEnum10 = updateSproc.AddParameter(
+                "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
+            Dim flagsEnum20 = updateSproc.AddParameter(
+                "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+            Dim id1 = updateSproc.AddParameter(
+                "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
+            entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+
+            entityType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
+            entityType.AddAnnotation("Relational:MappingStrategy", "TPH")
+            entityType.AddAnnotation("Relational:Schema", Nothing)
+            entityType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+            entityType.AddAnnotation("Relational:ViewDefinitionSql", Nothing)
+            entityType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim PrincipalDerivedEntityType = <![CDATA[' <auto-generated />
+Imports System
+Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Friend Partial Class PrincipalDerivedEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))),
+                baseEntityType,
+                discriminatorProperty:="Discriminator",
+                discriminatorValue:="PrincipalDerived<DependentBase<byte?>>")
+
+            Return entityType
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+            entityType.AddAnnotation("Relational:FunctionName", Nothing)
+            entityType.AddAnnotation("Relational:Schema", Nothing)
+            entityType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+            entityType.AddAnnotation("Relational:ViewName", Nothing)
+            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Test(
+                New ComplexTypesContext(),
+                CreateCompiledModelCodeGenerationOptions(),
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                        Sub(c) AssertFileContents("ComplexTypesContextModel.vb", ComplexTypesContextModel, c),
+                        Sub(c) AssertFileContents("ComplexTypesContextModelBuilder.vb", ComplexTypesContextModelBuilder, c),
+                        Sub(c) AssertFileContents("PrincipalBaseEntityType.vb", PrincipalBaseEntityType, c),
+                        Sub(c) AssertFileContents("PrincipalDerivedEntityType.vb", PrincipalDerivedEntityType, c))
+                End Sub,
+                Sub(Model)
+                    Dim principalBaseET = Model.FindEntityType(GetType(PrincipalBase))
+
+                    Dim complexProperty = principalBaseET.GetComplexProperties().Single()
+                    Assert.Equal(
+                        {"goo"},
+                        complexProperty.GetAnnotations().Select(Function(a) a.Name))
+                    Assert.Equal(NameOf(PrincipalBase.Owned), complexProperty.Name)
+                    Assert.False(complexProperty.IsCollection)
+                    Assert.False(complexProperty.IsNullable)
+                    Assert.Equal(GetType(OwnedType), complexProperty.ClrType)
+                    Assert.Equal("_ownedField", complexProperty.FieldInfo.Name)
+                    Assert.Equal(NameOf(PrincipalBase.Owned), complexProperty.PropertyInfo.Name)
+                    Assert.Equal(principalBaseET, complexProperty.DeclaringType)
+                    Assert.Equal(PropertyAccessMode.Field, complexProperty.GetPropertyAccessMode())
+                    Assert.Equal("ber", complexProperty("goo"))
+
+                    Dim complexType = complexProperty.ComplexType
+                    Assert.Equal(
+                        {
+                            RelationalAnnotationNames.FunctionName,
+                            RelationalAnnotationNames.Schema,
+                            RelationalAnnotationNames.SqlQuery,
+                            RelationalAnnotationNames.TableName,
+                            RelationalAnnotationNames.ViewName,
+                            RelationalAnnotationNames.ViewSchema,
+                            "go"
+                        },
+                        complexType.GetAnnotations().Select(Function(a) a.Name))
+                    Assert.Equal(GetType(PrincipalBase).FullName & ".Owned#OwnedType", complexType.Name)
+                    Assert.Equal(GetType(OwnedType), complexType.ClrType)
+                    Assert.True(complexType.HasSharedClrType)
+                    Assert.False(complexType.IsPropertyBag)
+                    Assert.IsType(Of ConstructorBinding)(complexType.ConstructorBinding)
+                    Assert.Null(complexType.FindIndexerPropertyInfo())
+                    Assert.Equal(
+                        ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues,
+                        complexType.GetChangeTrackingStrategy())
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() complexType.GetPropertyAccessMode()).Message)
+                    Assert.Equal("brr", complexType("go"))
+
+                    Dim detailsProperty = complexType.FindProperty(NameOf(OwnedType.Details))
+                    Assert.Equal(
+                        {
+                            CoreAnnotationNames.MaxLength,
+                            CoreAnnotationNames.Precision,
+                            RelationalAnnotationNames.ColumnName,
+                            RelationalAnnotationNames.ColumnType,
+                            CoreAnnotationNames.Scale,
+                            SqlServerAnnotationNames.ValueGenerationStrategy,
+                            CoreAnnotationNames.Unicode,
+                            "foo"
+                        },
+                        detailsProperty.GetAnnotations().Select(Function(a) a.Name))
+                    Assert.Equal(GetType(String), detailsProperty.ClrType)
+                    Assert.Equal(GetType(String), detailsProperty.PropertyInfo.PropertyType)
+                    Assert.Equal(GetType(String), detailsProperty.FieldInfo.FieldType)
+                    Assert.Equal("_details", detailsProperty.FieldInfo.Name)
+                    Assert.True(detailsProperty.IsNullable)
+                    Assert.Equal(ValueGenerated.OnAddOrUpdate, detailsProperty.ValueGenerated)
+                    Assert.Equal(PropertySaveBehavior.Ignore, detailsProperty.GetAfterSaveBehavior())
+                    Assert.Equal(PropertySaveBehavior.Ignore, detailsProperty.GetBeforeSaveBehavior())
+                    Assert.Equal("Deets", detailsProperty.GetColumnName())
+                    Assert.Equal("varchar(64)", detailsProperty.GetColumnType())
+                    Assert.False(detailsProperty.IsUnicode())
+                    Assert.True(detailsProperty.IsConcurrencyToken)
+                    Assert.Equal(64, detailsProperty.GetMaxLength())
+                    Assert.Null(detailsProperty.IsFixedLength())
+                    Assert.Equal(3, detailsProperty.GetPrecision())
+                    Assert.Equal(2, detailsProperty.GetScale())
+                    Assert.Equal("", detailsProperty.Sentinel)
+                    Assert.Equal(PropertyAccessMode.FieldDuringConstruction, detailsProperty.GetPropertyAccessMode())
+                    Assert.Null(detailsProperty.GetValueConverter())
+                    Assert.NotNull(detailsProperty.GetValueComparer())
+                    Assert.NotNull(detailsProperty.GetKeyValueComparer())
+                    Assert.Equal(SqlServerValueGenerationStrategy.None, detailsProperty.GetValueGenerationStrategy())
+                    Assert.Null(detailsProperty.GetDefaultValueSql())
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() detailsProperty.GetIdentitySeed()).Message)
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() detailsProperty.GetIdentityIncrement()).Message)
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() detailsProperty.IsSparse()).Message)
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() detailsProperty.GetCollation()).Message)
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() detailsProperty.GetComment()).Message)
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() detailsProperty.GetColumnOrder()).Message)
+
+                    Dim nestedComplexType = complexType.FindComplexProperty(NameOf(OwnedType.Principal)).ComplexType
+
+                    Assert.Equal(6, nestedComplexType.GetProperties().Count())
+
+                    Dim principalTable = StoreObjectIdentifier.Create(complexType, StoreObjectType.Table).Value
+
+                    Assert.Equal("Deets", detailsProperty.GetColumnName(principalTable))
+
+                    Dim dbFunction = Model.FindDbFunction("PrincipalBaseTvf")
+                    Assert.Equal("dbo", dbFunction.Schema)
+                    Assert.False(dbFunction.IsNullable)
+                    Assert.False(dbFunction.IsScalar)
+                    Assert.False(dbFunction.IsBuiltIn)
+                    Assert.False(dbFunction.IsAggregate)
+                    Assert.Null(dbFunction.Translation)
+                    Assert.Null(dbFunction.TypeMapping)
+                    Assert.Equal(GetType(IQueryable(Of PrincipalBase)), dbFunction.ReturnType)
+                    Assert.Null(dbFunction.MethodInfo)
+                    Assert.Empty(dbFunction.GetAnnotations())
+                    Assert.Empty(dbFunction.GetRuntimeAnnotations())
+                    Assert.Equal("PrincipalBaseTvf", dbFunction.StoreFunction.Name)
+                    Assert.False(dbFunction.StoreFunction.IsShared)
+                    Assert.NotNull(dbFunction.ToString())
+                    Assert.Empty(dbFunction.Parameters)
+
+                    Dim principalBaseFunctionMapping = principalBaseET.GetFunctionMappings().Single(Function(m) m.IsDefaultFunctionMapping)
+                    Assert.True(principalBaseFunctionMapping.IncludesDerivedTypes)
+                    Assert.Null(principalBaseFunctionMapping.IsSharedTablePrincipal)
+                    Assert.Null(principalBaseFunctionMapping.IsSplitEntityTypePrincipal)
+                    Assert.Same(dbFunction, principalBaseFunctionMapping.DbFunction)
+
+                    Dim principalDerived = Model.FindEntityType(GetType(PrincipalDerived(Of DependentBase(Of Byte?))))
+                    Assert.Equal(principalBaseET, principalDerived.BaseType)
+
+                    Assert.Equal(
+                        {principalBaseET, principalDerived},
+                        Model.GetEntityTypes())
+                End Sub,
+                Nothing)
+        End Sub
+
         Public Class BigContextWithJson
             Inherits BigContext
 
@@ -4604,6 +5587,81 @@ End Namespace
             End Sub
         End Class
 
+        Public Class ComplexTypesContext
+            Inherits SqlServerContextBase
+
+            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+                MyBase.OnModelCreating(modelBuilder)
+
+                modelBuilder.Entity(Of PrincipalBase)(
+                    Sub(eb)
+                        eb.ComplexProperty(
+                            Function(e) e.Owned,
+                            Sub(ceb)
+                                ceb.IsRequired().
+                                    HasField("_ownedField").
+                                    UsePropertyAccessMode(PropertyAccessMode.Field).
+                                    HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues).
+                                    HasPropertyAnnotation("goo", "ber").
+                                    HasTypeAnnotation("go", "brr")
+                                ceb.Property(Function(c) c.Details).
+                                    HasColumnName("Deets").
+                                    HasColumnOrder(1).
+                                    HasColumnType("varchar").
+                                    IsUnicode(False).
+                                    IsRequired(False).
+                                    HasField("_details").
+                                    HasSentinel("").
+                                    UsePropertyAccessMode(PropertyAccessMode.FieldDuringConstruction).
+                                    IsSparse().
+                                    UseCollation("Latin1_General_CI_AI").
+                                    HasMaxLength(64).
+                                    HasPrecision(3, 2).
+                                    HasComment("Dt").
+                                    IsRowVersion().
+                                    HasAnnotation("foo", "bar")
+                                ceb.Ignore(Function(e) e.Context)
+                                ceb.ComplexProperty(Function(o) o.Principal)
+                            End Sub)
+
+                        eb.ToTable("PrincipalBase")
+                        eb.ToView("PrincipalBaseView")
+                        eb.ToSqlQuery("select * from PrincipalBase")
+                        eb.ToFunction("PrincipalBaseTvf")
+
+                        eb.InsertUsingStoredProcedure(
+                            Sub(s) s.HasParameter("PrincipalBaseId").
+                                     HasParameter("Enum1").
+                                     HasParameter("Enum2").
+                                     HasParameter("FlagsEnum1").
+                                     HasParameter("FlagsEnum2").
+                                     HasParameter("Discriminator").
+                                     HasParameter(Function(p) p.Id, Function(p) p.IsOutput()))
+
+                        eb.UpdateUsingStoredProcedure(
+                            Sub(s) s.HasParameter("PrincipalBaseId").
+                                     HasParameter("Enum1").
+                                     HasParameter("Enum2").
+                                     HasParameter("FlagsEnum1").
+                                     HasParameter("FlagsEnum2").
+                                     HasOriginalValueParameter(Function(p) p.Id))
+
+                        eb.DeleteUsingStoredProcedure(
+                            Sub(s) s.HasRowsAffectedReturnValue().
+                                     HasOriginalValueParameter(Function(p) p.Id))
+                    End Sub)
+
+                modelBuilder.Entity(Of PrincipalDerived(Of DependentBase(Of Byte?)))(
+                Sub(eb)
+                    ' eb.ComplexCollection(TypeOf(OwnedType).Name, "ManyOwned")
+                    eb.Ignore(Function(p) p.Dependent)
+                    eb.Ignore(Function(p) p.Principals)
+                    eb.ToTable("PrincipalBase")
+                    eb.ToFunction(CType(Nothing, String))
+                End Sub)
+            End Sub
+        End Class
+
         <ConditionalFact>
         Public Sub TPC_model()
 
@@ -4700,7 +5758,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("PrincipalId", principalIdColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(dependentBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
@@ -4732,7 +5790,7 @@ Namespace TestNamespace
             dependentBasebyteTable.Indexes.Add("IX_DependentBase<byte?>_PrincipalId", iX_DependentBasebyte_PrincipalId)
             relationalModel.Tables.Add(("DependentBase<byte?>", "TPC"), dependentBasebyteTable)
             Dim dependentBasebyteTableMapping As New TableMapping(dependentBase, dependentBasebyteTable, True)
-            dependentBasebyteTable.AddEntityTypeMapping(dependentBasebyteTableMapping, False)
+            dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping, False)
             tableMappings.Add(dependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Id"), dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
             RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
@@ -4764,7 +5822,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, False)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
@@ -4823,7 +5881,7 @@ Namespace TestNamespace
             principalBaseTable.Indexes.Add("PIX", pIX)
             relationalModel.Tables.Add(("PrincipalBase", "TPC"), principalBaseTable)
             Dim principalBaseTableMapping As New TableMapping(principalBase, principalBaseTable, False)
-            principalBaseTable.AddEntityTypeMapping(principalBaseTableMapping, False)
+            principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings0.Add(principalBaseTableMapping)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
             RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTableMapping)
@@ -4858,7 +5916,7 @@ Namespace TestNamespace
             principalBaseViewView.Columns.Add("PrincipalDerivedId", principalDerivedIdViewColumn)
             relationalModel.Views.Add(("PrincipalBaseView", "TPC"), principalBaseViewView)
             Dim principalBaseViewViewMapping As New ViewMapping(principalBase, principalBaseViewView, False)
-            principalBaseViewView.AddEntityTypeMapping(principalBaseViewViewMapping, False)
+            principalBaseViewView.AddTypeMapping(principalBaseViewViewMapping, False)
             viewMappings.Add(principalBaseViewViewMapping)
             RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseViewViewMapping)
             RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseViewViewMapping)
@@ -4878,7 +5936,7 @@ Namespace TestNamespace
             relationalModel.StoredProcedures.Add(("PrincipalBase_Delete", "TPC"), principalBase_DeleteStoreSproc)
             Dim principalBase_DeleteDSproc = DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure)
             Dim principalBase_DeleteSprocMapping As New StoredProcedureMapping(principalBase, principalBase_DeleteStoreSproc, DirectCast(principalBase.GetDeleteStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping, False)
-            principalBase_DeleteStoreSproc.AddEntityTypeMapping(principalBase_DeleteSprocMapping, False)
+            principalBase_DeleteStoreSproc.AddTypeMapping(principalBase_DeleteSprocMapping, False)
             deleteSprocMappings.Add(principalBase_DeleteSprocMapping)
             principalBaseTableMapping.DeleteStoredProcedureMapping = principalBase_DeleteSprocMapping
             RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter, principalBase_DeleteDSproc.FindParameter("Id_Original"), principalBase.FindProperty("Id"), principalBase_DeleteSprocMapping)
@@ -4910,7 +5968,7 @@ Namespace TestNamespace
             relationalModel.StoredProcedures.Add(("PrincipalBase_Insert", "TPC"), principalBase_InsertStoreSproc)
             Dim principalBase_InsertISproc = DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure)
             Dim principalBase_InsertSprocMapping As New StoredProcedureMapping(principalBase, principalBase_InsertStoreSproc, DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping, False)
-            principalBase_InsertStoreSproc.AddEntityTypeMapping(principalBase_InsertSprocMapping, False)
+            principalBase_InsertStoreSproc.AddTypeMapping(principalBase_InsertSprocMapping, False)
             insertSprocMappings.Add(principalBase_InsertSprocMapping)
             principalBaseTableMapping.InsertStoredProcedureMapping = principalBase_InsertSprocMapping
             RelationalModel.CreateStoredProcedureParameterMapping(baseIdParameter, principalBase_InsertISproc.FindParameter("BaseId"), principalBase.FindProperty("Id"), principalBase_InsertSprocMapping)
@@ -4948,7 +6006,7 @@ Namespace TestNamespace
             relationalModel.StoredProcedures.Add(("PrincipalBase_Update", "TPC"), principalBase_UpdateStoreSproc)
             Dim principalBase_UpdateUSproc = DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure)
             Dim principalBase_UpdateSprocMapping As New StoredProcedureMapping(principalBase, principalBase_UpdateStoreSproc, DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure), principalBaseTableMapping, False)
-            principalBase_UpdateStoreSproc.AddEntityTypeMapping(principalBase_UpdateSprocMapping, False)
+            principalBase_UpdateStoreSproc.AddTypeMapping(principalBase_UpdateSprocMapping, False)
             updateSprocMappings.Add(principalBase_UpdateSprocMapping)
             principalBaseTableMapping.UpdateStoredProcedureMapping = principalBase_UpdateSprocMapping
             RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter0, principalBase_UpdateUSproc.FindParameter("Id_Original"), principalBase.FindProperty("Id"), principalBase_UpdateSprocMapping)
@@ -4986,7 +6044,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumnBase0)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, False)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings1.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
@@ -5045,7 +6103,7 @@ Namespace TestNamespace
             principalDerivedTable.Indexes.Add("PIX", pIX0)
             relationalModel.Tables.Add(("PrincipalDerived", "TPC"), principalDerivedTable)
             Dim principalDerivedTableMapping As New TableMapping(principalDerived, principalDerivedTable, False)
-            principalDerivedTable.AddEntityTypeMapping(principalDerivedTableMapping, False)
+            principalDerivedTable.AddTypeMapping(principalDerivedTableMapping, False)
             tableMappings1.Add(principalDerivedTableMapping)
             RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalDerivedTableMapping)
             RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalDerivedTableMapping)
@@ -5080,7 +6138,7 @@ Namespace TestNamespace
             principalDerivedViewView.Columns.Add("PrincipalDerivedId", principalDerivedIdViewColumn0)
             relationalModel.Views.Add(("PrincipalDerivedView", "TPC"), principalDerivedViewView)
             Dim principalDerivedViewViewMapping As New ViewMapping(principalDerived, principalDerivedViewView, False)
-            principalDerivedViewView.AddEntityTypeMapping(principalDerivedViewViewMapping, False)
+            principalDerivedViewView.AddTypeMapping(principalDerivedViewViewMapping, False)
             viewMappings0.Add(principalDerivedViewViewMapping)
             RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("Id"), principalDerived.FindProperty("Id"), principalDerivedViewViewMapping)
             RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalDerivedViewViewMapping)
@@ -5099,7 +6157,7 @@ Namespace TestNamespace
             relationalModel.StoredProcedures.Add(("Derived_Delete", "TPC"), derived_DeleteStoreSproc)
             Dim derived_DeleteDSproc = DirectCast(principalDerived.GetDeleteStoredProcedure(), IRuntimeStoredProcedure)
             Dim derived_DeleteSprocMapping As New StoredProcedureMapping(principalDerived, derived_DeleteStoreSproc, DirectCast(principalDerived.GetDeleteStoredProcedure(), IRuntimeStoredProcedure), principalDerivedTableMapping, False)
-            derived_DeleteStoreSproc.AddEntityTypeMapping(derived_DeleteSprocMapping, False)
+            derived_DeleteStoreSproc.AddTypeMapping(derived_DeleteSprocMapping, False)
             deleteSprocMappings0.Add(derived_DeleteSprocMapping)
             principalDerivedTableMapping.DeleteStoredProcedureMapping = derived_DeleteSprocMapping
             RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter1, derived_DeleteDSproc.FindParameter("Id_Original"), principalDerived.FindProperty("Id"), derived_DeleteSprocMapping)
@@ -5131,7 +6189,7 @@ Namespace TestNamespace
             relationalModel.StoredProcedures.Add(("Derived_Insert", "TPC"), derived_InsertStoreSproc)
             Dim derived_InsertISproc = DirectCast(principalDerived.GetInsertStoredProcedure(), IRuntimeStoredProcedure)
             Dim derived_InsertSprocMapping As New StoredProcedureMapping(principalDerived, derived_InsertStoreSproc, DirectCast(principalDerived.GetInsertStoredProcedure(), IRuntimeStoredProcedure), principalDerivedTableMapping, False)
-            derived_InsertStoreSproc.AddEntityTypeMapping(derived_InsertSprocMapping, False)
+            derived_InsertStoreSproc.AddTypeMapping(derived_InsertSprocMapping, False)
             insertSprocMappings0.Add(derived_InsertSprocMapping)
             principalDerivedTableMapping.InsertStoredProcedureMapping = derived_InsertSprocMapping
             RelationalModel.CreateStoredProcedureParameterMapping(enum1Parameter1, derived_InsertISproc.FindParameter("Enum1"), principalDerived.FindProperty("Enum1"), derived_InsertSprocMapping)
@@ -5169,7 +6227,7 @@ Namespace TestNamespace
             relationalModel.StoredProcedures.Add(("Derived_Update", "Derived"), derived_UpdateStoreSproc)
             Dim derived_UpdateUSproc = DirectCast(principalDerived.GetUpdateStoredProcedure(), IRuntimeStoredProcedure)
             Dim derived_UpdateSprocMapping As New StoredProcedureMapping(principalDerived, derived_UpdateStoreSproc, DirectCast(principalDerived.GetUpdateStoredProcedure(), IRuntimeStoredProcedure), principalDerivedTableMapping, False)
-            derived_UpdateStoreSproc.AddEntityTypeMapping(derived_UpdateSprocMapping, False)
+            derived_UpdateStoreSproc.AddTypeMapping(derived_UpdateSprocMapping, False)
             updateSprocMappings0.Add(derived_UpdateSprocMapping)
             principalDerivedTableMapping.UpdateStoredProcedureMapping = derived_UpdateSprocMapping
             RelationalModel.CreateStoredProcedureParameterMapping(id_OriginalParameter2, derived_UpdateUSproc.FindParameter("Id_Original"), principalDerived.FindProperty("Id"), derived_UpdateSprocMapping)
@@ -6004,6 +7062,9 @@ End Namespace
 
             Private _context As Microsoft.EntityFrameworkCore.DbContext
 
+            Public Sub New()
+            End Sub
+
             Public Sub New(context As Microsoft.EntityFrameworkCore.DbContext)
                 Me.Context = context
             End Sub
@@ -6020,11 +7081,23 @@ End Namespace
             End Property
 
             Public Property Number As Integer
+
+            <NotMapped>
+            Public Property Principal As PrincipalBase
+
+            Private _details As String
+
             Public Property Details As String
+                Get
+                    Return _details
+                End Get
+                Set
+                    _details = Value
+                End Set
+            End Property
 
             Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
             Public Event PropertyChanging As PropertyChangingEventHandler Implements INotifyPropertyChanging.PropertyChanging
-
         End Class
 
         <ConditionalFact>
@@ -6212,7 +7285,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.Columns.Add("Blob", blobColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
@@ -6228,7 +7301,7 @@ Namespace TestNamespace
                 ("GetAllData", "dbo", New String() {}),
                 getAllDataFunction)
             Dim getAllDataFunctionMapping As New FunctionMapping(data, getAllDataFunction, getAllData, True)
-            getAllDataFunction.AddEntityTypeMapping(getAllDataFunctionMapping, False)
+            getAllDataFunction.AddTypeMapping(getAllDataFunctionMapping, False)
             functionMappings.Add(getAllDataFunctionMapping)
             getAllDataFunctionMapping.IsDefaultFunctionMapping = True
             RelationalModel.CreateFunctionColumnMapping(getAllDataFunction.FindColumn("Blob"), data.FindProperty("Blob"), getAllDataFunctionMapping)
@@ -6243,7 +7316,7 @@ Namespace TestNamespace
                 ("GetData", "dbo", {"int"}),
                 getDataFunction)
             Dim getDataFunctionMapping As New FunctionMapping(data, getDataFunction, getData, True)
-            getDataFunction.AddEntityTypeMapping(getDataFunctionMapping, False)
+            getDataFunction.AddTypeMapping(getDataFunctionMapping, False)
             functionMappings.Add(getDataFunctionMapping)
             RelationalModel.CreateFunctionColumnMapping(getDataFunction.FindColumn("Blob"), data.FindProperty("Blob"), getDataFunctionMapping)
 
@@ -6254,7 +7327,7 @@ Namespace TestNamespace
             Dim objectTableBase As New TableBase("object", Nothing, relationalModel)
             relationalModel.DefaultTables.Add("object", objectTableBase)
             Dim objectMappingBase As New TableMappingBase(Of ColumnMappingBase)([object], objectTableBase, True)
-            objectTableBase.AddEntityTypeMapping(objectMappingBase, False)
+            objectTableBase.AddTypeMapping(objectMappingBase, False)
             defaultTableMappings0.Add(objectMappingBase)
 
             Dim functionMappings0 As New List(Of FunctionMapping)()
@@ -6265,7 +7338,7 @@ Namespace TestNamespace
                 ("GetBlobs", "dbo", New String() {}),
                 getBlobsFunction)
             Dim getBlobsFunctionMapping As New FunctionMapping([object], getBlobsFunction, getBlobs, True)
-            getBlobsFunction.AddEntityTypeMapping(getBlobsFunctionMapping, False)
+            getBlobsFunction.AddTypeMapping(getBlobsFunctionMapping, False)
             functionMappings0.Add(getBlobsFunctionMapping)
             getBlobsFunctionMapping.IsDefaultFunctionMapping = True
             Dim customerOrderCount = DirectCast(Me.FindDbFunction("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetCount(System.Guid?,string)"), IRuntimeDbFunction)
@@ -6472,7 +7545,7 @@ End Namespace
                     Assert.Empty(getData.GetRuntimeAnnotations())
                     Assert.Null(getData.TypeMapping?.StoreType)
                     Assert.Null(getData.StoreFunction.ReturnType)
-                    Assert.Equal(GetType(Data), getData.StoreFunction.EntityTypeMappings.Single().EntityType.ClrType)
+                    Assert.Equal(GetType(Data), getData.StoreFunction.EntityTypeMappings.Single().TypeBase.ClrType)
                     Assert.Single(getData.Parameters)
 
                     Dim getDataParameter = getData.Parameters(0)
@@ -6500,7 +7573,7 @@ End Namespace
                     Assert.Empty(getDataParameterless.GetAnnotations())
                     Assert.Empty(getDataParameterless.GetRuntimeAnnotations())
                     Assert.False(getDataParameterless.StoreFunction.IsBuiltIn)
-                    Assert.Equal(GetType(Data), getDataParameterless.StoreFunction.EntityTypeMappings.Single().EntityType.ClrType)
+                    Assert.Equal(GetType(Data), getDataParameterless.StoreFunction.EntityTypeMappings.Single().TypeBase.ClrType)
                     Assert.Equal(0, getDataParameterless.Parameters.Count)
 
                     Assert.Equal(2, model.GetEntityTypes().Count())
@@ -6708,7 +7781,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.Columns.Add("Id", idColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
@@ -6732,7 +7805,7 @@ Namespace TestNamespace
             dataTable.UniqueConstraints.Add("PK_Data", pK_Data)
             relationalModel.Tables.Add(("Data", Nothing), dataTable)
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
-            dataTable.AddEntityTypeMapping(dataTableMapping, False)
+            dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
@@ -6945,7 +8018,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.Columns.Add("Id", idColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
@@ -6969,7 +8042,7 @@ Namespace TestNamespace
             dataTable.UniqueConstraints.Add("PK_Data", pK_Data)
             relationalModel.Tables.Add(("Data", Nothing), dataTable)
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
-            dataTable.AddEntityTypeMapping(dataTableMapping, False)
+            dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
@@ -7157,7 +8230,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.Columns.Add("Id", idColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
@@ -7181,7 +8254,7 @@ Namespace TestNamespace
             dataTable.UniqueConstraints.Add("PK_Data", pK_Data)
             relationalModel.Tables.Add(("Data", Nothing), dataTable)
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
-            dataTable.AddEntityTypeMapping(dataTableMapping, False)
+            dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
@@ -7355,7 +8428,7 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.Columns.Add("Id", idColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
@@ -7381,7 +8454,7 @@ Namespace TestNamespace
             dataTable.Triggers.Add("Trigger2", data.FindDeclaredTrigger("Trigger2"))
             relationalModel.Tables.Add(("Data", Nothing), dataTable)
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
-            dataTable.AddEntityTypeMapping(dataTableMapping, False)
+            dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
@@ -7564,7 +8637,7 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.Columns.Add("Point", pointColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+Data", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
-            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddEntityTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
             RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
@@ -7593,7 +8666,7 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
             dataTable.UniqueConstraints.Add("PK_Data", pK_Data)
             relationalModel.Tables.Add(("Data", Nothing), dataTable)
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
-            dataTable.AddEntityTypeMapping(dataTableMapping, False)
+            dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
             RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
@@ -8088,7 +9161,8 @@ End Namespace
             Dim scaffoldedFiles = generator.GenerateModel(model, options)
 
             Dim build As New BuildSource With {
-                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
+                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code),
+                .EmitDocumentationDiagnostics = True
             }
 
             With build.References
@@ -8109,10 +9183,10 @@ End Namespace
                 .Add(BuildReference.ByName(GetType(MyJsonGuidReaderWriter).Assembly.GetName().Name))
             End With
 
-            Dim Assembly = build.BuildInMemory()
+            Dim assembly = build.BuildInMemory()
 
             Dim modelTypeName = options.ContextType.Name & "Model"
-            Dim modelType = Assembly.GetType(
+            Dim modelType = assembly.GetType(
                 If(String.IsNullOrEmpty(options.ModelNamespace),
                      modelTypeName,
                      options.ModelNamespace & "." & modelTypeName))

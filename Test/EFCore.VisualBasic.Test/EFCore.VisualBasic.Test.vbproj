@@ -26,19 +26,19 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.5.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rc.1.23371.3">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rc.1.23373.1">
       <IncludeAssets>all</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.0-rc.1.23371.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-rc.1.23371.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.0-rc.1.23373.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-rc.1.23373.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="8.0.0-rc.1.23372.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0-preview.23306.7" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
       <PrivateAssets>all</PrivateAssets>

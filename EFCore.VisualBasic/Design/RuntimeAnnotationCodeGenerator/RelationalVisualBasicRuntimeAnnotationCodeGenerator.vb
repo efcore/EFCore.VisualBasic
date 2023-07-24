@@ -99,15 +99,13 @@ Namespace Design.AnnotationCodeGeneratorProvider
         Private Sub Create(model As IRelationalModel,
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.AppendLine("Private Function CreateRelationalModel() As IRelationalModel")
 
             Using mainBuilder.Indent()
-
                 parameters.Namespaces.Add(GetType(RelationalModel).Namespace)
                 parameters.Namespaces.Add(GetType(Microsoft.EntityFrameworkCore.RelationalModelExtensions).Namespace)
-                Dim relationalModelVariable = code.Identifier("relationalModel", parameters.ScopeVariables, capitalize:=False)
+                Dim relationalModelVariable = VBCode.Identifier("relationalModel", parameters.ScopeVariables, capitalize:=False)
 
                 mainBuilder.AppendLine($"Dim {relationalModelVariable} As New RelationalModel({parameters.TargetName})")
 
@@ -119,159 +117,168 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                 AddNamespace(GetType(List(Of TableMapping)), parameters.Namespaces)
 
-                ' All the mappings below are added in a way that preserves the order
                 For Each entityType In model.Model.GetEntityTypes()
-                    Dim entityTypeVariable = code.Identifier(entityType.ShortName(), parameters.ScopeVariables, capitalize:=False)
-                    parameters.MainBuilder.
-                                    AppendLine().
-                                    AppendLine($"Dim {entityTypeVariable} = FindEntityType({code.Literal(entityType.Name)})")
-
-                    metadataVariables.Add(entityType, entityTypeVariable)
-
-                    For Each mapping In entityType.GetDefaultMappings()
-                        Dim tableMappingsVariable = code.Identifier("defaultTableMappings", parameters.ScopeVariables, capitalize:=False)
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {tableMappingsVariable} As New List(Of TableMappingBase(Of ColumnMappingBase))()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.DefaultMappings)}, {tableMappingsVariable})")
-
-                        Create(mapping, tableMappingsVariable, metadataVariables, relationalModelParameters)
-                    Next
-
-                    If entityType.GetTableMappings().Any() Then
-                        Dim tableMappingsVariable = code.Identifier("tableMappings", parameters.ScopeVariables, capitalize:=False)
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {tableMappingsVariable} As New List(Of TableMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.TableMappings)}, {tableMappingsVariable})")
-
-                        For Each mapping In entityType.GetTableMappings()
-                            Create(mapping, tableMappingsVariable, metadataVariables, relationalModelParameters)
-                        Next
-                    End If
-
-                    If entityType.GetViewMappings().Any() Then
-                        Dim viewMappingsVariable = code.Identifier("viewMappings", parameters.ScopeVariables, capitalize:=False)
-
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {viewMappingsVariable} As New List(Of ViewMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.ViewMappings)}, {viewMappingsVariable})")
-
-                        For Each mapping In entityType.GetViewMappings()
-                            Create(mapping, viewMappingsVariable, metadataVariables, relationalModelParameters)
-                        Next
-                    End If
-
-                    If entityType.GetSqlQueryMappings().Any() Then
-                        Dim sqlQueryMappingsVariable = code.Identifier("sqlQueryMappings", parameters.ScopeVariables, capitalize:=False)
-
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {sqlQueryMappingsVariable} As New List(Of SqlQueryMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.SqlQueryMappings)}, {sqlQueryMappingsVariable})")
-
-                        For Each mapping In entityType.GetSqlQueryMappings()
-                            Create(mapping, sqlQueryMappingsVariable, metadataVariables, relationalModelParameters)
-                        Next
-                    End If
-
-                    If entityType.GetFunctionMappings().Any() Then
-                        Dim functionMappingsVariable = code.Identifier("functionMappings", parameters.ScopeVariables, capitalize:=False)
-
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {functionMappingsVariable} As New List(Of FunctionMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.FunctionMappings)}, {functionMappingsVariable})")
-
-                        For Each mapping In entityType.GetFunctionMappings()
-                            Create(mapping, functionMappingsVariable, metadataVariables, relationalModelParameters)
-                        Next
-                    End If
-
-                    If entityType.GetDeleteStoredProcedureMappings().Any() Then
-                        Dim deleteSprocMappingsVariable = code.Identifier("deleteSprocMappings", parameters.ScopeVariables, capitalize:=False)
-
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {deleteSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.DeleteStoredProcedureMappings)}, {deleteSprocMappingsVariable})")
-
-                        For Each mapping In entityType.GetDeleteStoredProcedureMappings()
-                            Create(mapping, deleteSprocMappingsVariable, StoreObjectType.DeleteStoredProcedure, metadataVariables, relationalModelParameters)
-                        Next
-                    End If
-
-                    If entityType.GetInsertStoredProcedureMappings().Any() Then
-                        Dim insertSprocMappingsVariable = code.Identifier("insertSprocMappings", parameters.ScopeVariables, capitalize:=False)
-
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {insertSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.InsertStoredProcedureMappings)}, {insertSprocMappingsVariable})")
-
-                        For Each mapping In entityType.GetInsertStoredProcedureMappings()
-                            Create(
-                                mapping,
-                                insertSprocMappingsVariable,
-                                StoreObjectType.InsertStoredProcedure,
-                                metadataVariables,
-                                relationalModelParameters)
-                        Next
-                    End If
-
-                    If entityType.GetUpdateStoredProcedureMappings().Any() Then
-                        Dim updateSprocMappingsVariable = code.Identifier("updateSprocMappings", parameters.ScopeVariables, capitalize:=False)
-
-                        mainBuilder.
-                            AppendLine().
-                            AppendLine($"Dim {updateSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
-                            Append($"{entityTypeVariable}.SetRuntimeAnnotation(").
-                            AppendLine($"{code.Literal(RelationalAnnotationNames.UpdateStoredProcedureMappings)}, {updateSprocMappingsVariable})")
-
-                        For Each mapping In entityType.GetUpdateStoredProcedureMappings()
-                            Create(
-                                mapping,
-                                updateSprocMappingsVariable,
-                                StoreObjectType.UpdateStoredProcedure,
-                                metadataVariables,
-                                relationalModelParameters)
-                        Next
-                    End If
+                    CreateMappings(entityType, declaringVariable:=Nothing, metadataVariables, relationalModelParameters)
                 Next
 
-                For Each Table In model.Tables
-                    For Each foreignKey In Table.ForeignKeyConstraints
-                        Create(foreignKey, metadataVariables, parameters.Cloner.
-                                                                         WithTargetName(metadataVariables(Table)).
-                                                                         Clone)
+                For Each table In model.Tables
+                    For Each foreignKey In table.ForeignKeyConstraints
+                        Create(foreignKey, metadataVariables, parameters.Cloner.WithTargetName(metadataVariables(table)).Clone())
                     Next
                 Next
 
                 For Each dbFunction In model.Model.GetDbFunctions()
-                    If Not dbFunction.IsScalar Then
-                        Continue For
-                    End If
-
+                    If Not dbFunction.IsScalar Then Continue For
                     GetOrCreate(dbFunction.StoreFunction, metadataVariables, relationalModelParameters)
                 Next
 
-                CreateAnnotations(
-                    model,
-                    AddressOf Generate,
-                    relationalModelParameters)
+                CreateAnnotations(model,
+                                  AddressOf Generate,
+                                  relationalModelParameters)
 
-                mainBuilder.AppendLine($"Return {relationalModelVariable}.MakeReadOnly()")
+                mainBuilder.
+                    AppendLine($"Return {relationalModelVariable}.MakeReadOnly()")
             End Using
 
-            mainBuilder.AppendLine("End Function")
+            mainBuilder.
+                AppendLine("End Function")
+        End Sub
+
+        Private Sub CreateMappings(typeBase As ITypeBase,
+                                   declaringVariable As String,
+                                   metadataVariables As Dictionary(Of IAnnotatable, String),
+                                   parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim mainBuilder = parameters.MainBuilder
+
+            Dim typeBaseVariable = VBCode.Identifier(typeBase.ShortName(), parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(typeBase, typeBaseVariable)
+            If TypeOf typeBase Is IComplexType Then
+                Dim complexType = DirectCast(typeBase, IComplexType)
+
+                mainBuilder.
+                    AppendLine().
+                    Append($"Dim {typeBaseVariable} = ").
+                    AppendLine($"{declaringVariable}.FindComplexProperty({VBCode.Literal(complexType.ComplexProperty.Name)}).ComplexType")
+            Else
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {typeBaseVariable} = FindEntityType({VBCode.Literal(typeBase.Name)})")
+            End If
+
+            ' All the mappings below are added in a way that preserves the order
+            For Each mapping In typeBase.GetDefaultMappings()
+                Dim tableMappingsVariable = VBCode.Identifier("defaultTableMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {tableMappingsVariable} As New List(Of TableMappingBase(Of ColumnMappingBase))()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.DefaultMappings)}, {tableMappingsVariable})")
+                Create(mapping, tableMappingsVariable, metadataVariables, parameters)
+            Next
+
+            If typeBase.GetTableMappings().Any() Then
+                Dim tableMappingsVariable = VBCode.Identifier("tableMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {tableMappingsVariable} As New List(Of TableMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.TableMappings)}, {tableMappingsVariable})")
+                For Each mapping In typeBase.GetTableMappings()
+                    Create(mapping, tableMappingsVariable, metadataVariables, parameters)
+                Next
+            End If
+
+            If typeBase.GetViewMappings().Any() Then
+                Dim viewMappingsVariable = VBCode.Identifier("viewMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {viewMappingsVariable} As New List(Of ViewMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.ViewMappings)}, {viewMappingsVariable})")
+                For Each mapping In typeBase.GetViewMappings()
+                    Create(mapping, viewMappingsVariable, metadataVariables, parameters)
+                Next
+            End If
+
+            If typeBase.GetSqlQueryMappings().Any() Then
+                Dim sqlQueryMappingsVariable = VBCode.Identifier("sqlQueryMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {sqlQueryMappingsVariable} As New List(Of SqlQueryMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.SqlQueryMappings)}, {sqlQueryMappingsVariable})")
+                For Each mapping In typeBase.GetSqlQueryMappings()
+                    Create(mapping, sqlQueryMappingsVariable, metadataVariables, parameters)
+                Next
+            End If
+
+            If typeBase.GetFunctionMappings().Any() Then
+                Dim functionMappingsVariable = VBCode.Identifier("functionMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                AppendLine().
+                AppendLine($"Dim {functionMappingsVariable} As New List(Of FunctionMapping)()").
+                Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                AppendLine($"{VBCode.Literal(RelationalAnnotationNames.FunctionMappings)}, {functionMappingsVariable})")
+                For Each mapping In typeBase.GetFunctionMappings()
+                    Create(mapping, functionMappingsVariable, metadataVariables, parameters)
+                Next
+            End If
+
+            If typeBase.GetDeleteStoredProcedureMappings().Any() Then
+                Dim deleteSprocMappingsVariable = VBCode.Identifier("deleteSprocMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                AppendLine().
+                AppendLine($"Dim {deleteSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
+                Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                AppendLine($"{VBCode.Literal(RelationalAnnotationNames.DeleteStoredProcedureMappings)}, {deleteSprocMappingsVariable})")
+                For Each mapping In typeBase.GetDeleteStoredProcedureMappings()
+                    Create(
+                        mapping,
+                        deleteSprocMappingsVariable,
+                        StoreObjectType.DeleteStoredProcedure,
+                        metadataVariables,
+                        parameters)
+                Next
+            End If
+
+            If typeBase.GetInsertStoredProcedureMappings().Any() Then
+                Dim insertSprocMappingsVariable = VBCode.Identifier("insertSprocMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {insertSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.InsertStoredProcedureMappings)}, {insertSprocMappingsVariable})")
+                For Each mapping In typeBase.GetInsertStoredProcedureMappings()
+                    Create(
+                        mapping,
+                        insertSprocMappingsVariable,
+                        StoreObjectType.InsertStoredProcedure,
+                        metadataVariables,
+                        parameters)
+                Next
+            End If
+
+            If typeBase.GetUpdateStoredProcedureMappings().Any() Then
+                Dim updateSprocMappingsVariable = VBCode.Identifier("updateSprocMappings", parameters.ScopeVariables, capitalize:=False)
+                mainBuilder.
+                    AppendLine().
+                    AppendLine($"Dim {updateSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.UpdateStoredProcedureMappings)}, {updateSprocMappingsVariable})")
+                For Each mapping In typeBase.GetUpdateStoredProcedureMappings()
+                    Create(
+                        mapping,
+                        updateSprocMappingsVariable,
+                        StoreObjectType.UpdateStoredProcedure,
+                        metadataVariables,
+                        parameters)
+                Next
+            End If
+
+            For Each complexProperty In typeBase.GetDeclaredComplexProperties()
+                CreateMappings(complexProperty.ComplexType, typeBaseVariable, metadataVariables, parameters)
+            Next
         End Sub
 
         ''' <summary>
@@ -450,15 +457,13 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Return sqlQueryVariable
             End If
 
-            Dim code = VBCode
-
-            sqlQueryVariable = code.Identifier(SqlQuery.Name & "SqlQuery", parameters.ScopeVariables, capitalize:=False)
+            sqlQueryVariable = VBCode.Identifier(SqlQuery.Name & "SqlQuery", parameters.ScopeVariables, capitalize:=False)
             metadataVariables.Add(SqlQuery, sqlQueryVariable)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.
-                Append($"Dim {sqlQueryVariable} As New SqlQuery({code.Literal(SqlQuery.Name)}, {parameters.TargetName}, ").
-                AppendLine($"{code.Literal(SqlQuery.Sql)})")
+                Append($"Dim {sqlQueryVariable} As New SqlQuery({VBCode.Literal(SqlQuery.Name)}, {parameters.TargetName}, ").
+                AppendLine($"{VBCode.Literal(SqlQuery.Sql)})")
 
             Dim sqlQueryParameters = parameters.Cloner.
                                                 WithTargetName(sqlQueryVariable).
@@ -473,8 +478,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                               sqlQueryParameters)
 
             mainBuilder.
-                Append($"{parameters.TargetName}.Views.Add((").
-                AppendLine($"{code.Literal(SqlQuery.Name)}, {code.Literal(SqlQuery.Schema)}), {sqlQueryVariable})")
+                Append($"{parameters.TargetName}.Queries.Add(").
+                AppendLine($"{VBCode.Literal(SqlQuery.Name)}, {sqlQueryVariable})")
 
             Return sqlQueryVariable
         End Function
@@ -497,10 +502,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Return functionVariable
             End If
 
-            Dim code = VBCode
-
             Dim mainDbFunctionVariable = GetOrCreate([function].DbFunctions.First(), metadataVariables, parameters)
-            functionVariable = code.Identifier([function].Name & "Function", parameters.ScopeVariables, capitalize:=False)
+            functionVariable = VBCode.Identifier([function].Name & "Function", parameters.ScopeVariables, capitalize:=False)
             metadataVariables.Add([function], functionVariable)
 
             Dim mainBuilder = parameters.MainBuilder
@@ -518,14 +521,14 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                 mainBuilder.
                     AppendLine($"{dbFunctionVariable}.StoreFunction = {functionVariable}").
-                    AppendLine($"{functionVariable}.DbFunctions.Add({code.Literal(dbFunction.ModelName)}, {dbFunctionVariable})")
+                    AppendLine($"{functionVariable}.DbFunctions.Add({VBCode.Literal(dbFunction.ModelName)}, {dbFunctionVariable})")
             Next
 
             For Each parameter In [function].Parameters
 
-                Dim parameterVariable = code.Identifier(parameter.Name & "FunctionParameter", parameters.ScopeVariables, capitalize:=False)
+                Dim parameterVariable = VBCode.Identifier(parameter.Name & "FunctionParameter", parameters.ScopeVariables, capitalize:=False)
                 metadataVariables.Add(parameter, parameterVariable)
-                mainBuilder.AppendLine($"Dim {parameterVariable} = {functionVariable}.FindParameter({code.Literal(parameter.Name)})")
+                mainBuilder.AppendLine($"Dim {parameterVariable} = {functionVariable}.FindParameter({VBCode.Literal(parameter.Name)})")
 
                 CreateAnnotations(parameter,
                               AddressOf Generate,
@@ -545,8 +548,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
             mainBuilder.
                 AppendLine($"{parameters.TargetName}.Functions.Add(").
                 IncrementIndent().
-                Append($"({code.Literal([function].Name)}, {code.Literal([function].Schema)}, ").
-                AppendLine($"{code.Literal([function].DbFunctions.First().Parameters.Select(Function(p) p.StoreType).ToArray())}),").
+                Append($"({VBCode.Literal([function].Name)}, {VBCode.Literal([function].Schema)}, ").
+                AppendLine($"{VBCode.Literal([function].DbFunctions.First().Parameters.Select(Function(p) p.StoreType).ToArray())}),").
                 AppendLine($"{functionVariable})").
                 DecrementIndent()
 
@@ -1123,8 +1126,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = tableMapping.EntityType
-            Dim entityTypeVariable = metadataVariables(entityType)
+            Dim typeBase = tableMapping.TypeBase
+            Dim typeBaseVariable = metadataVariables(TypeBase)
 
             Dim table = tableMapping.Table
             Dim tableVariable = GetOrCreate(table, metadataVariables, parameters)
@@ -1133,7 +1136,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateAddMapping(
                 tableMapping,
                 tableVariable,
-                entityTypeVariable,
+                typeBaseVariable,
                 tableMappingsVariable,
                 tableMappingVariable,
                 "TableMappingBase(Of ColumnMappingBase)",
@@ -1150,7 +1153,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 mainBuilder.
                     Append($"RelationalModel.CreateColumnMapping(").
                     Append($"DirectCast({tableVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ColumnBase(Of ColumnMappingBase)), ").
-                    Append($"{entityTypeVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                     Append(tableMappingVariable).AppendLine(")")
             Next
         End Sub
@@ -1164,15 +1167,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(tableMapping As Microsoft.EntityFrameworkCore.Metadata.ITableMapping,
+        Private Sub Create(tableMapping As ITableMapping,
                            tableMappingsVariable As String,
                            metadataVariables As Dictionary(Of IAnnotatable, String),
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = tableMapping.EntityType
-            Dim entityTypeVariable = metadataVariables(entityType)
+            Dim typeBase = tableMapping.TypeBase
+            Dim typeBaseVariable = metadataVariables(TypeBase)
 
             Dim table = tableMapping.Table
             Dim tableVariable = GetOrCreate(table, metadataVariables, parameters)
@@ -1182,7 +1185,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateAddMapping(
                 tableMapping,
                 tableVariable,
-                entityTypeVariable,
+                typeBaseVariable,
                 tableMappingsVariable,
                 tableMappingVariable,
                 "TableMapping",
@@ -1198,7 +1201,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             For Each columnMapping In tableMapping.ColumnMappings
                 mainBuilder.
                     Append($"RelationalModel.CreateColumnMapping({tableVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
-                    Append($"{entityTypeVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                     Append(tableMappingVariable).AppendLine(")")
             Next
         End Sub
@@ -1219,8 +1222,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = viewMapping.EntityType
-            Dim entityTypeVariable = metadataVariables(entityType)
+            Dim typeBase = viewMapping.TypeBase
+            Dim typeBaseVariable = metadataVariables(TypeBase)
 
             Dim view = viewMapping.View
             Dim viewVariable = GetOrCreate(view, metadataVariables, parameters)
@@ -1229,7 +1232,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateAddMapping(
                 viewMapping,
                 viewVariable,
-                entityTypeVariable,
+                typeBaseVariable,
                 viewMappingsVariable,
                 viewMappingVariable,
                 "ViewMapping",
@@ -1246,7 +1249,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                 mainBuilder.
                 Append($"RelationalModel.CreateViewColumnMapping({viewVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
-                Append($"{entityTypeVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                 Append(viewMappingVariable).AppendLine(")")
             Next
         End Sub
@@ -1267,8 +1270,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = sqlQueryMapping.EntityType
-            Dim entityTypeVariable = metadataVariables(entityType)
+            Dim typeBase = sqlQueryMapping.TypeBase
+            Dim typeBaseVariable = metadataVariables(TypeBase)
 
             Dim sqlQuery = sqlQueryMapping.SqlQuery
             Dim sqlQueryVariable = GetOrCreate(sqlQuery, metadataVariables, parameters)
@@ -1277,7 +1280,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateAddMapping(
                 sqlQueryMapping,
                 sqlQueryVariable,
-                entityTypeVariable,
+                typeBaseVariable,
                 sqlQueryMappingsVariable,
                 sqlQueryMappingVariable,
                 "SqlQueryMapping",
@@ -1299,7 +1302,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
                 mainBuilder.
                     Append($"RelationalModel.CreateSqlQueryColumnMapping({sqlQueryVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
-                    Append($"{entityTypeVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                     Append(sqlQueryMappingVariable).
                     AppendLine(")")
             Next
@@ -1321,8 +1324,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = functionMapping.EntityType
-            Dim entityTypeVariable = metadataVariables(entityType)
+            Dim typeBase = functionMapping.TypeBase
+            Dim typeBaseVariable = metadataVariables(TypeBase)
 
             Dim storeFunction = functionMapping.StoreFunction
             Dim functionVariable = GetOrCreate(storeFunction, metadataVariables, parameters)
@@ -1332,7 +1335,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateAddMapping(
                 functionMapping,
                 functionVariable,
-                entityTypeVariable,
+                typeBaseVariable,
                 functionMappingsVariable,
                 functionMappingVariable,
                 "FunctionMapping",
@@ -1354,7 +1357,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             For Each columnMapping In functionMapping.ColumnMappings
                 mainBuilder.
                     Append($"RelationalModel.CreateFunctionColumnMapping({functionVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
-                    Append($"{entityTypeVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                     Append(functionMappingVariable).AppendLine(")")
             Next
         End Sub
@@ -1376,8 +1379,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = sprocMapping.EntityType
-            Dim entityTypeVariable = metadataVariables(entityType)
+            Dim typeBase = sprocMapping.TypeBase
+            Dim typeBaseVariable = metadataVariables(typeBase)
 
             Dim storeSproc = sprocMapping.StoreStoredProcedure
             Dim storeSprocVariable = GetOrCreate(storeSproc, metadataVariables, parameters)
@@ -1401,12 +1404,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateAddMapping(
                 sprocMapping,
                 storeSprocVariable,
-                entityTypeVariable,
+                typeBaseVariable,
                 sprocMappingsVariable,
                 sprocMappingVariable,
                 "StoredProcedureMapping",
                 parameters,
-                $"{sprocSnippet}, {If(tableMappingVariable, "null")}, ")
+                $"{sprocSnippet}, {If(tableMappingVariable, "Nothing")}, ")
 
             If tableMappingVariable IsNot Nothing Then
                 mainBuilder.
@@ -1424,7 +1427,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 mainBuilder.
                     Append($"RelationalModel.CreateStoredProcedureParameterMapping({metadataVariables(parameterMapping.StoreParameter)}, ").
                     Append($"{sprocVariable}.FindParameter({code.Literal(parameterMapping.Parameter.Name)}), ").
-                    Append($"{entityTypeVariable}.FindProperty({code.Literal(parameterMapping.Property.Name)}), ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(parameterMapping.Property.Name)}), ").
                     Append(sprocMappingVariable).AppendLine(")")
             Next
 
@@ -1432,7 +1435,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 mainBuilder.
                 Append($"RelationalModel.CreateStoredProcedureResultColumnMapping({metadataVariables(columnMapping.StoreResultColumn)}, ").
                 Append($"{sprocVariable}.FindResultColumn({code.Literal(columnMapping.ResultColumn.Name)}), ").
-                Append($"{entityTypeVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                 Append(sprocMappingVariable).AppendLine(")")
             Next
         End Sub
@@ -1457,7 +1460,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
-            Dim entityType = tableMapping.EntityType
+            Dim typeBase = tableMapping.TypeBase
 
             mainBuilder.
                 Append($"Dim {tableMappingVariable} As New {mappingType}({entityTypeVariable}, ").
@@ -1497,23 +1500,26 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             Dim table = tableMapping.Table
-            Dim isOptional = table.IsOptional(entityType)
+            Dim isOptional = table.IsOptional(TypeBase)
 
             mainBuilder.
-                AppendLine($"{tableVariable}.AddEntityTypeMapping({tableMappingVariable}, {code.Literal(isOptional)})").
+                AppendLine($"{tableVariable}.AddTypeMapping({tableMappingVariable}, {code.Literal(isOptional)})").
                 AppendLine($"{tableMappingsVariable}.Add({tableMappingVariable})")
 
-            For Each internalForeignKey In table.GetRowInternalForeignKeys(entityType)
-                mainBuilder.
-                    Append(tableVariable).Append($".AddRowInternalForeignKey({entityTypeVariable}, ").
-                    AppendLine($"RelationalModel.GetForeignKey(Me,").
-                    IncrementIndent().
-                    AppendLine($"{code.Literal(internalForeignKey.DeclaringEntityType.Name)},").
-                    AppendLine($"{code.Literal(internalForeignKey.Properties.Select(Function(p) p.Name).ToArray())},").
-                    AppendLine($"{code.Literal(internalForeignKey.PrincipalEntityType.Name)},").
-                    AppendLine($"{code.Literal(internalForeignKey.PrincipalKey.Properties.Select(Function(p) p.Name).ToArray())}))").
-                    DecrementIndent()
-            Next
+            If TypeOf TypeBase Is IEntityType Then
+                Dim entityType = DirectCast(TypeBase, IEntityType)
+                For Each internalForeignKey In table.GetRowInternalForeignKeys(EntityType)
+                    mainBuilder.
+                        Append(tableVariable).Append($".AddRowInternalForeignKey({entityTypeVariable}, ").
+                        AppendLine($"RelationalModel.GetForeignKey(Me,").
+                        IncrementIndent().
+                        AppendLine($"{code.Literal(internalForeignKey.DeclaringEntityType.Name)},").
+                        AppendLine($"{code.Literal(internalForeignKey.Properties.Select(Function(p) p.Name).ToArray())},").
+                        AppendLine($"{code.Literal(internalForeignKey.PrincipalEntityType.Name)},").
+                        AppendLine($"{code.Literal(internalForeignKey.PrincipalKey.Properties.Select(Function(p) p.Name).ToArray())}))").
+                        DecrementIndent()
+                Next
+            End If
         End Sub
 
         Private Sub Create([function] As IDbFunction,
@@ -1866,6 +1872,31 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             MyBase.Generate(entityType, parameters)
+        End Sub
+
+        ''' <inheritdoc />
+        Public Overrides Sub Generate(complexType As IComplexType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+            Dim annotations = parameters.Annotations
+            If parameters.IsRuntime Then
+                annotations.Remove(RelationalAnnotationNames.TableMappings)
+                annotations.Remove(RelationalAnnotationNames.ViewMappings)
+                annotations.Remove(RelationalAnnotationNames.SqlQueryMappings)
+                annotations.Remove(RelationalAnnotationNames.FunctionMappings)
+                annotations.Remove(RelationalAnnotationNames.InsertStoredProcedureMappings)
+                annotations.Remove(RelationalAnnotationNames.DeleteStoredProcedureMappings)
+                annotations.Remove(RelationalAnnotationNames.UpdateStoredProcedureMappings)
+                annotations.Remove(RelationalAnnotationNames.DefaultMappings)
+            Else
+                ' These need to be set explicitly to prevent default values from being generated
+                annotations(RelationalAnnotationNames.TableName) = complexType.GetTableName()
+                annotations(RelationalAnnotationNames.Schema) = complexType.GetSchema()
+                annotations(RelationalAnnotationNames.ViewName) = complexType.GetViewName()
+                annotations(RelationalAnnotationNames.ViewSchema) = complexType.GetViewSchema()
+                annotations(RelationalAnnotationNames.SqlQuery) = complexType.GetSqlQuery()
+                annotations(RelationalAnnotationNames.FunctionName) = complexType.GetFunctionName()
+            End If
+
+            MyBase.Generate(complexType, parameters)
         End Sub
 
         Private Sub Create(fragment As IEntityTypeMappingFragment,

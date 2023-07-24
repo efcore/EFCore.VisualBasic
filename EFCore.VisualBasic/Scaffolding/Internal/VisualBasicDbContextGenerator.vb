@@ -93,7 +93,7 @@ Namespace Scaffolding.Internal
                     "tion string, you should move it out of source code. You can avoid scaffolding th"& _ 
                     "e connection string by using the Name= syntax to read it from configuration - se"& _ 
                     "e https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing "& _ 
-                    "connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263."&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
+                    "connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263."&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
         End If
 
@@ -560,7 +560,7 @@ End Sub
         '''<summary>
         '''The string builder that generation-time code is using to assemble generated output
         '''</summary>
-        Protected Property GenerationEnvironment() As System.Text.StringBuilder
+        Public Property GenerationEnvironment() As System.Text.StringBuilder
             Get
                 If (Me.generationEnvironmentField Is Nothing) Then
                     Me.generationEnvironmentField = New Global.System.Text.StringBuilder()

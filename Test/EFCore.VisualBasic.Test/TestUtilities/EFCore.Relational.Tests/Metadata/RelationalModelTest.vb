@@ -27,12 +27,16 @@ Namespace Metadata
             Assert.Equal(expected.Schema, actual.Schema)
             Assert.Equal(expected.IsShared, actual.IsShared)
 
-            For Each expectedEntityType In expected.EntityTypeMappings.Select(Function(m) m.EntityType)
-                Dim actualEntityType = actual.EntityTypeMappings.Single(Function(m) m.EntityType.Name = expectedEntityType.Name).EntityType
+            For Each expectedEntityType In expected.EntityTypeMappings.Select(Function(m) m.TypeBase).Cast(Of IEntityType)
+                Dim actualEntityType = DirectCast(actual.EntityTypeMappings.Single(Function(m) m.TypeBase.Name = expectedEntityType.Name).TypeBase, IEntityType)
                 Assert.Equal(expected.GetRowInternalForeignKeys(expectedEntityType).Count(),
                     actual.GetRowInternalForeignKeys(actualEntityType).Count())
                 Assert.Equal(expected.GetReferencingRowInternalForeignKeys(expectedEntityType).Count(),
                     actual.GetReferencingRowInternalForeignKeys(actualEntityType).Count())
+            Next
+
+            For Each expectedEntityType In expected.ComplexTypeMappings.Select(Function(m) m.TypeBase)
+                Dim actualEntityType = actual.ComplexTypeMappings.Single(Function(m) m.TypeBase.Name = expectedEntityType.Name).TypeBase
             Next
 
             Assert.Equal(expected.GetAnnotations(), actual.GetAnnotations(), AnnotationComparer.Instance)
@@ -49,7 +53,7 @@ Namespace Metadata
         End Sub
 
         Public Sub AssertEqualBase(expected As ITableMappingBase, actual As ITableMappingBase)
-            Assert.Equal(expected.EntityType.Name, actual.EntityType.Name)
+            Assert.Equal(expected.TypeBase.Name, actual.TypeBase.Name)
             Assert.Equal(expected.Table.SchemaQualifiedName, actual.Table.SchemaQualifiedName)
             Assert.Equal(expected.IncludesDerivedTypes, actual.IncludesDerivedTypes)
             Assert.Equal(expected.IsSharedTablePrincipal, actual.IsSharedTablePrincipal)
@@ -219,7 +223,7 @@ Namespace Metadata
             expected.Columns.ZipAssert(actual.Columns, AddressOf AssertEqual)
             Assert.Equal(expected.Sql, actual.Sql)
 
-            Assert.Same(actual, actual.Model.FindView(actual.Name, actual.Schema))
+            Assert.Same(actual, actual.Model.FindQuery(actual.Name))
             expected.EntityTypeMappings.ZipAssert(actual.EntityTypeMappings, AddressOf AssertEqual)
         End Sub
 
@@ -236,7 +240,7 @@ Namespace Metadata
 
             expected.PropertyMappings.ZipAssert(actual.PropertyMappings, AddressOf AssertEqual)
 
-            Assert.Same(actual, expected.SqlQuery.FindColumn(actual.Name))
+            Assert.Same(actual, actual.SqlQuery.FindColumn(actual.Name))
         End Sub
 
         Public Sub AssertEqual(expected As ISqlQueryColumnMapping, actual As ISqlQueryColumnMapping)

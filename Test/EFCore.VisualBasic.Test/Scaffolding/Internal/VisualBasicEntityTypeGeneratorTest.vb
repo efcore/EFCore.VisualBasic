@@ -2863,9 +2863,9 @@ End Namespace
                     Yield annotation
                 Next
 
-                Dim entityType1 = table.EntityTypeMappings.First().EntityType
+                Dim entityType = table.EntityTypeMappings.First().TypeBase
 
-                For Each annotation In entityType1.GetAnnotations().Where(Function(a) a.Name = "Custom:EntityAnnotation")
+                For Each annotation In entityType.GetAnnotations().Where(Function(a) a.Name = "Custom:EntityAnnotation")
                     Yield annotation
                 Next
             End Function

@@ -621,16 +621,13 @@ Namespace Migrations.Design
                 AppendLine().
                 Append(builderName).
                 Append($".ComplexProperty(Of {VBCode.Reference(Model.DefaultPropertyBagType)})(").
-                Append($"{VBCode.Literal(complexProperty.Name)}, {VBCode.Literal(ComplexType.Name)}, ").
-                Append(complexTypeBuilderName).
-                AppendLine(" =>")
+                AppendLine($"{VBCode.Literal(complexProperty.Name)}, {VBCode.Literal(ComplexType.Name)},")
 
             Using stringBuilder.Indent()
-
-                stringBuilder.Append("{")
+                stringBuilder.
+                    AppendLine($"Sub({complexTypeBuilderName})")
 
                 Using stringBuilder.Indent()
-
                     If complexProperty.IsNullable <> complexProperty.ClrType.IsNullableType() Then
                         stringBuilder.
                             AppendLine().
@@ -645,7 +642,7 @@ Namespace Migrations.Design
                 End Using
 
                 stringBuilder.
-                    AppendLine("})")
+                    AppendLine("End Sub)")
             End Using
         End Sub
 

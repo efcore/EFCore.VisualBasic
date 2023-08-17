@@ -823,57 +823,56 @@ End Namespace
             Assert.Equal(2, snapshot.Model.GetEntityTypes().Count())
         End Sub
 
-
         <ConditionalFact>
         Public Sub Snapshot_with_default_values_are_round_tripped()
             Dim generator = CreateMigrationsCodeGenerator()
 
             Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Entity(Of EntityWithEveryPrimitive)(
-            Sub(eb)
-                eb.Property(Function(e) e.Boolean).HasDefaultValue(False)
-                eb.Property(Function(e) e.Byte).HasDefaultValue(Byte.MinValue)
-                eb.Property(Function(e) e.ByteArray).HasDefaultValue(New Byte() {0})
-                eb.Property(Function(e) e.Char).HasDefaultValue("0"c)
-                eb.Property(Function(e) e.Date).HasDefaultValue(Date.MinValue)
-                eb.Property(Function(e) e.DateTimeOffset).HasDefaultValue(DateTimeOffset.MinValue)
-                eb.Property(Function(e) e.Decimal).HasDefaultValue(Decimal.MinValue)
-                eb.Property(Function(e) e.Double).HasDefaultValue(Double.MinValue) 'double.NegativeInfinity
-                eb.Property(Function(e) e.Enum).HasDefaultValue(Enum1.Default)
-                eb.Property(Function(e) e.NullableEnum).HasDefaultValue(Enum1.Default).HasConversion(Of String)()
-                eb.Property(Function(e) e.Guid).HasDefaultValue(Guid.NewGuid())
-                eb.Property(Function(e) e.Int16).HasDefaultValue(Short.MaxValue)
-                eb.Property(Function(e) e.Int32).HasDefaultValue(Integer.MaxValue)
-                eb.Property(Function(e) e.Int64).HasDefaultValue(Long.MaxValue)
-                eb.Property(Function(e) e.Single).HasDefaultValue(Single.Epsilon)
-                eb.Property(Function(e) e.SByte).HasDefaultValue(SByte.MinValue)
-                eb.Property(Function(e) e.String).HasDefaultValue("""")
-                eb.Property(Function(e) e.TimeSpan).HasDefaultValue(TimeSpan.MaxValue)
-                eb.Property(Function(e) e.UInt16).HasDefaultValue(UShort.MinValue)
-                eb.Property(Function(e) e.UInt32).HasDefaultValue(UInteger.MinValue)
-                eb.Property(Function(e) e.UInt64).HasDefaultValue(ULong.MinValue)
-                eb.Property(Function(e) e.NullableBoolean).HasDefaultValue(True)
-                eb.Property(Function(e) e.NullableByte).HasDefaultValue(Byte.MaxValue)
-                eb.Property(Function(e) e.NullableChar).HasDefaultValue("'"c)
-                eb.Property(Function(e) e.NullableDate).HasDefaultValue(Date.MaxValue)
-                eb.Property(Function(e) e.NullableDateTimeOffset).HasDefaultValue(DateTimeOffset.MaxValue)
-                eb.Property(Function(e) e.NullableDecimal).HasDefaultValue(Decimal.MaxValue)
-                eb.Property(Function(e) e.NullableDouble).HasDefaultValue(0.6822871999174)
-                eb.Property(Function(e) e.NullableEnum).HasDefaultValue(Enum1.One Or Enum1.Two)
-                eb.Property(Function(e) e.NullableStringEnum).HasDefaultValue(Enum1.One).HasConversion(Of String)()
-                eb.Property(Function(e) e.NullableGuid).HasDefaultValue(New Guid)
-                eb.Property(Function(e) e.NullableInt16).HasDefaultValue(Short.MinValue)
-                eb.Property(Function(e) e.NullableInt32).HasDefaultValue(Integer.MinValue)
-                eb.Property(Function(e) e.NullableInt64).HasDefaultValue(Long.MinValue)
-                eb.Property(Function(e) e.NullableSingle).HasDefaultValue(0.3333333F)
-                eb.Property(Function(e) e.NullableSByte).HasDefaultValue(SByte.MinValue)
-                eb.Property(Function(e) e.NullableTimeSpan).HasDefaultValue(TimeSpan.MinValue.Add(New TimeSpan))
-                eb.Property(Function(e) e.NullableUInt16).HasDefaultValue(UShort.MaxValue)
-                eb.Property(Function(e) e.NullableUInt32).HasDefaultValue(UInteger.MaxValue)
-                eb.Property(Function(e) e.NullableUInt64).HasDefaultValue(ULong.MaxValue)
+                Sub(eb)
+                    eb.Property(Function(e) e.Boolean).HasDefaultValue(False)
+                    eb.Property(Function(e) e.Byte).HasDefaultValue(Byte.MinValue)
+                    eb.Property(Function(e) e.ByteArray).HasDefaultValue(New Byte() {0})
+                    eb.Property(Function(e) e.Char).HasDefaultValue("0"c)
+                    eb.Property(Function(e) e.Date).HasDefaultValue(Date.MinValue)
+                    eb.Property(Function(e) e.DateTimeOffset).HasDefaultValue(DateTimeOffset.MinValue)
+                    eb.Property(Function(e) e.Decimal).HasDefaultValue(Decimal.MinValue)
+                    eb.Property(Function(e) e.Double).HasDefaultValue(Double.MinValue) 'double.NegativeInfinity
+                    eb.Property(Function(e) e.Enum).HasDefaultValue(Enum1.Default)
+                    eb.Property(Function(e) e.NullableEnum).HasDefaultValue(Enum1.Default).HasConversion(Of String)()
+                    eb.Property(Function(e) e.Guid).HasDefaultValue(Guid.NewGuid())
+                    eb.Property(Function(e) e.Int16).HasDefaultValue(Short.MaxValue)
+                    eb.Property(Function(e) e.Int32).HasDefaultValue(Integer.MaxValue)
+                    eb.Property(Function(e) e.Int64).HasDefaultValue(Long.MaxValue)
+                    eb.Property(Function(e) e.Single).HasDefaultValue(Single.Epsilon)
+                    eb.Property(Function(e) e.SByte).HasDefaultValue(SByte.MinValue)
+                    eb.Property(Function(e) e.String).HasDefaultValue("""")
+                    eb.Property(Function(e) e.TimeSpan).HasDefaultValue(TimeSpan.MaxValue)
+                    eb.Property(Function(e) e.UInt16).HasDefaultValue(UShort.MinValue)
+                    eb.Property(Function(e) e.UInt32).HasDefaultValue(UInteger.MinValue)
+                    eb.Property(Function(e) e.UInt64).HasDefaultValue(ULong.MinValue)
+                    eb.Property(Function(e) e.NullableBoolean).HasDefaultValue(True)
+                    eb.Property(Function(e) e.NullableByte).HasDefaultValue(Byte.MaxValue)
+                    eb.Property(Function(e) e.NullableChar).HasDefaultValue("'"c)
+                    eb.Property(Function(e) e.NullableDate).HasDefaultValue(Date.MaxValue)
+                    eb.Property(Function(e) e.NullableDateTimeOffset).HasDefaultValue(DateTimeOffset.MaxValue)
+                    eb.Property(Function(e) e.NullableDecimal).HasDefaultValue(Decimal.MaxValue)
+                    eb.Property(Function(e) e.NullableDouble).HasDefaultValue(0.6822871999174)
+                    eb.Property(Function(e) e.NullableEnum).HasDefaultValue(Enum1.One Or Enum1.Two)
+                    eb.Property(Function(e) e.NullableStringEnum).HasDefaultValue(Enum1.One).HasConversion(Of String)()
+                    eb.Property(Function(e) e.NullableGuid).HasDefaultValue(New Guid)
+                    eb.Property(Function(e) e.NullableInt16).HasDefaultValue(Short.MinValue)
+                    eb.Property(Function(e) e.NullableInt32).HasDefaultValue(Integer.MinValue)
+                    eb.Property(Function(e) e.NullableInt64).HasDefaultValue(Long.MinValue)
+                    eb.Property(Function(e) e.NullableSingle).HasDefaultValue(0.3333333F)
+                    eb.Property(Function(e) e.NullableSByte).HasDefaultValue(SByte.MinValue)
+                    eb.Property(Function(e) e.NullableTimeSpan).HasDefaultValue(TimeSpan.MinValue.Add(New TimeSpan))
+                    eb.Property(Function(e) e.NullableUInt16).HasDefaultValue(UShort.MaxValue)
+                    eb.Property(Function(e) e.NullableUInt32).HasDefaultValue(UInteger.MaxValue)
+                    eb.Property(Function(e) e.NullableUInt64).HasDefaultValue(ULong.MaxValue)
 
-                eb.HasKey(Function(e) e.Boolean)
-            End Sub)
+                    eb.HasKey(Function(e) e.Boolean)
+                End Sub)
 
             Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
@@ -969,6 +968,96 @@ End Namespace
             One = 1
             Two = 2
         End Enum
+
+        <ConditionalFact>
+        Public Sub Complex_properties_are_genered_in_snapshot()
+
+            Dim generator = CreateMigrationsCodeGenerator()
+
+            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
+            modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
+
+            modelBuilder.Entity(Of EntityWithOneProperty)(
+                Sub(e)
+                    e.ComplexProperty(Function(eo) eo.EntityWithTwoProperties,
+                                      Sub(eb As ComplexPropertyBuilder(Of EntityWithTwoProperties))
+                                          eb.Property(Function(x) x.AlternateId).HasColumnOrder(1)
+                                          eb.ComplexProperty(Function(x) x.EntityWithStringKey)
+                                      End Sub)
+                End Sub)
+
+            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
+
+            Dim modelSnapshotCode = generator.GenerateSnapshot(
+                "MyNamespace",
+                GetType(MyContext),
+                "MySnapshot",
+                finalizedModel)
+
+            Assert.Equal(
+            <![CDATA[' <auto-generated />
+Imports System.Collections.Generic
+Imports EntityFrameworkCore.VisualBasic.Migrations.Design
+Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Migrations
+
+Namespace Global.MyNamespace
+    <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
+    Partial Class MySnapshot
+        Inherits ModelSnapshot
+
+        Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)
+
+            modelBuilder.Entity("EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty",
+                Sub(b)
+                    b.Property(Of Integer)("Id").
+                        ValueGeneratedOnAdd().
+                        HasColumnType("default_int_mapping")
+
+                    b.ComplexProperty(Of Dictionary(Of String, Object))("EntityWithTwoProperties", "EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty.EntityWithTwoProperties#EntityWithTwoProperties",
+                        Sub(b1)
+                            b1.Property(Of Integer)("AlternateId").
+                                HasColumnType("default_int_mapping").
+                                HasColumnOrder(1)
+
+                            b1.Property(Of Integer)("Id").
+                                HasColumnType("default_int_mapping")
+
+                            b1.ComplexProperty(Of Dictionary(Of String, Object))("EntityWithStringKey", "EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty.EntityWithTwoProperties#EntityWithTwoProperties.EntityWithStringKey#EntityWithStringKey",
+                                Sub(b2)
+                                    b2.Property(Of String)("Id").
+                                        HasColumnType("just_string(max)")
+                                End Sub)
+                        End Sub)
+
+                    b.HasKey("Id")
+
+                    b.ToTable("EntityWithOneProperty")
+                End Sub)
+        End Sub
+    End Class
+End Namespace
+]]>.Value, modelSnapshotCode, ignoreLineEndingDifferences:=True)
+
+            Dim snapshot = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot")
+        End Sub
+
+        Private Class EntityWithOneProperty
+            Public Property Id As Integer
+            Public Property EntityWithTwoProperties As EntityWithTwoProperties
+        End Class
+
+        Private Class EntityWithTwoProperties
+            Public Property Id As Integer
+            Public Property AlternateId As Integer
+            Public Property EntityWithStringKey As EntityWithStringKey
+        End Class
+
+        Private Class EntityWithStringKey
+            Public Property Id As String
+        End Class
 
         Private Function CompileModelSnapshot(modelSnapshotCode As String, modelSnapshotTypeName As String) As ModelSnapshot
             Dim build As New BuildSource With {

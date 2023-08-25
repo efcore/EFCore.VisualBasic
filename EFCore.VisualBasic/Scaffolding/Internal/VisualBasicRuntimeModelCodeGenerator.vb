@@ -1098,11 +1098,11 @@ $"    Dim model As New {className}()
 
             PropertyBaseParameters([property], parameters, skipType:=True)
 
+            AddNamespace([property].ClrType, parameters.Namespaces)
             mainBuilder.
                 AppendLine(",").
                 Append("serviceType:=GetType(" & _code.Reference([property].ClrType) & ")")
 
-            AddNamespace([property].ClrType, parameters.Namespaces)
             mainBuilder.
                 AppendLine(")"c).
                 DecrementIndent()
@@ -1271,7 +1271,7 @@ $"    Dim model As New {className}()
                     If complexProperty.IsCollection Then
                         mainBuilder.
                             AppendLine(",").
-                            Append("collection: ").
+                            Append("collection:=").
                             Append(_code.Literal(True))
                     End If
 
@@ -1288,7 +1288,7 @@ $"    Dim model As New {className}()
                     If indexerPropertyInfo IsNot Nothing Then
                         mainBuilder.
                             AppendLine(",").
-                            Append("indexerPropertyInfo: RuntimeEntityType.FindIndexerProperty(").
+                            Append("indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(").
                             Append(_code.Literal(complexType.ClrType)).
                             Append(")")
                     End If
@@ -1309,8 +1309,8 @@ $"    Dim model As New {className}()
                         Append(complexPropertyVariable).AppendLine(".ComplexType")
 
                     Dim complexTypeParameters = parameters.Cloner.WithTargetName(complexTypeVariable).Clone
-
                     Dim propertyVariables As New Dictionary(Of IProperty, String)()
+
                     For Each [property] In complexType.GetProperties()
                         Create([property], propertyVariables, complexTypeParameters)
                     Next

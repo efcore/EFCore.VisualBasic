@@ -216,10 +216,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
             If typeBase.GetFunctionMappings().Any() Then
                 Dim functionMappingsVariable = VBCode.Identifier("functionMappings", parameters.ScopeVariables, capitalize:=False)
                 mainBuilder.
-                AppendLine().
-                AppendLine($"Dim {functionMappingsVariable} As New List(Of FunctionMapping)()").
-                Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
-                AppendLine($"{VBCode.Literal(RelationalAnnotationNames.FunctionMappings)}, {functionMappingsVariable})")
+                    AppendLine().
+                    AppendLine($"Dim {functionMappingsVariable} As New List(Of FunctionMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.FunctionMappings)}, {functionMappingsVariable})")
                 For Each mapping In typeBase.GetFunctionMappings()
                     Create(mapping, functionMappingsVariable, metadataVariables, parameters)
                 Next
@@ -228,10 +228,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
             If typeBase.GetDeleteStoredProcedureMappings().Any() Then
                 Dim deleteSprocMappingsVariable = VBCode.Identifier("deleteSprocMappings", parameters.ScopeVariables, capitalize:=False)
                 mainBuilder.
-                AppendLine().
-                AppendLine($"Dim {deleteSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
-                Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
-                AppendLine($"{VBCode.Literal(RelationalAnnotationNames.DeleteStoredProcedureMappings)}, {deleteSprocMappingsVariable})")
+                    AppendLine().
+                    AppendLine($"Dim {deleteSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
+                    Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
+                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.DeleteStoredProcedureMappings)}, {deleteSprocMappingsVariable})")
                 For Each mapping In typeBase.GetDeleteStoredProcedureMappings()
                     Create(
                         mapping,

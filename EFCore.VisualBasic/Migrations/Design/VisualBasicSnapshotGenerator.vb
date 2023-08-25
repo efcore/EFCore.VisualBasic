@@ -630,8 +630,9 @@ Namespace Migrations.Design
                 Using stringBuilder.Indent()
                     If complexProperty.IsNullable <> complexProperty.ClrType.IsNullableType() Then
                         stringBuilder.
-                            AppendLine().
-                            Append(".IsRequired()")
+                            Append(complexTypeBuilderName).
+                            AppendLine(".IsRequired()").
+                            AppendLine()
                     End If
 
                     GenerateProperties(complexTypeBuilderName, ComplexType.GetDeclaredProperties(), stringBuilder)

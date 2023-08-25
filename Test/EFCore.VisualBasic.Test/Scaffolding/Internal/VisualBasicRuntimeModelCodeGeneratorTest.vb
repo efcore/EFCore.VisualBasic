@@ -9161,8 +9161,7 @@ End Namespace
             Dim scaffoldedFiles = generator.GenerateModel(model, options)
 
             Dim build As New BuildSource With {
-                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code),
-                .EmitDocumentationDiagnostics = True
+                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
             }
 
             With build.References

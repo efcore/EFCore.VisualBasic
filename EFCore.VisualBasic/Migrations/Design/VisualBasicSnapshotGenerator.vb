@@ -24,7 +24,16 @@ Namespace Migrations.Design
     Public Class VisualBasicSnapshotGenerator
 
         Private Shared ReadOnly HasAnnotationMethodInfo As MethodInfo =
-            GetType(ModelBuilder).GetRuntimeMethod(NameOf(ModelBuilder.HasAnnotation), {GetType(String), GetType(String)})
+            GetType(ModelBuilder).GetRuntimeMethod(NameOf(ModelBuilder.HasAnnotation),
+                                                   {GetType(String), GetType(String)})
+
+        Private Shared ReadOnly HasPropertyAnnotationMethodInfo As MethodInfo =
+            GetType(ComplexPropertyBuilder).GetRuntimeMethod(NameOf(ComplexPropertyBuilder.HasPropertyAnnotation),
+                                                             {GetType(String), GetType(String)})
+
+        Private Shared ReadOnly HasTypeAnnotationMethodInfo As MethodInfo =
+            GetType(ComplexPropertyBuilder).GetRuntimeMethod(NameOf(ComplexPropertyBuilder.HasTypeAnnotation),
+                                                             {GetType(String), GetType(String)})
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
@@ -101,7 +110,6 @@ Namespace Migrations.Design
             NotNull(entityTypes, NameOf(entityTypes))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-
             Dim nonOwnedTypes = entityTypes.Where(Function(e) e.FindOwnership() Is Nothing).ToList()
             For Each entityType In nonOwnedTypes
                 stringBuilder.AppendLine()
@@ -128,14 +136,14 @@ Namespace Migrations.Design
         ''' <summary>
         '''     Generates code for an <see cref="IEntityType" />.
         ''' </summary>
-        ''' <param name="modelBuilderName">The name of the builder variable.</param>
+        ''' <param name="builderName">The name of the builder variable.</param>
         ''' <param name="entityType">The entity type.</param>
         ''' <param name="stringBuilder">The builder code Is added to.</param>
-        Protected Overridable Sub GenerateEntityType(modelBuilderName As String,
+        Protected Overridable Sub GenerateEntityType(builderName As String,
                                                      entityType As IEntityType,
                                                      stringBuilder As IndentedStringBuilder)
 
-            NotEmpty(modelBuilderName, NameOf(modelBuilderName))
+            NotEmpty(builderName, NameOf(builderName))
             NotNull(entityType, NameOf(entityType))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
@@ -154,10 +162,10 @@ Namespace Migrations.Design
                 entityTypeName = entityType.ClrType.DisplayName()
             End If
 
-            Dim entityTypeBuilderName = GenerateEntityTypeBuilderName(modelBuilderName)
+            Dim entityTypeBuilderName = GenerateNestedBuilderName(builderName)
 
             stringBuilder.
-                Append(modelBuilderName).
+                Append(builderName).
                 Append(If(ownerNavigation IsNot Nothing, If(ownership.IsUnique, ".OwnsOne(", ".OwnsMany("), ".Entity(")).
                 Append(VBCode.Literal(entityTypeName))
 
@@ -180,6 +188,8 @@ Namespace Migrations.Design
                     GenerateBaseType(entityTypeBuilderName, entityType.BaseType, stringBuilder)
 
                     GenerateProperties(entityTypeBuilderName, entityType.GetDeclaredProperties(), stringBuilder)
+
+                    GenerateComplexProperties(entityTypeBuilderName, entityType.GetDeclaredComplexProperties(), stringBuilder)
 
                     GenerateKeys(
                         entityTypeBuilderName,
@@ -205,20 +215,6 @@ Namespace Migrations.Design
                     AppendLine("End Sub)")
             End Using
         End Sub
-
-        Private Function GenerateEntityTypeBuilderName(modelBuilderName As String) As String
-            If modelBuilderName.StartsWith("b", StringComparison.Ordinal) Then
-                Dim counter = 1
-                If modelBuilderName.Length > 1 AndAlso
-                   Integer.TryParse(modelBuilderName.AsSpan(1, modelBuilderName.Length - 1), counter) Then
-                    counter += 1
-                End If
-
-                Return "b" & If(counter = 0, "", counter.ToString())
-            End If
-
-            Return "b"
-        End Function
 
         ''' <summary>
         '''     Generates code for owned entity types.
@@ -583,7 +579,7 @@ Namespace Migrations.Design
 
                 annotations(RelationalAnnotationNames.DefaultValue) = New Annotation(
                     RelationalAnnotationNames.DefaultValue,
-                    ValueConverter.ConvertToProvider(defaultValue))
+                    valueConverter.ConvertToProvider(defaultValue))
             End If
 
             GenerateAnnotations(propertyBuilderName, [property], stringBuilder, annotations, inChainedCall:=True)
@@ -594,6 +590,100 @@ Namespace Migrations.Design
             Return If([property].GetValueConverter(), t?.Converter)
         End Function
 
+        '''  <summary>
+        '''      Generates code for <see cref="IComplexProperty" /> objects.
+        '''  </summary>
+        '''  <param name="typeBuilderName">The name of the builder variable.</param>
+        '''  <param name="properties">The properties.</param>
+        '''  <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateComplexProperties(typeBuilderName As String,
+                                                            properties As IEnumerable(Of IComplexProperty),
+                                                            stringBuilder As IndentedStringBuilder)
+            For Each [property] In properties
+                GenerateComplexProperty(typeBuilderName, [property], stringBuilder)
+            Next
+        End Sub
+
+        '''  <summary>
+        '''      Generates code for an <see cref="IComplexProperty" />.
+        '''  </summary>
+        '''  <param name="builderName">The name of the builder variable.</param>
+        '''  <param name="complexProperty">The entity type.</param>
+        '''  <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateComplexProperty(builderName As String,
+                                                          complexProperty As IComplexProperty,
+                                                          stringBuilder As IndentedStringBuilder)
+
+            Dim ComplexType = complexProperty.ComplexType
+            Dim complexTypeBuilderName = GenerateNestedBuilderName(builderName)
+
+            stringBuilder.
+                AppendLine().
+                Append(builderName).
+                Append($".ComplexProperty(Of {VBCode.Reference(Model.DefaultPropertyBagType)})(").
+                AppendLine($"{VBCode.Literal(complexProperty.Name)}, {VBCode.Literal(ComplexType.Name)},")
+
+            Using stringBuilder.Indent()
+                stringBuilder.
+                    AppendLine($"Sub({complexTypeBuilderName})")
+
+                Using stringBuilder.Indent()
+                    If complexProperty.IsNullable <> complexProperty.ClrType.IsNullableType() Then
+                        stringBuilder.
+                            Append(complexTypeBuilderName).
+                            AppendLine(".IsRequired()").
+                            AppendLine()
+                    End If
+
+                    GenerateProperties(complexTypeBuilderName, ComplexType.GetDeclaredProperties(), stringBuilder)
+
+                    GenerateComplexProperties(complexTypeBuilderName, ComplexType.GetDeclaredComplexProperties(), stringBuilder)
+
+                    GenerateComplexPropertyAnnotations(complexTypeBuilderName, complexProperty, stringBuilder)
+                End Using
+
+                stringBuilder.
+                    AppendLine("End Sub)")
+            End Using
+        End Sub
+
+        Private Shared Function GenerateNestedBuilderName(builderName As String) As String
+            If builderName.StartsWith("b", StringComparison.Ordinal) Then
+                Dim counter = 1
+                If builderName.Length > 1 AndAlso Integer.TryParse(builderName.AsSpan(1), counter) Then
+                    counter += 1
+                End If
+
+                Return "b" & If(counter = 0, "", counter.ToString())
+            End If
+
+            Return "b"
+        End Function
+
+        '''  <summary>
+        '''      Generates code for the annotations on an <see cref="IProperty" />.
+        '''  </summary>
+        '''  <param name="propertyBuilderName">The name of the builder variable.</param>
+        '''  <param name="property">The property.</param>
+        '''  <param name="stringBuilder">The builder code Is added to.</param>
+        Protected Overridable Sub GenerateComplexPropertyAnnotations(propertyBuilderName As String,
+                                                                     [property] As IComplexProperty,
+                                                                     stringBuilder As IndentedStringBuilder)
+
+            Dim propertyAnnotations = AnnotationCodeGenerator.
+                                        FilterIgnoredAnnotations([property].GetAnnotations()).
+                                        ToDictionary(Function(a) a.Name, Function(a) a)
+
+            Dim typeAnnotations = AnnotationCodeGenerator.
+                                    FilterIgnoredAnnotations([property].ComplexType.GetAnnotations()).
+                                    ToDictionary(Function(a) a.Name, Function(a) a)
+
+            GenerateAnnotations(propertyBuilderName, [property], stringBuilder, propertyAnnotations,
+                                inChainedCall:=False, hasAnnotationMethodInfo:=HasPropertyAnnotationMethodInfo)
+
+            GenerateAnnotations(propertyBuilderName, [property], stringBuilder, typeAnnotations,
+                                inChainedCall:=False, hasAnnotationMethodInfo:=HasTypeAnnotationMethodInfo)
+        End Sub
 
         ''' <summary>
         '''     Generates code for <see cref="IKey"/> objects.
@@ -1035,7 +1125,7 @@ Namespace Migrations.Design
                 End Using
             End If
 
-                stringBuilder.AppendLine(")"c)
+            stringBuilder.AppendLine(")"c)
         End Sub
 
         Private Sub GenerateSplitTableMapping(entityTypeBuilderName As String,
@@ -1828,7 +1918,8 @@ Namespace Migrations.Design
                                         stringBuilder As IndentedStringBuilder,
                                         annotations As Dictionary(Of String, IAnnotation),
                                         inChainedCall As Boolean,
-                                        Optional leadingNewline As Boolean = True)
+                                        Optional leadingNewline As Boolean = True,
+                                        Optional hasAnnotationMethodInfo As MethodInfo = Nothing)
 
             Dim fluentApiCalls = AnnotationCodeGenerator.GenerateFluentApiCalls(annotatable, annotations)
 
@@ -1849,7 +1940,10 @@ Namespace Migrations.Design
 
             ' Append remaining raw annotations which did Not get generated as Fluent API calls
             For Each annotation In annotations.Values.OrderBy(Function(a) a.Name)
-                Dim c = New MethodCallCodeFragment(HasAnnotationMethodInfo, annotation.Name, annotation.Value)
+                Dim c As New MethodCallCodeFragment(If(hasAnnotationMethodInfo, VisualBasicSnapshotGenerator.HasAnnotationMethodInfo),
+                                                    annotation.Name,
+                                                    annotation.Value)
+
                 chainedCall = If(chainedCall Is Nothing, c, chainedCall.Chain(c))
             Next
 

@@ -6,7 +6,7 @@ namespace EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 {
     public sealed class MyJsonGuidReaderWriter : JsonValueReaderWriter<Guid>
     {
-        public override Guid FromJsonTyped(ref Utf8JsonReaderManager manager)
+        public override Guid FromJsonTyped(ref Utf8JsonReaderManager manager, object existingObject = null)
             => manager.CurrentReader.GetGuid();
 
         public override void ToJsonTyped(Utf8JsonWriter writer, Guid value)

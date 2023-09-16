@@ -3420,8 +3420,7 @@ mb.Sql(""-- close to me"")"
 
             Assert.Equal(expectedCode, code, ignoreLineEndingDifferences:=True)
 
-            Dim build = New BuildSource() With
-            {
+            Dim build = New BuildSource() With {
                 .Sources = New Dictionary(Of String, String) From {
                     {
                         "Migration.vb",

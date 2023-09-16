@@ -488,6 +488,10 @@ $"    Dim model As New {className}()
             Using mainBuilder.Indent()
                 CreateEntityType(entityType, mainBuilder, methodBuilder, namespaces, className)
 
+                For Each complexProperty In entityType.GetDeclaredComplexProperties()
+                    CreateComplexProperty(complexProperty, mainBuilder, methodBuilder, namespaces, className)
+                Next
+
                 Dim foreignKeyNumber = 1
                 For Each foreignKey As IForeignKey In entityType.GetDeclaredForeignKeys()
                     CreateForeignKey(foreignKey, foreignKeyNumber, mainBuilder, methodBuilder, namespaces, className)
@@ -554,6 +558,16 @@ $"    Dim model As New {className}()
 
                 For Each prop In entityType.GetDeclaredServiceProperties()
                     Create(prop, parameters)
+                Next
+
+                For Each complexProperty In entityType.GetDeclaredComplexProperties()
+                    mainBuilder.
+                        Append(_code.Identifier(complexProperty.Name, capitalize:=True)).
+                        Append("ComplexProperty").
+                        Append(".Create").
+                        Append("(").
+                        Append(entityTypeVariable).
+                        AppendLine(")")
                 Next
 
                 For Each aKey In entityType.GetDeclaredKeys()
@@ -678,60 +692,76 @@ $"    Dim model As New {className}()
                 DecrementIndent()
         End Sub
 
-        Private Sub Create(prop As IProperty,
+        Private Sub Create([property] As IProperty,
                            propertyVariables As Dictionary(Of IProperty, String),
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            Dim valueGeneratorFactoryType = TryCast(prop(CoreAnnotationNames.ValueGeneratorFactoryType), Type)
+            Dim variableName = _code.Identifier([property].Name, parameters.ScopeVariables, capitalize:=False)
+            propertyVariables([property]) = variableName
+
+            Create([property], variableName, propertyVariables, parameters)
+
+            CreateAnnotations([property],
+                              AddressOf _annotationCodeGenerator.Generate,
+                              parameters.Cloner.
+                                         WithTargetName(variableName).
+                                         Clone)
+
+            parameters.MainBuilder.AppendLine()
+        End Sub
+
+        Private Sub Create([property] As IProperty,
+                           variableName As String,
+                           propertyVariables As Dictionary(Of IProperty, String),
+                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+            Dim valueGeneratorFactoryType = TryCast([property](CoreAnnotationNames.ValueGeneratorFactoryType), Type)
 
             If valueGeneratorFactoryType Is Nothing AndAlso
-               prop.GetValueGeneratorFactory() IsNot Nothing Then
+               [property].GetValueGeneratorFactory() IsNot Nothing Then
                 Throw New InvalidOperationException(
                     DesignStrings.CompiledModelValueGenerator(
-                        prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasValueGeneratorFactory)))
+                        [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasValueGeneratorFactory)))
             End If
 
-            Dim valueComparerType = TryCast(prop(CoreAnnotationNames.ValueComparerType), Type)
+            Dim valueComparerType = TryCast([property](CoreAnnotationNames.ValueComparerType), Type)
 
             If valueComparerType Is Nothing AndAlso
-                prop(CoreAnnotationNames.ValueComparer) IsNot Nothing Then
+                [property](CoreAnnotationNames.ValueComparer) IsNot Nothing Then
 
                 Throw New InvalidOperationException(
                     DesignStrings.CompiledModelValueComparer(
-                        prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
+                        [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasConversion)))
             End If
 
-            Dim providerValueComparerType = TryCast(prop(CoreAnnotationNames.ProviderValueComparerType), Type)
+            Dim providerValueComparerType = TryCast([property](CoreAnnotationNames.ProviderValueComparerType), Type)
 
             If providerValueComparerType Is Nothing AndAlso
-               prop(CoreAnnotationNames.ProviderValueComparer) IsNot Nothing Then
+               [property](CoreAnnotationNames.ProviderValueComparer) IsNot Nothing Then
 
                 Throw New InvalidOperationException(
                     DesignStrings.CompiledModelValueComparer(
-                    prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
+                    [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasConversion)))
             End If
 
-            Dim valueConverterType = GetValueConverterType(prop)
+            Dim valueConverterType = GetValueConverterType([property])
 
             If valueConverterType Is Nothing AndAlso
-               prop.GetValueConverter() IsNot Nothing Then
+               [property].GetValueConverter() IsNot Nothing Then
 
                 Throw New InvalidOperationException(
                     DesignStrings.CompiledModelValueConverter(
-                        prop.DeclaringEntityType.ShortName(), prop.Name, NameOf(PropertyBuilder.HasConversion)))
+                        [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasConversion)))
             End If
 
-            If TypeOf prop Is IConventionProperty Then
-                Dim conventionProperty = DirectCast(prop, IConventionProperty)
+            If TypeOf [property] Is IConventionProperty Then
+                Dim conventionProperty = DirectCast([property], IConventionProperty)
                 If conventionProperty.GetTypeMappingConfigurationSource() IsNot Nothing Then
                     Throw New InvalidOperationException(
                     DesignStrings.CompiledModelTypeMapping(
-                        prop.DeclaringEntityType.ShortName(), prop.Name, "Customize()", parameters.ClassName))
+                        [property].DeclaringType.ShortName(), [property].Name, "Customize()", parameters.ClassName))
                 End If
             End If
-
-            Dim variableName = _code.Identifier(prop.Name, parameters.ScopeVariables, capitalize:=False)
-            propertyVariables(prop) = variableName
 
             Dim mainBuilder = parameters.MainBuilder
 
@@ -742,74 +772,74 @@ $"    Dim model As New {className}()
                 Append(parameters.TargetName).
                 AppendLine(".AddProperty(").
                 IncrementIndent().
-                Append(_code.Literal(prop.Name))
+                Append(_code.Literal([property].Name))
 
-            PropertyBaseParameters(prop, parameters)
+            PropertyBaseParameters([property], parameters)
 
-            If prop.IsNullable Then
+            If [property].IsNullable Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("nullable:=").
                     Append(_code.Literal(True))
             End If
 
-            If prop.IsConcurrencyToken Then
+            If [property].IsConcurrencyToken Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("concurrencyToken:=").
                     Append(_code.Literal(True))
             End If
 
-            If prop.ValueGenerated <> ValueGenerated.Never Then
+            If [property].ValueGenerated <> ValueGenerated.Never Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("valueGenerated:=").
-                    Append(_code.Literal(CType(prop.ValueGenerated, [Enum])))
+                    Append(_code.Literal(CType([property].ValueGenerated, [Enum])))
             End If
 
-            If prop.GetBeforeSaveBehavior() <> PropertySaveBehavior.Save Then
+            If [property].GetBeforeSaveBehavior() <> PropertySaveBehavior.Save Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("beforeSaveBehavior:=").
-                    Append(_code.Literal(CType(prop.GetBeforeSaveBehavior(), [Enum])))
+                    Append(_code.Literal(CType([property].GetBeforeSaveBehavior(), [Enum])))
             End If
 
-            If prop.GetAfterSaveBehavior() <> PropertySaveBehavior.Save Then
+            If [property].GetAfterSaveBehavior() <> PropertySaveBehavior.Save Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("afterSaveBehavior:=").
-                    Append(_code.Literal(CType(prop.GetAfterSaveBehavior(), [Enum])))
+                    Append(_code.Literal(CType([property].GetAfterSaveBehavior(), [Enum])))
             End If
 
-            If prop.GetMaxLength().HasValue Then
+            If [property].GetMaxLength().HasValue Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("maxLength:=").
-                    Append(_code.Literal(prop.GetMaxLength()))
+                    Append(_code.Literal([property].GetMaxLength()))
             End If
 
-            If prop.IsUnicode().HasValue Then
+            If [property].IsUnicode().HasValue Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("unicode:=").
-                    Append(_code.Literal(prop.IsUnicode()))
+                    Append(_code.Literal([property].IsUnicode()))
             End If
 
-            If prop.GetPrecision().HasValue Then
+            If [property].GetPrecision().HasValue Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("precision:=").
-                    Append(_code.Literal(prop.GetPrecision()))
+                    Append(_code.Literal([property].GetPrecision()))
             End If
 
-            If prop.GetScale().HasValue Then
+            If [property].GetScale().HasValue Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("scale:=").
-                    Append(_code.Literal(prop.GetScale()))
+                    Append(_code.Literal([property].GetScale()))
             End If
 
-            Dim providerClrType = prop.GetProviderClrType()
+            Dim providerClrType = [property].GetProviderClrType()
 
             If providerClrType IsNot Nothing Then
                 AddNamespace(providerClrType, parameters.Namespaces)
@@ -860,7 +890,7 @@ $"    Dim model As New {className}()
                     Append("()")
             End If
 
-            Dim jsonValueReaderWriterType = DirectCast(prop(CoreAnnotationNames.JsonValueReaderWriterType), Type)
+            Dim jsonValueReaderWriterType = DirectCast([property](CoreAnnotationNames.JsonValueReaderWriterType), Type)
             If jsonValueReaderWriterType IsNot Nothing Then
 
                 AddNamespace(jsonValueReaderWriterType, parameters.Namespaces)
@@ -884,7 +914,7 @@ $"    Dim model As New {className}()
                 End If
             End If
 
-            Dim sentinel = prop.Sentinel
+            Dim sentinel = [property].Sentinel
             If sentinel IsNot Nothing Then
                 mainBuilder.AppendLine(","c).
                 Append("sentinel:=").
@@ -894,25 +924,16 @@ $"    Dim model As New {className}()
             mainBuilder.
                 AppendLine(")"c).
                 DecrementIndent()
-
-            CreateAnnotations(prop,
-                              AddressOf _annotationCodeGenerator.Generate,
-                              parameters.Cloner.
-                                         WithTargetName(variableName).
-                                         Clone())
-
-            mainBuilder.
-                AppendLine()
         End Sub
 
-        Private Shared Function GetValueConverterType(prop As IProperty) As Type
-            Dim annotation = prop.FindAnnotation(CoreAnnotationNames.ValueConverterType)
+        Private Shared Function GetValueConverterType([property] As IProperty) As Type
+            Dim annotation = [property].FindAnnotation(CoreAnnotationNames.ValueConverterType)
 
             If annotation IsNot Nothing Then
                 Return DirectCast(annotation.Value, Type)
             End If
 
-            Dim principalProperty = prop
+            Dim principalProperty = [property]
 
             Dim i = 0
             While i < ForeignKey.LongestFkChainAllowedLength
@@ -921,7 +942,7 @@ $"    Dim model As New {className}()
                     For propertyIndex = 0 To foreignKey.Properties.Count - 1
                         If principalProperty Is foreignKey.Properties(propertyIndex) Then
                             Dim newPrincipalProperty = foreignKey.PrincipalKey.Properties(propertyIndex)
-                            If newPrincipalProperty Is prop OrElse
+                            If newPrincipalProperty Is [property] OrElse
                                newPrincipalProperty Is principalProperty Then
 
                                 Exit For
@@ -948,7 +969,7 @@ $"    Dim model As New {className}()
             If i = ForeignKey.LongestFkChainAllowedLength Then
                 Throw New InvalidOperationException(
                     CoreStrings.RelationshipCycle(
-                          prop.DeclaringEntityType.DisplayName(), prop.Name, "ValueConverterType"))
+                          [property].DeclaringType.DisplayName(), [property].Name, "ValueConverterType"))
             Else
                 Return Nothing
             End If
@@ -1059,10 +1080,10 @@ $"    Dim model As New {className}()
             mainBuilder.Append("}"c)
         End Sub
 
-        Private Sub Create(prop As IServiceProperty,
+        Private Sub Create([property] As IServiceProperty,
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            Dim variableName = _code.Identifier(prop.Name, parameters.ScopeVariables, capitalize:=False)
+            Dim variableName = _code.Identifier([property].Name, parameters.ScopeVariables, capitalize:=False)
 
             Dim mainBuilder = parameters.MainBuilder
 
@@ -1073,19 +1094,20 @@ $"    Dim model As New {className}()
                 Append(parameters.TargetName).
                 AppendLine(".AddServiceProperty(").
                 IncrementIndent().
-                Append(_code.Literal(prop.Name))
+                Append(_code.Literal([property].Name))
 
-            PropertyBaseParameters(prop, parameters, skipType:=True)
+            PropertyBaseParameters([property], parameters, skipType:=True)
 
+            AddNamespace([property].ClrType, parameters.Namespaces)
             mainBuilder.
                 AppendLine(",").
-                Append("serviceType:=GetType(" & prop.ClrType.DisplayName(fullName:=True, compilable:=True) & ")")
+                Append("serviceType:=GetType(" & _code.Reference([property].ClrType) & ")")
 
             mainBuilder.
                 AppendLine(")"c).
                 DecrementIndent()
 
-            CreateAnnotations(prop,
+            CreateAnnotations([property],
                               AddressOf _annotationCodeGenerator.Generate,
                               parameters.Cloner.
                                          WithTargetName(variableName).
@@ -1177,6 +1199,157 @@ $"    Dim model As New {className}()
 
             mainBuilder.
                         AppendLine()
+        End Sub
+
+        Private Sub CreateComplexProperty(complexProperty As IComplexProperty,
+                                          mainBuilder As IndentedStringBuilder,
+                                          methodBuilder As IndentedStringBuilder,
+                                          namespaces As SortedSet(Of String),
+                                          topClassName As String)
+
+            mainBuilder.
+                AppendLine().
+                Append("Private Class ").
+                Append(_code.Identifier(complexProperty.Name, capitalize:=True)).
+                AppendLine("ComplexProperty")
+
+            Dim complexType = complexProperty.ComplexType
+            Using mainBuilder.Indent()
+                Dim declaringTypeVariable = "declaringType"
+                mainBuilder.
+                    Append("Public Shared Function Create(").
+                    Append(declaringTypeVariable).
+                    Append(" As ").
+                    Append(If(TypeOf complexProperty.DeclaringType Is IEntityType, "RuntimeEntityType", "RuntimeComplexType")).
+                    AppendLine(") As RuntimeComplexProperty")
+
+                Using mainBuilder.Indent()
+                    Const complexPropertyVariable = "complexProperty"
+                    Const complexTypeVariable = "complexType"
+
+                    Dim variables As New HashSet(Of String) From {
+                        declaringTypeVariable,
+                        complexPropertyVariable,
+                        complexTypeVariable
+                    }
+
+                    mainBuilder.
+                        Append("Dim ").
+                        Append(complexPropertyVariable).
+                        Append(" = ").
+                        Append(declaringTypeVariable).
+                        Append(".AddComplexProperty(").
+                        IncrementIndent().
+                        Append(_code.Literal(complexProperty.Name)).
+                        AppendLine(",").
+                        Append(_code.Literal(complexProperty.ClrType)).
+                        AppendLine(",").
+                        Append(_code.Literal(complexType.Name)).
+                        AppendLine(",").
+                        Append(_code.Literal(complexType.ClrType))
+
+                    AddNamespace(complexProperty.ClrType, namespaces)
+                    AddNamespace(complexType.ClrType, namespaces)
+
+                    Dim parameters As New VisualBasicRuntimeAnnotationCodeGeneratorParameters(
+                            declaringTypeVariable,
+                            topClassName,
+                            mainBuilder,
+                            methodBuilder,
+                            namespaces,
+                            variables)
+
+                    PropertyBaseParameters(complexProperty, parameters, skipType:=True)
+
+                    If complexProperty.IsNullable Then
+                        mainBuilder.
+                            AppendLine(",").
+                            Append("nullable:=").
+                            Append(_code.Literal(True))
+                    End If
+
+                    If complexProperty.IsCollection Then
+                        mainBuilder.
+                            AppendLine(",").
+                            Append("collection:=").
+                            Append(_code.Literal(True))
+                    End If
+
+                    Dim changeTrackingStrategy = complexType.GetChangeTrackingStrategy()
+                    If changeTrackingStrategy <> ChangeTrackingStrategy.Snapshot Then
+                        namespaces.Add(GetType(ChangeTrackingStrategy).Namespace)
+
+                        mainBuilder.AppendLine(",").
+                            Append("changeTrackingStrategy:=").
+                            Append(_code.Literal(DirectCast(changeTrackingStrategy, [Enum])))
+                    End If
+
+                    Dim indexerPropertyInfo = complexType.FindIndexerPropertyInfo()
+                    If indexerPropertyInfo IsNot Nothing Then
+                        mainBuilder.
+                            AppendLine(",").
+                            Append("indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(").
+                            Append(_code.Literal(complexType.ClrType)).
+                            Append(")")
+                    End If
+
+                    If complexType.IsPropertyBag Then
+                        mainBuilder.AppendLine(",").
+                            Append("propertyBag:=").
+                            Append(_code.Literal(True))
+                    End If
+
+                    mainBuilder.
+                        AppendLine(")").
+                        AppendLine().
+                        DecrementIndent()
+
+                    mainBuilder.
+                        Append("Dim ").Append(complexTypeVariable).Append(" = ").
+                        Append(complexPropertyVariable).AppendLine(".ComplexType")
+
+                    Dim complexTypeParameters = parameters.Cloner.WithTargetName(complexTypeVariable).Clone
+                    Dim propertyVariables As New Dictionary(Of IProperty, String)()
+
+                    For Each [property] In complexType.GetProperties()
+                        Create([property], propertyVariables, complexTypeParameters)
+                    Next
+
+                    For Each nestedComplexProperty In complexType.GetComplexProperties()
+                        mainBuilder.
+                            Append(_code.Identifier(nestedComplexProperty.Name, capitalize:=True)).
+                            Append("ComplexProperty").
+                            Append(".Create").
+                            Append("(").
+                            Append(complexTypeVariable).
+                            AppendLine(")")
+                    Next
+
+                    CreateAnnotations(
+                        complexType,
+                        AddressOf _annotationCodeGenerator.Generate,
+                        complexTypeParameters)
+
+                    CreateAnnotations(
+                        complexProperty,
+                        AddressOf _annotationCodeGenerator.Generate,
+                        parameters.Cloner.WithTargetName(complexPropertyVariable).Clone())
+
+                    mainBuilder.
+                        Append("Return ").
+                        AppendLine(complexPropertyVariable)
+                End Using
+
+                mainBuilder.AppendLine("End Function")
+            End Using
+
+            Using mainBuilder.Indent()
+                For Each nestedComplexProperty In complexType.GetComplexProperties()
+                    CreateComplexProperty(nestedComplexProperty, mainBuilder, methodBuilder, namespaces, topClassName)
+                Next
+            End Using
+
+            mainBuilder.AppendLine("End Class")
         End Sub
 
         Private Sub CreateForeignKey(aforeignKey As IForeignKey,

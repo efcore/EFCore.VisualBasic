@@ -63,6 +63,43 @@ Namespace Design
             GenerateSimpleAnnotations(parameters)
         End Sub
 
+        ''' <inheritdoc />
+        Public Overridable Sub Generate(complexProperty As IComplexProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
+            Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
+
+            Dim annotations = parameters.Annotations
+
+            If Not parameters.IsRuntime Then
+                For Each annotation In annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) AndAlso
+                       annotation.Key <> CoreAnnotationNames.DiscriminatorMappingComplete Then
+
+                        annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
+
+            GenerateSimpleAnnotations(parameters)
+    End Sub
+
+        ''' <inheritdoc />
+        Public Overridable Sub Generate(complexType As IComplexType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
+            Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate
+
+            Dim annotations = parameters.Annotations
+            If Not parameters.IsRuntime Then
+                For Each annotation In annotations
+                    If CoreAnnotationNames.AllNames.Contains(annotation.Key) AndAlso
+                       annotation.Key <> CoreAnnotationNames.DiscriminatorMappingComplete Then
+
+                        annotations.Remove(annotation.Key)
+                    End If
+                Next
+            End If
+
+            GenerateSimpleAnnotations(parameters)
+    End Sub
+
         ''' <inheritdoc/>
         Public Overridable Sub Generate(prop As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) _
             Implements IVisualBasicRuntimeAnnotationCodeGenerator.Generate

@@ -85,11 +85,11 @@ Public Class BuildSource
                 assemblyName:=projectName,
                 syntaxTrees:=Sources.Select(
                     Function(s) SyntaxFactory.ParseSyntaxTree(
-                    text:=s.Value,
-                    path:=s.Key,
-                    options:=New VisualBasicParseOptions(
-                        LanguageVersion.Latest,
-                        If(EmitDocumentationDiagnostics, DocumentationMode.Diagnose, DocumentationMode.Parse)))),
+                        text:=s.Value,
+                        path:=s.Key,
+                        options:=New VisualBasicParseOptions(
+                            LanguageVersion.Latest,
+                            If(EmitDocumentationDiagnostics, DocumentationMode.Diagnose, DocumentationMode.Parse)))),
                 references:=refs,
                 CreateVisualBasicCompilationOptions())
 
@@ -141,5 +141,4 @@ All diagnostics:
                     {"BC40055", ReportDiagnostic.Suppress}
                 })
     End Function
-
 End Class

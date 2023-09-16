@@ -27,6 +27,20 @@ Namespace Design
         ''' <summary>
         '''     Generates code to create the given annotations.
         ''' </summary>
+        ''' <param name="complexProperty">The entity type to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Sub Generate(complexProperty As IComplexProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
+        ''' <param name="complexType">The entity type to which the annotations are applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        Sub Generate(complexType As IComplexType, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+        ''' <summary>
+        '''     Generates code to create the given annotations.
+        ''' </summary>
         ''' <param name="property">The property to which the annotations are applied.</param>
         ''' <param name="parameters">Additional parameters used during code generation.</param>
         Sub Generate([property] As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)

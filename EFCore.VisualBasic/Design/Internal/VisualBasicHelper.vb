@@ -871,7 +871,7 @@ Namespace Design.Internal
                                           builder As StringBuilder,
                                           Optional simple As Boolean = False) As Boolean
 
-            ' Only handle trivially simple cases for `new` and factory methods
+            ' Only handle trivially simple cases for `New` and factory methods
 
             Select Case exp.NodeType
                 Case ExpressionType.NewArrayInit
@@ -887,7 +887,9 @@ Namespace Design.Internal
 
                     Return True
 
-                Case ExpressionType.Convert
+                Case ExpressionType.Convert,
+                     ExpressionType.ConvertChecked
+
                     Dim unaryExpression = DirectCast(exp, UnaryExpression)
 
                     If unaryExpression.Method?.Name <> "op_Implicit" Then

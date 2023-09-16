@@ -1077,9 +1077,7 @@ $"builder.
 
             Return New SqlServerTypeMappingSource(
                             TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                            New RelationalTypeMappingSourceDependencies(plugins),
-                            New SqlServerSingletonOptions()
-                       )
+                            New RelationalTypeMappingSourceDependencies(plugins))
         End Function
 
         Private Shared ReadOnly _testFuncMethodInfo As MethodInfo =

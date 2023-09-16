@@ -1570,8 +1570,7 @@ End Try")
         Private Sub AssertCore(expression As Expression, isStatement As Boolean, expected As String)
             Dim typeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                New RelationalTypeMappingSourceDependencies(Array.Empty(Of IRelationalTypeMappingSourcePlugin)()),
-                New SqlServerSingletonOptions())
+                New RelationalTypeMappingSourceDependencies(Array.Empty(Of IRelationalTypeMappingSourcePlugin)()))
 
             Dim translator = New VisualBasicHelper(typeMappingSource)
             Dim namespaces = New HashSet(Of String)()

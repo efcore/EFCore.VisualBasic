@@ -1,7 +1,9 @@
 ﻿Imports System.ComponentModel
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports System.Data
+Imports System.IO
 Imports System.Linq.Expressions
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.Design.AnnotationCodeGeneratorProvider
@@ -184,20 +186,21 @@ End Namespace
             Test(
                 New LazyLoadingContext(),
                 CreateCompiledModelCodeGenerationOptions(),
-                assertModel:=Sub(Model)
-                                 Dim lazyConstructorEntity = Model.FindEntityType(GetType(LazyConstructorEntity))
-                                 Dim lazyParameterBinding = lazyConstructorEntity.ConstructorBinding.ParameterBindings.Single()
-                                 Assert.Equal(GetType(ILazyLoader), lazyParameterBinding.ParameterType)
+                assertModel:=
+                    Sub(Model)
+                        Dim lazyConstructorEntity = Model.FindEntityType(GetType(LazyConstructorEntity))
+                        Dim lazyParameterBinding = lazyConstructorEntity.ConstructorBinding.ParameterBindings.Single()
+                        Assert.Equal(GetType(ILazyLoader), lazyParameterBinding.ParameterType)
 
-                                 Dim lazyPropertyEntity = Model.FindEntityType(GetType(LazyPropertyEntity))
-                                 Dim lazyServiceProperty = lazyPropertyEntity.GetServiceProperties().Single()
-                                 Assert.Equal(GetType(ILazyLoader), lazyServiceProperty.ClrType)
+                        Dim lazyPropertyEntity = Model.FindEntityType(GetType(LazyPropertyEntity))
+                        Dim lazyServiceProperty = lazyPropertyEntity.GetServiceProperties().Single()
+                        Assert.Equal(GetType(ILazyLoader), lazyServiceProperty.ClrType)
 
-                                 Dim lazyPropertyDelegateEntity = Model.FindEntityType(GetType(LazyPropertyDelegateEntity))
-                                 Assert.Equal(2, lazyPropertyDelegateEntity.GetServiceProperties().Count())
-                                 Assert.Contains(lazyPropertyDelegateEntity.GetServiceProperties(), Function(p) p.ClrType = GetType(ILazyLoader))
-                                 Assert.Contains(lazyPropertyDelegateEntity.GetServiceProperties(), Function(p) p.ClrType = GetType(Action(Of Object, String)))
-                             End Sub)
+                        Dim lazyPropertyDelegateEntity = Model.FindEntityType(GetType(LazyPropertyDelegateEntity))
+                        Assert.Equal(2, lazyPropertyDelegateEntity.GetServiceProperties().Count())
+                        Assert.Contains(lazyPropertyDelegateEntity.GetServiceProperties(), Function(p) p.ClrType = GetType(ILazyLoader))
+                        Assert.Contains(lazyPropertyDelegateEntity.GetServiceProperties(), Function(p) p.ClrType = GetType(Action(Of Object, String)))
+                    End Sub)
         End Sub
 
         Public Class LazyLoadingContext
@@ -261,9 +264,9 @@ End Namespace
                 assertModel:=
                     Sub(Model)
                         Assert.Equal(
-                        GetType(ILazyLoader), Model.FindEntityType(GetType(LazyProxiesEntity1)).GetServiceProperties().Single().ClrType)
+                            GetType(ILazyLoader), Model.FindEntityType(GetType(LazyProxiesEntity1)).GetServiceProperties().Single().ClrType)
                         Assert.Equal(
-                        GetType(ILazyLoader), Model.FindEntityType(GetType(LazyProxiesEntity1)).GetServiceProperties().Single().ClrType)
+                            GetType(ILazyLoader), Model.FindEntityType(GetType(LazyProxiesEntity1)).GetServiceProperties().Single().ClrType)
                     End Sub)
         End Sub
 
@@ -327,10 +330,13 @@ End Namespace
             Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
                 MyBase.OnModelCreating(modelBuilder)
 
+                Dim expr As Expression(Of Func(Of IQueryable(Of Object))) =
+                    Function() DirectCast([Set](Of Object)(), IQueryable(Of Object))
+
                 modelBuilder.Entity(Of Object)(Sub(e)
                                                    e.Property(Of Integer)("Id")
                                                    e.HasKey("Id")
-                                                   e.Metadata.SetInMemoryQuery(DirectCast(Function() [Set](Of Object)(), Expression(Of Func(Of IQueryable(Of Object)))))
+                                                   e.Metadata.SetInMemoryQuery(expr)
                                                End Sub)
             End Sub
         End Class
@@ -352,18 +358,149 @@ End Namespace
                 modelBuilder.Entity(
                     "MyEntity", Sub(e)
                                     e.Property(Of Integer)("Id").
-                                                        HasValueGenerator(Function(p, en) Nothing)
+                                         HasValueGenerator(Function(p, en) Nothing)
                                     e.HasKey("Id")
                                 End Sub)
             End Sub
         End Class
 
         <ConditionalFact>
-        Public Sub Throws_for_value_converter()
+        Public Sub Custom_value_converter()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.ValueConverterContext))>
+    Public Partial Class ValueConverterContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As ValueConverterContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New ValueConverterContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim rm2 = <![CDATA[' <auto-generated />
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class ValueConverterContextModel
+
+        Private Sub Initialize()
+            Dim myEntity = MyEntityEntityType.Create(Me)
+
+            MyEntityEntityType.CreateAnnotations(myEntity)
+
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim e1 = <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
+
+Namespace TestNamespace
+    Friend Partial Class MyEntityEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "MyEntity",
+                GetType(Dictionary(Of String, Object)),
+                baseEntityType,
+                sharedClrType:=True,
+                indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(GetType(Dictionary(Of String, Object))),
+                propertyBag:=True)
+
+            Dim id = entityType.AddProperty(
+                "Id",
+                GetType(Integer),
+                propertyInfo:=entityType.FindIndexerPropertyInfo(),
+                valueGenerated:=ValueGenerated.OnAdd,
+                afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of Integer, Integer)(
+                    Function(i As Integer) i,
+                    Function(i As Integer) i),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of Integer, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of Integer, Integer)(
+                        Function(i As Integer) i,
+                        Function(i As Integer) i)))
+
+            Dim key = entityType.AddKey(
+                {id})
+            entityType.SetPrimaryKey(key)
+
+            Return entityType
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
             Test(New ValueConverterContext(),
                 CreateCompiledModelCodeGenerationOptions(),
-                expectedExceptionMessage:=DesignStrings.CompiledModelValueConverter(
-                    "MyEntity", "Id", NameOf(PropertyBuilder.HasConversion)))
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                        Sub(c) AssertFileContents("ValueConverterContextModel.vb", rm1, c),
+                        Sub(c) AssertFileContents("ValueConverterContextModelBuilder.vb", rm2, c),
+                        Sub(c) AssertFileContents("MyEntityEntityType.vb", e1, c))
+                End Sub,
+                Sub(model)
+                    Dim EntityType = model.GetEntityTypes().Single()
+
+                    Dim Converter = EntityType.FindProperty("Id").GetTypeMapping().Converter
+                    Assert.Equal(1, Converter.ConvertToProvider(1))
+                End Sub)
         End Sub
 
         Public Class ValueConverterContext
@@ -381,11 +518,140 @@ End Namespace
         End Class
 
         <ConditionalFact>
-        Public Sub Throws_for_value_comparer()
+        Public Sub Custom_value_comparer()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.ValueComparerContext))>
+    Public Partial Class ValueComparerContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As ValueComparerContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New ValueComparerContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim rm2 =
+            <![CDATA[' <auto-generated />
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class ValueComparerContextModel
+
+        Private Sub Initialize()
+            Dim myEntity = MyEntityEntityType.Create(Me)
+
+            MyEntityEntityType.CreateAnnotations(myEntity)
+
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim e1 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+
+Namespace TestNamespace
+    Friend Partial Class MyEntityEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "MyEntity",
+                GetType(Dictionary(Of String, Object)),
+                baseEntityType,
+                sharedClrType:=True,
+                indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(GetType(Dictionary(Of String, Object))),
+                propertyBag:=True)
+
+            Dim id = entityType.AddProperty(
+                "Id",
+                GetType(Integer),
+                propertyInfo:=entityType.FindIndexerPropertyInfo(),
+                valueGenerated:=ValueGenerated.OnAdd,
+                afterSaveBehavior:=PropertySaveBehavior.Throw,
+                providerPropertyType:=GetType(Integer))
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(l As Integer, r As Integer) False,
+                    Function(v As Integer) 0,
+                    Function(v As Integer) 1),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(l As Integer, r As Integer) False,
+                    Function(v As Integer) 0,
+                    Function(v As Integer) 1),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(l As Integer, r As Integer) False,
+                    Function(v As Integer) 0,
+                    Function(v As Integer) 1),
+                clrType:=GetType(Integer),
+                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+
+            Dim key = entityType.AddKey(
+                {id})
+            entityType.SetPrimaryKey(key)
+
+            Return entityType
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+
             Test(New ValueComparerContext(),
-             CreateCompiledModelCodeGenerationOptions(),
-             expectedExceptionMessage:=DesignStrings.CompiledModelValueComparer(
-                "MyEntity", "Id", NameOf(PropertyBuilder.HasConversion)))
+                CreateCompiledModelCodeGenerationOptions(),
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                        Sub(c) AssertFileContents("ValueComparerContextModel.vb", rm1, c),
+                        Sub(c) AssertFileContents("ValueComparerContextModelBuilder.vb", rm2, c),
+                        Sub(c) AssertFileContents("MyEntityEntityType.vb", e1, c))
+                End Sub,
+                Sub(model)
+                    Dim entityType = model.GetEntityTypes().Single()
+
+                    Dim lambda = TryCast(entityType.FindProperty("Id").GetValueComparer().SnapshotExpression, Expression(Of Func(Of Integer, Integer)))
+                    Dim constant = TryCast(lambda?.Body, ConstantExpression)
+                    Assert.True(lambda IsNot Nothing AndAlso constant IsNot Nothing AndAlso CInt(constant.Value) = 1)
+                End Sub)
         End Sub
 
         Public Class ValueComparerContext
@@ -408,7 +674,7 @@ End Namespace
             Inherits ValueComparer(Of Integer)
 
             Public Sub New()
-                MyBase.New(False)
+                MyBase.New(Function(l, r) False, Function(v) 0, Function(v) 1)
             End Sub
 
             Public Overrides ReadOnly Property Type As Type = GetType(Integer)
@@ -427,12 +693,141 @@ End Namespace
         End Class
 
         <ConditionalFact>
-        Public Sub Throws_for_provider_value_comparer()
+        Public Sub Custom_provider_value_comparer()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.ProviderValueComparerContext))>
+    Public Partial Class ProviderValueComparerContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As ProviderValueComparerContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New ProviderValueComparerContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim rm2 =
+            <![CDATA[' <auto-generated />
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class ProviderValueComparerContextModel
+
+        Private Sub Initialize()
+            Dim myEntity = MyEntityEntityType.Create(Me)
+
+            MyEntityEntityType.CreateAnnotations(myEntity)
+
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim e1 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+
+Namespace TestNamespace
+    Friend Partial Class MyEntityEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "MyEntity",
+                GetType(Dictionary(Of String, Object)),
+                baseEntityType,
+                sharedClrType:=True,
+                indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(GetType(Dictionary(Of String, Object))),
+                propertyBag:=True)
+
+            Dim id = entityType.AddProperty(
+                "Id",
+                GetType(Integer),
+                propertyInfo:=entityType.FindIndexerPropertyInfo(),
+                valueGenerated:=ValueGenerated.OnAdd,
+                afterSaveBehavior:=PropertySaveBehavior.Throw,
+                providerPropertyType:=GetType(Integer))
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(l As Integer, r As Integer) False,
+                    Function(v As Integer) 0,
+                    Function(v As Integer) 1),
+                clrType:=GetType(Integer),
+                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+
+            Dim key = entityType.AddKey(
+                {id})
+            entityType.SetPrimaryKey(key)
+
+            Return entityType
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
             Test(
                 New ProviderValueComparerContext,
                 CreateCompiledModelCodeGenerationOptions(),
-                expectedExceptionMessage:=DesignStrings.CompiledModelValueComparer(
-                    "MyEntity", "Id", NameOf(PropertyBuilder.HasConversion)))
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                            Sub(c) AssertFileContents("ProviderValueComparerContextModel.vb", rm1, c),
+                            Sub(c) AssertFileContents("ProviderValueComparerContextModelBuilder.vb", rm2, c),
+                            Sub(c) AssertFileContents("MyEntityEntityType.vb", e1, c))
+                End Sub,
+                Sub(model)
+                    Dim entityType = model.GetEntityTypes().Single()
+
+                    Dim lambda = TryCast(entityType.FindProperty("Id").GetProviderValueComparer().SnapshotExpression, Expression(Of Func(Of Integer, Integer)))
+                    Dim constant = TryCast(lambda?.Body, ConstantExpression)
+
+                    Assert.True(lambda IsNot Nothing AndAlso constant IsNot Nothing AndAlso CInt(constant.Value) = 1)
+                End Sub)
         End Sub
 
         Public Class ProviderValueComparerContext
@@ -450,12 +845,139 @@ End Namespace
         End Class
 
         <ConditionalFact>
-        Public Sub Throws_for_custom_type_mapping()
+        Public Sub Custom_type_mapping()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.TypeMappingContext))>
+    Public Partial Class TypeMappingContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As TypeMappingContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New TypeMappingContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim rm2 =
+            <![CDATA[' <auto-generated />
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    Public Partial Class TypeMappingContextModel
+
+        Private Sub Initialize()
+            Dim myEntity = MyEntityEntityType.Create(Me)
+
+            MyEntityEntityType.CreateAnnotations(myEntity)
+
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim e1 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+
+Namespace TestNamespace
+    Friend Partial Class MyEntityEntityType
+
+        Public Shared Function Create(model As RuntimeModel, Optional baseEntityType As RuntimeEntityType = Nothing) As RuntimeEntityType
+            Dim entityType = model.AddEntityType(
+                "MyEntity",
+                GetType(Dictionary(Of String, Object)),
+                baseEntityType,
+                sharedClrType:=True,
+                indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(GetType(Dictionary(Of String, Object))),
+                propertyBag:=True)
+
+            Dim id = entityType.AddProperty(
+                "Id",
+                GetType(Integer),
+                propertyInfo:=entityType.FindIndexerPropertyInfo(),
+                valueGenerated:=ValueGenerated.OnAdd,
+                afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                clrType:=GetType(Integer),
+                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+
+            Dim key = entityType.AddKey(
+                {id})
+            entityType.SetPrimaryKey(key)
+
+            Return entityType
+        End Function
+
+        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+
+            Customize(entityType)
+        End Sub
+
+        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
             Test(
                 New TypeMappingContext(),
                 CreateCompiledModelCodeGenerationOptions(),
-                expectedExceptionMessage:=DesignStrings.CompiledModelTypeMapping(
-                    "MyEntity", "Id", "Customize()", "MyEntityEntityType"))
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                            Sub(c) AssertFileContents("TypeMappingContextModel.vb", rm1, c),
+                            Sub(c) AssertFileContents("TypeMappingContextModelBuilder.vb", rm2, c),
+                            Sub(c) AssertFileContents("MyEntityEntityType.vb", e1, c))
+                End Sub,
+                Sub(model)
+                    Dim entityType = model.GetEntityTypes().Single()
+
+                    Dim typeMapping = entityType.FindProperty("Id").FindTypeMapping()
+                    Assert.IsType(Of InMemoryTypeMapping)(typeMapping)
+                    Assert.IsType(Of JsonInt32ReaderWriter)(typeMapping.JsonValueReaderWriter)
+                End Sub)
         End Sub
 
         Public Class TypeMappingContext
@@ -474,37 +996,154 @@ End Namespace
         End Class
 
         <ConditionalFact>
-        Public Sub Throws_for_custom_function_translation()
-            Test(
-                New FunctionTranslationContext(),
-                CreateCompiledModelCodeGenerationOptions(),
-                expectedExceptionMessage:=RelationalStrings.CompiledModelFunctionTranslation("GetSqlFragmentShared"))
+        Public Sub Custom_function_type_mapping()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.FunctionTypeMappingContext))>
+    Public Partial Class FunctionTypeMappingContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As FunctionTypeMappingContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New FunctionTypeMappingContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
         End Sub
 
-        Public Class FunctionTranslationContext
-            Inherits SqlServerContextBase
+        Partial Private Sub Initialize()
+        End Sub
 
-            Public Shared Function GetSqlFragmentShared() As String
-                Throw New NotImplementedException()
-            End Function
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
 
-            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
-                MyBase.OnModelCreating(modelBuilder)
+            Dim rm2 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
-                modelBuilder.
-                    HasDbFunction(GetType(FunctionTranslationContext).
-                    GetMethod(NameOf(GetSqlFragmentShared))).
-                    HasTranslation(Function(args) New SqlFragmentExpression("NULL"))
-            End Sub
-        End Class
+Namespace TestNamespace
+    Public Partial Class FunctionTypeMappingContextModel
 
-        <ConditionalFact>
-        Public Sub Throws_for_custom_function_type_mapping()
+        Private Sub Initialize()
+            Dim functions As New SortedDictionary(Of String, IDbFunction)()
+            Dim getSqlFragmentShared As New RuntimeDbFunction(
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionTypeMappingContext.GetSqlFragmentShared(string)",
+                Me,
+                GetType(String),
+                "GetSqlFragmentShared",
+                schema:="dbo",
+                storeType:="varchar",
+                methodInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.FunctionTypeMappingContext).GetMethod(
+                    "GetSqlFragmentShared",
+                    BindingFlags.Public Or BindingFlags.Static Or BindingFlags.DeclaredOnly,
+                    Nothing,
+                    {GetType(String)},
+                    Nothing),
+                scalar:=True,
+                nullable:=True)
+
+            Dim param = getSqlFragmentShared.AddParameter(
+                "param",
+                GetType(String),
+                False,
+                "nvarchar(max)")
+            param.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                storeTypePostfix:=StoreTypePostfix.None)
+
+            getSqlFragmentShared.TypeMapping = StringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varchar",
+                    dbType:=System.Data.DbType.AnsiString))
+            functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionTypeMappingContext.GetSqlFragmentShared(string)") = getSqlFragmentShared
+
+            AddAnnotation("Relational:DbFunctions", functions)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel())
+        End Sub
+
+        Private Function CreateRelationalModel() As IRelationalModel
+            Dim relationalModel As New RelationalModel(Me)
+            Dim getSqlFragmentShared = DirectCast(Me.FindDbFunction("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionTypeMappingContext.GetSqlFragmentShared(string)"), IRuntimeDbFunction)
+            Dim getSqlFragmentSharedFunction As New StoreFunction(getSqlFragmentShared, relationalModel)
+            Dim paramFunctionParameter = getSqlFragmentSharedFunction.FindParameter("param")
+            relationalModel.Functions.Add(
+                ("GetSqlFragmentShared", "dbo", {"nvarchar(max)"}),
+                getSqlFragmentSharedFunction)
+            Return relationalModel.MakeReadOnly()
+        End Function
+    End Class
+End Namespace
+]]>.Value
+
             Test(
                 New FunctionTypeMappingContext(),
                 CreateCompiledModelCodeGenerationOptions(),
-                expectedExceptionMessage:=RelationalStrings.CompiledModelFunctionTypeMapping(
-                    "GetSqlFragmentShared", "Customize()", "FunctionTypeMappingContextModel"))
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                            Sub(c) AssertFileContents("FunctionTypeMappingContextModel.vb", rm1, c),
+                            Sub(c) AssertFileContents("FunctionTypeMappingContextModelBuilder.vb", rm2, c))
+                End Sub,
+                Sub(model)
+                    Dim [function] = model.GetDbFunctions().Single()
+
+                    Dim typeMapping = [function].TypeMapping
+                    Assert.IsType(Of StringTypeMapping)(typeMapping)
+                    Assert.Equal("varchar", typeMapping.StoreType)
+                End Sub)
         End Sub
 
         Public Class FunctionTypeMappingContext
@@ -525,12 +1164,155 @@ End Namespace
         End Class
 
         <ConditionalFact>
-        Public Sub Throws_for_custom_function_parameter_type_mapping()
+        Public Sub Custom_function_parameter_type_mapping()
+
+            Dim rm1 =
+            <![CDATA[' <auto-generated />
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+
+Namespace TestNamespace
+    <DbContext(GetType(VisualBasicRuntimeModelCodeGeneratorTest.FunctionParameterTypeMappingContext))>
+    Public Partial Class FunctionParameterTypeMappingContextModel
+        Inherits RuntimeModel
+
+        Private Shared _Instance As FunctionParameterTypeMappingContextModel
+        Public Shared ReadOnly Property Instance As IModel
+            Get
+                Return _Instance
+            End Get
+        End Property
+
+        Shared Sub New()
+            Dim model As New FunctionParameterTypeMappingContextModel()
+            model.Initialize()
+            model.Customize()
+            _Instance = model
+        End Sub
+
+        Partial Private Sub Initialize()
+        End Sub
+
+        Partial Private Sub Customize()
+        End Sub
+    End Class
+End Namespace
+]]>.Value
+
+            Dim rm2 =
+            <![CDATA[' <auto-generated />
+Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
+Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.Infrastructure
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+
+Namespace TestNamespace
+    Public Partial Class FunctionParameterTypeMappingContextModel
+
+        Private Sub Initialize()
+            Dim functions As New SortedDictionary(Of String, IDbFunction)()
+            Dim getSqlFragmentShared As New RuntimeDbFunction(
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionParameterTypeMappingContext.GetSqlFragmentShared(string)",
+                Me,
+                GetType(String),
+                "GetSqlFragmentShared",
+                schema:="dbo",
+                storeType:="nvarchar(max)",
+                methodInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.FunctionParameterTypeMappingContext).GetMethod(
+                    "GetSqlFragmentShared",
+                    BindingFlags.Public Or BindingFlags.Static Or BindingFlags.DeclaredOnly,
+                    Nothing,
+                    {GetType(String)},
+                    Nothing),
+                scalar:=True,
+                nullable:=True)
+
+            Dim param = getSqlFragmentShared.AddParameter(
+                "param",
+                GetType(String),
+                False,
+                "varchar")
+            param.TypeMapping = StringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varchar",
+                    dbType:=System.Data.DbType.AnsiString))
+
+            getSqlFragmentShared.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                storeTypePostfix:=StoreTypePostfix.None)
+            functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionParameterTypeMappingContext.GetSqlFragmentShared(string)") = getSqlFragmentShared
+
+            AddAnnotation("Relational:DbFunctions", functions)
+            AddAnnotation("Relational:MaxIdentifierLength", 128)
+            AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+            AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel())
+        End Sub
+
+        Private Function CreateRelationalModel() As IRelationalModel
+            Dim relationalModel As New RelationalModel(Me)
+            Dim getSqlFragmentShared = DirectCast(Me.FindDbFunction("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionParameterTypeMappingContext.GetSqlFragmentShared(string)"), IRuntimeDbFunction)
+            Dim getSqlFragmentSharedFunction As New StoreFunction(getSqlFragmentShared, relationalModel)
+            Dim paramFunctionParameter = getSqlFragmentSharedFunction.FindParameter("param")
+            relationalModel.Functions.Add(
+                ("GetSqlFragmentShared", "dbo", {"varchar"}),
+                getSqlFragmentSharedFunction)
+            Return relationalModel.MakeReadOnly()
+        End Function
+    End Class
+End Namespace
+]]>.Value
+
             Test(
                 New FunctionParameterTypeMappingContext(),
                 CreateCompiledModelCodeGenerationOptions(),
-                expectedExceptionMessage:=RelationalStrings.CompiledModelFunctionParameterTypeMapping(
-                    "GetSqlFragmentShared", "param", "Customize()", "FunctionParameterTypeMappingContextModel"))
+                Sub(code)
+                    Assert.
+                        Collection(code,
+                            Sub(c) AssertFileContents("FunctionParameterTypeMappingContextModel.vb", rm1, c),
+                            Sub(c) AssertFileContents("FunctionParameterTypeMappingContextModelBuilder.vb", rm2, c))
+                End Sub,
+                Sub(model)
+                    Dim [function] = model.GetDbFunctions().Single()
+                    Dim parameter = [function].Parameters.Single()
+
+                    Dim typeMapping = parameter.TypeMapping
+                    Assert.IsType(Of StringTypeMapping)(typeMapping)
+                    Assert.Equal("varchar", typeMapping.StoreType)
+                End Sub)
         End Sub
 
         Public Class FunctionParameterTypeMappingContext
@@ -547,6 +1329,29 @@ End Namespace
                     HasDbFunction(GetType(FunctionParameterTypeMappingContext).
                     GetMethod(NameOf(GetSqlFragmentShared))).
                     HasParameter("param").Metadata.TypeMapping = New StringTypeMapping("varchar", DbType.AnsiString)
+            End Sub
+        End Class
+
+        <ConditionalFact>
+        Public Sub Throws_for_custom_function_translation()
+            Test(
+                New FunctionTranslationContext(),
+                New CompiledModelCodeGenerationOptions(),
+                expectedExceptionMessage:=RelationalStrings.CompiledModelFunctionTranslation("GetSqlFragmentStatic"))
+        End Sub
+
+        Public Class FunctionTranslationContext
+            Inherits SqlServerContextBase
+
+            Public Shared Function GetSqlFragmentStatic() As String
+                Throw New NotImplementedException()
+            End Function
+
+            Protected Overrides Sub OnModelCreating(modelBuilder As ModelBuilder)
+                MyBase.OnModelCreating(modelBuilder)
+
+                modelBuilder.HasDbFunction(GetType(FunctionTranslationContext).GetMethod(NameOf(GetSqlFragmentStatic))).
+                             HasTranslation(Function(args) New SqlFragmentExpression("NULL"))
             End Sub
         End Class
 
@@ -616,7 +1421,10 @@ End Namespace
 Imports System
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace Internal
     Friend Partial Class IndexEntityType
@@ -635,6 +1443,21 @@ Namespace Internal
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                clrType:=GetType(Guid),
+                jsonValueReaderWriter:=JsonGuidReaderWriter.Instance)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -659,7 +1482,10 @@ End Namespace
 Imports System
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace Internal
     Friend Partial Class InternalEntityType
@@ -678,6 +1504,21 @@ Namespace Internal
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                clrType:=GetType(Long),
+                jsonValueReaderWriter:=JsonInt64ReaderWriter.Instance)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -701,7 +1542,10 @@ End Namespace
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Reflection
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
 Imports Microsoft.EntityFrameworkCore.TestModels.AspNetIdentity
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 
@@ -722,6 +1566,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<Id>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim accessFailedCount = entityType.AddProperty(
                 "AccessFailedCount",
@@ -729,6 +1588,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("AccessFailedCount", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<AccessFailedCount>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=0)
+            accessFailedCount.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                clrType:=GetType(Integer),
+                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
 
             Dim concurrencyStamp = entityType.AddProperty(
                 "ConcurrencyStamp",
@@ -736,12 +1610,42 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("ConcurrencyStamp", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<ConcurrencyStamp>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            concurrencyStamp.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim discriminator = entityType.AddProperty(
                 "Discriminator",
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
+            discriminator.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim email = entityType.AddProperty(
                 "Email",
@@ -749,6 +1653,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("Email", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<Email>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            email.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim emailConfirmed = entityType.AddProperty(
                 "EmailConfirmed",
@@ -756,6 +1675,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("EmailConfirmed", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<EmailConfirmed>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
+            emailConfirmed.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                keyComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                providerValueComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                clrType:=GetType(Boolean),
+                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
 
             Dim lockoutEnabled = entityType.AddProperty(
                 "LockoutEnabled",
@@ -763,6 +1697,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("LockoutEnabled", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<LockoutEnabled>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
+            lockoutEnabled.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                keyComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                providerValueComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                clrType:=GetType(Boolean),
+                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
 
             Dim lockoutEnd = entityType.AddProperty(
                 "LockoutEnd",
@@ -770,6 +1719,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("LockoutEnd", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<LockoutEnd>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            lockoutEnd.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of DateTimeOffset?)(
+                    Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
+                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
+                keyComparer:=New ValueComparer(Of DateTimeOffset?)(
+                    Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
+                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
+                providerValueComparer:=New ValueComparer(Of DateTimeOffset?)(
+                    Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
+                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
+                clrType:=GetType(DateTimeOffset),
+                jsonValueReaderWriter:=JsonDateTimeOffsetReaderWriter.Instance)
 
             Dim normalizedEmail = entityType.AddProperty(
                 "NormalizedEmail",
@@ -777,6 +1741,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("NormalizedEmail", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<NormalizedEmail>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            normalizedEmail.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim normalizedUserName = entityType.AddProperty(
                 "NormalizedUserName",
@@ -784,6 +1763,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("NormalizedUserName", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<NormalizedUserName>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            normalizedUserName.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim passwordHash = entityType.AddProperty(
                 "PasswordHash",
@@ -791,6 +1785,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("PasswordHash", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<PasswordHash>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            passwordHash.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim phoneNumber = entityType.AddProperty(
                 "PhoneNumber",
@@ -798,6 +1807,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("PhoneNumber", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<PhoneNumber>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            phoneNumber.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim phoneNumberConfirmed = entityType.AddProperty(
                 "PhoneNumberConfirmed",
@@ -805,6 +1829,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("PhoneNumberConfirmed", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<PhoneNumberConfirmed>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
+            phoneNumberConfirmed.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                keyComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                providerValueComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                clrType:=GetType(Boolean),
+                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
 
             Dim securityStamp = entityType.AddProperty(
                 "SecurityStamp",
@@ -812,6 +1851,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("SecurityStamp", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<SecurityStamp>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            securityStamp.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim twoFactorEnabled = entityType.AddProperty(
                 "TwoFactorEnabled",
@@ -819,6 +1873,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("TwoFactorEnabled", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<TwoFactorEnabled>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
+            twoFactorEnabled.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                keyComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                providerValueComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                clrType:=GetType(Boolean),
+                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
 
             Dim userName = entityType.AddProperty(
                 "UserName",
@@ -826,6 +1895,21 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("UserName", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<UserName>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            userName.TypeMapping = InMemoryTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -1041,10 +2125,10 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(dependentBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("EnumDiscriminator"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enumDiscriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             dependentBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -1089,10 +2173,10 @@ Namespace TestNamespace
             }
             dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping, False)
             tableMappings.Add(dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentBase.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("EnumDiscriminator"), dependentBase.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Id"), dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalAlternateIdColumn, dependentBase.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalIdColumn, dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(enumDiscriminatorColumn, dependentBase.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
 
             Dim dependentDerived = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentDerived<byte?>")
 
@@ -1101,12 +2185,12 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(dependentDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Data"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Data"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("EnumDiscriminator"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Money"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Money"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(principalAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(principalIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(dataColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Data"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enumDiscriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(moneyColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Money"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
 
             Dim tableMappings0 As New List(Of TableMapping)()
             dependentDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings0)
@@ -1115,12 +2199,12 @@ Namespace TestNamespace
             }
             dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping0, False)
             tableMappings0.Add(dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentDerived.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentDerived.FindProperty("PrincipalId"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Data"), dependentDerived.FindProperty("Data"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("EnumDiscriminator"), dependentDerived.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Id"), dependentDerived.FindProperty("Id"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Money"), dependentDerived.FindProperty("Money"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(principalAlternateIdColumn, dependentDerived.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(principalIdColumn, dependentDerived.FindProperty("PrincipalId"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(dataColumn, dependentDerived.FindProperty("Data"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(enumDiscriminatorColumn, dependentDerived.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(idColumn, dependentDerived.FindProperty("Id"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(moneyColumn, dependentDerived.FindProperty("Money"), dependentBasebyteTableMapping0)
 
             Dim principalBase = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase")
 
@@ -1145,17 +2229,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Point", pointColumnBase)
+            Dim refTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase)
+            Dim refTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase)
+            Dim refTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase)
+            Dim refTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeList", refTypeListColumnBase)
+            Dim valueTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase)
+            Dim valueTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase)
+            Dim valueTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase)
+            Dim valueTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings1.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Point"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(alternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase0, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(pointColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
 
             Dim tableMappings1 As New List(Of TableMapping)()
             principalBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings1)
@@ -1176,10 +2300,74 @@ Namespace TestNamespace
             principalBaseTable.Columns.Add("FlagsEnum2", flagsEnum2Column)
             Dim owned_NumberColumn As New Column("Owned_Number", "int", principalBaseTable)
             principalBaseTable.Columns.Add("Owned_Number", owned_NumberColumn)
+            Dim owned_RefTypeArrayColumn As New Column("Owned_RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeArray", owned_RefTypeArrayColumn)
+            Dim owned_RefTypeEnumerableColumn As New Column("Owned_RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeEnumerable", owned_RefTypeEnumerableColumn)
+            Dim owned_RefTypeIListColumn As New Column("Owned_RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeIList", owned_RefTypeIListColumn)
+            Dim owned_RefTypeListColumn As New Column("Owned_RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeList", owned_RefTypeListColumn)
+            Dim owned_ValueTypeArrayColumn As New Column("Owned_ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeArray", owned_ValueTypeArrayColumn)
+            Dim owned_ValueTypeEnumerableColumn As New Column("Owned_ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeEnumerable", owned_ValueTypeEnumerableColumn)
+            Dim owned_ValueTypeIListColumn As New Column("Owned_ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeIList", owned_ValueTypeIListColumn)
+            Dim owned_ValueTypeListColumn As New Column("Owned_ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeList", owned_ValueTypeListColumn)
             Dim pointColumn As New Column("Point", "geometry", principalBaseTable) With {
                 .IsNullable = True
             }
             principalBaseTable.Columns.Add("Point", pointColumn)
+            Dim refTypeArrayColumn As New Column("RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeArray", refTypeArrayColumn)
+            Dim refTypeEnumerableColumn As New Column("RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn)
+            Dim refTypeIListColumn As New Column("RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeIList", refTypeIListColumn)
+            Dim refTypeListColumn As New Column("RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeList", refTypeListColumn)
+            Dim valueTypeArrayColumn As New Column("ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn)
+            Dim valueTypeEnumerableColumn As New Column("ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn)
+            Dim valueTypeIListColumn As New Column("ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeIList", valueTypeIListColumn)
+            Dim valueTypeListColumn As New Column("ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeList", valueTypeListColumn)
             Dim aK_PrincipalBase_Id As New UniqueConstraint("AK_PrincipalBase_Id", principalBaseTable, {idColumn0})
             Dim aK_PrincipalBase_IdUc = RelationalModel.GetKey(Me,
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
@@ -1214,13 +2402,21 @@ Namespace TestNamespace
             }
             principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings1.Add(principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalBase.FindProperty("AlternateId"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Point"), principalBase.FindProperty("Point"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(alternateIdColumn, principalBase.FindProperty("AlternateId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn0, principalBase.FindProperty("Id"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum1Column, principalBase.FindProperty("Enum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum2Column, principalBase.FindProperty("Enum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(pointColumn, principalBase.FindProperty("Point"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalBase.FindProperty("RefTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalBase.FindProperty("RefTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalBase.FindProperty("RefTypeList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalBase.FindProperty("ValueTypeList"), principalBaseTableMapping)
 
             Dim ownedType = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType")
 
@@ -1237,14 +2433,54 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("PrincipalBaseAlternateId", principalBaseAlternateIdColumnBase)
             Dim principalBaseIdColumnBase As New ColumnBase(Of ColumnMappingBase)("PrincipalBaseId", "bigint", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("PrincipalBaseId", principalBaseIdColumnBase)
+            Dim refTypeArrayColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase0)
+            Dim refTypeEnumerableColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase0)
+            Dim refTypeIListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase0)
+            Dim refTypeListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("RefTypeList", refTypeListColumnBase0)
+            Dim valueTypeArrayColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase0)
+            Dim valueTypeEnumerableColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase0)
+            Dim valueTypeIListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase0)
+            Dim valueTypeListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase0)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase As New TableMappingBase(Of ColumnMappingBase)(ownedType, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase, False)
             defaultTableMappings2.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.FindColumn("PrincipalBaseAlternateId"), ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("PrincipalBaseAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.FindColumn("Details"), ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("Details"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeTableBase.FindColumn("Number"), ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("Number"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalBaseAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("PrincipalBaseAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalBaseIdColumnBase, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(detailsColumnBase, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("Details"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(numberColumnBase, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("Number"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseOwnedOwnedTypeMappingBase)
 
             Dim tableMappings2 As New List(Of TableMapping)()
             ownedType.SetRuntimeAnnotation("Relational:TableMappings", tableMappings2)
@@ -1259,9 +2495,17 @@ Namespace TestNamespace
                 {"PrincipalBaseId", "PrincipalBaseAlternateId"},
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
                 {"Id", "AlternateId"}))
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), ownedType.FindProperty("PrincipalBaseAlternateId"), principalBaseTableMapping0)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), ownedType.FindProperty("PrincipalBaseId"), principalBaseTableMapping0)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Number"), ownedType.FindProperty("Number"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(alternateIdColumn, ownedType.FindProperty("PrincipalBaseAlternateId"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(idColumn0, ownedType.FindProperty("PrincipalBaseId"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_NumberColumn, ownedType.FindProperty("Number"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeArrayColumn, ownedType.FindProperty("RefTypeArray"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeEnumerableColumn, ownedType.FindProperty("RefTypeEnumerable"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeIListColumn, ownedType.FindProperty("RefTypeIList"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeListColumn, ownedType.FindProperty("RefTypeList"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeArrayColumn, ownedType.FindProperty("ValueTypeArray"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeEnumerableColumn, ownedType.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeIListColumn, ownedType.FindProperty("ValueTypeIList"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeListColumn, ownedType.FindProperty("ValueTypeList"), principalBaseTableMapping0)
             Dim detailsTable As New Table("Details", Nothing, relationalModel)
             Dim principalBaseIdColumn As New Column("PrincipalBaseId", "bigint", detailsTable)
             detailsTable.Columns.Add("PrincipalBaseId", principalBaseIdColumn)
@@ -1285,9 +2529,9 @@ Namespace TestNamespace
             }
             detailsTable.AddTypeMapping(detailsTableMapping, False)
             tableMappings2.Add(detailsTableMapping)
-            RelationalModel.CreateColumnMapping(detailsTable.FindColumn("PrincipalBaseAlternateId"), ownedType.FindProperty("PrincipalBaseAlternateId"), detailsTableMapping)
-            RelationalModel.CreateColumnMapping(detailsTable.FindColumn("PrincipalBaseId"), ownedType.FindProperty("PrincipalBaseId"), detailsTableMapping)
-            RelationalModel.CreateColumnMapping(detailsTable.FindColumn("Details"), ownedType.FindProperty("Details"), detailsTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseAlternateIdColumn, ownedType.FindProperty("PrincipalBaseAlternateId"), detailsTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseIdColumn, ownedType.FindProperty("PrincipalBaseId"), detailsTableMapping)
+            RelationalModel.CreateColumnMapping(detailsColumn, ownedType.FindProperty("Details"), detailsTableMapping)
 
             Dim principalDerived = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>")
 
@@ -1296,13 +2540,21 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, False)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
             defaultTableMappings3.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Point"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(alternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(pointColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
 
             Dim defaultTableMappings4 As New List(Of TableMappingBase(Of ColumnMappingBase))()
             principalDerived.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings4)
@@ -1315,8 +2567,8 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings4.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(alternateIdColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase1, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
 
             Dim tableMappings3 As New List(Of TableMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings3)
@@ -1325,13 +2577,21 @@ Namespace TestNamespace
             }
             principalBaseTable.AddTypeMapping(principalBaseTableMapping1, False)
             tableMappings3.Add(principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalDerived.FindProperty("AlternateId"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Point"), principalDerived.FindProperty("Point"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(alternateIdColumn, principalDerived.FindProperty("AlternateId"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(idColumn0, principalDerived.FindProperty("Id"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(enum1Column, principalDerived.FindProperty("Enum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(enum2Column, principalDerived.FindProperty("Enum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(pointColumn, principalDerived.FindProperty("Point"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalDerived.FindProperty("RefTypeArray"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalDerived.FindProperty("RefTypeEnumerable"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalDerived.FindProperty("RefTypeIList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalDerived.FindProperty("RefTypeList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalDerived.FindProperty("ValueTypeArray"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalDerived.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalDerived.FindProperty("ValueTypeIList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalDerived.FindProperty("ValueTypeList"), principalBaseTableMapping1)
             Dim principalDerivedTable As New Table("PrincipalDerived", Nothing, relationalModel)
             Dim derivedIdColumn As New Column("DerivedId", "bigint", principalDerivedTable)
             principalDerivedTable.Columns.Add("DerivedId", derivedIdColumn)
@@ -1364,8 +2624,8 @@ Namespace TestNamespace
             Dim principalDerivedTableMapping As New TableMapping(principalDerived, principalDerivedTable, True)
             principalDerivedTable.AddTypeMapping(principalDerivedTableMapping, False)
             tableMappings3.Add(principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("AlternateId"), principalDerived.FindProperty("AlternateId"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("DerivedId"), principalDerived.FindProperty("Id"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(alternateIdColumn0, principalDerived.FindProperty("AlternateId"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(derivedIdColumn, principalDerived.FindProperty("Id"), principalDerivedTableMapping)
 
             Dim ownedType0 = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>.ManyOwned#OwnedType")
 
@@ -1384,15 +2644,55 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>AlternateId", principalDerivedDependentBasebyteAlternateIdColumnBase)
             Dim principalDerivedDependentBasebyteIdColumnBase As New ColumnBase(Of ColumnMappingBase)("PrincipalDerived<DependentBase<byte?>>Id", "bigint", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumnBase)
+            Dim refTypeArrayColumnBase1 As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase1)
+            Dim refTypeEnumerableColumnBase1 As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase1)
+            Dim refTypeIListColumnBase1 As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase1)
+            Dim refTypeListColumnBase1 As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("RefTypeList", refTypeListColumnBase1)
+            Dim valueTypeArrayColumnBase1 As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase1)
+            Dim valueTypeEnumerableColumnBase1 As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase1)
+            Dim valueTypeIListColumnBase1 As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase1)
+            Dim valueTypeListColumnBase1 As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase1)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>.ManyOwned#OwnedType", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase As New TableMappingBase(Of ColumnMappingBase)(ownedType0, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase, False)
             defaultTableMappings5.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("PrincipalDerived<DependentBase<byte?>>AlternateId"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("PrincipalDerivedAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("PrincipalDerived<DependentBase<byte?>>Id"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("PrincipalDerivedId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("Details"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Details"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeTableBase.FindColumn("Number"), ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Number"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase2, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalDerivedDependentBasebyteAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("PrincipalDerivedAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalDerivedDependentBasebyteIdColumnBase, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("PrincipalDerivedId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(detailsColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Details"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(numberColumnBase0, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("Number"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase1, ColumnBase(Of ColumnMappingBase)), ownedType0.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteManyOwnedOwnedTypeMappingBase)
 
             Dim tableMappings4 As New List(Of TableMapping)()
             ownedType0.SetRuntimeAnnotation("Relational:TableMappings", tableMappings4)
@@ -1409,6 +2709,38 @@ Namespace TestNamespace
             manyOwnedTable.Columns.Add("Details", detailsColumn0)
             Dim numberColumn As New Column("Number", "int", manyOwnedTable)
             manyOwnedTable.Columns.Add("Number", numberColumn)
+            Dim refTypeArrayColumn0 As New Column("RefTypeArray", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("RefTypeArray", refTypeArrayColumn0)
+            Dim refTypeEnumerableColumn0 As New Column("RefTypeEnumerable", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn0)
+            Dim refTypeIListColumn0 As New Column("RefTypeIList", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("RefTypeIList", refTypeIListColumn0)
+            Dim refTypeListColumn0 As New Column("RefTypeList", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("RefTypeList", refTypeListColumn0)
+            Dim valueTypeArrayColumn0 As New Column("ValueTypeArray", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn0)
+            Dim valueTypeEnumerableColumn0 As New Column("ValueTypeEnumerable", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn0)
+            Dim valueTypeIListColumn0 As New Column("ValueTypeIList", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("ValueTypeIList", valueTypeIListColumn0)
+            Dim valueTypeListColumn0 As New Column("ValueTypeList", "nvarchar(max)", manyOwnedTable) With {
+                .IsNullable = True
+            }
+            manyOwnedTable.Columns.Add("ValueTypeList", valueTypeListColumn0)
             Dim pK_ManyOwned As New UniqueConstraint("PK_ManyOwned", manyOwnedTable, {principalDerivedDependentBasebyteIdColumn, principalDerivedDependentBasebyteAlternateIdColumn, idColumn1})
             manyOwnedTable.PrimaryKey = pK_ManyOwned
             Dim pK_ManyOwnedUc = RelationalModel.GetKey(Me,
@@ -1421,11 +2753,19 @@ Namespace TestNamespace
             Dim manyOwnedTableMapping As New TableMapping(ownedType0, manyOwnedTable, True)
             manyOwnedTable.AddTypeMapping(manyOwnedTableMapping, False)
             tableMappings4.Add(manyOwnedTableMapping)
-            RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("Id"), ownedType0.FindProperty("Id"), manyOwnedTableMapping)
-            RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("PrincipalDerived<DependentBase<byte?>>AlternateId"), ownedType0.FindProperty("PrincipalDerivedAlternateId"), manyOwnedTableMapping)
-            RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("PrincipalDerived<DependentBase<byte?>>Id"), ownedType0.FindProperty("PrincipalDerivedId"), manyOwnedTableMapping)
-            RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("Details"), ownedType0.FindProperty("Details"), manyOwnedTableMapping)
-            RelationalModel.CreateColumnMapping(manyOwnedTable.FindColumn("Number"), ownedType0.FindProperty("Number"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn1, ownedType0.FindProperty("Id"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(principalDerivedDependentBasebyteAlternateIdColumn, ownedType0.FindProperty("PrincipalDerivedAlternateId"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(principalDerivedDependentBasebyteIdColumn, ownedType0.FindProperty("PrincipalDerivedId"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(detailsColumn0, ownedType0.FindProperty("Details"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(numberColumn, ownedType0.FindProperty("Number"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn0, ownedType0.FindProperty("RefTypeArray"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn0, ownedType0.FindProperty("RefTypeEnumerable"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn0, ownedType0.FindProperty("RefTypeIList"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeListColumn0, ownedType0.FindProperty("RefTypeList"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn0, ownedType0.FindProperty("ValueTypeArray"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn0, ownedType0.FindProperty("ValueTypeEnumerable"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn0, ownedType0.FindProperty("ValueTypeIList"), manyOwnedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn0, ownedType0.FindProperty("ValueTypeList"), manyOwnedTableMapping)
 
             Dim principalBasePrincipalDerivedDependentBasebyte = FindEntityType("PrincipalBasePrincipalDerived<DependentBase<byte?>>")
 
@@ -1448,11 +2788,11 @@ Namespace TestNamespace
             Dim principalBasePrincipalDerivedDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTableBase, True)
             principalBasePrincipalDerivedDependentBasebyteTableBase.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteMappingBase, False)
             defaultTableMappings6.Add(principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsAlternateId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("PrincipalsAlternateId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("PrincipalsId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("rowid"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(derivedsAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(derivedsIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalsAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalsIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(rowidColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
 
             Dim tableMappings5 As New List(Of TableMapping)()
             principalBasePrincipalDerivedDependentBasebyte.SetRuntimeAnnotation("Relational:TableMappings", tableMappings5)
@@ -1489,11 +2829,11 @@ Namespace TestNamespace
             Dim principalBasePrincipalDerivedDependentBasebyteTableMapping As New TableMapping(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTable, True)
             principalBasePrincipalDerivedDependentBasebyteTable.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, False)
             tableMappings5.Add(principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("rowid"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(derivedsAlternateIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(derivedsIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalsAlternateIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalsIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(rowidColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
             Dim fK_DependentBasebyte_PrincipalBase_PrincipalId As New ForeignKeyConstraint(
                 "FK_DependentBase<byte?>_PrincipalBase_PrincipalId", dependentBasebyteTable, principalBaseTable,
                 {principalIdColumn},
@@ -1597,7 +2937,12 @@ Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 
 Namespace TestNamespace
@@ -1616,6 +2961,19 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            principalId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalAlternateId = entityType.AddProperty(
@@ -1623,6 +2981,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            principalAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enumDiscriminator = entityType.AddProperty(
@@ -1631,6 +3004,27 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create,
                 sentinel:=VisualBasicMigrationsGeneratorTests.Enum1.Default)
+            enumDiscriminator.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                keyComparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                    Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                        Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1))))
             enumDiscriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -1639,6 +3033,19 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetProperty("Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            id.TypeMapping = SqlServerByteTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                keyComparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                providerValueComparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -1713,10 +3120,14 @@ End Namespace
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports NetTopologySuite.Geometries
@@ -1738,6 +3149,19 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim idPrincipalDerived As New RuntimeRelationalPropertyOverrides(
@@ -1756,8 +3180,23 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("AlternateId", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.FieldDuringConstruction,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
-                jsonValueReaderWriter:=JsonGuidReaderWriter.Instance,
-                sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+                sentinel:=New Guid("00000000-0000-0000-0000-000000000000"),
+                jsonValueReaderWriter:=JsonGuidReaderWriter.Instance)
+            alternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = entityType.AddProperty(
@@ -1766,6 +3205,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+            enum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -1774,6 +3234,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            enum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -1782,6 +3263,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -1790,6 +3292,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(6, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim point = entityType.AddProperty(
@@ -1800,72 +3323,464 @@ Namespace TestNamespace
                 valueConverter:=New CastingConverter(Of Point, Point)(),
                 valueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)(),
                 providerValueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)())
+            point.TypeMapping = Nothing
             point.AddAnnotation("Relational:ColumnType", "geometry")
             point.AddAnnotation("Relational:DefaultValue", CType(New NetTopologySuite.IO.WKTReader().Read("SRID=0;POINT Z(0 0 0)"), NetTopologySuite.Geometries.Point))
             point.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key = entityType.AddKey(
-                {id})
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key0 = entityType.AddKey(
-                {id, alternateId})
-            entityType.SetPrimaryKey(key0)
-            key0.AddAnnotation("Relational:Name", "PK")
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim index = entityType.AddIndex(
-                {alternateId, id})
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return entityType
-        End Function
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateSkipNavigation1(declaringEntityType As RuntimeEntityType, targetEntityType As RuntimeEntityType, joinEntityType As RuntimeEntityType) As RuntimeSkipNavigation
-            Dim skipNavigation = declaringEntityType.AddSkipNavigation(
-                "Deriveds",
-                targetEntityType,
-                joinEntityType.FindForeignKey(
-                    {joinEntityType.FindProperty("PrincipalsId"), joinEntityType.FindProperty("PrincipalsAlternateId")},
-                    declaringEntityType.FindKey({declaringEntityType.FindProperty("Id"), declaringEntityType.FindProperty("AlternateId")}),
-                    declaringEntityType),
-                True,
-                False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim inverse = targetEntityType.FindSkipNavigation("Principals")
-            If inverse IsNot Nothing Then
-                skipNavigation.Inverse = inverse
-                inverse.Inverse = skipNavigation
-            End If
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return skipNavigation
-        End Function
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:MappingStrategy", "TPT")
-            entityType.AddAnnotation("Relational:Schema", "mySchema")
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewName", Nothing)
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+Dim key = entityType.AddKey(
+    {id})
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Dim key0 = entityType.AddKey(
+    {id, alternateId})
+entityType.SetPrimaryKey(key0)
+key0.AddAnnotation("Relational:Name", "PK")
+
+Dim index = entityType.AddIndex(
+    {alternateId, id})
+
+Return entityType
+End Function
+
+Public Shared Function CreateSkipNavigation1(declaringEntityType As RuntimeEntityType, targetEntityType As RuntimeEntityType, joinEntityType As RuntimeEntityType) As RuntimeSkipNavigation
+    Dim skipNavigation = declaringEntityType.AddSkipNavigation(
+        "Deriveds",
+        targetEntityType,
+        joinEntityType.FindForeignKey(
+            {joinEntityType.FindProperty("PrincipalsId"), joinEntityType.FindProperty("PrincipalsAlternateId")},
+            declaringEntityType.FindKey({declaringEntityType.FindProperty("Id"), declaringEntityType.FindProperty("AlternateId")}),
+            declaringEntityType),
+        True,
+        False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+
+    Dim inverse = targetEntityType.FindSkipNavigation("Principals")
+    If inverse IsNot Nothing Then
+        skipNavigation.Inverse = inverse
+        inverse.Inverse = skipNavigation
+    End If
+
+    Return skipNavigation
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:MappingStrategy", "TPT")
+    entityType.AddAnnotation("Relational:Schema", "mySchema")
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewName", Nothing)
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
             Dim e3 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 Namespace TestNamespace
     Friend Partial Class OwnedTypeEntityType
@@ -1885,6 +3800,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim principalBaseIdPrincipalBase As New RuntimeRelationalPropertyOverrides(
@@ -1904,6 +3832,21 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            principalBaseAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalBaseAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim details = entityType.AddProperty(
@@ -1913,6 +3856,23 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
+            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                storeTypePostfix:=StoreTypePostfix.None)
 
             Dim overrides0 As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim detailsDetails As New RuntimeRelationalPropertyOverrides(
@@ -1932,85 +3892,496 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 sentinel:=0)
+            number.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim context = entityType.AddServiceProperty(
-                "Context",
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(DbContext))
-
-            Dim key = entityType.AddKey(
-                {principalBaseId, principalBaseAlternateId})
-            entityType.SetPrimaryKey(key)
-
-            Return entityType
-        End Function
-
-        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
-                principalEntityType,
-                deleteBehavior:=DeleteBehavior.Cascade,
-                unique:=True,
-                required:=True,
-                requiredDependent:=True,
-                ownership:=True)
-
-            Dim owned = principalEntityType.AddNavigation("Owned",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
-                eagerLoaded:=True)
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateForeignKey2(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("PrincipalBaseId"), principalEntityType.FindProperty("PrincipalBaseAlternateId")}),
-                principalEntityType,
-                deleteBehavior:=DeleteBehavior.Cascade,
-                unique:=True,
-                required:=True,
-                requiredDependent:=True)
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            Dim fragments As New StoreObjectDictionary(Of RuntimeEntityTypeMappingFragment)()
-            Dim detailsFragment As New RuntimeEntityTypeMappingFragment(
-                entityType,
-                StoreObjectIdentifier.Table("Details", Nothing),
-                Nothing)
-            fragments.GetType().GetMethod("Add").Invoke(fragments, {StoreObjectIdentifier.Table("Details", Nothing), detailsFragment})
-            entityType.AddAnnotation("Relational:MappingFragments", fragments)
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:Schema", "mySchema")
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewName", Nothing)
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim context = entityType.AddServiceProperty(
+    "Context",
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    serviceType:=GetType(DbContext))
+
+Dim key = entityType.AddKey(
+    {principalBaseId, principalBaseAlternateId})
+entityType.SetPrimaryKey(key)
+
+Return entityType
+End Function
+
+Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
+        principalEntityType,
+        deleteBehavior:=DeleteBehavior.Cascade,
+        unique:=True,
+        required:=True,
+        requiredDependent:=True,
+        ownership:=True)
+
+    Dim owned = principalEntityType.AddNavigation("Owned",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        propertyAccessMode:=PropertyAccessMode.Field,
+        eagerLoaded:=True)
+
+    Return runtimeForeignKey
+End Function
+
+Public Shared Function CreateForeignKey2(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("PrincipalBaseId"), principalEntityType.FindProperty("PrincipalBaseAlternateId")}),
+        principalEntityType,
+        deleteBehavior:=DeleteBehavior.Cascade,
+        unique:=True,
+        required:=True,
+        requiredDependent:=True)
+
+    Return runtimeForeignKey
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    Dim fragments As New StoreObjectDictionary(Of RuntimeEntityTypeMappingFragment)()
+    Dim detailsFragment As New RuntimeEntityTypeMappingFragment(
+        entityType,
+        StoreObjectIdentifier.Table("Details", Nothing),
+        Nothing)
+    fragments.GetType().GetMethod("Add").Invoke(fragments, {StoreObjectIdentifier.Table("Details", Nothing), detailsFragment})
+    entityType.AddAnnotation("Relational:MappingFragments", fragments)
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:Schema", "mySchema")
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewName", Nothing)
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
             Dim e4 =
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 Namespace TestNamespace
     Friend Partial Class OwnedType0EntityType
@@ -2027,6 +4398,19 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            principalDerivedId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalDerivedAlternateId = entityType.AddProperty(
@@ -2034,6 +4418,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            principalDerivedAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalDerivedAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -2042,6 +4441,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim details = entityType.AddProperty(
@@ -2050,6 +4462,23 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                storeTypePostfix:=StoreTypePostfix.None)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -2058,63 +4487,465 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=0)
+            number.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim context = entityType.AddServiceProperty(
-                "Context",
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(DbContext))
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key = entityType.AddKey(
-                {principalDerivedId, principalDerivedAlternateId, id})
-            entityType.SetPrimaryKey(key)
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return entityType
-        End Function
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId"), declaringEntityType.FindProperty("PrincipalDerivedAlternateId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
-                principalEntityType,
-                deleteBehavior:=DeleteBehavior.Cascade,
-                required:=True,
-                ownership:=True)
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim manyOwned = principalEntityType.AddNavigation("ManyOwned",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.OwnedType)),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("ManyOwned", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                eagerLoaded:=True)
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:Schema", Nothing)
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "ManyOwned")
-            entityType.AddAnnotation("Relational:ViewName", Nothing)
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
-            entityType.AddAnnotation("SqlServer:MemoryOptimized", True)
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Dim context = entityType.AddServiceProperty(
+    "Context",
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    serviceType:=GetType(DbContext))
+
+Dim key = entityType.AddKey(
+    {principalDerivedId, principalDerivedAlternateId, id})
+entityType.SetPrimaryKey(key)
+
+Return entityType
+End Function
+
+Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId"), declaringEntityType.FindProperty("PrincipalDerivedAlternateId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
+        principalEntityType,
+        deleteBehavior:=DeleteBehavior.Cascade,
+        required:=True,
+        ownership:=True)
+
+    Dim manyOwned = principalEntityType.AddNavigation("ManyOwned",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.OwnedType)),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("ManyOwned", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        eagerLoaded:=True)
+
+    Return runtimeForeignKey
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:Schema", Nothing)
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "ManyOwned")
+    entityType.AddAnnotation("Relational:ViewName", Nothing)
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+    entityType.AddAnnotation("SqlServer:MemoryOptimized", True)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
             Dim e5 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
 Imports System.Collections.Generic
+Imports System.Linq
 Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class PrincipalBasePrincipalDerivedDependentBasebyteEntityType
@@ -2133,6 +4964,19 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            derivedsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             derivedsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim derivedsAlternateId = entityType.AddProperty(
@@ -2140,6 +4984,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            derivedsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             derivedsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsId = entityType.AddProperty(
@@ -2147,6 +5006,19 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            principalsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsAlternateId = entityType.AddProperty(
@@ -2154,6 +5026,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            principalsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim rowid = entityType.AddProperty(
@@ -2165,6 +5052,23 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
+            rowid.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(v),
+                    Function(v As Byte()) v.ToArray()),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="rowversion",
+                    size:=8),
+                storeTypePostfix:=StoreTypePostfix.None)
             rowid.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -2220,7 +5124,10 @@ Imports System
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DependentDerivedEntityType
@@ -2241,6 +5148,23 @@ Namespace TestNamespace
                 nullable:=True,
                 maxLength:=20,
                 unicode:=False)
+            data.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="char(20)",
+                    size:=20,
+                    dbType:=System.Data.DbType.AnsiStringFixedLength))
             data.AddAnnotation("Relational:IsFixedLength", True)
             data.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -2250,6 +5174,23 @@ Namespace TestNamespace
                 precision:=9,
                 scale:=3,
                 sentinel:=0D)
+            money.TypeMapping = SqlServerDecimalTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Decimal)(
+                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                    Function(v As Decimal) v.GetHashCode(),
+                    Function(v As Decimal) v),
+                keyComparer:=New ValueComparer(Of Decimal)(
+                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                    Function(v As Decimal) v.GetHashCode(),
+                    Function(v As Decimal) v),
+                providerValueComparer:=New ValueComparer(Of Decimal)(
+                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                    Function(v As Decimal) v.GetHashCode(),
+                    Function(v As Decimal) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="decimal(9,3)",
+                    precision:=9,
+                    scale:=3))
             money.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Return entityType
@@ -2914,10 +5855,10 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(dependentBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("EnumDiscriminator"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enumDiscriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             dependentBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -2962,10 +5903,10 @@ Namespace TestNamespace
             }
             dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping, False)
             tableMappings.Add(dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentBase.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("EnumDiscriminator"), dependentBase.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Id"), dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalAlternateIdColumn, dependentBase.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalIdColumn, dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(enumDiscriminatorColumn, dependentBase.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
 
             Dim dependentDerived = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentDerived<byte?>")
 
@@ -2974,12 +5915,12 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(dependentDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalAlternateId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Data"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Data"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("EnumDiscriminator"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Money"), ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Money"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(principalAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalAlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(principalIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(dataColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Data"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enumDiscriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("EnumDiscriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(moneyColumnBase, ColumnBase(Of ColumnMappingBase)), dependentDerived.FindProperty("Money"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase0)
 
             Dim tableMappings0 As New List(Of TableMapping)()
             dependentDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings0)
@@ -2988,12 +5929,12 @@ Namespace TestNamespace
             }
             dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping0, False)
             tableMappings0.Add(dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalAlternateId"), dependentDerived.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentDerived.FindProperty("PrincipalId"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Data"), dependentDerived.FindProperty("Data"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("EnumDiscriminator"), dependentDerived.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Id"), dependentDerived.FindProperty("Id"), dependentBasebyteTableMapping0)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Money"), dependentDerived.FindProperty("Money"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(principalAlternateIdColumn, dependentDerived.FindProperty("PrincipalAlternateId"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(principalIdColumn, dependentDerived.FindProperty("PrincipalId"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(dataColumn, dependentDerived.FindProperty("Data"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(enumDiscriminatorColumn, dependentDerived.FindProperty("EnumDiscriminator"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(idColumn, dependentDerived.FindProperty("Id"), dependentBasebyteTableMapping0)
+            RelationalModel.CreateColumnMapping(moneyColumn, dependentDerived.FindProperty("Money"), dependentBasebyteTableMapping0)
 
             Dim principalBase = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase")
 
@@ -3020,18 +5961,58 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("Point", pointColumnBase)
+            Dim refTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase)
+            Dim refTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase)
+            Dim refTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase)
+            Dim refTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeList", refTypeListColumnBase)
+            Dim valueTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase)
+            Dim valueTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase)
+            Dim valueTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase)
+            Dim valueTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings1.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Discriminator"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Point"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(alternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase0, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(discriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(pointColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
 
             Dim tableMappings1 As New List(Of TableMapping)()
             principalBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings1)
@@ -3062,6 +6043,38 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalBaseTable.Columns.Add("Point", pointColumn)
+            Dim refTypeArrayColumn As New Column("RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeArray", refTypeArrayColumn)
+            Dim refTypeEnumerableColumn As New Column("RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn)
+            Dim refTypeIListColumn As New Column("RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeIList", refTypeIListColumn)
+            Dim refTypeListColumn As New Column("RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeList", refTypeListColumn)
+            Dim valueTypeArrayColumn As New Column("ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn)
+            Dim valueTypeEnumerableColumn As New Column("ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn)
+            Dim valueTypeIListColumn As New Column("ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeIList", valueTypeIListColumn)
+            Dim valueTypeListColumn As New Column("ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeList", valueTypeListColumn)
             Dim aK_PrincipalBase_Id As New UniqueConstraint("AK_PrincipalBase_Id", principalBaseTable, {idColumn0})
             Dim aK_PrincipalBase_IdUc = RelationalModel.GetKey(Me,
                 "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase",
@@ -3091,14 +6104,22 @@ Namespace TestNamespace
             }
             principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings1.Add(principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalBase.FindProperty("AlternateId"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Point"), principalBase.FindProperty("Point"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(alternateIdColumn, principalBase.FindProperty("AlternateId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn0, principalBase.FindProperty("Id"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(discriminatorColumn, principalBase.FindProperty("Discriminator"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum1Column, principalBase.FindProperty("Enum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum2Column, principalBase.FindProperty("Enum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(pointColumn, principalBase.FindProperty("Point"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalBase.FindProperty("RefTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalBase.FindProperty("RefTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalBase.FindProperty("RefTypeList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalBase.FindProperty("ValueTypeList"), principalBaseTableMapping)
 
             Dim ownedType = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType")
 
@@ -3132,14 +6153,22 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
             defaultTableMappings3.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("AlternateId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Discriminator"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Point"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(alternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("AlternateId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(discriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(pointColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
 
             Dim tableMappings3 As New List(Of TableMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings3)
@@ -3148,14 +6177,22 @@ Namespace TestNamespace
             }
             principalBaseTable.AddTypeMapping(principalBaseTableMapping1, False)
             tableMappings3.Add(principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("AlternateId"), principalDerived.FindProperty("AlternateId"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Discriminator"), principalDerived.FindProperty("Discriminator"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Point"), principalDerived.FindProperty("Point"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(alternateIdColumn, principalDerived.FindProperty("AlternateId"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(idColumn0, principalDerived.FindProperty("Id"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(discriminatorColumn, principalDerived.FindProperty("Discriminator"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(enum1Column, principalDerived.FindProperty("Enum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(enum2Column, principalDerived.FindProperty("Enum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(pointColumn, principalDerived.FindProperty("Point"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalDerived.FindProperty("RefTypeArray"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalDerived.FindProperty("RefTypeEnumerable"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalDerived.FindProperty("RefTypeIList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalDerived.FindProperty("RefTypeList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalDerived.FindProperty("ValueTypeArray"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalDerived.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalDerived.FindProperty("ValueTypeIList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalDerived.FindProperty("ValueTypeList"), principalBaseTableMapping1)
 
             Dim ownedType0 = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>.ManyOwned#OwnedType")
 
@@ -3205,11 +6242,11 @@ Namespace TestNamespace
             Dim principalBasePrincipalDerivedDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTableBase, True)
             principalBasePrincipalDerivedDependentBasebyteTableBase.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteMappingBase, False)
             defaultTableMappings5.Add(principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsAlternateId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("DerivedsId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("PrincipalsAlternateId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("PrincipalsId"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(principalBasePrincipalDerivedDependentBasebyteTableBase.FindColumn("rowid"), ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(derivedsAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(derivedsIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalsAlternateIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalsIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(rowidColumnBase, ColumnBase(Of ColumnMappingBase)), principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteMappingBase)
 
             Dim tableMappings5 As New List(Of TableMapping)()
             principalBasePrincipalDerivedDependentBasebyte.SetRuntimeAnnotation("Relational:TableMappings", tableMappings5)
@@ -3246,11 +6283,11 @@ Namespace TestNamespace
             Dim principalBasePrincipalDerivedDependentBasebyteTableMapping As New TableMapping(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTable, True)
             principalBasePrincipalDerivedDependentBasebyteTable.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, False)
             tableMappings5.Add(principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("DerivedsId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(principalBasePrincipalDerivedDependentBasebyteTable.FindColumn("rowid"), principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(derivedsAlternateIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(derivedsIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("DerivedsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalsAlternateIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalsIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(rowidColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid"), principalBasePrincipalDerivedDependentBasebyteTableMapping)
             Dim fK_DependentBasebyte_PrincipalBase_PrincipalId As New ForeignKeyConstraint(
                 "FK_DependentBase<byte?>_PrincipalBase_PrincipalId", dependentBasebyteTable, principalBaseTable,
                 {principalIdColumn},
@@ -3315,7 +6352,12 @@ Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 
 Namespace TestNamespace
@@ -3334,6 +6376,19 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            principalId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalAlternateId = entityType.AddProperty(
@@ -3341,6 +6396,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            principalAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enumDiscriminator = entityType.AddProperty(
@@ -3349,6 +6419,27 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create,
                 sentinel:=VisualBasicMigrationsGeneratorTests.Enum1.Default)
+            enumDiscriminator.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                keyComparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                    Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                        Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1))))
             enumDiscriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -3357,6 +6448,19 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetProperty("Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            id.TypeMapping = SqlServerByteTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                keyComparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                providerValueComparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -3430,10 +6534,15 @@ End Namespace
             Dim PrincipalBaseEntityType = <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 Imports NetTopologySuite.Geometries
@@ -3455,6 +6564,19 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim alternateId = entityType.AddProperty(
@@ -3463,8 +6585,23 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("AlternateId", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.FieldDuringConstruction,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
-                jsonValueReaderWriter:=New MyJsonGuidReaderWriter(),
-                sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+                sentinel:=New Guid("00000000-0000-0000-0000-000000000000"),
+                jsonValueReaderWriter:=New MyJsonGuidReaderWriter())
+            alternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim discriminator = entityType.AddProperty(
@@ -3473,6 +6610,23 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 maxLength:=55,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
+            discriminator.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(55)",
+                    size:=55,
+                    dbType:=System.Data.DbType.String))
             discriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = entityType.AddProperty(
@@ -3481,6 +6635,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+            enum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -3489,6 +6664,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            enum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -3497,6 +6693,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -3505,6 +6722,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(6, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim point = entityType.AddProperty(
@@ -3515,71 +6753,463 @@ Namespace TestNamespace
                 valueConverter:=New CastingConverter(Of Point, Point)(),
                 valueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)(),
                 providerValueComparer:=New VisualBasicRuntimeModelCodeGeneratorTest.CustomValueComparer(Of Point)())
+            point.TypeMapping = Nothing
             point.AddAnnotation("Relational:ColumnType", "geometry")
             point.AddAnnotation("Relational:DefaultValue", CType(New NetTopologySuite.IO.WKTReader().Read("SRID=0;POINT Z(0 0 0)"), NetTopologySuite.Geometries.Point))
             point.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key = entityType.AddKey(
-                {id})
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key0 = entityType.AddKey(
-                {id, alternateId})
-            entityType.SetPrimaryKey(key0)
-            key0.AddAnnotation("Relational:Name", "PK")
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim index = entityType.AddIndex(
-                {alternateId, id})
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return entityType
-        End Function
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateSkipNavigation1(declaringEntityType As RuntimeEntityType, targetEntityType As RuntimeEntityType, joinEntityType As RuntimeEntityType) As RuntimeSkipNavigation
-            Dim skipNavigation = declaringEntityType.AddSkipNavigation(
-                "Deriveds",
-                targetEntityType,
-                joinEntityType.FindForeignKey(
-                    {joinEntityType.FindProperty("PrincipalsId"), joinEntityType.FindProperty("PrincipalsAlternateId")},
-                    declaringEntityType.FindKey({declaringEntityType.FindProperty("Id"), declaringEntityType.FindProperty("AlternateId")}),
-                    declaringEntityType),
-                True,
-                False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim inverse = targetEntityType.FindSkipNavigation("Principals")
-            If inverse IsNot Nothing Then
-                skipNavigation.Inverse = inverse
-                inverse.Inverse = skipNavigation
-            End If
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return skipNavigation
-        End Function
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:MappingStrategy", "TPH")
-            entityType.AddAnnotation("Relational:Schema", Nothing)
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewName", Nothing)
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+Dim key = entityType.AddKey(
+    {id})
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Dim key0 = entityType.AddKey(
+    {id, alternateId})
+entityType.SetPrimaryKey(key0)
+key0.AddAnnotation("Relational:Name", "PK")
+
+Dim index = entityType.AddIndex(
+    {alternateId, id})
+
+Return entityType
+End Function
+
+Public Shared Function CreateSkipNavigation1(declaringEntityType As RuntimeEntityType, targetEntityType As RuntimeEntityType, joinEntityType As RuntimeEntityType) As RuntimeSkipNavigation
+    Dim skipNavigation = declaringEntityType.AddSkipNavigation(
+        "Deriveds",
+        targetEntityType,
+        joinEntityType.FindForeignKey(
+            {joinEntityType.FindProperty("PrincipalsId"), joinEntityType.FindProperty("PrincipalsAlternateId")},
+            declaringEntityType.FindKey({declaringEntityType.FindProperty("Id"), declaringEntityType.FindProperty("AlternateId")}),
+            declaringEntityType),
+        True,
+        False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+
+    Dim inverse = targetEntityType.FindSkipNavigation("Principals")
+    If inverse IsNot Nothing Then
+        skipNavigation.Inverse = inverse
+        inverse.Inverse = skipNavigation
+    End If
+
+    Return skipNavigation
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:MappingStrategy", "TPH")
+    entityType.AddAnnotation("Relational:Schema", Nothing)
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewName", Nothing)
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
             Dim OwnedTypeEntityType = <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 Namespace TestNamespace
     Friend Partial Class OwnedTypeEntityType
@@ -3598,6 +7228,19 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalBaseAlternateId = entityType.AddProperty(
@@ -3606,6 +7249,21 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            principalBaseAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalBaseAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim details = entityType.AddProperty(
@@ -3615,6 +7273,23 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
+            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                storeTypePostfix:=StoreTypePostfix.None)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -3624,67 +7299,478 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 sentinel:=0)
+            number.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim context = entityType.AddServiceProperty(
-                "Context",
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(DbContext))
-
-            Dim key = entityType.AddKey(
-                {principalBaseId, principalBaseAlternateId})
-            entityType.SetPrimaryKey(key)
-
-            Return entityType
-        End Function
-
-        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
-                principalEntityType,
-                deleteBehavior:=DeleteBehavior.Cascade,
-                unique:=True,
-                required:=True,
-                requiredDependent:=True,
-                ownership:=True)
-
-            Dim owned = principalEntityType.AddNavigation("Owned",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
-                eagerLoaded:=True)
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("Relational:ContainerColumnName", "Owned")
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:Schema", Nothing)
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewName", Nothing)
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    propertyAccessMode:=PropertyAccessMode.Field,
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim context = entityType.AddServiceProperty(
+    "Context",
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    serviceType:=GetType(DbContext))
+
+Dim key = entityType.AddKey(
+    {principalBaseId, principalBaseAlternateId})
+entityType.SetPrimaryKey(key)
+
+Return entityType
+End Function
+
+Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId"), declaringEntityType.FindProperty("PrincipalBaseAlternateId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
+        principalEntityType,
+        deleteBehavior:=DeleteBehavior.Cascade,
+        unique:=True,
+        required:=True,
+        requiredDependent:=True,
+        ownership:=True)
+
+    Dim owned = principalEntityType.AddNavigation("Owned",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        propertyAccessMode:=PropertyAccessMode.Field,
+        eagerLoaded:=True)
+
+    Return runtimeForeignKey
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    entityType.AddAnnotation("Relational:ContainerColumnName", "Owned")
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:Schema", Nothing)
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewName", Nothing)
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
             Dim OwnedType0EntityType = <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 Namespace TestNamespace
     Friend Partial Class OwnedType0EntityType
@@ -3701,6 +7787,19 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
+            principalDerivedId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalDerivedAlternateId = entityType.AddProperty(
@@ -3708,6 +7807,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            principalDerivedAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalDerivedAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -3716,6 +7830,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim details = entityType.AddProperty(
@@ -3724,6 +7851,23 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                storeTypePostfix:=StoreTypePostfix.None)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -3732,62 +7876,464 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=0)
+            number.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim context = entityType.AddServiceProperty(
-                "Context",
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                serviceType:=GetType(DbContext))
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key = entityType.AddKey(
-                {principalDerivedId, principalDerivedAlternateId, id})
-            entityType.SetPrimaryKey(key)
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return entityType
-        End Function
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId"), declaringEntityType.FindProperty("PrincipalDerivedAlternateId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
-                principalEntityType,
-                deleteBehavior:=DeleteBehavior.Cascade,
-                required:=True,
-                ownership:=True)
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim manyOwned = principalEntityType.AddNavigation("ManyOwned",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.OwnedType)),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("ManyOwned", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                eagerLoaded:=True)
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            entityType.AddAnnotation("Relational:ContainerColumnName", "ManyOwned")
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:Schema", Nothing)
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewName", Nothing)
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Dim context = entityType.AddServiceProperty(
+    "Context",
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Context", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    serviceType:=GetType(DbContext))
+
+Dim key = entityType.AddKey(
+    {principalDerivedId, principalDerivedAlternateId, id})
+entityType.SetPrimaryKey(key)
+
+Return entityType
+End Function
+
+Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId"), declaringEntityType.FindProperty("PrincipalDerivedAlternateId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id"), principalEntityType.FindProperty("AlternateId")}),
+        principalEntityType,
+        deleteBehavior:=DeleteBehavior.Cascade,
+        required:=True,
+        ownership:=True)
+
+    Dim manyOwned = principalEntityType.AddNavigation("ManyOwned",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.OwnedType)),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("ManyOwned", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        eagerLoaded:=True)
+
+    Return runtimeForeignKey
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    entityType.AddAnnotation("Relational:ContainerColumnName", "ManyOwned")
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:Schema", Nothing)
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewName", Nothing)
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
             Dim PrincipalBasePrincipalDerivedDependentBasebyteEntityType = <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
 Imports System.Collections.Generic
+Imports System.Linq
 Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class PrincipalBasePrincipalDerivedDependentBasebyteEntityType
@@ -3806,6 +8352,19 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            derivedsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             derivedsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim derivedsAlternateId = entityType.AddProperty(
@@ -3813,6 +8372,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            derivedsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             derivedsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsId = entityType.AddProperty(
@@ -3820,6 +8394,19 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            principalsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                keyComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v),
+                providerValueComparer:=New ValueComparer(Of Long)(
+                    Function(v1 As Long, v2 As Long) v1 = v2,
+                    Function(v As Long) v.GetHashCode(),
+                    Function(v As Long) v))
             principalsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsAlternateId = entityType.AddProperty(
@@ -3827,6 +8414,21 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            principalsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             principalsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim rowid = entityType.AddProperty(
@@ -3838,6 +8440,23 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
+            rowid.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(v),
+                    Function(v As Byte()) v.ToArray()),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="rowversion",
+                    size:=8),
+                storeTypePostfix:=StoreTypePostfix.None)
             rowid.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -3892,7 +8511,10 @@ Imports System
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DependentDerivedEntityType
@@ -3913,6 +8535,23 @@ Namespace TestNamespace
                 nullable:=True,
                 maxLength:=20,
                 unicode:=False)
+            data.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="char(20)",
+                    size:=20,
+                    dbType:=System.Data.DbType.AnsiStringFixedLength))
             data.AddAnnotation("Relational:IsFixedLength", True)
             data.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -3922,6 +8561,23 @@ Namespace TestNamespace
                 precision:=9,
                 scale:=3,
                 sentinel:=0D)
+            money.TypeMapping = SqlServerDecimalTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Decimal)(
+                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                    Function(v As Decimal) v.GetHashCode(),
+                    Function(v As Decimal) v),
+                keyComparer:=New ValueComparer(Of Decimal)(
+                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                    Function(v As Decimal) v.GetHashCode(),
+                    Function(v As Decimal) v),
+                providerValueComparer:=New ValueComparer(Of Decimal)(
+                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                    Function(v As Decimal) v.GetHashCode(),
+                    Function(v As Decimal) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="decimal(9,3)",
+                    precision:=9,
+                    scale:=3))
             money.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Return entityType
@@ -4548,17 +9204,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("PrincipalBaseId", principalBaseIdColumnBase)
+            Dim refTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase)
+            Dim refTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase)
+            Dim refTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase)
+            Dim refTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeList", refTypeListColumnBase)
+            Dim valueTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase)
+            Dim valueTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase)
+            Dim valueTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase)
+            Dim valueTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Discriminator"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(discriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalBaseIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             principalBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -4599,10 +9295,106 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalBaseTable.Columns.Add("Owned_Principal_Id", owned_Principal_IdColumn)
+            Dim owned_Principal_RefTypeArrayColumn As New Column("Owned_Principal_RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_RefTypeArray", owned_Principal_RefTypeArrayColumn)
+            Dim owned_Principal_RefTypeEnumerableColumn As New Column("Owned_Principal_RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_RefTypeEnumerable", owned_Principal_RefTypeEnumerableColumn)
+            Dim owned_Principal_RefTypeIListColumn As New Column("Owned_Principal_RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_RefTypeIList", owned_Principal_RefTypeIListColumn)
+            Dim owned_Principal_RefTypeListColumn As New Column("Owned_Principal_RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_RefTypeList", owned_Principal_RefTypeListColumn)
+            Dim owned_Principal_ValueTypeArrayColumn As New Column("Owned_Principal_ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_ValueTypeArray", owned_Principal_ValueTypeArrayColumn)
+            Dim owned_Principal_ValueTypeEnumerableColumn As New Column("Owned_Principal_ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_ValueTypeEnumerable", owned_Principal_ValueTypeEnumerableColumn)
+            Dim owned_Principal_ValueTypeIListColumn As New Column("Owned_Principal_ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_ValueTypeIList", owned_Principal_ValueTypeIListColumn)
+            Dim owned_Principal_ValueTypeListColumn As New Column("Owned_Principal_ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_Principal_ValueTypeList", owned_Principal_ValueTypeListColumn)
+            Dim owned_RefTypeArrayColumn As New Column("Owned_RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeArray", owned_RefTypeArrayColumn)
+            Dim owned_RefTypeEnumerableColumn As New Column("Owned_RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeEnumerable", owned_RefTypeEnumerableColumn)
+            Dim owned_RefTypeIListColumn As New Column("Owned_RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeIList", owned_RefTypeIListColumn)
+            Dim owned_RefTypeListColumn As New Column("Owned_RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_RefTypeList", owned_RefTypeListColumn)
+            Dim owned_ValueTypeArrayColumn As New Column("Owned_ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeArray", owned_ValueTypeArrayColumn)
+            Dim owned_ValueTypeEnumerableColumn As New Column("Owned_ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeEnumerable", owned_ValueTypeEnumerableColumn)
+            Dim owned_ValueTypeIListColumn As New Column("Owned_ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeIList", owned_ValueTypeIListColumn)
+            Dim owned_ValueTypeListColumn As New Column("Owned_ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("Owned_ValueTypeList", owned_ValueTypeListColumn)
             Dim principalBaseIdColumn As New Column("PrincipalBaseId", "bigint", principalBaseTable) With {
                 .IsNullable = True
             }
             principalBaseTable.Columns.Add("PrincipalBaseId", principalBaseIdColumn)
+            Dim refTypeArrayColumn As New Column("RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeArray", refTypeArrayColumn)
+            Dim refTypeEnumerableColumn As New Column("RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn)
+            Dim refTypeIListColumn As New Column("RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeIList", refTypeIListColumn)
+            Dim refTypeListColumn As New Column("RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeList", refTypeListColumn)
+            Dim valueTypeArrayColumn As New Column("ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn)
+            Dim valueTypeEnumerableColumn As New Column("ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn)
+            Dim valueTypeIListColumn As New Column("ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeIList", valueTypeIListColumn)
+            Dim valueTypeListColumn As New Column("ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeList", valueTypeListColumn)
             Dim pK_PrincipalBase As New UniqueConstraint("PK_PrincipalBase", principalBaseTable, {idColumn})
             principalBaseTable.PrimaryKey = pK_PrincipalBase
             Dim pK_PrincipalBaseUc = RelationalModel.GetKey(Me,
@@ -4625,13 +9417,21 @@ Namespace TestNamespace
             }
             principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings.Add(principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, principalBase.FindProperty("Id"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(discriminatorColumn, principalBase.FindProperty("Discriminator"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum1Column, principalBase.FindProperty("Enum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum2Column, principalBase.FindProperty("Enum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseIdColumn, principalBase.FindProperty("PrincipalBaseId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalBase.FindProperty("RefTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalBase.FindProperty("RefTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalBase.FindProperty("RefTypeList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalBase.FindProperty("ValueTypeList"), principalBaseTableMapping)
 
             Dim viewMappings As New List(Of ViewMapping)()
             principalBase.SetRuntimeAnnotation("Relational:ViewMappings", viewMappings)
@@ -4654,17 +9454,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalBaseViewView.Columns.Add("PrincipalBaseId", principalBaseIdViewColumn)
+            Dim refTypeArrayViewColumn As New ViewColumn("RefTypeArray", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeArray", refTypeArrayViewColumn)
+            Dim refTypeEnumerableViewColumn As New ViewColumn("RefTypeEnumerable", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeEnumerable", refTypeEnumerableViewColumn)
+            Dim refTypeIListViewColumn As New ViewColumn("RefTypeIList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeIList", refTypeIListViewColumn)
+            Dim refTypeListViewColumn As New ViewColumn("RefTypeList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeList", refTypeListViewColumn)
+            Dim valueTypeArrayViewColumn As New ViewColumn("ValueTypeArray", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeArray", valueTypeArrayViewColumn)
+            Dim valueTypeEnumerableViewColumn As New ViewColumn("ValueTypeEnumerable", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableViewColumn)
+            Dim valueTypeIListViewColumn As New ViewColumn("ValueTypeIList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeIList", valueTypeIListViewColumn)
+            Dim valueTypeListViewColumn As New ViewColumn("ValueTypeList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeList", valueTypeListViewColumn)
             relationalModel.Views.Add(("PrincipalBaseView", Nothing), principalBaseViewView)
             Dim principalBaseViewViewMapping As New ViewMapping(principalBase, principalBaseViewView, True)
             principalBaseViewView.AddTypeMapping(principalBaseViewViewMapping, False)
             viewMappings.Add(principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(idViewColumn, principalBase.FindProperty("Id"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(discriminatorViewColumn, principalBase.FindProperty("Discriminator"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(enum1ViewColumn, principalBase.FindProperty("Enum1"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(enum2ViewColumn, principalBase.FindProperty("Enum2"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(flagsEnum1ViewColumn, principalBase.FindProperty("FlagsEnum1"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(flagsEnum2ViewColumn, principalBase.FindProperty("FlagsEnum2"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseIdViewColumn, principalBase.FindProperty("PrincipalBaseId"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeArrayViewColumn, principalBase.FindProperty("RefTypeArray"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeEnumerableViewColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeIListViewColumn, principalBase.FindProperty("RefTypeIList"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeListViewColumn, principalBase.FindProperty("RefTypeList"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeArrayViewColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeEnumerableViewColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeIListViewColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeListViewColumn, principalBase.FindProperty("ValueTypeList"), principalBaseViewViewMapping)
 
             Dim sqlQueryMappings As New List(Of SqlQueryMapping)()
             principalBase.SetRuntimeAnnotation("Relational:SqlQueryMappings", sqlQueryMappings)
@@ -4687,18 +9527,58 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("PrincipalBaseId", principalBaseIdSqlQueryColumn)
+            Dim refTypeArraySqlQueryColumn As New SqlQueryColumn("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("RefTypeArray", refTypeArraySqlQueryColumn)
+            Dim refTypeEnumerableSqlQueryColumn As New SqlQueryColumn("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("RefTypeEnumerable", refTypeEnumerableSqlQueryColumn)
+            Dim refTypeIListSqlQueryColumn As New SqlQueryColumn("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("RefTypeIList", refTypeIListSqlQueryColumn)
+            Dim refTypeListSqlQueryColumn As New SqlQueryColumn("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("RefTypeList", refTypeListSqlQueryColumn)
+            Dim valueTypeArraySqlQueryColumn As New SqlQueryColumn("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("ValueTypeArray", valueTypeArraySqlQueryColumn)
+            Dim valueTypeEnumerableSqlQueryColumn As New SqlQueryColumn("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableSqlQueryColumn)
+            Dim valueTypeIListSqlQueryColumn As New SqlQueryColumn("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("ValueTypeIList", valueTypeIListSqlQueryColumn)
+            Dim valueTypeListSqlQueryColumn As New SqlQueryColumn("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.Columns.Add("ValueTypeList", valueTypeListSqlQueryColumn)
             relationalModel.Queries.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.MappedSqlQuery", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping As New SqlQueryMapping(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping, False)
             sqlQueryMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping.IsDefaultSqlQueryMapping = True
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Id"), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(idSqlQueryColumn, principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(discriminatorSqlQueryColumn, principalBase.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(enum1SqlQueryColumn, principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(enum2SqlQueryColumn, principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(flagsEnum1SqlQueryColumn, principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(flagsEnum2SqlQueryColumn, principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(principalBaseIdSqlQueryColumn, principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeArraySqlQueryColumn, principalBase.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeEnumerableSqlQueryColumn, principalBase.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeIListSqlQueryColumn, principalBase.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeListSqlQueryColumn, principalBase.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeArraySqlQueryColumn, principalBase.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeEnumerableSqlQueryColumn, principalBase.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeIListSqlQueryColumn, principalBase.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeListSqlQueryColumn, principalBase.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping)
 
             Dim functionMappings As New List(Of FunctionMapping)()
             principalBase.SetRuntimeAnnotation("Relational:FunctionMappings", functionMappings)
@@ -4722,6 +9602,38 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalBaseTvfFunction.Columns.Add("PrincipalBaseId", principalBaseIdFunctionColumn)
+            Dim refTypeArrayFunctionColumn As New FunctionColumn("RefTypeArray", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("RefTypeArray", refTypeArrayFunctionColumn)
+            Dim refTypeEnumerableFunctionColumn As New FunctionColumn("RefTypeEnumerable", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("RefTypeEnumerable", refTypeEnumerableFunctionColumn)
+            Dim refTypeIListFunctionColumn As New FunctionColumn("RefTypeIList", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("RefTypeIList", refTypeIListFunctionColumn)
+            Dim refTypeListFunctionColumn As New FunctionColumn("RefTypeList", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("RefTypeList", refTypeListFunctionColumn)
+            Dim valueTypeArrayFunctionColumn As New FunctionColumn("ValueTypeArray", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("ValueTypeArray", valueTypeArrayFunctionColumn)
+            Dim valueTypeEnumerableFunctionColumn As New FunctionColumn("ValueTypeEnumerable", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableFunctionColumn)
+            Dim valueTypeIListFunctionColumn As New FunctionColumn("ValueTypeIList", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("ValueTypeIList", valueTypeIListFunctionColumn)
+            Dim valueTypeListFunctionColumn As New FunctionColumn("ValueTypeList", "nvarchar(max)", principalBaseTvfFunction) With {
+                .IsNullable = True
+            }
+            principalBaseTvfFunction.Columns.Add("ValueTypeList", valueTypeListFunctionColumn)
             relationalModel.Functions.Add(
                 ("PrincipalBaseTvf", "dbo", New String() {}),
                 principalBaseTvfFunction)
@@ -4729,13 +9641,21 @@ Namespace TestNamespace
             principalBaseTvfFunction.AddTypeMapping(principalBaseTvfFunctionMapping, False)
             functionMappings.Add(principalBaseTvfFunctionMapping)
             principalBaseTvfFunctionMapping.IsDefaultFunctionMapping = True
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTvfFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Discriminator"), principalBase.FindProperty("Discriminator"), principalBaseTvfFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTvfFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTvfFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTvfFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTvfFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(principalBaseTvfFunction.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(idFunctionColumn, principalBase.FindProperty("Id"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(discriminatorFunctionColumn, principalBase.FindProperty("Discriminator"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(enum1FunctionColumn, principalBase.FindProperty("Enum1"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(enum2FunctionColumn, principalBase.FindProperty("Enum2"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(flagsEnum1FunctionColumn, principalBase.FindProperty("FlagsEnum1"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(flagsEnum2FunctionColumn, principalBase.FindProperty("FlagsEnum2"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(principalBaseIdFunctionColumn, principalBase.FindProperty("PrincipalBaseId"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(refTypeArrayFunctionColumn, principalBase.FindProperty("RefTypeArray"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(refTypeEnumerableFunctionColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(refTypeIListFunctionColumn, principalBase.FindProperty("RefTypeIList"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(refTypeListFunctionColumn, principalBase.FindProperty("RefTypeList"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(valueTypeArrayFunctionColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(valueTypeEnumerableFunctionColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(valueTypeIListFunctionColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseTvfFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(valueTypeListFunctionColumn, principalBase.FindProperty("ValueTypeList"), principalBaseTvfFunctionMapping)
 
             Dim deleteSprocMappings As New List(Of StoredProcedureMapping)()
             principalBase.SetRuntimeAnnotation("Relational:DeleteStoredProcedureMappings", deleteSprocMappings)
@@ -4769,9 +9689,41 @@ Namespace TestNamespace
             principalBase_InsertStoreSproc.AddParameter(flagsEnum1Parameter)
             Dim flagsEnum2Parameter As New StoreStoredProcedureParameter("FlagsEnum2", "int", 4, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_InsertStoreSproc.AddParameter(flagsEnum2Parameter)
-            Dim discriminatorParameter As New StoreStoredProcedureParameter("Discriminator", "nvarchar(55)", 5, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
+            Dim valueTypeListParameter As New StoreStoredProcedureParameter("ValueTypeList", "nvarchar(max)", 5, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeListParameter)
+            Dim valueTypeIListParameter As New StoreStoredProcedureParameter("ValueTypeIList", "nvarchar(max)", 6, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeIListParameter)
+            Dim valueTypeArrayParameter As New StoreStoredProcedureParameter("ValueTypeArray", "nvarchar(max)", 7, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeArrayParameter)
+            Dim valueTypeEnumerableParameter As New StoreStoredProcedureParameter("ValueTypeEnumerable", "nvarchar(max)", 8, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeEnumerableParameter)
+            Dim refTypeListParameter As New StoreStoredProcedureParameter("RefTypeList", "nvarchar(max)", 9, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeListParameter)
+            Dim refTypeIListParameter As New StoreStoredProcedureParameter("RefTypeIList", "nvarchar(max)", 10, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeIListParameter)
+            Dim refTypeArrayParameter As New StoreStoredProcedureParameter("RefTypeArray", "nvarchar(max)", 11, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeArrayParameter)
+            Dim refTypeEnumerableParameter As New StoreStoredProcedureParameter("RefTypeEnumerable", "nvarchar(max)", 12, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeEnumerableParameter)
+            Dim discriminatorParameter As New StoreStoredProcedureParameter("Discriminator", "nvarchar(55)", 13, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_InsertStoreSproc.AddParameter(discriminatorParameter)
-            Dim idParameter As New StoreStoredProcedureParameter("Id", "bigint", 6, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Output)
+            Dim idParameter As New StoreStoredProcedureParameter("Id", "bigint", 14, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Output)
             principalBase_InsertStoreSproc.AddParameter(idParameter)
             principalBase_InsertStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure))
             relationalModel.StoredProcedures.Add(("PrincipalBase_Insert", Nothing), principalBase_InsertStoreSproc)
@@ -4787,6 +9739,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter, principalBase_InsertISproc.FindParameter("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBase_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter, principalBase_InsertISproc.FindParameter("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBase_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter, principalBase_InsertISproc.FindParameter("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter, principalBase_InsertISproc.FindParameter("RefTypeArray"), principalBase.FindProperty("RefTypeArray"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter, principalBase_InsertISproc.FindParameter("RefTypeEnumerable"), principalBase.FindProperty("RefTypeEnumerable"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter, principalBase_InsertISproc.FindParameter("RefTypeIList"), principalBase.FindProperty("RefTypeIList"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter, principalBase_InsertISproc.FindParameter("RefTypeList"), principalBase.FindProperty("RefTypeList"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter, principalBase_InsertISproc.FindParameter("ValueTypeArray"), principalBase.FindProperty("ValueTypeArray"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter, principalBase_InsertISproc.FindParameter("ValueTypeEnumerable"), principalBase.FindProperty("ValueTypeEnumerable"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter, principalBase_InsertISproc.FindParameter("ValueTypeIList"), principalBase.FindProperty("ValueTypeIList"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter, principalBase_InsertISproc.FindParameter("ValueTypeList"), principalBase.FindProperty("ValueTypeList"), principalBase_InsertSprocMapping)
 
             Dim updateSprocMappings As New List(Of StoredProcedureMapping)()
             principalBase.SetRuntimeAnnotation("Relational:UpdateStoredProcedureMappings", updateSprocMappings)
@@ -4805,7 +9765,39 @@ Namespace TestNamespace
             principalBase_UpdateStoreSproc.AddParameter(flagsEnum1Parameter0)
             Dim flagsEnum2Parameter0 As New StoreStoredProcedureParameter("FlagsEnum2", "int", 4, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_UpdateStoreSproc.AddParameter(flagsEnum2Parameter0)
-            Dim id_OriginalParameter0 As New StoreStoredProcedureParameter("Id_Original", "bigint", 5, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            Dim valueTypeListParameter0 As New StoreStoredProcedureParameter("ValueTypeList", "nvarchar(max)", 5, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeListParameter0)
+            Dim valueTypeIListParameter0 As New StoreStoredProcedureParameter("ValueTypeIList", "nvarchar(max)", 6, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeIListParameter0)
+            Dim valueTypeArrayParameter0 As New StoreStoredProcedureParameter("ValueTypeArray", "nvarchar(max)", 7, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeArrayParameter0)
+            Dim valueTypeEnumerableParameter0 As New StoreStoredProcedureParameter("ValueTypeEnumerable", "nvarchar(max)", 8, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeEnumerableParameter0)
+            Dim refTypeListParameter0 As New StoreStoredProcedureParameter("RefTypeList", "nvarchar(max)", 9, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeListParameter0)
+            Dim refTypeIListParameter0 As New StoreStoredProcedureParameter("RefTypeIList", "nvarchar(max)", 10, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeIListParameter0)
+            Dim refTypeArrayParameter0 As New StoreStoredProcedureParameter("RefTypeArray", "nvarchar(max)", 11, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeArrayParameter0)
+            Dim refTypeEnumerableParameter0 As New StoreStoredProcedureParameter("RefTypeEnumerable", "nvarchar(max)", 12, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeEnumerableParameter0)
+            Dim id_OriginalParameter0 As New StoreStoredProcedureParameter("Id_Original", "bigint", 13, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_UpdateStoreSproc.AddParameter(id_OriginalParameter0)
             principalBase_UpdateStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure))
             relationalModel.StoredProcedures.Add(("PrincipalBase_Update", Nothing), principalBase_UpdateStoreSproc)
@@ -4820,6 +9812,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter0, principalBase_UpdateUSproc.FindParameter("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBase_UpdateSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter0, principalBase_UpdateUSproc.FindParameter("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBase_UpdateSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter0, principalBase_UpdateUSproc.FindParameter("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeArray"), principalBase.FindProperty("RefTypeArray"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeEnumerable"), principalBase.FindProperty("RefTypeEnumerable"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeIList"), principalBase.FindProperty("RefTypeIList"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeList"), principalBase.FindProperty("RefTypeList"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeArray"), principalBase.FindProperty("ValueTypeArray"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeEnumerable"), principalBase.FindProperty("ValueTypeEnumerable"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeIList"), principalBase.FindProperty("ValueTypeIList"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeList"), principalBase.FindProperty("ValueTypeList"), principalBase_UpdateSprocMapping)
 
             Dim ownedType = principalBase.FindComplexProperty("Owned").ComplexType
 
@@ -4828,8 +9828,16 @@ Namespace TestNamespace
             Dim principalBaseTableMapping0 As New TableMapping(ownedType, principalBaseTable, True)
             principalBaseTable.AddTypeMapping(principalBaseTableMapping0, False)
             tableMappings0.Add(principalBaseTableMapping0)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Deets"), ownedType.FindProperty("Details"), principalBaseTableMapping0)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Number"), ownedType.FindProperty("Number"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(deetsColumn, ownedType.FindProperty("Details"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_NumberColumn, ownedType.FindProperty("Number"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeArrayColumn, ownedType.FindProperty("RefTypeArray"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeEnumerableColumn, ownedType.FindProperty("RefTypeEnumerable"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeIListColumn, ownedType.FindProperty("RefTypeIList"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_RefTypeListColumn, ownedType.FindProperty("RefTypeList"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeArrayColumn, ownedType.FindProperty("ValueTypeArray"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeEnumerableColumn, ownedType.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeIListColumn, ownedType.FindProperty("ValueTypeIList"), principalBaseTableMapping0)
+            RelationalModel.CreateColumnMapping(owned_ValueTypeListColumn, ownedType.FindProperty("ValueTypeList"), principalBaseTableMapping0)
 
             Dim principalBase0 = ownedType.FindComplexProperty("Principal").ComplexType
 
@@ -4838,12 +9846,20 @@ Namespace TestNamespace
             Dim principalBaseTableMapping1 As New TableMapping(principalBase0, principalBaseTable, True)
             principalBaseTable.AddTypeMapping(principalBaseTableMapping1, False)
             tableMappings1.Add(principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_AlternateId"), principalBase0.FindProperty("AlternateId"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_Enum1"), principalBase0.FindProperty("Enum1"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_Enum2"), principalBase0.FindProperty("Enum2"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_FlagsEnum1"), principalBase0.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_FlagsEnum2"), principalBase0.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Owned_Principal_Id"), principalBase0.FindProperty("Id"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_AlternateIdColumn, principalBase0.FindProperty("AlternateId"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_Enum1Column, principalBase0.FindProperty("Enum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_Enum2Column, principalBase0.FindProperty("Enum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_FlagsEnum1Column, principalBase0.FindProperty("FlagsEnum1"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_FlagsEnum2Column, principalBase0.FindProperty("FlagsEnum2"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_IdColumn, principalBase0.FindProperty("Id"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_RefTypeArrayColumn, principalBase0.FindProperty("RefTypeArray"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_RefTypeEnumerableColumn, principalBase0.FindProperty("RefTypeEnumerable"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_RefTypeIListColumn, principalBase0.FindProperty("RefTypeIList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_RefTypeListColumn, principalBase0.FindProperty("RefTypeList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_ValueTypeArrayColumn, principalBase0.FindProperty("ValueTypeArray"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_ValueTypeEnumerableColumn, principalBase0.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_ValueTypeIListColumn, principalBase0.FindProperty("ValueTypeIList"), principalBaseTableMapping1)
+            RelationalModel.CreateColumnMapping(owned_Principal_ValueTypeListColumn, principalBase0.FindProperty("ValueTypeList"), principalBaseTableMapping1)
 
             Dim principalDerived = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>")
 
@@ -4852,13 +9868,21 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0 As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Discriminator"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(discriminatorColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(principalBaseIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase0)
 
             Dim tableMappings2 As New List(Of TableMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings2)
@@ -4867,13 +9891,21 @@ Namespace TestNamespace
             }
             principalBaseTable.AddTypeMapping(principalBaseTableMapping2, False)
             tableMappings2.Add(principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Discriminator"), principalDerived.FindProperty("Discriminator"), principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping2)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(idColumn, principalDerived.FindProperty("Id"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(discriminatorColumn, principalDerived.FindProperty("Discriminator"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(enum1Column, principalDerived.FindProperty("Enum1"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(enum2Column, principalDerived.FindProperty("Enum2"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalDerived.FindProperty("FlagsEnum1"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalDerived.FindProperty("FlagsEnum2"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(principalBaseIdColumn, principalDerived.FindProperty("PrincipalBaseId"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalDerived.FindProperty("RefTypeArray"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalDerived.FindProperty("RefTypeEnumerable"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalDerived.FindProperty("RefTypeIList"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalDerived.FindProperty("RefTypeList"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalDerived.FindProperty("ValueTypeArray"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalDerived.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalDerived.FindProperty("ValueTypeIList"), principalBaseTableMapping2)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalDerived.FindProperty("ValueTypeList"), principalBaseTableMapping2)
 
             Dim sqlQueryMappings0 As New List(Of SqlQueryMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:SqlQueryMappings", sqlQueryMappings0)
@@ -4881,13 +9913,21 @@ Namespace TestNamespace
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0, False)
             sqlQueryMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0.IsDefaultSqlQueryMapping = True
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Id"), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Discriminator"), principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
-            RelationalModel.CreateSqlQueryColumnMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQuery.FindColumn("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(idSqlQueryColumn, principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(discriminatorSqlQueryColumn, principalDerived.FindProperty("Discriminator"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(enum1SqlQueryColumn, principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(enum2SqlQueryColumn, principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(flagsEnum1SqlQueryColumn, principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(flagsEnum2SqlQueryColumn, principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(principalBaseIdSqlQueryColumn, principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeArraySqlQueryColumn, principalDerived.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeEnumerableSqlQueryColumn, principalDerived.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeIListSqlQueryColumn, principalDerived.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(refTypeListSqlQueryColumn, principalDerived.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeArraySqlQueryColumn, principalDerived.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeEnumerableSqlQueryColumn, principalDerived.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeIListSqlQueryColumn, principalDerived.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
+            RelationalModel.CreateSqlQueryColumnMapping(valueTypeListSqlQueryColumn, principalDerived.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappedSqlQuerySqlQueryMapping0)
 
             Dim deleteSprocMappings0 As New List(Of StoredProcedureMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:DeleteStoredProcedureMappings", deleteSprocMappings0)
@@ -4912,6 +9952,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter, principalBase_InsertISproc0.FindParameter("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBase_InsertSprocMapping0)
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter, principalBase_InsertISproc0.FindParameter("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBase_InsertSprocMapping0)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter, principalBase_InsertISproc0.FindParameter("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter, principalBase_InsertISproc0.FindParameter("RefTypeArray"), principalDerived.FindProperty("RefTypeArray"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter, principalBase_InsertISproc0.FindParameter("RefTypeEnumerable"), principalDerived.FindProperty("RefTypeEnumerable"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter, principalBase_InsertISproc0.FindParameter("RefTypeIList"), principalDerived.FindProperty("RefTypeIList"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter, principalBase_InsertISproc0.FindParameter("RefTypeList"), principalDerived.FindProperty("RefTypeList"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter, principalBase_InsertISproc0.FindParameter("ValueTypeArray"), principalDerived.FindProperty("ValueTypeArray"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter, principalBase_InsertISproc0.FindParameter("ValueTypeEnumerable"), principalDerived.FindProperty("ValueTypeEnumerable"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter, principalBase_InsertISproc0.FindParameter("ValueTypeIList"), principalDerived.FindProperty("ValueTypeIList"), principalBase_InsertSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter, principalBase_InsertISproc0.FindParameter("ValueTypeList"), principalDerived.FindProperty("ValueTypeList"), principalBase_InsertSprocMapping0)
 
             Dim updateSprocMappings0 As New List(Of StoredProcedureMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:UpdateStoredProcedureMappings", updateSprocMappings0)
@@ -4926,6 +9974,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum1Parameter0, principalBase_UpdateUSproc0.FindParameter("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalBase_UpdateSprocMapping0)
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter0, principalBase_UpdateUSproc0.FindParameter("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalBase_UpdateSprocMapping0)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter0, principalBase_UpdateUSproc0.FindParameter("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter0, principalBase_UpdateUSproc0.FindParameter("RefTypeArray"), principalDerived.FindProperty("RefTypeArray"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter0, principalBase_UpdateUSproc0.FindParameter("RefTypeEnumerable"), principalDerived.FindProperty("RefTypeEnumerable"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter0, principalBase_UpdateUSproc0.FindParameter("RefTypeIList"), principalDerived.FindProperty("RefTypeIList"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter0, principalBase_UpdateUSproc0.FindParameter("RefTypeList"), principalDerived.FindProperty("RefTypeList"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter0, principalBase_UpdateUSproc0.FindParameter("ValueTypeArray"), principalDerived.FindProperty("ValueTypeArray"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter0, principalBase_UpdateUSproc0.FindParameter("ValueTypeEnumerable"), principalDerived.FindProperty("ValueTypeEnumerable"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter0, principalBase_UpdateUSproc0.FindParameter("ValueTypeIList"), principalDerived.FindProperty("ValueTypeIList"), principalBase_UpdateSprocMapping0)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter0, principalBase_UpdateUSproc0.FindParameter("ValueTypeList"), principalDerived.FindProperty("ValueTypeList"), principalBase_UpdateSprocMapping0)
             Dim fK_PrincipalBase_PrincipalBase_PrincipalBaseId As New ForeignKeyConstraint(
                 "FK_PrincipalBase_PrincipalBase_PrincipalBaseId", principalBaseTable, principalBaseTable,
                 {principalBaseIdColumn},
@@ -4948,10 +10004,16 @@ End Namespace
             Dim PrincipalBaseEntityType = <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
 
 Namespace TestNamespace
@@ -4972,6 +10034,19 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim discriminator = entityType.AddProperty(
@@ -4980,6 +10055,23 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 maxLength:=55,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
+            discriminator.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(55)",
+                    size:=55,
+                    dbType:=System.Data.DbType.String))
             discriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = entityType.AddProperty(
@@ -4988,6 +10080,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+            enum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -4996,6 +10109,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            enum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -5004,6 +10138,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -5012,230 +10167,1590 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalBaseId = entityType.AddProperty(
                 "PrincipalBaseId",
                 GetType(Long?),
                 nullable:=True)
+            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            OwnedComplexProperty.Create(entityType)
-            Dim key = entityType.AddKey(
-                {id})
-            entityType.SetPrimaryKey(key)
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim index = entityType.AddIndex(
-                {principalBaseId})
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return entityType
-        End Function
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Private Class OwnedComplexProperty
-            Public Shared Function Create(declaringType As RuntimeEntityType) As RuntimeComplexProperty
-                Dim complexProperty = declaringType.AddComplexProperty("Owned",
-                    GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
-                    "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType",
-                    GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
-                    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                    propertyAccessMode:=PropertyAccessMode.Field,
-                    changeTrackingStrategy:=ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues)
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-                Dim complexType = complexProperty.ComplexType
-                Dim details = complexType.AddProperty(
-                    "Details",
-                    GetType(String),
-                    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                    propertyAccessMode:=PropertyAccessMode.FieldDuringConstruction,
-                    nullable:=True,
-                    concurrencyToken:=True,
-                    valueGenerated:=ValueGenerated.OnAddOrUpdate,
-                    beforeSaveBehavior:=PropertySaveBehavior.Ignore,
-                    afterSaveBehavior:=PropertySaveBehavior.Ignore,
-                    maxLength:=64,
-                    unicode:=False,
-                    precision:=3,
-                    scale:=2,
-                    sentinel:="")
-                details.AddAnnotation("foo", "bar")
-                details.AddAnnotation("Relational:ColumnName", "Deets")
-                details.AddAnnotation("Relational:ColumnType", "varchar")
-                details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-                Dim number = complexType.AddProperty(
-                    "Number",
-                    GetType(Integer),
-                    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                    sentinel:=0)
-                number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-                PrincipalComplexProperty.Create(complexType)
-                complexType.AddAnnotation("go", "brr")
-                complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
-                complexType.AddAnnotation("Relational:Schema", Nothing)
-                complexType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
-                complexType.AddAnnotation("Relational:TableName", "PrincipalBase")
-                complexType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
-                complexType.AddAnnotation("Relational:ViewSchema", Nothing)
-                complexProperty.AddAnnotation("goo", "ber")
-                Return complexProperty
-            End Function
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Private Class PrincipalComplexProperty
-                Public Shared Function Create(declaringType As RuntimeComplexType) As RuntimeComplexProperty
-                    Dim complexProperty = declaringType.AddComplexProperty("Principal",
-                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
-                        "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType.Principal#PrincipalBase",
-                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
-                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Principal", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Principal", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        nullable:=True)
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-                    Dim complexType = complexProperty.ComplexType
-                    Dim alternateId = complexType.AddProperty(
-                        "AlternateId",
-                        GetType(Guid),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("AlternateId", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-                    alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+OwnedComplexProperty.Create(entityType)
+Dim key = entityType.AddKey(
+    {id})
+entityType.SetPrimaryKey(key)
 
-                    Dim enum1 = complexType.AddProperty(
-                        "Enum1",
-                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum),
-                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
-                    enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+Dim index = entityType.AddIndex(
+    {principalBaseId})
 
-                    Dim enum2 = complexType.AddProperty(
-                        "Enum2",
-                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?),
-                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        nullable:=True)
-                    enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+Return entityType
+End Function
 
-                    Dim flagsEnum1 = complexType.AddProperty(
-                        "FlagsEnum1",
-                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
-                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-                    flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+Private Class OwnedComplexProperty
+    Public Shared Function Create(declaringType As RuntimeEntityType) As RuntimeComplexProperty
+        Dim complexProperty = declaringType.AddComplexProperty("Owned",
+            GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
+            "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType",
+            GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType),
+            propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Owned", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ownedField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            propertyAccessMode:=PropertyAccessMode.Field,
+            changeTrackingStrategy:=ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues)
 
-                    Dim flagsEnum2 = complexType.AddProperty(
-                        "FlagsEnum2",
-                        GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
-                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-                    flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+        Dim complexType = complexProperty.ComplexType
+        Dim details = complexType.AddProperty(
+            "Details",
+            GetType(String),
+            propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            propertyAccessMode:=PropertyAccessMode.FieldDuringConstruction,
+            nullable:=True,
+            concurrencyToken:=True,
+            valueGenerated:=ValueGenerated.OnAddOrUpdate,
+            beforeSaveBehavior:=PropertySaveBehavior.Ignore,
+            afterSaveBehavior:=PropertySaveBehavior.Ignore,
+            maxLength:=64,
+            unicode:=False,
+            precision:=3,
+            scale:=2,
+            sentinel:="")
+        details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+            comparer:=New ValueComparer(Of String)(
+                Function(v1 As String, v2 As String) v1 = v2,
+                Function(v As String) v.GetHashCode(),
+                Function(v As String) v),
+            keyComparer:=New ValueComparer(Of String)(
+                Function(v1 As String, v2 As String) v1 = v2,
+                Function(v As String) v.GetHashCode(),
+                Function(v As String) v),
+            providerValueComparer:=New ValueComparer(Of String)(
+                Function(v1 As String, v2 As String) v1 = v2,
+                Function(v As String) v.GetHashCode(),
+                Function(v As String) v),
+            mappingInfo:=New RelationalTypeMappingInfo(
+                storeTypeName:="varchar(64)",
+                size:=64,
+                precision:=3,
+                scale:=2))
+        details.AddAnnotation("foo", "bar")
+        details.AddAnnotation("Relational:ColumnName", "Deets")
+        details.AddAnnotation("Relational:ColumnType", "varchar")
+        details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-                    Dim id = complexType.AddProperty(
-                        "Id",
-                        GetType(Long?),
-                        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                        nullable:=True)
-                    id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+        Dim number = complexType.AddProperty(
+            "Number",
+            GetType(Integer),
+            propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            sentinel:=0)
+        number.TypeMapping = IntTypeMapping.Default.Clone(
+            comparer:=New ValueComparer(Of Integer)(
+                Function(v1 As Integer, v2 As Integer) v1 = v2,
+                Function(v As Integer) v,
+                Function(v As Integer) v),
+            keyComparer:=New ValueComparer(Of Integer)(
+                Function(v1 As Integer, v2 As Integer) v1 = v2,
+                Function(v As Integer) v,
+                Function(v As Integer) v),
+            providerValueComparer:=New ValueComparer(Of Integer)(
+                Function(v1 As Integer, v2 As Integer) v1 = v2,
+                Function(v As Integer) v,
+                Function(v As Integer) v))
+        number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-                    complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
-                    complexType.AddAnnotation("Relational:Schema", Nothing)
-                    complexType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
-                    complexType.AddAnnotation("Relational:TableName", "PrincipalBase")
-                    complexType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
-                    complexType.AddAnnotation("Relational:ViewSchema", Nothing)
-                    Return complexProperty
-                End Function
-            End Class
-        End Class
+        Dim refTypeArray = complexType.AddProperty(
+            "RefTypeArray",
+            GetType(IPAddress()),
+            propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+            nullable:=True)
+        refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+            comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v)),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
-                principalEntityType)
+Dim refTypeEnumerable = complexType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim deriveds = principalEntityType.AddNavigation("Deriveds",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+Dim refTypeIList = complexType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim refTypeList = complexType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            Dim insertSproc As New RuntimeStoredProcedure(
-                entityType,
-                "PrincipalBase_Insert",
-                Nothing,
-                False)
+Dim valueTypeArray = complexType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim principalBaseId = insertSproc.AddParameter(
-                "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
-            Dim enum1 = insertSproc.AddParameter(
-                "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
-            Dim enum2 = insertSproc.AddParameter(
-                "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
-            Dim flagsEnum1 = insertSproc.AddParameter(
-                "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
-            Dim flagsEnum2 = insertSproc.AddParameter(
-                "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
-            Dim discriminator = insertSproc.AddParameter(
-                "Discriminator", System.Data.ParameterDirection.Input, False, "Discriminator", False)
-            Dim id = insertSproc.AddParameter(
-                "Id", System.Data.ParameterDirection.Output, False, "Id", False)
-            entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+Dim valueTypeEnumerable = complexType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim deleteSproc As New RuntimeStoredProcedure(
-                entityType,
-                "PrincipalBase_Delete",
-                Nothing,
-                True)
+Dim valueTypeIList = complexType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim id0 = deleteSproc.AddParameter(
-                "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
-            entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+Dim valueTypeList = complexType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim updateSproc As New RuntimeStoredProcedure(
-                entityType,
-                "PrincipalBase_Update",
-                Nothing,
-                False)
+PrincipalComplexProperty.Create(complexType)
+complexType.AddAnnotation("go", "brr")
+complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
+complexType.AddAnnotation("Relational:Schema", Nothing)
+complexType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+complexType.AddAnnotation("Relational:TableName", "PrincipalBase")
+complexType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+complexType.AddAnnotation("Relational:ViewSchema", Nothing)
+complexProperty.AddAnnotation("goo", "ber")
+Return complexProperty
+End Function
 
-            Dim principalBaseId0 = updateSproc.AddParameter(
-                "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
-            Dim enum10 = updateSproc.AddParameter(
-                "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
-            Dim enum20 = updateSproc.AddParameter(
-                "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
-            Dim flagsEnum10 = updateSproc.AddParameter(
-                "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
-            Dim flagsEnum20 = updateSproc.AddParameter(
-                "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
-            Dim id1 = updateSproc.AddParameter(
-                "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
-            entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+    Private Class PrincipalComplexProperty
+        Public Shared Function Create(declaringType As RuntimeComplexType) As RuntimeComplexProperty
+            Dim complexProperty = declaringType.AddComplexProperty("Principal",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
+                "EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase.Owned#OwnedType.Principal#PrincipalBase",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Principal", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Principal", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
 
-            entityType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
-            entityType.AddAnnotation("Relational:MappingStrategy", "TPH")
-            entityType.AddAnnotation("Relational:Schema", Nothing)
-            entityType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewDefinitionSql", Nothing)
-            entityType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
-            entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+            Dim complexType = complexProperty.ComplexType
+            Dim alternateId = complexType.AddProperty(
+                "AlternateId",
+                GetType(Guid),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("AlternateId", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
+            alternateId.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
+            alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Customize(entityType)
-        End Sub
+            Dim enum1 = complexType.AddProperty(
+                "Enum1",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+            enum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+            enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+            Dim enum2 = complexType.AddProperty(
+                "Enum2",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            enum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+            enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim flagsEnum1 = complexType.AddProperty(
+                "FlagsEnum1",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+            flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim flagsEnum2 = complexType.AddProperty(
+                "FlagsEnum2",
+                GetType(VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+            flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim id = complexType.AddProperty(
+                "Id",
+                GetType(Long?),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+            Dim refTypeArray = complexType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim refTypeEnumerable = complexType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim refTypeIList = complexType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim refTypeList = complexType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeArray = complexType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeEnumerable = complexType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeIList = complexType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+Dim valueTypeList = complexType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
+
+complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
+complexType.AddAnnotation("Relational:Schema", Nothing)
+complexType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+complexType.AddAnnotation("Relational:TableName", "PrincipalBase")
+complexType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+complexType.AddAnnotation("Relational:ViewSchema", Nothing)
+Return complexProperty
+End Function
+End Class
+End Class
+
+Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
+        principalEntityType)
+
+    Dim deriveds = principalEntityType.AddNavigation("Deriveds",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+
+    Return runtimeForeignKey
+End Function
+
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    Dim insertSproc As New RuntimeStoredProcedure(
+        entityType,
+        "PrincipalBase_Insert",
+        Nothing,
+        False)
+
+    Dim principalBaseId = insertSproc.AddParameter(
+        "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
+    Dim enum1 = insertSproc.AddParameter(
+        "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
+    Dim enum2 = insertSproc.AddParameter(
+        "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
+    Dim flagsEnum1 = insertSproc.AddParameter(
+        "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
+    Dim flagsEnum2 = insertSproc.AddParameter(
+        "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+    Dim valueTypeList = insertSproc.AddParameter(
+        "ValueTypeList", System.Data.ParameterDirection.Input, False, "ValueTypeList", False)
+    Dim valueTypeIList = insertSproc.AddParameter(
+        "ValueTypeIList", System.Data.ParameterDirection.Input, False, "ValueTypeIList", False)
+    Dim valueTypeArray = insertSproc.AddParameter(
+        "ValueTypeArray", System.Data.ParameterDirection.Input, False, "ValueTypeArray", False)
+    Dim valueTypeEnumerable = insertSproc.AddParameter(
+        "ValueTypeEnumerable", System.Data.ParameterDirection.Input, False, "ValueTypeEnumerable", False)
+    Dim refTypeList = insertSproc.AddParameter(
+        "RefTypeList", System.Data.ParameterDirection.Input, False, "RefTypeList", False)
+    Dim refTypeIList = insertSproc.AddParameter(
+        "RefTypeIList", System.Data.ParameterDirection.Input, False, "RefTypeIList", False)
+    Dim refTypeArray = insertSproc.AddParameter(
+        "RefTypeArray", System.Data.ParameterDirection.Input, False, "RefTypeArray", False)
+    Dim refTypeEnumerable = insertSproc.AddParameter(
+        "RefTypeEnumerable", System.Data.ParameterDirection.Input, False, "RefTypeEnumerable", False)
+    Dim discriminator = insertSproc.AddParameter(
+        "Discriminator", System.Data.ParameterDirection.Input, False, "Discriminator", False)
+    Dim id = insertSproc.AddParameter(
+        "Id", System.Data.ParameterDirection.Output, False, "Id", False)
+    entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+
+    Dim deleteSproc As New RuntimeStoredProcedure(
+        entityType,
+        "PrincipalBase_Delete",
+        Nothing,
+        True)
+
+    Dim id0 = deleteSproc.AddParameter(
+        "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
+    entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+
+    Dim updateSproc As New RuntimeStoredProcedure(
+        entityType,
+        "PrincipalBase_Update",
+        Nothing,
+        False)
+
+    Dim principalBaseId0 = updateSproc.AddParameter(
+        "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
+    Dim enum10 = updateSproc.AddParameter(
+        "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
+    Dim enum20 = updateSproc.AddParameter(
+        "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
+    Dim flagsEnum10 = updateSproc.AddParameter(
+        "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
+    Dim flagsEnum20 = updateSproc.AddParameter(
+        "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+    Dim valueTypeList0 = updateSproc.AddParameter(
+        "ValueTypeList", System.Data.ParameterDirection.Input, False, "ValueTypeList", False)
+    Dim valueTypeIList0 = updateSproc.AddParameter(
+        "ValueTypeIList", System.Data.ParameterDirection.Input, False, "ValueTypeIList", False)
+    Dim valueTypeArray0 = updateSproc.AddParameter(
+        "ValueTypeArray", System.Data.ParameterDirection.Input, False, "ValueTypeArray", False)
+    Dim valueTypeEnumerable0 = updateSproc.AddParameter(
+        "ValueTypeEnumerable", System.Data.ParameterDirection.Input, False, "ValueTypeEnumerable", False)
+    Dim refTypeList0 = updateSproc.AddParameter(
+        "RefTypeList", System.Data.ParameterDirection.Input, False, "RefTypeList", False)
+    Dim refTypeIList0 = updateSproc.AddParameter(
+        "RefTypeIList", System.Data.ParameterDirection.Input, False, "RefTypeIList", False)
+    Dim refTypeArray0 = updateSproc.AddParameter(
+        "RefTypeArray", System.Data.ParameterDirection.Input, False, "RefTypeArray", False)
+    Dim refTypeEnumerable0 = updateSproc.AddParameter(
+        "RefTypeEnumerable", System.Data.ParameterDirection.Input, False, "RefTypeEnumerable", False)
+    Dim id1 = updateSproc.AddParameter(
+        "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
+    entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+
+    entityType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
+    entityType.AddAnnotation("Relational:MappingStrategy", "TPH")
+    entityType.AddAnnotation("Relational:Schema", Nothing)
+    entityType.AddAnnotation("Relational:SqlQuery", "select * from PrincipalBase")
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewDefinitionSql", Nothing)
+    entityType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+    entityType.AddAnnotation("Relational:ViewSchema", Nothing)
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
@@ -5387,7 +11902,7 @@ End Namespace
 
                     Dim nestedComplexType = complexType.FindComplexProperty(NameOf(OwnedType.Principal)).ComplexType
 
-                    Assert.Equal(6, nestedComplexType.GetProperties().Count())
+                    Assert.Equal(14, nestedComplexType.GetProperties().Count())
 
                     Dim principalTable = StoreObjectIdentifier.Create(complexType, StoreObjectType.Table).Value
 
@@ -5621,7 +12136,7 @@ End Namespace
                                     IsRowVersion().
                                     HasAnnotation("foo", "bar")
                                 ceb.Ignore(Function(e) e.Context)
-                                ceb.ComplexProperty(Function(o) o.Principal)
+                                ceb.ComplexProperty(Function(o) o.Principal).IsRequired()
                             End Sub)
 
                         eb.ToTable("PrincipalBase")
@@ -5635,6 +12150,14 @@ End Namespace
                                      HasParameter("Enum2").
                                      HasParameter("FlagsEnum1").
                                      HasParameter("FlagsEnum2").
+                                     HasParameter("ValueTypeList").
+                                     HasParameter("ValueTypeIList").
+                                     HasParameter("ValueTypeArray").
+                                     HasParameter("ValueTypeEnumerable").
+                                     HasParameter("RefTypeList").
+                                     HasParameter("RefTypeIList").
+                                     HasParameter("RefTypeArray").
+                                     HasParameter("RefTypeEnumerable").
                                      HasParameter("Discriminator").
                                      HasParameter(Function(p) p.Id, Function(p) p.IsOutput()))
 
@@ -5644,6 +12167,14 @@ End Namespace
                                      HasParameter("Enum2").
                                      HasParameter("FlagsEnum1").
                                      HasParameter("FlagsEnum2").
+                                     HasParameter("ValueTypeList").
+                                     HasParameter("ValueTypeIList").
+                                     HasParameter("ValueTypeArray").
+                                     HasParameter("ValueTypeEnumerable").
+                                     HasParameter("RefTypeList").
+                                     HasParameter("RefTypeIList").
+                                     HasParameter("RefTypeArray").
+                                     HasParameter("RefTypeEnumerable").
                                      HasOriginalValueParameter(Function(p) p.Id))
 
                         eb.DeleteUsingStoredProcedure(
@@ -5760,8 +12291,8 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(dependentBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalId"), ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalIdColumnBase, ColumnBase(Of ColumnMappingBase)), dependentBase.FindProperty("PrincipalId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             dependentBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -5792,8 +12323,8 @@ Namespace TestNamespace
             Dim dependentBasebyteTableMapping As New TableMapping(dependentBase, dependentBasebyteTable, True)
             dependentBasebyteTable.AddTypeMapping(dependentBasebyteTableMapping, False)
             tableMappings.Add(dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("Id"), dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
-            RelationalModel.CreateColumnMapping(dependentBasebyteTable.FindColumn("PrincipalId"), dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, dependentBase.FindProperty("Id"), dependentBasebyteTableMapping)
+            RelationalModel.CreateColumnMapping(principalIdColumn, dependentBase.FindProperty("PrincipalId"), dependentBasebyteTableMapping)
 
             Dim principalBase = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase")
 
@@ -5820,17 +12351,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumnBase)
+            Dim refTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase)
+            Dim refTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase)
+            Dim refTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase)
+            Dim refTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("RefTypeList", refTypeListColumnBase)
+            Dim valueTypeArrayColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase)
+            Dim valueTypeEnumerableColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase)
+            Dim valueTypeIListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase)
+            Dim valueTypeListColumnBase As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalBase", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalBase, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase, False)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase, False)
             defaultTableMappings0.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseTableBase.FindColumn("PrincipalDerived<DependentBase<byte?>>Id"), ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalDerivedId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase0, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalBaseIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalDerivedDependentBasebyteIdColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("PrincipalDerivedId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase, ColumnBase(Of ColumnMappingBase)), principalBase.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalBaseMappingBase)
 
             Dim tableMappings0 As New List(Of TableMapping)()
             principalBase.SetRuntimeAnnotation("Relational:TableMappings", tableMappings0)
@@ -5855,6 +12426,38 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalBaseTable.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumn)
+            Dim refTypeArrayColumn As New Column("RefTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeArray", refTypeArrayColumn)
+            Dim refTypeEnumerableColumn As New Column("RefTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn)
+            Dim refTypeIListColumn As New Column("RefTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeIList", refTypeIListColumn)
+            Dim refTypeListColumn As New Column("RefTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("RefTypeList", refTypeListColumn)
+            Dim valueTypeArrayColumn As New Column("ValueTypeArray", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn)
+            Dim valueTypeEnumerableColumn As New Column("ValueTypeEnumerable", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn)
+            Dim valueTypeIListColumn As New Column("ValueTypeIList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeIList", valueTypeIListColumn)
+            Dim valueTypeListColumn As New Column("ValueTypeList", "nvarchar(max)", principalBaseTable) With {
+                .IsNullable = True
+            }
+            principalBaseTable.Columns.Add("ValueTypeList", valueTypeListColumn)
             Dim pK_PrincipalBase As New UniqueConstraint("PK_PrincipalBase", principalBaseTable, {idColumn0})
             principalBaseTable.PrimaryKey = pK_PrincipalBase
             Dim pK_PrincipalBaseUc = RelationalModel.GetKey(Me,
@@ -5883,13 +12486,21 @@ Namespace TestNamespace
             Dim principalBaseTableMapping As New TableMapping(principalBase, principalBaseTable, False)
             principalBaseTable.AddTypeMapping(principalBaseTableMapping, False)
             tableMappings0.Add(principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseTableMapping)
-            RelationalModel.CreateColumnMapping(principalBaseTable.FindColumn("PrincipalDerived<DependentBase<byte?>>Id"), principalBase.FindProperty("PrincipalDerivedId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn0, principalBase.FindProperty("Id"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum1Column, principalBase.FindProperty("Enum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(enum2Column, principalBase.FindProperty("Enum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column, principalBase.FindProperty("FlagsEnum1"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column, principalBase.FindProperty("FlagsEnum2"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseIdColumn, principalBase.FindProperty("PrincipalBaseId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(principalDerivedDependentBasebyteIdColumn, principalBase.FindProperty("PrincipalDerivedId"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn, principalBase.FindProperty("RefTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn, principalBase.FindProperty("RefTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeListColumn, principalBase.FindProperty("RefTypeList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn, principalBase.FindProperty("ValueTypeList"), principalBaseTableMapping)
 
             Dim viewMappings As New List(Of ViewMapping)()
             principalBase.SetRuntimeAnnotation("Relational:ViewMappings", viewMappings)
@@ -5914,17 +12525,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalBaseViewView.Columns.Add("PrincipalDerivedId", principalDerivedIdViewColumn)
+            Dim refTypeArrayViewColumn As New ViewColumn("RefTypeArray", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeArray", refTypeArrayViewColumn)
+            Dim refTypeEnumerableViewColumn As New ViewColumn("RefTypeEnumerable", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeEnumerable", refTypeEnumerableViewColumn)
+            Dim refTypeIListViewColumn As New ViewColumn("RefTypeIList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeIList", refTypeIListViewColumn)
+            Dim refTypeListViewColumn As New ViewColumn("RefTypeList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("RefTypeList", refTypeListViewColumn)
+            Dim valueTypeArrayViewColumn As New ViewColumn("ValueTypeArray", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeArray", valueTypeArrayViewColumn)
+            Dim valueTypeEnumerableViewColumn As New ViewColumn("ValueTypeEnumerable", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableViewColumn)
+            Dim valueTypeIListViewColumn As New ViewColumn("ValueTypeIList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeIList", valueTypeIListViewColumn)
+            Dim valueTypeListViewColumn As New ViewColumn("ValueTypeList", "nvarchar(max)", principalBaseViewView) With {
+                .IsNullable = True
+            }
+            principalBaseViewView.Columns.Add("ValueTypeList", valueTypeListViewColumn)
             relationalModel.Views.Add(("PrincipalBaseView", "TPC"), principalBaseViewView)
             Dim principalBaseViewViewMapping As New ViewMapping(principalBase, principalBaseViewView, False)
             principalBaseViewView.AddTypeMapping(principalBaseViewViewMapping, False)
             viewMappings.Add(principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Id"), principalBase.FindProperty("Id"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum1"), principalBase.FindProperty("Enum1"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("Enum2"), principalBase.FindProperty("Enum2"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("FlagsEnum1"), principalBase.FindProperty("FlagsEnum1"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBaseViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalBaseViewView.FindColumn("PrincipalDerivedId"), principalBase.FindProperty("PrincipalDerivedId"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(idViewColumn, principalBase.FindProperty("Id"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(enum1ViewColumn, principalBase.FindProperty("Enum1"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(enum2ViewColumn, principalBase.FindProperty("Enum2"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(flagsEnum1ViewColumn, principalBase.FindProperty("FlagsEnum1"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(flagsEnum2ViewColumn, principalBase.FindProperty("FlagsEnum2"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseIdViewColumn, principalBase.FindProperty("PrincipalBaseId"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalDerivedIdViewColumn, principalBase.FindProperty("PrincipalDerivedId"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeArrayViewColumn, principalBase.FindProperty("RefTypeArray"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeEnumerableViewColumn, principalBase.FindProperty("RefTypeEnumerable"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeIListViewColumn, principalBase.FindProperty("RefTypeIList"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeListViewColumn, principalBase.FindProperty("RefTypeList"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeArrayViewColumn, principalBase.FindProperty("ValueTypeArray"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeEnumerableViewColumn, principalBase.FindProperty("ValueTypeEnumerable"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeIListViewColumn, principalBase.FindProperty("ValueTypeIList"), principalBaseViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeListViewColumn, principalBase.FindProperty("ValueTypeList"), principalBaseViewViewMapping)
 
             Dim deleteSprocMappings As New List(Of StoredProcedureMapping)()
             principalBase.SetRuntimeAnnotation("Relational:DeleteStoredProcedureMappings", deleteSprocMappings)
@@ -5962,7 +12613,39 @@ Namespace TestNamespace
             principalBase_InsertStoreSproc.AddParameter(flagsEnum1Parameter)
             Dim flagsEnum2Parameter As New StoreStoredProcedureParameter("FlagsEnum2", "int", 5, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_InsertStoreSproc.AddParameter(flagsEnum2Parameter)
-            Dim baseIdParameter As New StoreStoredProcedureParameter("BaseId", "bigint", 6, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Output)
+            Dim valueTypeListParameter As New StoreStoredProcedureParameter("ValueTypeList", "nvarchar(max)", 6, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeListParameter)
+            Dim valueTypeIListParameter As New StoreStoredProcedureParameter("ValueTypeIList", "nvarchar(max)", 7, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeIListParameter)
+            Dim valueTypeArrayParameter As New StoreStoredProcedureParameter("ValueTypeArray", "nvarchar(max)", 8, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeArrayParameter)
+            Dim valueTypeEnumerableParameter As New StoreStoredProcedureParameter("ValueTypeEnumerable", "nvarchar(max)", 9, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(valueTypeEnumerableParameter)
+            Dim refTypeListParameter As New StoreStoredProcedureParameter("RefTypeList", "nvarchar(max)", 10, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeListParameter)
+            Dim refTypeIListParameter As New StoreStoredProcedureParameter("RefTypeIList", "nvarchar(max)", 11, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeIListParameter)
+            Dim refTypeArrayParameter As New StoreStoredProcedureParameter("RefTypeArray", "nvarchar(max)", 12, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeArrayParameter)
+            Dim refTypeEnumerableParameter As New StoreStoredProcedureParameter("RefTypeEnumerable", "nvarchar(max)", 13, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_InsertStoreSproc.AddParameter(refTypeEnumerableParameter)
+            Dim baseIdParameter As New StoreStoredProcedureParameter("BaseId", "bigint", 14, principalBase_InsertStoreSproc, System.Data.ParameterDirection.Output)
             principalBase_InsertStoreSproc.AddParameter(baseIdParameter)
             principalBase_InsertStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetInsertStoredProcedure(), IRuntimeStoredProcedure))
             relationalModel.StoredProcedures.Add(("PrincipalBase_Insert", "TPC"), principalBase_InsertStoreSproc)
@@ -5978,6 +12661,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter, principalBase_InsertISproc.FindParameter("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBase_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter, principalBase_InsertISproc.FindParameter("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBase_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalDerivedIdParameter, principalBase_InsertISproc.FindParameter("PrincipalDerivedId"), principalBase.FindProperty("PrincipalDerivedId"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter, principalBase_InsertISproc.FindParameter("RefTypeArray"), principalBase.FindProperty("RefTypeArray"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter, principalBase_InsertISproc.FindParameter("RefTypeEnumerable"), principalBase.FindProperty("RefTypeEnumerable"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter, principalBase_InsertISproc.FindParameter("RefTypeIList"), principalBase.FindProperty("RefTypeIList"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter, principalBase_InsertISproc.FindParameter("RefTypeList"), principalBase.FindProperty("RefTypeList"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter, principalBase_InsertISproc.FindParameter("ValueTypeArray"), principalBase.FindProperty("ValueTypeArray"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter, principalBase_InsertISproc.FindParameter("ValueTypeEnumerable"), principalBase.FindProperty("ValueTypeEnumerable"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter, principalBase_InsertISproc.FindParameter("ValueTypeIList"), principalBase.FindProperty("ValueTypeIList"), principalBase_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter, principalBase_InsertISproc.FindParameter("ValueTypeList"), principalBase.FindProperty("ValueTypeList"), principalBase_InsertSprocMapping)
 
             Dim updateSprocMappings As New List(Of StoredProcedureMapping)()
             principalBase.SetRuntimeAnnotation("Relational:UpdateStoredProcedureMappings", updateSprocMappings)
@@ -6000,7 +12691,39 @@ Namespace TestNamespace
             principalBase_UpdateStoreSproc.AddParameter(flagsEnum1Parameter0)
             Dim flagsEnum2Parameter0 As New StoreStoredProcedureParameter("FlagsEnum2", "int", 5, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_UpdateStoreSproc.AddParameter(flagsEnum2Parameter0)
-            Dim id_OriginalParameter0 As New StoreStoredProcedureParameter("Id_Original", "bigint", 6, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            Dim valueTypeListParameter0 As New StoreStoredProcedureParameter("ValueTypeList", "nvarchar(max)", 6, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeListParameter0)
+            Dim valueTypeIListParameter0 As New StoreStoredProcedureParameter("ValueTypeIList", "nvarchar(max)", 7, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeIListParameter0)
+            Dim valueTypeArrayParameter0 As New StoreStoredProcedureParameter("ValueTypeArray", "nvarchar(max)", 8, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeArrayParameter0)
+            Dim valueTypeEnumerableParameter0 As New StoreStoredProcedureParameter("ValueTypeEnumerable", "nvarchar(max)", 9, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(valueTypeEnumerableParameter0)
+            Dim refTypeListParameter0 As New StoreStoredProcedureParameter("RefTypeList", "nvarchar(max)", 10, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeListParameter0)
+            Dim refTypeIListParameter0 As New StoreStoredProcedureParameter("RefTypeIList", "nvarchar(max)", 11, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeIListParameter0)
+            Dim refTypeArrayParameter0 As New StoreStoredProcedureParameter("RefTypeArray", "nvarchar(max)", 12, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeArrayParameter0)
+            Dim refTypeEnumerableParameter0 As New StoreStoredProcedureParameter("RefTypeEnumerable", "nvarchar(max)", 13, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            principalBase_UpdateStoreSproc.AddParameter(refTypeEnumerableParameter0)
+            Dim id_OriginalParameter0 As New StoreStoredProcedureParameter("Id_Original", "bigint", 14, principalBase_UpdateStoreSproc, System.Data.ParameterDirection.Input)
             principalBase_UpdateStoreSproc.AddParameter(id_OriginalParameter0)
             principalBase_UpdateStoreSproc.AddStoredProcedure(DirectCast(principalBase.GetUpdateStoredProcedure(), IRuntimeStoredProcedure))
             relationalModel.StoredProcedures.Add(("PrincipalBase_Update", "TPC"), principalBase_UpdateStoreSproc)
@@ -6016,6 +12739,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter0, principalBase_UpdateUSproc.FindParameter("FlagsEnum2"), principalBase.FindProperty("FlagsEnum2"), principalBase_UpdateSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter0, principalBase_UpdateUSproc.FindParameter("PrincipalBaseId"), principalBase.FindProperty("PrincipalBaseId"), principalBase_UpdateSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalDerivedIdParameter0, principalBase_UpdateUSproc.FindParameter("PrincipalDerivedId"), principalBase.FindProperty("PrincipalDerivedId"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeArray"), principalBase.FindProperty("RefTypeArray"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeEnumerable"), principalBase.FindProperty("RefTypeEnumerable"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeIList"), principalBase.FindProperty("RefTypeIList"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter0, principalBase_UpdateUSproc.FindParameter("RefTypeList"), principalBase.FindProperty("RefTypeList"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeArray"), principalBase.FindProperty("ValueTypeArray"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeEnumerable"), principalBase.FindProperty("ValueTypeEnumerable"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeIList"), principalBase.FindProperty("ValueTypeIList"), principalBase_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter0, principalBase_UpdateUSproc.FindParameter("ValueTypeList"), principalBase.FindProperty("ValueTypeList"), principalBase_UpdateSprocMapping)
 
             Dim principalDerived = FindEntityType("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>")
 
@@ -6042,17 +12773,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumnBase0)
+            Dim refTypeArrayColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("RefTypeArray", refTypeArrayColumnBase0)
+            Dim refTypeEnumerableColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumnBase0)
+            Dim refTypeIListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("RefTypeIList", refTypeIListColumnBase0)
+            Dim refTypeListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("RefTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("RefTypeList", refTypeListColumnBase0)
+            Dim valueTypeArrayColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeArray", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("ValueTypeArray", valueTypeArrayColumnBase0)
+            Dim valueTypeEnumerableColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeEnumerable", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumnBase0)
+            Dim valueTypeIListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeIList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("ValueTypeIList", valueTypeIListColumnBase0)
+            Dim valueTypeListColumnBase0 As New ColumnBase(Of ColumnMappingBase)("ValueTypeList", "nvarchar(max)", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase) With {
+                .IsNullable = True
+            }
+            entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.Columns.Add("ValueTypeList", valueTypeListColumnBase0)
             relationalModel.DefaultTables.Add("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+PrincipalDerived<EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DependentBase<byte?>>", entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase)
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase As New TableMappingBase(Of ColumnMappingBase)(principalDerived, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase, False)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase, False)
             defaultTableMappings1.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Enum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("Enum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("FlagsEnum1"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("FlagsEnum2"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalBaseId"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteTableBase.FindColumn("PrincipalDerived<DependentBase<byte?>>Id"), ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalDerivedId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase1, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum1ColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(enum2ColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("Enum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum1ColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum1"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(flagsEnum2ColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("FlagsEnum2"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalBaseIdColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalBaseId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(principalDerivedDependentBasebyteIdColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("PrincipalDerivedId"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeArrayColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeEnumerableColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeIListColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(refTypeListColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("RefTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeArrayColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeArray"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeEnumerableColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeEnumerable"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeIListColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeIList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(valueTypeListColumnBase0, ColumnBase(Of ColumnMappingBase)), principalDerived.FindProperty("ValueTypeList"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestPrincipalDerivedEntityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDependentBasebyteMappingBase)
 
             Dim tableMappings1 As New List(Of TableMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:TableMappings", tableMappings1)
@@ -6077,6 +12848,38 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalDerivedTable.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumn0)
+            Dim refTypeArrayColumn0 As New Column("RefTypeArray", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("RefTypeArray", refTypeArrayColumn0)
+            Dim refTypeEnumerableColumn0 As New Column("RefTypeEnumerable", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn0)
+            Dim refTypeIListColumn0 As New Column("RefTypeIList", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("RefTypeIList", refTypeIListColumn0)
+            Dim refTypeListColumn0 As New Column("RefTypeList", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("RefTypeList", refTypeListColumn0)
+            Dim valueTypeArrayColumn0 As New Column("ValueTypeArray", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn0)
+            Dim valueTypeEnumerableColumn0 As New Column("ValueTypeEnumerable", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn0)
+            Dim valueTypeIListColumn0 As New Column("ValueTypeIList", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("ValueTypeIList", valueTypeIListColumn0)
+            Dim valueTypeListColumn0 As New Column("ValueTypeList", "nvarchar(max)", principalDerivedTable) With {
+                .IsNullable = True
+            }
+            principalDerivedTable.Columns.Add("ValueTypeList", valueTypeListColumn0)
             Dim pK_PrincipalDerived As New UniqueConstraint("PK_PrincipalDerived", principalDerivedTable, {idColumn1})
             principalDerivedTable.PrimaryKey = pK_PrincipalDerived
             Dim pK_PrincipalDerivedUc = RelationalModel.GetKey(Me,
@@ -6105,13 +12908,21 @@ Namespace TestNamespace
             Dim principalDerivedTableMapping As New TableMapping(principalDerived, principalDerivedTable, False)
             principalDerivedTable.AddTypeMapping(principalDerivedTableMapping, False)
             tableMappings1.Add(principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("Id"), principalDerived.FindProperty("Id"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalDerivedTableMapping)
-            RelationalModel.CreateColumnMapping(principalDerivedTable.FindColumn("PrincipalDerived<DependentBase<byte?>>Id"), principalDerived.FindProperty("PrincipalDerivedId"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn1, principalDerived.FindProperty("Id"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(enum1Column0, principalDerived.FindProperty("Enum1"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(enum2Column0, principalDerived.FindProperty("Enum2"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum1Column0, principalDerived.FindProperty("FlagsEnum1"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(flagsEnum2Column0, principalDerived.FindProperty("FlagsEnum2"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(principalBaseIdColumn0, principalDerived.FindProperty("PrincipalBaseId"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(principalDerivedDependentBasebyteIdColumn0, principalDerived.FindProperty("PrincipalDerivedId"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeArrayColumn0, principalDerived.FindProperty("RefTypeArray"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeEnumerableColumn0, principalDerived.FindProperty("RefTypeEnumerable"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeIListColumn0, principalDerived.FindProperty("RefTypeIList"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(refTypeListColumn0, principalDerived.FindProperty("RefTypeList"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeArrayColumn0, principalDerived.FindProperty("ValueTypeArray"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn0, principalDerived.FindProperty("ValueTypeEnumerable"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeIListColumn0, principalDerived.FindProperty("ValueTypeIList"), principalDerivedTableMapping)
+            RelationalModel.CreateColumnMapping(valueTypeListColumn0, principalDerived.FindProperty("ValueTypeList"), principalDerivedTableMapping)
 
             Dim viewMappings0 As New List(Of ViewMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:ViewMappings", viewMappings0)
@@ -6136,17 +12947,57 @@ Namespace TestNamespace
                 .IsNullable = True
             }
             principalDerivedViewView.Columns.Add("PrincipalDerivedId", principalDerivedIdViewColumn0)
+            Dim refTypeArrayViewColumn0 As New ViewColumn("RefTypeArray", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("RefTypeArray", refTypeArrayViewColumn0)
+            Dim refTypeEnumerableViewColumn0 As New ViewColumn("RefTypeEnumerable", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("RefTypeEnumerable", refTypeEnumerableViewColumn0)
+            Dim refTypeIListViewColumn0 As New ViewColumn("RefTypeIList", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("RefTypeIList", refTypeIListViewColumn0)
+            Dim refTypeListViewColumn0 As New ViewColumn("RefTypeList", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("RefTypeList", refTypeListViewColumn0)
+            Dim valueTypeArrayViewColumn0 As New ViewColumn("ValueTypeArray", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("ValueTypeArray", valueTypeArrayViewColumn0)
+            Dim valueTypeEnumerableViewColumn0 As New ViewColumn("ValueTypeEnumerable", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableViewColumn0)
+            Dim valueTypeIListViewColumn0 As New ViewColumn("ValueTypeIList", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("ValueTypeIList", valueTypeIListViewColumn0)
+            Dim valueTypeListViewColumn0 As New ViewColumn("ValueTypeList", "nvarchar(max)", principalDerivedViewView) With {
+                .IsNullable = True
+            }
+            principalDerivedViewView.Columns.Add("ValueTypeList", valueTypeListViewColumn0)
             relationalModel.Views.Add(("PrincipalDerivedView", "TPC"), principalDerivedViewView)
             Dim principalDerivedViewViewMapping As New ViewMapping(principalDerived, principalDerivedViewView, False)
             principalDerivedViewView.AddTypeMapping(principalDerivedViewViewMapping, False)
             viewMappings0.Add(principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("Id"), principalDerived.FindProperty("Id"), principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("Enum1"), principalDerived.FindProperty("Enum1"), principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("Enum2"), principalDerived.FindProperty("Enum2"), principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("FlagsEnum1"), principalDerived.FindProperty("FlagsEnum1"), principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), principalDerivedViewViewMapping)
-            RelationalModel.CreateViewColumnMapping(principalDerivedViewView.FindColumn("PrincipalDerivedId"), principalDerived.FindProperty("PrincipalDerivedId"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(idViewColumn0, principalDerived.FindProperty("Id"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(enum1ViewColumn0, principalDerived.FindProperty("Enum1"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(enum2ViewColumn0, principalDerived.FindProperty("Enum2"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(flagsEnum1ViewColumn0, principalDerived.FindProperty("FlagsEnum1"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(flagsEnum2ViewColumn0, principalDerived.FindProperty("FlagsEnum2"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalBaseIdViewColumn0, principalDerived.FindProperty("PrincipalBaseId"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(principalDerivedIdViewColumn0, principalDerived.FindProperty("PrincipalDerivedId"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeArrayViewColumn0, principalDerived.FindProperty("RefTypeArray"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeEnumerableViewColumn0, principalDerived.FindProperty("RefTypeEnumerable"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeIListViewColumn0, principalDerived.FindProperty("RefTypeIList"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(refTypeListViewColumn0, principalDerived.FindProperty("RefTypeList"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeArrayViewColumn0, principalDerived.FindProperty("ValueTypeArray"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeEnumerableViewColumn0, principalDerived.FindProperty("ValueTypeEnumerable"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeIListViewColumn0, principalDerived.FindProperty("ValueTypeIList"), principalDerivedViewViewMapping)
+            RelationalModel.CreateViewColumnMapping(valueTypeListViewColumn0, principalDerived.FindProperty("ValueTypeList"), principalDerivedViewViewMapping)
 
             Dim deleteSprocMappings0 As New List(Of StoredProcedureMapping)()
             principalDerived.SetRuntimeAnnotation("Relational:DeleteStoredProcedureMappings", deleteSprocMappings0)
@@ -6183,6 +13034,38 @@ Namespace TestNamespace
             derived_InsertStoreSproc.AddParameter(flagsEnum1Parameter1)
             Dim flagsEnum2Parameter1 As New StoreStoredProcedureParameter("FlagsEnum2", "int", 5, derived_InsertStoreSproc, System.Data.ParameterDirection.Input)
             derived_InsertStoreSproc.AddParameter(flagsEnum2Parameter1)
+            Dim valueTypeListParameter1 As New StoreStoredProcedureParameter("ValueTypeList", "nvarchar(max)", 6, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(valueTypeListParameter1)
+            Dim valueTypeIListParameter1 As New StoreStoredProcedureParameter("ValueTypeIList", "nvarchar(max)", 7, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(valueTypeIListParameter1)
+            Dim valueTypeArrayParameter1 As New StoreStoredProcedureParameter("ValueTypeArray", "nvarchar(max)", 8, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(valueTypeArrayParameter1)
+            Dim valueTypeEnumerableParameter1 As New StoreStoredProcedureParameter("ValueTypeEnumerable", "nvarchar(max)", 9, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(valueTypeEnumerableParameter1)
+            Dim refTypeListParameter1 As New StoreStoredProcedureParameter("RefTypeList", "nvarchar(max)", 10, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(refTypeListParameter1)
+            Dim refTypeIListParameter1 As New StoreStoredProcedureParameter("RefTypeIList", "nvarchar(max)", 11, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(refTypeIListParameter1)
+            Dim refTypeArrayParameter1 As New StoreStoredProcedureParameter("RefTypeArray", "nvarchar(max)", 12, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(refTypeArrayParameter1)
+            Dim refTypeEnumerableParameter1 As New StoreStoredProcedureParameter("RefTypeEnumerable", "nvarchar(max)", 13, derived_InsertStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_InsertStoreSproc.AddParameter(refTypeEnumerableParameter1)
             Dim derivedIdFunctionColumn As New StoreStoredProcedureResultColumn("DerivedId", "bigint", 0, derived_InsertStoreSproc)
             derived_InsertStoreSproc.AddResultColumn(derivedIdFunctionColumn)
             derived_InsertStoreSproc.AddStoredProcedure(DirectCast(principalDerived.GetInsertStoredProcedure(), IRuntimeStoredProcedure))
@@ -6198,6 +13081,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter1, derived_InsertISproc.FindParameter("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), derived_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter1, derived_InsertISproc.FindParameter("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), derived_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalDerivedIdParameter1, derived_InsertISproc.FindParameter("PrincipalDerivedId"), principalDerived.FindProperty("PrincipalDerivedId"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter1, derived_InsertISproc.FindParameter("RefTypeArray"), principalDerived.FindProperty("RefTypeArray"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter1, derived_InsertISproc.FindParameter("RefTypeEnumerable"), principalDerived.FindProperty("RefTypeEnumerable"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter1, derived_InsertISproc.FindParameter("RefTypeIList"), principalDerived.FindProperty("RefTypeIList"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter1, derived_InsertISproc.FindParameter("RefTypeList"), principalDerived.FindProperty("RefTypeList"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter1, derived_InsertISproc.FindParameter("ValueTypeArray"), principalDerived.FindProperty("ValueTypeArray"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter1, derived_InsertISproc.FindParameter("ValueTypeEnumerable"), principalDerived.FindProperty("ValueTypeEnumerable"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter1, derived_InsertISproc.FindParameter("ValueTypeIList"), principalDerived.FindProperty("ValueTypeIList"), derived_InsertSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter1, derived_InsertISproc.FindParameter("ValueTypeList"), principalDerived.FindProperty("ValueTypeList"), derived_InsertSprocMapping)
             RelationalModel.CreateStoredProcedureResultColumnMapping(derivedIdFunctionColumn, derived_InsertISproc.FindResultColumn("DerivedId"), principalDerived.FindProperty("Id"), derived_InsertSprocMapping)
 
             Dim updateSprocMappings0 As New List(Of StoredProcedureMapping)()
@@ -6221,7 +13112,39 @@ Namespace TestNamespace
             derived_UpdateStoreSproc.AddParameter(flagsEnum1Parameter2)
             Dim flagsEnum2Parameter2 As New StoreStoredProcedureParameter("FlagsEnum2", "int", 5, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input)
             derived_UpdateStoreSproc.AddParameter(flagsEnum2Parameter2)
-            Dim id_OriginalParameter2 As New StoreStoredProcedureParameter("Id_Original", "bigint", 6, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input)
+            Dim valueTypeListParameter2 As New StoreStoredProcedureParameter("ValueTypeList", "nvarchar(max)", 6, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(valueTypeListParameter2)
+            Dim valueTypeIListParameter2 As New StoreStoredProcedureParameter("ValueTypeIList", "nvarchar(max)", 7, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(valueTypeIListParameter2)
+            Dim valueTypeArrayParameter2 As New StoreStoredProcedureParameter("ValueTypeArray", "nvarchar(max)", 8, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(valueTypeArrayParameter2)
+            Dim valueTypeEnumerableParameter2 As New StoreStoredProcedureParameter("ValueTypeEnumerable", "nvarchar(max)", 9, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(valueTypeEnumerableParameter2)
+            Dim refTypeListParameter2 As New StoreStoredProcedureParameter("RefTypeList", "nvarchar(max)", 10, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(refTypeListParameter2)
+            Dim refTypeIListParameter2 As New StoreStoredProcedureParameter("RefTypeIList", "nvarchar(max)", 11, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(refTypeIListParameter2)
+            Dim refTypeArrayParameter2 As New StoreStoredProcedureParameter("RefTypeArray", "nvarchar(max)", 12, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(refTypeArrayParameter2)
+            Dim refTypeEnumerableParameter2 As New StoreStoredProcedureParameter("RefTypeEnumerable", "nvarchar(max)", 13, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input) With {
+                .IsNullable = True
+            }
+            derived_UpdateStoreSproc.AddParameter(refTypeEnumerableParameter2)
+            Dim id_OriginalParameter2 As New StoreStoredProcedureParameter("Id_Original", "bigint", 14, derived_UpdateStoreSproc, System.Data.ParameterDirection.Input)
             derived_UpdateStoreSproc.AddParameter(id_OriginalParameter2)
             derived_UpdateStoreSproc.AddStoredProcedure(DirectCast(principalDerived.GetUpdateStoredProcedure(), IRuntimeStoredProcedure))
             relationalModel.StoredProcedures.Add(("Derived_Update", "Derived"), derived_UpdateStoreSproc)
@@ -6237,6 +13160,14 @@ Namespace TestNamespace
             RelationalModel.CreateStoredProcedureParameterMapping(flagsEnum2Parameter2, derived_UpdateUSproc.FindParameter("FlagsEnum2"), principalDerived.FindProperty("FlagsEnum2"), derived_UpdateSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalBaseIdParameter2, derived_UpdateUSproc.FindParameter("PrincipalBaseId"), principalDerived.FindProperty("PrincipalBaseId"), derived_UpdateSprocMapping)
             RelationalModel.CreateStoredProcedureParameterMapping(principalDerivedIdParameter2, derived_UpdateUSproc.FindParameter("PrincipalDerivedId"), principalDerived.FindProperty("PrincipalDerivedId"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeArrayParameter2, derived_UpdateUSproc.FindParameter("RefTypeArray"), principalDerived.FindProperty("RefTypeArray"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeEnumerableParameter2, derived_UpdateUSproc.FindParameter("RefTypeEnumerable"), principalDerived.FindProperty("RefTypeEnumerable"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeIListParameter2, derived_UpdateUSproc.FindParameter("RefTypeIList"), principalDerived.FindProperty("RefTypeIList"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(refTypeListParameter2, derived_UpdateUSproc.FindParameter("RefTypeList"), principalDerived.FindProperty("RefTypeList"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeArrayParameter2, derived_UpdateUSproc.FindParameter("ValueTypeArray"), principalDerived.FindProperty("ValueTypeArray"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeEnumerableParameter2, derived_UpdateUSproc.FindParameter("ValueTypeEnumerable"), principalDerived.FindProperty("ValueTypeEnumerable"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeIListParameter2, derived_UpdateUSproc.FindParameter("ValueTypeIList"), principalDerived.FindProperty("ValueTypeIList"), derived_UpdateSprocMapping)
+            RelationalModel.CreateStoredProcedureParameterMapping(valueTypeListParameter2, derived_UpdateUSproc.FindParameter("ValueTypeList"), principalDerived.FindProperty("ValueTypeList"), derived_UpdateSprocMapping)
             Dim fK_DependentBasebyte_PrincipalDerived_PrincipalId As New ForeignKeyConstraint(
                 "FK_DependentBase<byte?>_PrincipalDerived_PrincipalId", dependentBasebyteTable, principalDerivedTable,
                 {principalIdColumn},
@@ -6288,7 +13219,9 @@ Imports System
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 
 Namespace TestNamespace
     Friend Partial Class DependentBaseEntityType
@@ -6305,12 +13238,38 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetProperty("Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = SqlServerByteTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                keyComparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                providerValueComparer:=New ValueComparer(Of Byte?)(
+                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalId = entityType.AddProperty(
                 "PrincipalId",
                 GetType(Long?),
                 nullable:=True)
+            principalId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
             principalId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -6370,9 +13329,15 @@ End Namespace
             <![CDATA[' <auto-generated />
 Imports System
 Imports System.Collections.Generic
+Imports System.Net
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
 Namespace TestNamespace
     Friend Partial Class PrincipalBaseEntityType
@@ -6391,6 +13356,19 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
+            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim idDerived_Insert As New RuntimeRelationalPropertyOverrides(
@@ -6417,6 +13395,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
+            enum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -6425,6 +13424,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            enum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -6433,6 +13453,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -6441,138 +13482,601 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
+            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                    JsonInt32ReaderWriter.Instance,
+                    New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalBaseId = entityType.AddProperty(
                 "PrincipalBaseId",
                 GetType(Long?),
                 nullable:=True)
+            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalDerivedId = entityType.AddProperty(
                 "PrincipalDerivedId",
                 GetType(Long?),
                 nullable:=True)
+            principalDerivedId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
             principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim key = entityType.AddKey(
-                {id})
-            entityType.SetPrimaryKey(key)
+            Dim refTypeArray = entityType.AddProperty(
+                "RefTypeArray",
+                GetType(IPAddress()),
+                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+                nullable:=True)
+            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v)),
+            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v)),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    storeTypePostfix:=StoreTypePostfix.None,
+    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))),
+    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+        comparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        keyComparer:=New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        providerValueComparer:=New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        mappingInfo:=New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        converter:=New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)),
+        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)))))
+refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim index = entityType.AddIndex(
-                {principalDerivedId})
+Dim refTypeEnumerable = entityType.AddProperty(
+    "RefTypeEnumerable",
+    GetType(IEnumerable(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim principalIndex = entityType.AddIndex(
-                {principalBaseId},
-                name:="PrincipalIndex",
-                unique:=True)
-            principalIndex.AddAnnotation("Relational:Name", "PIX")
+Dim refTypeIList = entityType.AddProperty(
+    "RefTypeIList",
+    GetType(IList(Of String)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v)),
+keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+    JsonStringReaderWriter.Instance),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    keyComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(max)",
+        dbType:=System.Data.DbType.String),
+    storeTypePostfix:=StoreTypePostfix.None))
+refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return entityType
-        End Function
+Dim refTypeList = entityType.AddProperty(
+    "RefTypeList",
+    GetType(List(Of IPAddress)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v)),
+keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+    Function(v As IPAddress) v.GetHashCode(),
+    Function(v As IPAddress) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v))))),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))),
+elementMapping:=SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    keyComparer:=New ValueComparer(Of IPAddress)(
+        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+        Function(v As IPAddress) v.GetHashCode(),
+        Function(v As IPAddress) v),
+    providerValueComparer:=New ValueComparer(Of String)(
+        Function(v1 As String, v2 As String) v1 = v2,
+        Function(v As String) v.GetHashCode(),
+        Function(v As String) v),
+    mappingInfo:=New RelationalTypeMappingInfo(
+        storeTypeName:="nvarchar(45)",
+        size:=45,
+        dbType:=System.Data.DbType.String),
+    converter:=New ValueConverter(Of IPAddress, String)(
+        Function(v As IPAddress) v.ToString(),
+        Function(v As String) IPAddress.Parse(v)),
+    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+        JsonStringReaderWriter.Instance,
+        New ValueConverter(Of IPAddress, String)(
+            Function(v As IPAddress) v.ToString(),
+            Function(v As String) IPAddress.Parse(v)))))
+refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
-                principalEntityType)
+Dim valueTypeArray = entityType.AddProperty(
+    "ValueTypeArray",
+    GetType(Date()),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)),
+keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+    Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+    Function(v As DateTime) v.GetHashCode(),
+    Function(v As DateTime) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+    JsonDateTimeReaderWriter.Instance),
+elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    keyComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v),
+    providerValueComparer:=New ValueComparer(Of Date)(
+        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+        Function(v As DateTime) v.GetHashCode(),
+        Function(v As DateTime) v)))
+valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim deriveds = principalEntityType.AddNavigation("Deriveds",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+Dim valueTypeEnumerable = entityType.AddProperty(
+    "ValueTypeEnumerable",
+    GetType(IEnumerable(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Return runtimeForeignKey
-        End Function
+Dim valueTypeIList = entityType.AddProperty(
+    "ValueTypeIList",
+    GetType(IList(Of Byte)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)),
+keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+    Function(v1 As Byte, v2 As Byte) v1 = v2,
+    Function(v As Byte) CType(v, Integer),
+    Function(v As Byte) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+    JsonByteReaderWriter.Instance),
+elementMapping:=SqlServerByteTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    keyComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v),
+    providerValueComparer:=New ValueComparer(Of Byte)(
+        Function(v1 As Byte, v2 As Byte) v1 = v2,
+        Function(v As Byte) CType(v, Integer),
+        Function(v As Byte) v)))
+valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-        Public Shared Function CreateForeignKey2(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
-            Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId")},
-                principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
-                principalEntityType)
+Dim valueTypeList = entityType.AddProperty(
+    "ValueTypeList",
+    GetType(List(Of Short)),
+    propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+    nullable:=True)
+valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)),
+keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+    Function(v1 As Short, v2 As Short) v1 = v2,
+    Function(v As Short) CType(v, Integer),
+    Function(v As Short) v)),
+providerValueComparer:=New ValueComparer(Of String)(
+    Function(v1 As String, v2 As String) v1 = v2,
+    Function(v As String) v.GetHashCode(),
+    Function(v As String) v),
+mappingInfo:=New RelationalTypeMappingInfo(
+    storeTypeName:="nvarchar(max)",
+    dbType:=System.Data.DbType.String),
+converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance)),
+storeTypePostfix:=StoreTypePostfix.None,
+jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+    JsonInt16ReaderWriter.Instance),
+elementMapping:=SqlServerShortTypeMapping.Default.Clone(
+    comparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    keyComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v),
+    providerValueComparer:=New ValueComparer(Of Short)(
+        Function(v1 As Short, v2 As Short) v1 = v2,
+        Function(v As Short) CType(v, Integer),
+        Function(v As Short) v)))
+valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
-            Dim principals = principalEntityType.AddNavigation("Principals",
-                runtimeForeignKey,
-                onDependent:=False,
-                GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
-                propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetProperty("Principals", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
-                fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("_Principals", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
+Dim key = entityType.AddKey(
+    {id})
+entityType.SetPrimaryKey(key)
 
-            Return runtimeForeignKey
-        End Function
+Dim index = entityType.AddIndex(
+    {principalDerivedId})
 
-        Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
-            Dim insertSproc As New RuntimeStoredProcedure(
-                entityType,
-                "PrincipalBase_Insert",
-                "TPC",
-                False)
+Dim principalIndex = entityType.AddIndex(
+    {principalBaseId},
+    name:="PrincipalIndex",
+    unique:=True)
+principalIndex.AddAnnotation("Relational:Name", "PIX")
 
-            Dim principalBaseId = insertSproc.AddParameter(
-                "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
-            Dim principalDerivedId = insertSproc.AddParameter(
-                "PrincipalDerivedId", System.Data.ParameterDirection.Input, False, "PrincipalDerivedId", False)
-            Dim enum1 = insertSproc.AddParameter(
-                "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
-            Dim enum2 = insertSproc.AddParameter(
-                "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
-            Dim flagsEnum1 = insertSproc.AddParameter(
-                "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
-            Dim flagsEnum2 = insertSproc.AddParameter(
-                "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
-            Dim id = insertSproc.AddParameter(
-                "BaseId", System.Data.ParameterDirection.Output, False, "Id", False)
-            id.AddAnnotation("foo", "bar")
-            insertSproc.AddAnnotation("foo", "bar1")
-            entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+Return entityType
+End Function
 
-            Dim deleteSproc As New RuntimeStoredProcedure(
-                entityType,
-                "PrincipalBase_Delete",
-                "TPC",
-                True)
+Public Shared Function CreateForeignKey1(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalBaseId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
+        principalEntityType)
 
-            Dim id0 = deleteSproc.AddParameter(
-                "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
-            entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+    Dim deriveds = principalEntityType.AddNavigation("Deriveds",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Deriveds", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Deriveds", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
 
-            Dim updateSproc As New RuntimeStoredProcedure(
-                entityType,
-                "PrincipalBase_Update",
-                "TPC",
-                False)
+    Return runtimeForeignKey
+End Function
 
-            Dim principalBaseId0 = updateSproc.AddParameter(
-                "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
-            Dim principalDerivedId0 = updateSproc.AddParameter(
-                "PrincipalDerivedId", System.Data.ParameterDirection.Input, False, "PrincipalDerivedId", False)
-            Dim enum10 = updateSproc.AddParameter(
-                "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
-            Dim enum20 = updateSproc.AddParameter(
-                "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
-            Dim flagsEnum10 = updateSproc.AddParameter(
-                "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
-            Dim flagsEnum20 = updateSproc.AddParameter(
-                "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
-            Dim id1 = updateSproc.AddParameter(
-                "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
-            entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+Public Shared Function CreateForeignKey2(declaringEntityType As RuntimeEntityType, principalEntityType As RuntimeEntityType) As RuntimeForeignKey
+    Dim runtimeForeignKey = declaringEntityType.AddForeignKey({declaringEntityType.FindProperty("PrincipalDerivedId")},
+        principalEntityType.FindKey({principalEntityType.FindProperty("Id")}),
+        principalEntityType)
 
-            entityType.AddAnnotation("Relational:FunctionName", Nothing)
-            entityType.AddAnnotation("Relational:MappingStrategy", "TPC")
-            entityType.AddAnnotation("Relational:Schema", "TPC")
-            entityType.AddAnnotation("Relational:SqlQuery", Nothing)
-            entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
-            entityType.AddAnnotation("Relational:ViewDefinitionSql", Nothing)
-            entityType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
-            entityType.AddAnnotation("Relational:ViewSchema", "TPC")
+    Dim principals = principalEntityType.AddNavigation("Principals",
+        runtimeForeignKey,
+        onDependent:=False,
+        GetType(ICollection(Of VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase)),
+        propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetProperty("Principals", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
+        fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalDerived(Of VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?))).GetField("_Principals", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly))
 
-            Customize(entityType)
-        End Sub
+    Return runtimeForeignKey
+End Function
 
-        Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
-        End Sub
-    End Class
+Public Shared Sub CreateAnnotations(entityType As RuntimeEntityType)
+    Dim insertSproc As New RuntimeStoredProcedure(
+        entityType,
+        "PrincipalBase_Insert",
+        "TPC",
+        False)
+
+    Dim principalBaseId = insertSproc.AddParameter(
+        "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
+    Dim principalDerivedId = insertSproc.AddParameter(
+        "PrincipalDerivedId", System.Data.ParameterDirection.Input, False, "PrincipalDerivedId", False)
+    Dim enum1 = insertSproc.AddParameter(
+        "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
+    Dim enum2 = insertSproc.AddParameter(
+        "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
+    Dim flagsEnum1 = insertSproc.AddParameter(
+        "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
+    Dim flagsEnum2 = insertSproc.AddParameter(
+        "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+    Dim valueTypeList = insertSproc.AddParameter(
+        "ValueTypeList", System.Data.ParameterDirection.Input, False, "ValueTypeList", False)
+    Dim valueTypeIList = insertSproc.AddParameter(
+        "ValueTypeIList", System.Data.ParameterDirection.Input, False, "ValueTypeIList", False)
+    Dim valueTypeArray = insertSproc.AddParameter(
+        "ValueTypeArray", System.Data.ParameterDirection.Input, False, "ValueTypeArray", False)
+    Dim valueTypeEnumerable = insertSproc.AddParameter(
+        "ValueTypeEnumerable", System.Data.ParameterDirection.Input, False, "ValueTypeEnumerable", False)
+    Dim refTypeList = insertSproc.AddParameter(
+        "RefTypeList", System.Data.ParameterDirection.Input, False, "RefTypeList", False)
+    Dim refTypeIList = insertSproc.AddParameter(
+        "RefTypeIList", System.Data.ParameterDirection.Input, False, "RefTypeIList", False)
+    Dim refTypeArray = insertSproc.AddParameter(
+        "RefTypeArray", System.Data.ParameterDirection.Input, False, "RefTypeArray", False)
+    Dim refTypeEnumerable = insertSproc.AddParameter(
+        "RefTypeEnumerable", System.Data.ParameterDirection.Input, False, "RefTypeEnumerable", False)
+    Dim id = insertSproc.AddParameter(
+        "BaseId", System.Data.ParameterDirection.Output, False, "Id", False)
+    id.AddAnnotation("foo", "bar")
+    insertSproc.AddAnnotation("foo", "bar1")
+    entityType.AddAnnotation("Relational:InsertStoredProcedure", insertSproc)
+
+    Dim deleteSproc As New RuntimeStoredProcedure(
+        entityType,
+        "PrincipalBase_Delete",
+        "TPC",
+        True)
+
+    Dim id0 = deleteSproc.AddParameter(
+        "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
+    entityType.AddAnnotation("Relational:DeleteStoredProcedure", deleteSproc)
+
+    Dim updateSproc As New RuntimeStoredProcedure(
+        entityType,
+        "PrincipalBase_Update",
+        "TPC",
+        False)
+
+    Dim principalBaseId0 = updateSproc.AddParameter(
+        "PrincipalBaseId", System.Data.ParameterDirection.Input, False, "PrincipalBaseId", False)
+    Dim principalDerivedId0 = updateSproc.AddParameter(
+        "PrincipalDerivedId", System.Data.ParameterDirection.Input, False, "PrincipalDerivedId", False)
+    Dim enum10 = updateSproc.AddParameter(
+        "Enum1", System.Data.ParameterDirection.Input, False, "Enum1", False)
+    Dim enum20 = updateSproc.AddParameter(
+        "Enum2", System.Data.ParameterDirection.Input, False, "Enum2", False)
+    Dim flagsEnum10 = updateSproc.AddParameter(
+        "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
+    Dim flagsEnum20 = updateSproc.AddParameter(
+        "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+    Dim valueTypeList0 = updateSproc.AddParameter(
+        "ValueTypeList", System.Data.ParameterDirection.Input, False, "ValueTypeList", False)
+    Dim valueTypeIList0 = updateSproc.AddParameter(
+        "ValueTypeIList", System.Data.ParameterDirection.Input, False, "ValueTypeIList", False)
+    Dim valueTypeArray0 = updateSproc.AddParameter(
+        "ValueTypeArray", System.Data.ParameterDirection.Input, False, "ValueTypeArray", False)
+    Dim valueTypeEnumerable0 = updateSproc.AddParameter(
+        "ValueTypeEnumerable", System.Data.ParameterDirection.Input, False, "ValueTypeEnumerable", False)
+    Dim refTypeList0 = updateSproc.AddParameter(
+        "RefTypeList", System.Data.ParameterDirection.Input, False, "RefTypeList", False)
+    Dim refTypeIList0 = updateSproc.AddParameter(
+        "RefTypeIList", System.Data.ParameterDirection.Input, False, "RefTypeIList", False)
+    Dim refTypeArray0 = updateSproc.AddParameter(
+        "RefTypeArray", System.Data.ParameterDirection.Input, False, "RefTypeArray", False)
+    Dim refTypeEnumerable0 = updateSproc.AddParameter(
+        "RefTypeEnumerable", System.Data.ParameterDirection.Input, False, "RefTypeEnumerable", False)
+    Dim id1 = updateSproc.AddParameter(
+        "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
+    entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
+
+    entityType.AddAnnotation("Relational:FunctionName", Nothing)
+    entityType.AddAnnotation("Relational:MappingStrategy", "TPC")
+    entityType.AddAnnotation("Relational:Schema", "TPC")
+    entityType.AddAnnotation("Relational:SqlQuery", Nothing)
+    entityType.AddAnnotation("Relational:TableName", "PrincipalBase")
+    entityType.AddAnnotation("Relational:ViewDefinitionSql", Nothing)
+    entityType.AddAnnotation("Relational:ViewName", "PrincipalBaseView")
+    entityType.AddAnnotation("Relational:ViewSchema", "TPC")
+
+    Customize(entityType)
+End Sub
+
+Shared Partial Private Sub Customize(entityType As RuntimeEntityType)
+End Sub
+End Class
 End Namespace
 ]]>.Value
 
@@ -6615,6 +14119,22 @@ Namespace TestNamespace
                 "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
             Dim flagsEnum2 = insertSproc.AddParameter(
                 "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+            Dim valueTypeList = insertSproc.AddParameter(
+                "ValueTypeList", System.Data.ParameterDirection.Input, False, "ValueTypeList", False)
+            Dim valueTypeIList = insertSproc.AddParameter(
+                "ValueTypeIList", System.Data.ParameterDirection.Input, False, "ValueTypeIList", False)
+            Dim valueTypeArray = insertSproc.AddParameter(
+                "ValueTypeArray", System.Data.ParameterDirection.Input, False, "ValueTypeArray", False)
+            Dim valueTypeEnumerable = insertSproc.AddParameter(
+                "ValueTypeEnumerable", System.Data.ParameterDirection.Input, False, "ValueTypeEnumerable", False)
+            Dim refTypeList = insertSproc.AddParameter(
+                "RefTypeList", System.Data.ParameterDirection.Input, False, "RefTypeList", False)
+            Dim refTypeIList = insertSproc.AddParameter(
+                "RefTypeIList", System.Data.ParameterDirection.Input, False, "RefTypeIList", False)
+            Dim refTypeArray = insertSproc.AddParameter(
+                "RefTypeArray", System.Data.ParameterDirection.Input, False, "RefTypeArray", False)
+            Dim refTypeEnumerable = insertSproc.AddParameter(
+                "RefTypeEnumerable", System.Data.ParameterDirection.Input, False, "RefTypeEnumerable", False)
             Dim derivedId = insertSproc.AddResultColumn(
                 "DerivedId", False, "Id")
             derivedId.AddAnnotation("foo", "bar3")
@@ -6648,6 +14168,22 @@ Namespace TestNamespace
                 "FlagsEnum1", System.Data.ParameterDirection.Input, False, "FlagsEnum1", False)
             Dim flagsEnum20 = updateSproc.AddParameter(
                 "FlagsEnum2", System.Data.ParameterDirection.Input, False, "FlagsEnum2", False)
+            Dim valueTypeList0 = updateSproc.AddParameter(
+                "ValueTypeList", System.Data.ParameterDirection.Input, False, "ValueTypeList", False)
+            Dim valueTypeIList0 = updateSproc.AddParameter(
+                "ValueTypeIList", System.Data.ParameterDirection.Input, False, "ValueTypeIList", False)
+            Dim valueTypeArray0 = updateSproc.AddParameter(
+                "ValueTypeArray", System.Data.ParameterDirection.Input, False, "ValueTypeArray", False)
+            Dim valueTypeEnumerable0 = updateSproc.AddParameter(
+                "ValueTypeEnumerable", System.Data.ParameterDirection.Input, False, "ValueTypeEnumerable", False)
+            Dim refTypeList0 = updateSproc.AddParameter(
+                "RefTypeList", System.Data.ParameterDirection.Input, False, "RefTypeList", False)
+            Dim refTypeIList0 = updateSproc.AddParameter(
+                "RefTypeIList", System.Data.ParameterDirection.Input, False, "RefTypeIList", False)
+            Dim refTypeArray0 = updateSproc.AddParameter(
+                "RefTypeArray", System.Data.ParameterDirection.Input, False, "RefTypeArray", False)
+            Dim refTypeEnumerable0 = updateSproc.AddParameter(
+                "RefTypeEnumerable", System.Data.ParameterDirection.Input, False, "RefTypeEnumerable", False)
             Dim id0 = updateSproc.AddParameter(
                 "Id_Original", System.Data.ParameterDirection.Input, False, "Id", True)
             entityType.AddAnnotation("Relational:UpdateStoredProcedure", updateSproc)
@@ -6737,6 +14273,14 @@ End Namespace
                     Assert.Equal(
                         CoreStrings.RuntimeModelMissingData,
                         Assert.Throws(Of InvalidOperationException)(Function() alternateIndex.GetIncludeProperties()).Message)
+                    Assert.Null(alternateIndex(SqlServerAnnotationNames.SortInTempDb))
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() alternateIndex.GetSortInTempDb()).Message)
+                    Assert.Null(alternateIndex(SqlServerAnnotationNames.DataCompression))
+                    Assert.Equal(
+                        CoreStrings.RuntimeModelMissingData,
+                        Assert.Throws(Of InvalidOperationException)(Sub() alternateIndex.GetDataCompression()).Message)
 
                     Assert.Equal({alternateIndex}, principalBaseId.GetContainingIndexes())
 
@@ -6744,7 +14288,7 @@ End Namespace
                     Assert.Equal("PrincipalBase_Insert", insertSproc.Name)
                     Assert.Equal("TPC", insertSproc.Schema)
                     Assert.Equal(
-                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "Id"},
+                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "ValueTypeList", "ValueTypeIList", "ValueTypeArray", "ValueTypeEnumerable", "RefTypeList", "RefTypeIList", "RefTypeArray", "RefTypeEnumerable", "Id"},
                         insertSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(insertSproc.ResultColumns)
                     Assert.False(insertSproc.IsRowsAffectedReturned)
@@ -6758,7 +14302,7 @@ End Namespace
                     Assert.Equal("PrincipalBase_Update", updateSproc.Name)
                     Assert.Equal("TPC", updateSproc.Schema)
                     Assert.Equal(
-                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "Id"},
+                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "ValueTypeList", "ValueTypeIList", "ValueTypeArray", "ValueTypeEnumerable", "RefTypeList", "RefTypeIList", "RefTypeArray", "RefTypeEnumerable", "Id"},
                         updateSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(updateSproc.ResultColumns)
                     Assert.False(updateSproc.IsRowsAffectedReturned)
@@ -6800,7 +14344,7 @@ End Namespace
                     Assert.Equal("Derived_Insert", insertSproc.Name)
                     Assert.Equal("TPC", insertSproc.Schema)
                     Assert.Equal(
-                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2"},
+                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "ValueTypeList", "ValueTypeIList", "ValueTypeArray", "ValueTypeEnumerable", "RefTypeList", "RefTypeIList", "RefTypeArray", "RefTypeEnumerable"},
                         insertSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Equal({"Id"}, insertSproc.ResultColumns.Select(Function(p) p.PropertyName))
                     Assert.Null(insertSproc("foo"))
@@ -6818,7 +14362,7 @@ End Namespace
                     Assert.Equal("Derived_Update", updateSproc.Name)
                     Assert.Equal("Derived", updateSproc.Schema)
                     Assert.Equal(
-                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "Id"},
+                        {"PrincipalBaseId", "PrincipalDerivedId", "Enum1", "Enum2", "FlagsEnum1", "FlagsEnum2", "ValueTypeList", "ValueTypeIList", "ValueTypeArray", "ValueTypeEnumerable", "RefTypeList", "RefTypeIList", "RefTypeArray", "RefTypeEnumerable", "Id"},
                         updateSproc.Parameters.Select(Function(p) p.PropertyName))
                     Assert.Empty(updateSproc.ResultColumns)
                     Assert.Empty(updateSproc.GetAnnotations())
@@ -6919,6 +14463,14 @@ End Namespace
                             HasParameter("Enum2").
                             HasParameter("FlagsEnum1").
                             HasParameter("FlagsEnum2").
+                            HasParameter("ValueTypeList").
+                            HasParameter("ValueTypeIList").
+                            HasParameter("ValueTypeArray").
+                            HasParameter("ValueTypeEnumerable").
+                            HasParameter("RefTypeList").
+                            HasParameter("RefTypeIList").
+                            HasParameter("RefTypeArray").
+                            HasParameter("RefTypeEnumerable").
                             HasParameter(Function(p) p.Id, Function(pb) pb.HasName("BaseId").IsOutput().HasAnnotation("foo", "bar")).
                             HasAnnotation("foo", "bar1"))
                         eb.UpdateUsingStoredProcedure(Sub(s) s.
@@ -6928,7 +14480,15 @@ End Namespace
                             HasParameter("Enum2").
                             HasParameter("FlagsEnum1").
                             HasParameter("FlagsEnum2").
-                            HasOriginalValueParameter(Function(p) p.Id))
+                            HasParameter("ValueTypeList").
+                            HasParameter("ValueTypeIList").
+                            HasParameter("ValueTypeArray").
+                            HasParameter("ValueTypeEnumerable").
+                            HasParameter("RefTypeList").
+                            HasParameter("RefTypeIList").
+                            HasParameter("RefTypeArray").
+                            HasParameter("RefTypeEnumerable").
+                        HasOriginalValueParameter(Function(p) p.Id))
                         eb.DeleteUsingStoredProcedure(Sub(s) s.
                             HasRowsAffectedReturnValue().
                             HasOriginalValueParameter(Function(p) p.Id))
@@ -6940,7 +14500,9 @@ End Namespace
                             HasFilter("AlternateId <> NULL").
                             IsCreatedOnline().
                             HasFillFactor(40).
-                            IncludeProperties(Function(e) e.Id)
+                            IncludeProperties(Function(e) e.Id).
+                            SortInTempDb().
+                            UseDataCompression(DataCompressionType.Page)
                     End Sub)
 
                 modelBuilder.Entity(Of PrincipalDerived(Of DependentBase(Of Byte?)))(
@@ -6961,6 +14523,14 @@ End Namespace
                             HasParameter("Enum2").
                             HasParameter("FlagsEnum1").
                             HasParameter("FlagsEnum2").
+                            HasParameter("ValueTypeList").
+                            HasParameter("ValueTypeIList").
+                            HasParameter("ValueTypeArray").
+                            HasParameter("ValueTypeEnumerable").
+                            HasParameter("RefTypeList").
+                            HasParameter("RefTypeIList").
+                            HasParameter("RefTypeArray").
+                            HasParameter("RefTypeEnumerable").
                             HasResultColumn(Function(p) p.Id, Function(pb) pb.HasName("DerivedId").HasAnnotation("foo", "bar3")))
                         eb.UpdateUsingStoredProcedure("Derived_Update", "Derived", Sub(s) s.
                             HasParameter("PrincipalBaseId").
@@ -6969,6 +14539,14 @@ End Namespace
                             HasParameter("Enum2").
                             HasParameter("FlagsEnum1").
                             HasParameter("FlagsEnum2").
+                            HasParameter("ValueTypeList").
+                            HasParameter("ValueTypeIList").
+                            HasParameter("ValueTypeArray").
+                            HasParameter("ValueTypeEnumerable").
+                            HasParameter("RefTypeList").
+                            HasParameter("RefTypeIList").
+                            HasParameter("RefTypeArray").
+                            HasParameter("RefTypeEnumerable").
                             HasOriginalValueParameter(Function(p) p.Id))
                         eb.DeleteUsingStoredProcedure("Derived_Delete", Sub(s) s.
                             HasOriginalValueParameter(Function(p) p.Id))
@@ -7014,6 +14592,16 @@ End Namespace
             Public Property Enum2 As AnEnum?
             Public Property FlagsEnum1 As AFlagsEnum
             Public Property FlagsEnum2 As AFlagsEnum
+
+            Public Property ValueTypeList As List(Of Short)
+            Public Property ValueTypeIList As IList(Of Byte)
+            Public Property ValueTypeArray As DateTime()
+            Public Property ValueTypeEnumerable As IEnumerable(Of Byte)
+
+            Public Property RefTypeList As List(Of IPAddress)
+            Public Property RefTypeIList As IList(Of String)
+            Public Property RefTypeArray As IPAddress()
+            Public Property RefTypeEnumerable As IEnumerable(Of String)
 
             Private _ownedField As OwnedType
             Public Property Owned As OwnedType
@@ -7086,6 +14674,13 @@ End Namespace
             Public Property Principal As PrincipalBase
 
             Private _details As String
+            Private _valueTypeList As List(Of Short)
+            Private _valueTypeArray As DateTime()
+            Private _valueTypeEnumerable As IEnumerable(Of Byte)
+            Private _refTypeList As List(Of IPAddress)
+            Private _refTypeIList As IList(Of String)
+            Private _refTypeArray As IPAddress()
+            Private _refTypeEnumerable As IEnumerable(Of String)
 
             Public Property Details As String
                 Get
@@ -7098,6 +14693,85 @@ End Namespace
 
             Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
             Public Event PropertyChanging As PropertyChangingEventHandler Implements INotifyPropertyChanging.PropertyChanging
+
+            Public Property ValueTypeList As List(Of Short)
+                Get
+                    Return _valueTypeList
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(ValueTypeList)))
+                    _valueTypeList = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(ValueTypeList)))
+                End Set
+            End Property
+
+            Public Property ValueTypeIList As IList(Of Byte)
+
+            Public Property ValueTypeArray As DateTime()
+                Get
+                    Return _valueTypeArray
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(ValueTypeArray)))
+                    _valueTypeArray = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(ValueTypeArray)))
+                End Set
+            End Property
+
+            Public Property ValueTypeEnumerable As IEnumerable(Of Byte)
+                Get
+                    Return _valueTypeEnumerable
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(ValueTypeEnumerable)))
+                    _valueTypeEnumerable = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(ValueTypeEnumerable)))
+                End Set
+            End Property
+
+            Public Property RefTypeList As List(Of IPAddress)
+                Get
+                    Return _refTypeList
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(RefTypeList)))
+                    _refTypeList = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(RefTypeList)))
+                End Set
+            End Property
+
+            Public Property RefTypeIList As IList(Of String)
+                Get
+                    Return _refTypeIList
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(RefTypeIList)))
+                    _refTypeIList = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(RefTypeIList)))
+                End Set
+            End Property
+
+            Public Property RefTypeArray As IPAddress()
+                Get
+                    Return _refTypeArray
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(RefTypeArray)))
+                    _refTypeArray = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(RefTypeArray)))
+                End Set
+            End Property
+
+            Public Property RefTypeEnumerable As IEnumerable(Of String)
+                Get
+                    Return _refTypeEnumerable
+                End Get
+                Set
+                    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(NameOf(RefTypeEnumerable)))
+                    _refTypeEnumerable = Value
+                    RaiseEvent PropertyChanging(Me, New PropertyChangingEventArgs(NameOf(RefTypeEnumerable)))
+                End Set
+            End Property
         End Class
 
         <ConditionalFact>
@@ -7145,9 +14819,12 @@ Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Public Partial Class DbFunctionContextModel
@@ -7185,6 +14862,21 @@ Namespace TestNamespace
                 GetType(Guid?),
                 True,
                 "uniqueidentifier")
+            id.TypeMapping = GuidTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                keyComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                providerValueComparer:=New ValueComparer(Of Guid)(
+                    Function(v1 As Guid, v2 As Guid) v1 = v2,
+                    Function(v As Guid) v.GetHashCode(),
+                    Function(v As Guid) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="uniqueidentifier"))
             id.AddAnnotation("MyAnnotation", {1L})
 
             Dim condition = getCount.AddParameter(
@@ -7192,7 +14884,37 @@ Namespace TestNamespace
                 GetType(String),
                 False,
                 "nchar(256)")
+            condition.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nchar(256)",
+                    size:=256,
+                    dbType:=System.Data.DbType.StringFixedLength))
 
+            getCount.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetCount(System.Guid?,string)") = getCount
 
             Dim getData As New RuntimeDbFunction(
@@ -7228,6 +14950,19 @@ Namespace TestNamespace
                 GetType(Integer),
                 False,
                 "int")
+            id0.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
 
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetData(int)") = getData0
 
@@ -7252,7 +14987,37 @@ Namespace TestNamespace
                 GetType(String),
                 False,
                 "nchar(256)")
+            aDate.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="nchar(256)",
+                    size:=256,
+                    dbType:=System.Data.DbType.StringFixedLength))
 
+            isDateShared.TypeMapping = SqlServerBoolTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                keyComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v),
+                providerValueComparer:=New ValueComparer(Of Boolean)(
+                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                    Function(v As Boolean) v.GetHashCode(),
+                    Function(v As Boolean) v))
             isDateShared.AddAnnotation("MyGuid", New Guid("00000000-0000-0000-0000-000000000000"))
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.IsDateShared(string)") = isDateShared
 
@@ -7287,7 +15052,7 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(blobColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
             Dim functionMappings As New List(Of FunctionMapping)()
             data.SetRuntimeAnnotation("Relational:FunctionMappings", functionMappings)
@@ -7304,7 +15069,7 @@ Namespace TestNamespace
             getAllDataFunction.AddTypeMapping(getAllDataFunctionMapping, False)
             functionMappings.Add(getAllDataFunctionMapping)
             getAllDataFunctionMapping.IsDefaultFunctionMapping = True
-            RelationalModel.CreateFunctionColumnMapping(getAllDataFunction.FindColumn("Blob"), data.FindProperty("Blob"), getAllDataFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(blobFunctionColumn, data.FindProperty("Blob"), getAllDataFunctionMapping)
             Dim getData = DirectCast(Me.FindDbFunction("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetData(int)"), IRuntimeDbFunction)
             Dim getDataFunction As New StoreFunction(getData, relationalModel)
             Dim idFunctionParameter = getDataFunction.FindParameter("id")
@@ -7318,7 +15083,7 @@ Namespace TestNamespace
             Dim getDataFunctionMapping As New FunctionMapping(data, getDataFunction, getData, True)
             getDataFunction.AddTypeMapping(getDataFunctionMapping, False)
             functionMappings.Add(getDataFunctionMapping)
-            RelationalModel.CreateFunctionColumnMapping(getDataFunction.FindColumn("Blob"), data.FindProperty("Blob"), getDataFunctionMapping)
+            RelationalModel.CreateFunctionColumnMapping(blobFunctionColumn0, data.FindProperty("Blob"), getDataFunctionMapping)
 
             Dim [object] = FindEntityType("object")
 
@@ -7363,9 +15128,14 @@ End Namespace
             Dim e1 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DataEntityType
@@ -7382,6 +15152,22 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) v.GetHashCode(),
+                    Function(v As Byte()) v),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varbinary(max)"),
+                storeTypePostfix:=StoreTypePostfix.None)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Return entityType
@@ -7783,8 +15569,8 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(blobColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             data.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -7807,8 +15593,8 @@ Namespace TestNamespace
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
             dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, data.FindProperty("Id"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(blobColumn, data.FindProperty("Blob"), dataTableMapping)
             Return relationalModel.MakeReadOnly()
         End Function
     End Class
@@ -7818,9 +15604,14 @@ End Namespace
             Dim e1 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DataEntityType
@@ -7837,6 +15628,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             id.AddAnnotation("SqlServer:HiLoSequenceName", "HL")
             id.AddAnnotation("SqlServer:HiLoSequenceSchema", "S")
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo)
@@ -7847,6 +15651,22 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) v.GetHashCode(),
+                    Function(v As Byte()) v),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varbinary(max)"),
+                storeTypePostfix:=StoreTypePostfix.None)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -8020,8 +15840,8 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(blobColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             data.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -8044,8 +15864,8 @@ Namespace TestNamespace
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
             dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, data.FindProperty("Id"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(blobColumn, data.FindProperty("Blob"), dataTableMapping)
             Return relationalModel.MakeReadOnly()
         End Function
     End Class
@@ -8055,9 +15875,14 @@ End Namespace
             Dim e1 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DataEntityType
@@ -8074,6 +15899,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             id.AddAnnotation("Relational:DefaultValueSql", "NEXT VALUE FOR [KeySeqSchema].[KeySeq]")
             id.AddAnnotation("SqlServer:SequenceName", "KeySeq")
             id.AddAnnotation("SqlServer:SequenceSchema", "KeySeqSchema")
@@ -8085,6 +15923,22 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) v.GetHashCode(),
+                    Function(v As Byte()) v),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varbinary(max)"),
+                storeTypePostfix:=StoreTypePostfix.None)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -8232,8 +16086,8 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(blobColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             data.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -8256,8 +16110,8 @@ Namespace TestNamespace
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
             dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, data.FindProperty("Id"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(blobColumn, data.FindProperty("Blob"), dataTableMapping)
             Return relationalModel.MakeReadOnly()
         End Function
     End Class
@@ -8267,9 +16121,14 @@ End Namespace
             Dim e1 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DataEntityType
@@ -8286,6 +16145,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim blob = entityType.AddProperty(
@@ -8294,6 +16166,22 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) v.GetHashCode(),
+                    Function(v As Byte()) v),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varbinary(max)"),
+                storeTypePostfix:=StoreTypePostfix.None)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -8430,8 +16318,8 @@ Namespace TestNamespace
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(blobColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             data.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -8456,8 +16344,8 @@ Namespace TestNamespace
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
             dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, data.FindProperty("Id"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(blobColumn, data.FindProperty("Blob"), dataTableMapping)
             Return relationalModel.MakeReadOnly()
         End Function
     End Class
@@ -8467,9 +16355,14 @@ End Namespace
             Dim e1 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DataEntityType
@@ -8486,6 +16379,19 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v))
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim blob = entityType.AddProperty(
@@ -8494,6 +16400,22 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) v.GetHashCode(),
+                    Function(v As Byte()) v),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="varbinary(max)"),
+                storeTypePostfix:=StoreTypePostfix.None)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -8639,9 +16561,9 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
             Dim entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase As New TableMappingBase(Of ColumnMappingBase)(data, entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase, True)
             entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.AddTypeMapping(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase, False)
             defaultTableMappings.Add(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Id"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Blob"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
-            RelationalModel.CreateColumnMapping(DirectCast(entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataTableBase.FindColumn("Point"), ColumnBase(Of ColumnMappingBase)), data.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(idColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Id"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(blobColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Blob"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
+            RelationalModel.CreateColumnMapping(DirectCast(pointColumnBase, ColumnBase(Of ColumnMappingBase)), data.FindProperty("Point"), entityFrameworkCoreVisualBasicScaffoldingInternalVisualBasicRuntimeModelCodeGeneratorTestDataMappingBase)
 
             Dim tableMappings As New List(Of TableMapping)()
             data.SetRuntimeAnnotation("Relational:TableMappings", tableMappings)
@@ -8668,9 +16590,9 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
             Dim dataTableMapping As New TableMapping(data, dataTable, True)
             dataTable.AddTypeMapping(dataTableMapping, False)
             tableMappings.Add(dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Id"), data.FindProperty("Id"), dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Blob"), data.FindProperty("Blob"), dataTableMapping)
-            RelationalModel.CreateColumnMapping(dataTable.FindColumn("Point"), data.FindProperty("Point"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(idColumn, data.FindProperty("Id"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(blobColumn, data.FindProperty("Blob"), dataTableMapping)
+            RelationalModel.CreateColumnMapping(pointColumn, data.FindProperty("Point"), dataTableMapping)
             Return relationalModel.MakeReadOnly()
         End Function
     End Class
@@ -8679,8 +16601,13 @@ End Namespace
             Dim e1 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.Sqlite.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports NetTopologySuite.Geometries
 
 Namespace Microsoft.EntityFrameworkCore.Metadata
@@ -8698,6 +16625,21 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = IntTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                mappingInfo:=New RelationalTypeMappingInfo(
+                    storeTypeName:="INTEGER"))
 
             Dim blob = entityType.AddProperty(
                 "Blob",
@@ -8705,11 +16647,25 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = SqliteByteArrayTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) v.GetHashCode(),
+                    Function(v As Byte()) v),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()))
 
             Dim point = entityType.AddProperty(
                 "Point",
                 GetType(Point),
                 nullable:=True)
+            point.TypeMapping = Nothing
 
             Dim key = entityType.AddKey(
                 {id})
@@ -8858,10 +16814,17 @@ End Namespace
             Dim e2 =
             <![CDATA[' <auto-generated />
 Imports System
+Imports System.Collections
+Imports System.Globalization
+Imports System.Linq
 Imports System.Reflection
 Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
-Imports Microsoft.EntityFrameworkCore.Cosmos.ValueGeneration
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.Cosmos.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Cosmos.ValueGeneration.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage.Json
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Newtonsoft.Json.Linq
 
 Namespace TestNamespace
@@ -8878,12 +16841,48 @@ Namespace TestNamespace
                 GetType(Integer),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
+            id.TypeMapping = CosmosTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                keyComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                providerValueComparer:=New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                clrType:=GetType(Integer),
+                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
 
             Dim partitionId = entityType.AddProperty(
                 "PartitionId",
                 GetType(Long?),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 providerPropertyType:=GetType(String))
+            partitionId.TypeMapping = CosmosTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                keyComparer:=New ValueComparer(Of Long?)(
+                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                converter:=New ValueConverter(Of Long, String)(
+                    Function(v As Long) String.Format(CultureInfo.InvariantCulture, "{0}", CType(v, Object)),
+                    Function(v As String) Long.Parse(v, NumberStyles.Any, CultureInfo.InvariantCulture)),
+                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of Long, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of Long, String)(
+                        Function(v As Long) String.Format(CultureInfo.InvariantCulture, "{0}", CType(v, Object)),
+                        Function(v As String) Long.Parse(v, NumberStyles.Any, CultureInfo.InvariantCulture))))
 
             Dim blob = entityType.AddProperty(
                 "Blob",
@@ -8891,6 +16890,21 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
+            blob.TypeMapping = CosmosTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) If(v1 Is Nothing, v2 Is Nothing, v2 IsNot Nothing AndAlso v1.Length = v2.Length AndAlso v1 Is v2 OrElse v1.Zip(v2, Function(v10 As Byte, v20 As Byte) v10 = v20).All(Function(v As Boolean) v)),
+                    Function(v As Byte()) v.Aggregate(New HashCode(), Function(h As HashCode, e As Byte) ValueComparer.Add(h, CType(e, Integer)), Function(h As HashCode) h.ToHashCode()),
+                    Function(v As Byte()) v.Select(Function(v0 As Byte) v0).ToArray()),
+                keyComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                providerValueComparer:=New ValueComparer(Of Byte())(
+                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                    Function(source As Byte()) source.ToArray()),
+                clrType:=GetType(Byte()),
+                jsonValueReaderWriter:=JsonByteArrayReaderWriter.Instance)
             blob.AddAnnotation("Cosmos:PropertyName", "JsonBlob")
 
             Dim __id = entityType.AddProperty(
@@ -8898,6 +16912,21 @@ Namespace TestNamespace
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New IdValueGeneratorFactory().Create)
+            __id.TypeMapping = CosmosTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
             __id.AddAnnotation("Cosmos:PropertyName", "id")
 
             Dim __jObject = entityType.AddProperty(
@@ -8907,6 +16936,20 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
+            __jObject.TypeMapping = CosmosTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of JObject)(
+                    Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
+                    Function(v As JObject) v.GetHashCode(),
+                    Function(v As JObject) v),
+                keyComparer:=New ValueComparer(Of JObject)(
+                    Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
+                    Function(v As JObject) v.GetHashCode(),
+                    Function(v As JObject) v),
+                providerValueComparer:=New ValueComparer(Of JObject)(
+                    Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
+                    Function(v As JObject) v.GetHashCode(),
+                    Function(v As JObject) v),
+                clrType:=GetType(JObject))
             __jObject.AddAnnotation("Cosmos:PropertyName", "")
 
             Dim _etag = entityType.AddProperty(
@@ -8917,6 +16960,21 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
+            _etag.TypeMapping = CosmosTypeMapping.Default.Clone(
+                comparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                keyComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                providerValueComparer:=New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                clrType:=GetType(String),
+                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
 
             Dim key = entityType.AddKey(
                 {id, partitionId})
@@ -9006,7 +17064,7 @@ End Namespace
             Assert.Equal("PartitionId", CosmosPropertyExtensions.GetJsonPropertyName(partitionId))
             Assert.Null(partitionId.GetValueGeneratorFactory())
             Assert.Null(partitionId.GetValueConverter())
-            Assert.IsType(Of NumberToStringConverter(Of Long))(partitionId.FindTypeMapping().Converter)
+            Assert.Equal("1", partitionId.FindTypeMapping().Converter.ConvertToProvider(1))
             Assert.NotNull(partitionId.GetValueComparer())
             Assert.NotNull(partitionId.GetKeyValueComparer())
 
@@ -9160,46 +17218,48 @@ End Namespace
 
             Dim scaffoldedFiles = generator.GenerateModel(model, options)
 
-            Dim build As New BuildSource With {
-                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
-            }
+            'Dim build As New BuildSource With {
+            '    .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
+            '}
 
-            With build.References
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Proxies"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Specification.Tests"))
-                .Add(BuildReference.ByName("NetTopologySuite"))
-                .Add(BuildReference.ByName("Newtonsoft.Json"))
-                .Add(BuildReference.ByName(GetType(VisualBasicRuntimeModelCodeGeneratorTest).Assembly.GetName().Name))
-                .Add(BuildReference.ByName(GetType(MyJsonGuidReaderWriter).Assembly.GetName().Name))
-            End With
+            'With build.References
+            '    .Add(BuildReference.ByName("System.Linq"))
+            '    .Add(BuildReference.ByName("System.Net.Primitives"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Proxies"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite"))
+            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Specification.Tests"))
+            '    .Add(BuildReference.ByName("NetTopologySuite"))
+            '    .Add(BuildReference.ByName("Newtonsoft.Json"))
+            '    .Add(BuildReference.ByName(GetType(VisualBasicRuntimeModelCodeGeneratorTest).Assembly.GetName().Name))
+            '    .Add(BuildReference.ByName(GetType(MyJsonGuidReaderWriter).Assembly.GetName().Name))
+            'End With
 
-            Dim assembly = build.BuildInMemory()
+            'Dim assembly = build.BuildInMemory()
 
-            Dim modelTypeName = options.ContextType.Name & "Model"
-            Dim modelType = assembly.GetType(
-                If(String.IsNullOrEmpty(options.ModelNamespace),
-                     modelTypeName,
-                     options.ModelNamespace & "." & modelTypeName))
-            Dim instancePropertyInfo = modelType.GetProperty("Instance", BindingFlags.Public Or BindingFlags.Static)
-            Dim compiledModel = DirectCast(instancePropertyInfo.GetValue(Nothing), IModel)
+            'Dim modelTypeName = options.ContextType.Name & "Model"
+            'Dim modelType = assembly.GetType(
+            '    If(String.IsNullOrEmpty(options.ModelNamespace),
+            '         modelTypeName,
+            '         options.ModelNamespace & "." & modelTypeName))
+            'Dim instancePropertyInfo = modelType.GetProperty("Instance", BindingFlags.Public Or BindingFlags.Static)
+            'Dim compiledModel = DirectCast(instancePropertyInfo.GetValue(Nothing), IModel)
 
-            Dim ModelRuntimeInitializer = context.GetService(Of IModelRuntimeInitializer)()
-            compiledModel = ModelRuntimeInitializer.Initialize(compiledModel, designTime:=False)
-            assertModel(compiledModel)
+            'Dim ModelRuntimeInitializer = context.GetService(Of IModelRuntimeInitializer)()
+            'compiledModel = ModelRuntimeInitializer.Initialize(compiledModel, designTime:=False)
+            'assertModel(compiledModel)
 
-            Dim RelationalModel = TryCast(context.Model.FindRuntimeAnnotationValue(RelationalAnnotationNames.RelationalModel), IRelationalModel)
-            If RelationalModel IsNot Nothing Then
-                Metadata.RelationalModelTest.AssertEqual(RelationalModel, compiledModel.GetRelationalModel())
-            End If
+            'Dim RelationalModel = TryCast(context.Model.FindRuntimeAnnotationValue(RelationalAnnotationNames.RelationalModel), IRelationalModel)
+            'If RelationalModel IsNot Nothing Then
+            '    Metadata.RelationalModelTest.AssertEqual(RelationalModel, compiledModel.GetRelationalModel())
+            'End If
 
             If assertScaffold IsNot Nothing Then
                 assertScaffold(scaffoldedFiles)

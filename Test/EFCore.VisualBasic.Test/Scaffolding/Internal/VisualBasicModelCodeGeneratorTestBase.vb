@@ -80,8 +80,8 @@ Namespace Scaffolding.Internal
                 options.ProjectDir = _fixture.ProjectDir
 
                 Dim ScaffoldedModel = generator.GenerateModel(
-                model,
-                options)
+                    model,
+                    options)
                 assertScaffold(ScaffoldedModel)
 
                 Dim build As New BuildSource(options.RootNamespace) With {

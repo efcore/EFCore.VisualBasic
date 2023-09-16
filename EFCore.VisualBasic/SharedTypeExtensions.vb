@@ -85,6 +85,13 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
+    Public Function IsAnonymousType(type As Type) As Boolean
+        Return (type.Name.StartsWith("<>", StringComparison.Ordinal) Or type.Name.StartsWith("VB$AnonymousType", StringComparison.Ordinal)) AndAlso
+               type.GetCustomAttributes(GetType(CompilerGeneratedAttribute), inherit:=False).Length > 0 AndAlso
+               type.Name.Contains("AnonymousType")
+    End Function
+
+    <Extension()>
     Public Function IsTupleType(type As Type) As Boolean
         If type = GetType(Tuple) Then Return True
 

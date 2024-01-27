@@ -50,12 +50,12 @@ Public Class BuildSource
         Dim compilation = VisualBasicCompilation.Create(
                 assemblyName:=projectName,
                 syntaxTrees:=Sources.Select(
-                Function(s) SyntaxFactory.ParseSyntaxTree(
-                   text:=s.Value,
-                   path:=s.Key,
-                   options:=New VisualBasicParseOptions(
-                        LanguageVersion.Latest,
-                        If(EmitDocumentationDiagnostics, DocumentationMode.Diagnose, DocumentationMode.Parse)))),
+                    Function(s) SyntaxFactory.ParseSyntaxTree(
+                       text:=s.Value,
+                       path:=s.Key,
+                       options:=New VisualBasicParseOptions(
+                            LanguageVersion.Latest,
+                            If(EmitDocumentationDiagnostics, DocumentationMode.Diagnose, DocumentationMode.Parse)))),
                 references:=refs,
                 CreateVisualBasicCompilationOptions())
 

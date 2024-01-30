@@ -17218,48 +17218,48 @@ End Namespace
 
             Dim scaffoldedFiles = generator.GenerateModel(model, options)
 
-            'Dim build As New BuildSource With {
-            '    .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
-            '}
+            Dim build As New BuildSource With {
+                .Sources = scaffoldedFiles.ToDictionary(Function(f) f.Path, Function(f) f.Code)
+            }
 
-            'With build.References
-            '    .Add(BuildReference.ByName("System.Linq"))
-            '    .Add(BuildReference.ByName("System.Net.Primitives"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Proxies"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite"))
-            '    .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Specification.Tests"))
-            '    .Add(BuildReference.ByName("NetTopologySuite"))
-            '    .Add(BuildReference.ByName("Newtonsoft.Json"))
-            '    .Add(BuildReference.ByName(GetType(VisualBasicRuntimeModelCodeGeneratorTest).Assembly.GetName().Name))
-            '    .Add(BuildReference.ByName(GetType(MyJsonGuidReaderWriter).Assembly.GetName().Name))
-            'End With
+            With build.References
+                .Add(BuildReference.ByName("System.Linq"))
+                .Add(BuildReference.ByName("System.Net.Primitives"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Abstractions"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Cosmos"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.InMemory"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Proxies"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite"))
+                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Specification.Tests"))
+                .Add(BuildReference.ByName("NetTopologySuite"))
+                .Add(BuildReference.ByName("Newtonsoft.Json"))
+                .Add(BuildReference.ByName(GetType(VisualBasicRuntimeModelCodeGeneratorTest).Assembly.GetName().Name))
+                .Add(BuildReference.ByName(GetType(MyJsonGuidReaderWriter).Assembly.GetName().Name))
+            End With
 
-            'Dim assembly = build.BuildInMemory()
+            Dim assembly = build.BuildInMemory()
 
-            'Dim modelTypeName = options.ContextType.Name & "Model"
-            'Dim modelType = assembly.GetType(
-            '    If(String.IsNullOrEmpty(options.ModelNamespace),
-            '         modelTypeName,
-            '         options.ModelNamespace & "." & modelTypeName))
-            'Dim instancePropertyInfo = modelType.GetProperty("Instance", BindingFlags.Public Or BindingFlags.Static)
-            'Dim compiledModel = DirectCast(instancePropertyInfo.GetValue(Nothing), IModel)
+            Dim modelTypeName = options.ContextType.Name & "Model"
+            Dim modelType = assembly.GetType(
+                If(String.IsNullOrEmpty(options.ModelNamespace),
+                     modelTypeName,
+                     options.ModelNamespace & "." & modelTypeName))
+            Dim instancePropertyInfo = modelType.GetProperty("Instance", BindingFlags.Public Or BindingFlags.Static)
+            Dim compiledModel = DirectCast(instancePropertyInfo.GetValue(Nothing), IModel)
 
-            'Dim ModelRuntimeInitializer = context.GetService(Of IModelRuntimeInitializer)()
-            'compiledModel = ModelRuntimeInitializer.Initialize(compiledModel, designTime:=False)
-            'assertModel(compiledModel)
+            Dim ModelRuntimeInitializer = context.GetService(Of IModelRuntimeInitializer)()
+            compiledModel = ModelRuntimeInitializer.Initialize(compiledModel, designTime:=False)
+            assertModel(compiledModel)
 
-            'Dim RelationalModel = TryCast(context.Model.FindRuntimeAnnotationValue(RelationalAnnotationNames.RelationalModel), IRelationalModel)
-            'If RelationalModel IsNot Nothing Then
-            '    Metadata.RelationalModelTest.AssertEqual(RelationalModel, compiledModel.GetRelationalModel())
-            'End If
+            Dim RelationalModel = TryCast(context.Model.FindRuntimeAnnotationValue(RelationalAnnotationNames.RelationalModel), IRelationalModel)
+            If RelationalModel IsNot Nothing Then
+                Metadata.RelationalModelTest.AssertEqual(RelationalModel, compiledModel.GetRelationalModel())
+            End If
 
             If assertScaffold IsNot Nothing Then
                 assertScaffold(scaffoldedFiles)

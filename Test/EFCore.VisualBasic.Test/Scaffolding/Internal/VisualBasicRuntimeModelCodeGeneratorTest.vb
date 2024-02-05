@@ -425,6 +425,7 @@ Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 
@@ -446,27 +447,32 @@ Namespace TestNamespace
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of Integer, Integer)(
-                    Function(i As Integer) i,
-                    Function(i As Integer) i),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of Integer, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of Integer, Integer)(
                         Function(i As Integer) i,
-                        Function(i As Integer) i)))
+                        Function(i As Integer) i),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of Integer, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of Integer, Integer)(
+                            Function(i As Integer) i,
+                            Function(i As Integer) i))}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -580,6 +586,7 @@ Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace TestNamespace
@@ -601,21 +608,26 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 providerPropertyType:=GetType(Integer))
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(l As Integer, r As Integer) False,
-                    Function(v As Integer) 0,
-                    Function(v As Integer) 1),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(l As Integer, r As Integer) False,
-                    Function(v As Integer) 0,
-                    Function(v As Integer) 1),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(l As Integer, r As Integer) False,
-                    Function(v As Integer) 0,
-                    Function(v As Integer) 1),
-                clrType:=GetType(Integer),
-                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Integer),
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(l As Integer, r As Integer) False,
+                        Function(v As Integer) 0,
+                        Function(v As Integer) 1),
+                    New ValueComparer(Of Integer)(
+                        Function(l As Integer, r As Integer) False,
+                        Function(v As Integer) 0,
+                        Function(v As Integer) 1),
+                    New ValueComparer(Of Integer)(
+                        Function(l As Integer, r As Integer) False,
+                        Function(v As Integer) 0,
+                        Function(v As Integer) 1),
+                    Type.Missing,
+                    JsonInt32ReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -755,6 +767,7 @@ Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace TestNamespace
@@ -776,21 +789,26 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 providerPropertyType:=GetType(Integer))
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(l As Integer, r As Integer) False,
-                    Function(v As Integer) 0,
-                    Function(v As Integer) 1),
-                clrType:=GetType(Integer),
-                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Integer),
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(l As Integer, r As Integer) False,
+                        Function(v As Integer) 0,
+                        Function(v As Integer) 1),
+                    Type.Missing,
+                    JsonInt32ReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -907,6 +925,7 @@ Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace TestNamespace
@@ -927,21 +946,26 @@ Namespace TestNamespace
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                clrType:=GetType(Integer),
-                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Integer),
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    JsonInt32ReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -1072,40 +1096,53 @@ Namespace TestNamespace
                 GetType(String),
                 False,
                 "nvarchar(max)")
-            param.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(max)",
-                    dbType:=System.Data.DbType.String),
-                storeTypePostfix:=StoreTypePostfix.None)
+            param.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
 
-            getSqlFragmentShared.TypeMapping = StringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varchar",
-                    dbType:=System.Data.DbType.AnsiString))
+            getSqlFragmentShared.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(StringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varchar",
+                        dbType:=System.Data.DbType.AnsiString),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionTypeMappingContext.GetSqlFragmentShared(string)") = getSqlFragmentShared
 
             AddAnnotation("Relational:DbFunctions", functions)
@@ -1240,40 +1277,53 @@ Namespace TestNamespace
                 GetType(String),
                 False,
                 "varchar")
-            param.TypeMapping = StringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varchar",
-                    dbType:=System.Data.DbType.AnsiString))
+            param.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(StringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varchar",
+                        dbType:=System.Data.DbType.AnsiString),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
-            getSqlFragmentShared.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(max)",
-                    dbType:=System.Data.DbType.String),
-                storeTypePostfix:=StoreTypePostfix.None)
+            getSqlFragmentShared.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+FunctionParameterTypeMappingContext.GetSqlFragmentShared(string)") = getSqlFragmentShared
 
             AddAnnotation("Relational:DbFunctions", functions)
@@ -1424,6 +1474,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace Internal
@@ -1443,21 +1494,26 @@ Namespace Internal
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                clrType:=GetType(Guid),
-                jsonValueReaderWriter:=JsonGuidReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Guid),
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    JsonGuidReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -1485,6 +1541,7 @@ Imports EntityFrameworkCore.VisualBasic.Scaffolding.Internal
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 
 Namespace Internal
@@ -1504,21 +1561,26 @@ Namespace Internal
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                clrType:=GetType(Long),
-                jsonValueReaderWriter:=JsonInt64ReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Long),
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    JsonInt64ReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -1545,6 +1607,7 @@ Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 Imports Microsoft.EntityFrameworkCore.TestModels.AspNetIdentity
 Imports Microsoft.EntityFrameworkCore.ValueGeneration
@@ -1566,21 +1629,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<Id>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim accessFailedCount = entityType.AddProperty(
                 "AccessFailedCount",
@@ -1588,21 +1656,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("AccessFailedCount", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<AccessFailedCount>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=0)
-            accessFailedCount.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                clrType:=GetType(Integer),
-                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+            accessFailedCount.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Integer),
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    JsonInt32ReaderWriter.Instance}), CoreTypeMapping)
 
             Dim concurrencyStamp = entityType.AddProperty(
                 "ConcurrencyStamp",
@@ -1610,42 +1683,52 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("ConcurrencyStamp", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<ConcurrencyStamp>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            concurrencyStamp.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            concurrencyStamp.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim discriminator = entityType.AddProperty(
                 "Discriminator",
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
-            discriminator.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            discriminator.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim email = entityType.AddProperty(
                 "Email",
@@ -1653,21 +1736,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("Email", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<Email>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            email.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            email.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim emailConfirmed = entityType.AddProperty(
                 "EmailConfirmed",
@@ -1675,21 +1763,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("EmailConfirmed", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<EmailConfirmed>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
-            emailConfirmed.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                keyComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                providerValueComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                clrType:=GetType(Boolean),
-                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
+            emailConfirmed.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Boolean),
+                    Type.Missing,
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    Type.Missing,
+                    JsonBoolReaderWriter.Instance}), CoreTypeMapping)
 
             Dim lockoutEnabled = entityType.AddProperty(
                 "LockoutEnabled",
@@ -1697,21 +1790,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("LockoutEnabled", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<LockoutEnabled>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
-            lockoutEnabled.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                keyComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                providerValueComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                clrType:=GetType(Boolean),
-                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
+            lockoutEnabled.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Boolean),
+                    Type.Missing,
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    Type.Missing,
+                    JsonBoolReaderWriter.Instance}), CoreTypeMapping)
 
             Dim lockoutEnd = entityType.AddProperty(
                 "LockoutEnd",
@@ -1719,21 +1817,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("LockoutEnd", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<LockoutEnd>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            lockoutEnd.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of DateTimeOffset?)(
-                    Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
-                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
-                keyComparer:=New ValueComparer(Of DateTimeOffset?)(
-                    Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
-                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
-                providerValueComparer:=New ValueComparer(Of DateTimeOffset?)(
-                    Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
-                    Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
-                clrType:=GetType(DateTimeOffset),
-                jsonValueReaderWriter:=JsonDateTimeOffsetReaderWriter.Instance)
+            lockoutEnd.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(DateTimeOffset),
+                    Type.Missing,
+                    New ValueComparer(Of DateTimeOffset?)(
+                        Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
+                        Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
+                    New ValueComparer(Of DateTimeOffset?)(
+                        Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
+                        Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
+                    New ValueComparer(Of DateTimeOffset?)(
+                        Function(v1 As Nullable(Of DateTimeOffset), v2 As Nullable(Of DateTimeOffset)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, DateTimeOffset).EqualsExact(CType(v2, DateTimeOffset)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(v, DateTimeOffset).GetHashCode(), 0),
+                        Function(v As Nullable(Of DateTimeOffset)) If(v.HasValue, CType(CType(v, DateTimeOffset), Nullable(Of DateTimeOffset)), CType(Nothing, Nullable(Of DateTimeOffset)))),
+                    Type.Missing,
+                    JsonDateTimeOffsetReaderWriter.Instance}), CoreTypeMapping)
 
             Dim normalizedEmail = entityType.AddProperty(
                 "NormalizedEmail",
@@ -1741,21 +1844,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("NormalizedEmail", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<NormalizedEmail>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            normalizedEmail.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            normalizedEmail.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim normalizedUserName = entityType.AddProperty(
                 "NormalizedUserName",
@@ -1763,21 +1871,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("NormalizedUserName", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<NormalizedUserName>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            normalizedUserName.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            normalizedUserName.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim passwordHash = entityType.AddProperty(
                 "PasswordHash",
@@ -1785,21 +1898,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("PasswordHash", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<PasswordHash>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            passwordHash.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            passwordHash.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim phoneNumber = entityType.AddProperty(
                 "PhoneNumber",
@@ -1807,21 +1925,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("PhoneNumber", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<PhoneNumber>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            phoneNumber.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            phoneNumber.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim phoneNumberConfirmed = entityType.AddProperty(
                 "PhoneNumberConfirmed",
@@ -1829,21 +1952,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("PhoneNumberConfirmed", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<PhoneNumberConfirmed>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
-            phoneNumberConfirmed.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                keyComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                providerValueComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                clrType:=GetType(Boolean),
-                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
+            phoneNumberConfirmed.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Boolean),
+                    Type.Missing,
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    Type.Missing,
+                    JsonBoolReaderWriter.Instance}), CoreTypeMapping)
 
             Dim securityStamp = entityType.AddProperty(
                 "SecurityStamp",
@@ -1851,21 +1979,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("SecurityStamp", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<SecurityStamp>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            securityStamp.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            securityStamp.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim twoFactorEnabled = entityType.AddProperty(
                 "TwoFactorEnabled",
@@ -1873,21 +2006,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("TwoFactorEnabled", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<TwoFactorEnabled>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=False)
-            twoFactorEnabled.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                keyComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                providerValueComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                clrType:=GetType(Boolean),
-                jsonValueReaderWriter:=JsonBoolReaderWriter.Instance)
+            twoFactorEnabled.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Boolean),
+                    Type.Missing,
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    Type.Missing,
+                    JsonBoolReaderWriter.Instance}), CoreTypeMapping)
 
             Dim userName = entityType.AddProperty(
                 "UserName",
@@ -1895,21 +2033,26 @@ Namespace Internal
                 propertyInfo:=GetType(IdentityUser(Of String)).GetProperty("UserName", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(IdentityUser(Of String)).GetField("<UserName>k__BackingField", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            userName.TypeMapping = InMemoryTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            userName.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(InMemoryTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id})
@@ -2961,19 +3104,27 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            principalId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalAlternateId = entityType.AddProperty(
@@ -2981,21 +3132,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            principalAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enumDiscriminator = entityType.AddProperty(
@@ -3004,27 +3162,33 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create,
                 sentinel:=VisualBasicMigrationsGeneratorTests.Enum1.Default)
-            enumDiscriminator.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
-                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
-                keyComparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
-                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
-                    Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enumDiscriminator.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
                         Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1))))
+                        Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1)),
+                    New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                        Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                    New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                        Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                            Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1))),
+                    Type.Missing}), CoreTypeMapping)
             enumDiscriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -3033,19 +3197,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetProperty("Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            id.TypeMapping = SqlServerByteTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
-                keyComparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
-                providerValueComparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -3149,19 +3321,27 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim idPrincipalDerived As New RuntimeRelationalPropertyOverrides(
@@ -3182,21 +3362,28 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"),
                 jsonValueReaderWriter:=JsonGuidReaderWriter.Instance)
-            alternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            alternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = entityType.AddProperty(
@@ -3205,27 +3392,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
-            enum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -3234,27 +3427,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            enum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -3263,27 +3462,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -3292,27 +3497,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(6, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim point = entityType.AddProperty(
@@ -3334,60 +3545,68 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -3396,44 +3615,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -3442,44 +3670,53 @@ Dim refTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -3488,60 +3725,68 @@ Dim refTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -3550,40 +3795,51 @@ Dim valueTypeArray = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -3592,40 +3848,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -3634,40 +3901,51 @@ Dim valueTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -3676,40 +3954,51 @@ Dim valueTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim key = entityType.AddKey(
@@ -3800,19 +4089,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalBaseId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim principalBaseIdPrincipalBase As New RuntimeRelationalPropertyOverrides(
@@ -3832,21 +4129,28 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            principalBaseAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalBaseAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalBaseAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim details = entityType.AddProperty(
@@ -3856,23 +4160,29 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
-            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(max)",
-                    dbType:=System.Data.DbType.String),
-                storeTypePostfix:=StoreTypePostfix.None)
+            details.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
 
             Dim overrides0 As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim detailsDetails As New RuntimeRelationalPropertyOverrides(
@@ -3892,19 +4202,27 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 sentinel:=0)
-            number.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            number.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = entityType.AddProperty(
@@ -3914,60 +4232,68 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -3977,44 +4303,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -4024,44 +4359,53 @@ Dim refTypeIList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -4071,60 +4415,68 @@ Dim refTypeList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -4134,40 +4486,51 @@ Dim valueTypeArray = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -4177,40 +4540,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -4220,40 +4594,51 @@ Dim valueTypeIList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -4263,40 +4648,51 @@ Dim valueTypeList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim context = entityType.AddServiceProperty(
@@ -4398,19 +4794,27 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            principalDerivedId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalDerivedId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalDerivedAlternateId = entityType.AddProperty(
@@ -4418,21 +4822,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            principalDerivedAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalDerivedAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalDerivedAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -4441,19 +4852,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim details = entityType.AddProperty(
@@ -4462,23 +4881,29 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(max)",
-                    dbType:=System.Data.DbType.String),
-                storeTypePostfix:=StoreTypePostfix.None)
+            details.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -4487,19 +4912,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=0)
-            number.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            number.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = entityType.AddProperty(
@@ -4508,60 +4941,68 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -4570,44 +5011,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -4616,44 +5066,53 @@ Dim refTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -4662,60 +5121,68 @@ Dim refTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -4724,40 +5191,51 @@ Dim valueTypeArray = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -4766,40 +5244,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -4808,40 +5297,51 @@ Dim valueTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -4850,40 +5350,51 @@ Dim valueTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim context = entityType.AddServiceProperty(
@@ -4964,19 +5475,27 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            derivedsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            derivedsId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             derivedsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim derivedsAlternateId = entityType.AddProperty(
@@ -4984,21 +5503,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            derivedsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            derivedsAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             derivedsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsId = entityType.AddProperty(
@@ -5006,19 +5532,27 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalsId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsAlternateId = entityType.AddProperty(
@@ -5026,21 +5560,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalsAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim rowid = entityType.AddProperty(
@@ -5052,23 +5593,29 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            rowid.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(v),
-                    Function(v As Byte()) v.ToArray()),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="rowversion",
-                    size:=8),
-                storeTypePostfix:=StoreTypePostfix.None)
+            rowid.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="rowversion",
+                        size:=8),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(v),
+                        Function(v As Byte()) v.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             rowid.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -5148,23 +5695,30 @@ Namespace TestNamespace
                 nullable:=True,
                 maxLength:=20,
                 unicode:=False)
-            data.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="char(20)",
-                    size:=20,
-                    dbType:=System.Data.DbType.AnsiStringFixedLength))
+            data.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="char(20)",
+                        size:=20,
+                        dbType:=System.Data.DbType.AnsiStringFixedLength),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             data.AddAnnotation("Relational:IsFixedLength", True)
             data.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -5174,23 +5728,30 @@ Namespace TestNamespace
                 precision:=9,
                 scale:=3,
                 sentinel:=0D)
-            money.TypeMapping = SqlServerDecimalTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Decimal)(
-                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
-                    Function(v As Decimal) v.GetHashCode(),
-                    Function(v As Decimal) v),
-                keyComparer:=New ValueComparer(Of Decimal)(
-                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
-                    Function(v As Decimal) v.GetHashCode(),
-                    Function(v As Decimal) v),
-                providerValueComparer:=New ValueComparer(Of Decimal)(
-                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
-                    Function(v As Decimal) v.GetHashCode(),
-                    Function(v As Decimal) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="decimal(9,3)",
-                    precision:=9,
-                    scale:=3))
+            money.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerDecimalTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="decimal(9,3)",
+                        precision:=9,
+                        scale:=3),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Decimal)(
+                        Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                        Function(v As Decimal) v.GetHashCode(),
+                        Function(v As Decimal) v),
+                    New ValueComparer(Of Decimal)(
+                        Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                        Function(v As Decimal) v.GetHashCode(),
+                        Function(v As Decimal) v),
+                    New ValueComparer(Of Decimal)(
+                        Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                        Function(v As Decimal) v.GetHashCode(),
+                        Function(v As Decimal) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             money.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Return entityType
@@ -6376,19 +6937,27 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            principalId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalAlternateId = entityType.AddProperty(
@@ -6396,21 +6965,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            principalAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enumDiscriminator = entityType.AddProperty(
@@ -6419,27 +6995,33 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create,
                 sentinel:=VisualBasicMigrationsGeneratorTests.Enum1.Default)
-            enumDiscriminator.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
-                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
-                keyComparer:=New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
-                    Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
-                    Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
-                    Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enumDiscriminator.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
                         Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1))))
+                        Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1)),
+                    New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                        Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                    New ValueComparer(Of VisualBasicMigrationsGeneratorTests.Enum1)(
+                        Function(v1 As VisualBasicMigrationsGeneratorTests.Enum1, v2 As VisualBasicMigrationsGeneratorTests.Enum1) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v.GetHashCode(),
+                        Function(v As VisualBasicMigrationsGeneratorTests.Enum1) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicMigrationsGeneratorTests.Enum1, Integer)(
+                            Function(value As VisualBasicMigrationsGeneratorTests.Enum1) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicMigrationsGeneratorTests.Enum1))),
+                    Type.Missing}), CoreTypeMapping)
             enumDiscriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -6448,19 +7030,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetProperty("Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            id.TypeMapping = SqlServerByteTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
-                keyComparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
-                providerValueComparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -6564,19 +7154,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim alternateId = entityType.AddProperty(
@@ -6587,21 +7185,28 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"),
                 jsonValueReaderWriter:=New MyJsonGuidReaderWriter())
-            alternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            alternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim discriminator = entityType.AddProperty(
@@ -6610,23 +7215,30 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 maxLength:=55,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
-            discriminator.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(55)",
-                    size:=55,
-                    dbType:=System.Data.DbType.String))
+            discriminator.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(55)",
+                        size:=55,
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             discriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = entityType.AddProperty(
@@ -6635,27 +7247,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
-            enum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -6664,27 +7282,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            enum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -6693,27 +7317,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -6722,27 +7352,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(6, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim point = entityType.AddProperty(
@@ -6764,60 +7400,68 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -6826,44 +7470,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -6872,44 +7525,53 @@ Dim refTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -6918,60 +7580,68 @@ Dim refTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -6980,40 +7650,51 @@ Dim valueTypeArray = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -7022,40 +7703,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -7064,40 +7756,51 @@ Dim valueTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -7106,40 +7809,51 @@ Dim valueTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim key = entityType.AddKey(
@@ -7228,19 +7942,27 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalBaseId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalBaseAlternateId = entityType.AddProperty(
@@ -7249,21 +7971,28 @@ Namespace TestNamespace
                 propertyAccessMode:=PropertyAccessMode.Field,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            principalBaseAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalBaseAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalBaseAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim details = entityType.AddProperty(
@@ -7273,23 +8002,29 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
-            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(max)",
-                    dbType:=System.Data.DbType.String),
-                storeTypePostfix:=StoreTypePostfix.None)
+            details.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -7299,19 +8034,27 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 sentinel:=0)
-            number.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            number.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = entityType.AddProperty(
@@ -7321,60 +8064,68 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 propertyAccessMode:=PropertyAccessMode.Field,
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -7384,44 +8135,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -7431,44 +8191,53 @@ Dim refTypeIList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -7478,60 +8247,68 @@ Dim refTypeList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -7541,40 +8318,51 @@ Dim valueTypeArray = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -7584,40 +8372,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -7627,40 +8426,51 @@ Dim valueTypeIList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -7670,40 +8480,51 @@ Dim valueTypeList = entityType.AddProperty(
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     propertyAccessMode:=PropertyAccessMode.Field,
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim context = entityType.AddServiceProperty(
@@ -7787,19 +8608,27 @@ Namespace TestNamespace
                 GetType(Long),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0L)
-            principalDerivedId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalDerivedId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalDerivedAlternateId = entityType.AddProperty(
@@ -7807,21 +8636,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            principalDerivedAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalDerivedAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalDerivedAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = entityType.AddProperty(
@@ -7830,19 +8666,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim details = entityType.AddProperty(
@@ -7851,23 +8695,29 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Details", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_details", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(max)",
-                    dbType:=System.Data.DbType.String),
-                storeTypePostfix:=StoreTypePostfix.None)
+            details.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             details.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim number = entityType.AddProperty(
@@ -7876,19 +8726,27 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=0)
-            number.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            number.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = entityType.AddProperty(
@@ -7897,60 +8755,68 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -7959,44 +8825,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -8005,44 +8880,53 @@ Dim refTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -8051,60 +8935,68 @@ Dim refTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -8113,40 +9005,51 @@ Dim valueTypeArray = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -8155,40 +9058,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -8197,40 +9111,51 @@ Dim valueTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -8239,40 +9164,51 @@ Dim valueTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim context = entityType.AddServiceProperty(
@@ -8352,19 +9288,27 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            derivedsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            derivedsId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             derivedsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim derivedsAlternateId = entityType.AddProperty(
@@ -8372,21 +9316,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            derivedsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            derivedsAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             derivedsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsId = entityType.AddProperty(
@@ -8394,19 +9345,27 @@ Namespace TestNamespace
                 GetType(Long),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalsId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                keyComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v),
-                providerValueComparer:=New ValueComparer(Of Long)(
-                    Function(v1 As Long, v2 As Long) v1 = v2,
-                    Function(v As Long) v.GetHashCode(),
-                    Function(v As Long) v))
+            principalsId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    New ValueComparer(Of Long)(
+                        Function(v1 As Long, v2 As Long) v1 = v2,
+                        Function(v As Long) v.GetHashCode(),
+                        Function(v As Long) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalsId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalsAlternateId = entityType.AddProperty(
@@ -8414,21 +9373,28 @@ Namespace TestNamespace
                 GetType(Guid),
                 propertyInfo:=entityType.FindIndexerPropertyInfo(),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            principalsAlternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            principalsAlternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalsAlternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim rowid = entityType.AddProperty(
@@ -8440,23 +9406,29 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            rowid.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(v),
-                    Function(v As Byte()) v.ToArray()),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="rowversion",
-                    size:=8),
-                storeTypePostfix:=StoreTypePostfix.None)
+            rowid.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="rowversion",
+                        size:=8),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(v),
+                        Function(v As Byte()) v.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             rowid.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -8535,23 +9507,30 @@ Namespace TestNamespace
                 nullable:=True,
                 maxLength:=20,
                 unicode:=False)
-            data.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="char(20)",
-                    size:=20,
-                    dbType:=System.Data.DbType.AnsiStringFixedLength))
+            data.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="char(20)",
+                        size:=20,
+                        dbType:=System.Data.DbType.AnsiStringFixedLength),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             data.AddAnnotation("Relational:IsFixedLength", True)
             data.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
@@ -8561,23 +9540,30 @@ Namespace TestNamespace
                 precision:=9,
                 scale:=3,
                 sentinel:=0D)
-            money.TypeMapping = SqlServerDecimalTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Decimal)(
-                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
-                    Function(v As Decimal) v.GetHashCode(),
-                    Function(v As Decimal) v),
-                keyComparer:=New ValueComparer(Of Decimal)(
-                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
-                    Function(v As Decimal) v.GetHashCode(),
-                    Function(v As Decimal) v),
-                providerValueComparer:=New ValueComparer(Of Decimal)(
-                    Function(v1 As Decimal, v2 As Decimal) v1 = v2,
-                    Function(v As Decimal) v.GetHashCode(),
-                    Function(v As Decimal) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="decimal(9,3)",
-                    precision:=9,
-                    scale:=3))
+            money.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerDecimalTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="decimal(9,3)",
+                        precision:=9,
+                        scale:=3),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Decimal)(
+                        Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                        Function(v As Decimal) v.GetHashCode(),
+                        Function(v As Decimal) v),
+                    New ValueComparer(Of Decimal)(
+                        Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                        Function(v As Decimal) v.GetHashCode(),
+                        Function(v As Decimal) v),
+                    New ValueComparer(Of Decimal)(
+                        Function(v1 As Decimal, v2 As Decimal) v1 = v2,
+                        Function(v As Decimal) v.GetHashCode(),
+                        Function(v As Decimal) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             money.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Return entityType
@@ -10034,19 +11020,27 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim discriminator = entityType.AddProperty(
@@ -10055,23 +11049,30 @@ Namespace TestNamespace
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 maxLength:=55,
                 valueGeneratorFactory:=AddressOf New DiscriminatorValueGeneratorFactory().Create)
-            discriminator.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nvarchar(55)",
-                    size:=55,
-                    dbType:=System.Data.DbType.String))
+            discriminator.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(55)",
+                        size:=55,
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             discriminator.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = entityType.AddProperty(
@@ -10080,27 +11081,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
-            enum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -10109,27 +11116,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            enum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -10138,27 +11151,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -10167,46 +11186,60 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalBaseId = entityType.AddProperty(
                 "PrincipalBaseId",
                 GetType(Long?),
                 nullable:=True)
-            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            principalBaseId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = entityType.AddProperty(
@@ -10215,60 +11248,68 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -10277,44 +11318,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -10323,44 +11373,53 @@ Dim refTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -10369,60 +11428,68 @@ Dim refTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -10431,40 +11498,51 @@ Dim valueTypeArray = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -10473,40 +11551,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -10515,40 +11604,51 @@ Dim valueTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -10557,40 +11657,51 @@ Dim valueTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 OwnedComplexProperty.Create(entityType)
@@ -10632,24 +11743,31 @@ Private Class OwnedComplexProperty
             precision:=3,
             scale:=2,
             sentinel:="")
-        details.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-            comparer:=New ValueComparer(Of String)(
-                Function(v1 As String, v2 As String) v1 = v2,
-                Function(v As String) v.GetHashCode(),
-                Function(v As String) v),
-            keyComparer:=New ValueComparer(Of String)(
-                Function(v1 As String, v2 As String) v1 = v2,
-                Function(v As String) v.GetHashCode(),
-                Function(v As String) v),
-            providerValueComparer:=New ValueComparer(Of String)(
-                Function(v1 As String, v2 As String) v1 = v2,
-                Function(v As String) v.GetHashCode(),
-                Function(v As String) v),
-            mappingInfo:=New RelationalTypeMappingInfo(
-                storeTypeName:="varchar(64)",
-                size:=64,
-                precision:=3,
-                scale:=2))
+        details.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="varchar(64)",
+                    size:=64,
+                    precision:=3,
+                    scale:=2),
+                Type.Missing,
+                Type.Missing,
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                Type.Missing,
+                Type.Missing}), CoreTypeMapping)
         details.AddAnnotation("foo", "bar")
         details.AddAnnotation("Relational:ColumnName", "Deets")
         details.AddAnnotation("Relational:ColumnType", "varchar")
@@ -10661,19 +11779,27 @@ Private Class OwnedComplexProperty
             propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("Number", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
             fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_Number", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
             sentinel:=0)
-        number.TypeMapping = IntTypeMapping.Default.Clone(
-            comparer:=New ValueComparer(Of Integer)(
-                Function(v1 As Integer, v2 As Integer) v1 = v2,
-                Function(v As Integer) v,
-                Function(v As Integer) v),
-            keyComparer:=New ValueComparer(Of Integer)(
-                Function(v1 As Integer, v2 As Integer) v1 = v2,
-                Function(v As Integer) v,
-                Function(v As Integer) v),
-            providerValueComparer:=New ValueComparer(Of Integer)(
-                Function(v1 As Integer, v2 As Integer) v1 = v2,
-                Function(v As Integer) v,
-                Function(v As Integer) v))
+        number.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(IntTypeMapping.Default, {
+                Type.Missing,
+                Type.Missing,
+                Type.Missing,
+                New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                New ValueComparer(Of Integer)(
+                    Function(v1 As Integer, v2 As Integer) v1 = v2,
+                    Function(v As Integer) v,
+                    Function(v As Integer) v),
+                Type.Missing,
+                Type.Missing,
+                Type.Missing}), CoreTypeMapping)
         number.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
         Dim refTypeArray = complexType.AddProperty(
@@ -10682,60 +11808,68 @@ Private Class OwnedComplexProperty
             propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
             fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
             nullable:=True)
-        refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-            comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(max)",
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                        JsonStringReaderWriter.Instance,
+                        New ValueConverter(Of IPAddress, String)(
+                            Function(v As IPAddress) v.ToString(),
+                            Function(v As String) IPAddress.Parse(v))))),
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+        New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
             Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
             Function(v As IPAddress) v.GetHashCode(),
             Function(v As IPAddress) v)),
-    providerValueComparer:=New ValueComparer(Of String)(
+    New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+    DirectCast(GetType(RelationalTypeMapping).
+        GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+        Invoke(SqlServerStringTypeMapping.Default, {
+            New RelationalTypeMappingInfo(
+                storeTypeName:="nvarchar(45)",
+                size:=45,
+                dbType:=System.Data.DbType.String),
+            Type.Missing,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v)),
+            New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v),
+            New ValueComparer(Of IPAddress)(
+                Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                Function(v As IPAddress) v.GetHashCode(),
+                Function(v As IPAddress) v),
+            New ValueComparer(Of String)(
+                Function(v1 As String, v2 As String) v1 = v2,
+                Function(v As String) v.GetHashCode(),
+                Function(v As String) v),
+            Type.Missing,
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))),
+            Type.Missing}), CoreTypeMapping),
+    New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
         New JsonConvertedValueReaderWriter(Of IPAddress, String)(
             JsonStringReaderWriter.Instance,
             New ValueConverter(Of IPAddress, String)(
                 Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+                Function(v As String) IPAddress.Parse(v)))),
+    StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = complexType.AddProperty(
@@ -10744,44 +11878,53 @@ Dim refTypeEnumerable = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = complexType.AddProperty(
@@ -10790,44 +11933,53 @@ Dim refTypeIList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = complexType.AddProperty(
@@ -10836,60 +11988,68 @@ Dim refTypeList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_refTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = complexType.AddProperty(
@@ -10898,40 +12058,51 @@ Dim valueTypeArray = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = complexType.AddProperty(
@@ -10940,40 +12111,51 @@ Dim valueTypeEnumerable = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = complexType.AddProperty(
@@ -10982,40 +12164,51 @@ Dim valueTypeIList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = complexType.AddProperty(
@@ -11024,40 +12217,51 @@ Dim valueTypeList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.OwnedType).GetField("_valueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 PrincipalComplexProperty.Create(complexType)
@@ -11087,21 +12291,28 @@ End Function
                 GetType(Guid),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("AlternateId", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=New Guid("00000000-0000-0000-0000-000000000000"))
-            alternateId.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            alternateId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             alternateId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum1 = complexType.AddProperty(
@@ -11110,27 +12321,33 @@ End Function
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
-            enum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = complexType.AddProperty(
@@ -11139,27 +12356,33 @@ End Function
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            enum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = complexType.AddProperty(
@@ -11168,27 +12391,33 @@ End Function
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = complexType.AddProperty(
@@ -11197,27 +12426,33 @@ End Function
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim id = complexType.AddProperty(
@@ -11226,19 +12461,27 @@ End Function
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Id", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = complexType.AddProperty(
@@ -11247,60 +12490,68 @@ End Function
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = complexType.AddProperty(
@@ -11309,44 +12560,53 @@ Dim refTypeEnumerable = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = complexType.AddProperty(
@@ -11355,44 +12615,53 @@ Dim refTypeIList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = complexType.AddProperty(
@@ -11401,60 +12670,68 @@ Dim refTypeList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = complexType.AddProperty(
@@ -11463,40 +12740,51 @@ Dim valueTypeArray = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = complexType.AddProperty(
@@ -11505,40 +12793,51 @@ Dim valueTypeEnumerable = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = complexType.AddProperty(
@@ -11547,40 +12846,51 @@ Dim valueTypeIList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = complexType.AddProperty(
@@ -11589,40 +12899,51 @@ Dim valueTypeList = complexType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 complexType.AddAnnotation("Relational:FunctionName", "PrincipalBaseTvf")
@@ -13222,6 +14543,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace TestNamespace
     Friend Partial Class DependentBaseEntityType
@@ -13238,38 +14560,54 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetProperty("Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.DependentBase(Of Byte?)).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = SqlServerByteTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
-                keyComparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
-                providerValueComparer:=New ValueComparer(Of Byte?)(
-                    Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
-                    Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    New ValueComparer(Of Byte?)(
+                        Function(v1 As Nullable(Of Byte), v2 As Nullable(Of Byte)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Byte) = CType(v2, Byte) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Integer), 0),
+                        Function(v As Nullable(Of Byte)) If(v.HasValue, CType(CType(v, Byte), Nullable(Of Byte)), CType(Nothing, Nullable(Of Byte)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalId = entityType.AddProperty(
                 "PrincipalId",
                 GetType(Long?),
                 nullable:=True)
-            principalId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            principalId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -13356,19 +14694,27 @@ Namespace TestNamespace
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Id", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw)
-            id.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
             Dim [overrides] As New StoreObjectDictionary(Of RuntimeRelationalPropertyOverrides)()
             Dim idDerived_Insert As New RuntimeRelationalPropertyOverrides(
@@ -13395,27 +14741,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))
-            enum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim enum2 = entityType.AddProperty(
@@ -13424,27 +14776,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("Enum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_Enum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            enum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
-                    Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
-                    Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            enum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum?)(
+                        Function(v1 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), v2 As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) v1.HasValue AndAlso v2.HasValue AndAlso Object.Equals(CType(CType(v1, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object), CType(CType(v2, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Object)) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum).GetHashCode(), 0),
+                        Function(v As Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)) If(v.HasValue, CType(CType(v, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum), Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)), CType(Nothing, Nullable(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum)))),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AnEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AnEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AnEnum))),
+                    Type.Missing}), CoreTypeMapping)
             enum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum1 = entityType.AddProperty(
@@ -13453,27 +14811,33 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum1", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum1.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum1.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum1.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim flagsEnum2 = entityType.AddProperty(
@@ -13482,65 +14846,87 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_FlagsEnum2", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 sentinel:=CType(0, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))
-            flagsEnum2.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                keyComparer:=New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
-                    Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
-                    Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                converter:=New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                    Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
-                    JsonInt32ReaderWriter.Instance,
+            flagsEnum2.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
                         Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
-                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))))
+                        Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum)(
+                        Function(v1 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, v2 As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) Object.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v.GetHashCode(),
+                        Function(v As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                        JsonInt32ReaderWriter.Instance,
+                        New ValueConverter(Of VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum, Integer)(
+                            Function(value As VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum) CType(value, Integer),
+                            Function(value As Integer) CType(value, VisualBasicRuntimeModelCodeGeneratorTest.AFlagsEnum))),
+                    Type.Missing}), CoreTypeMapping)
             flagsEnum2.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalBaseId = entityType.AddProperty(
                 "PrincipalBaseId",
                 GetType(Long?),
                 nullable:=True)
-            principalBaseId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            principalBaseId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalBaseId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim principalDerivedId = entityType.AddProperty(
                 "PrincipalDerivedId",
                 GetType(Long?),
                 nullable:=True)
-            principalDerivedId.TypeMapping = SqlServerLongTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))))
+            principalDerivedId.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerLongTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             principalDerivedId.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim refTypeArray = entityType.AddProperty(
@@ -13549,60 +14935,68 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            refTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            refTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nvarchar(max)",
+                        dbType:=System.Data.DbType.String),
+                    Type.Missing,
+                    New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+                        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                            JsonStringReaderWriter.Instance,
+                            New ValueConverter(Of IPAddress, String)(
+                                Function(v As IPAddress) v.ToString(),
+                                Function(v As String) IPAddress.Parse(v))))),
+                New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                     Function(v As IPAddress) v.GetHashCode(),
                     Function(v As IPAddress) v)),
-            keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+            New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
                 Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
                 Function(v As IPAddress) v.GetHashCode(),
                 Function(v As IPAddress) v)),
-        providerValueComparer:=New ValueComparer(Of String)(
+        New ValueComparer(Of String)(
             Function(v1 As String, v2 As String) v1 = v2,
             Function(v As String) v.GetHashCode(),
             Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(max)",
-            dbType:=System.Data.DbType.String),
-        converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
+        DirectCast(GetType(RelationalTypeMapping).
+            GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+            Invoke(SqlServerStringTypeMapping.Default, {
+                New RelationalTypeMappingInfo(
+                    storeTypeName:="nvarchar(45)",
+                    size:=45,
+                    dbType:=System.Data.DbType.String),
+                Type.Missing,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v)),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of IPAddress)(
+                    Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+                    Function(v As IPAddress) v.GetHashCode(),
+                    Function(v As IPAddress) v),
+                New ValueComparer(Of String)(
+                    Function(v1 As String, v2 As String) v1 = v2,
+                    Function(v As String) v.GetHashCode(),
+                    Function(v As String) v),
+                Type.Missing,
+                New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                    JsonStringReaderWriter.Instance,
+                    New ValueConverter(Of IPAddress, String)(
+                        Function(v As IPAddress) v.ToString(),
+                        Function(v As String) IPAddress.Parse(v))),
+                Type.Missing}), CoreTypeMapping),
+        New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
             New JsonConvertedValueReaderWriter(Of IPAddress, String)(
                 JsonStringReaderWriter.Instance,
                 New ValueConverter(Of IPAddress, String)(
                     Function(v As IPAddress) v.ToString(),
-                    Function(v As String) IPAddress.Parse(v))))),
-    storeTypePostfix:=StoreTypePostfix.None,
-    jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IPAddress(), IPAddress(), IPAddress)(
-        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))),
-    elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-        comparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        keyComparer:=New ValueComparer(Of IPAddress)(
-            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-            Function(v As IPAddress) v.GetHashCode(),
-            Function(v As IPAddress) v),
-        providerValueComparer:=New ValueComparer(Of String)(
-            Function(v1 As String, v2 As String) v1 = v2,
-            Function(v As String) v.GetHashCode(),
-            Function(v As String) v),
-        mappingInfo:=New RelationalTypeMappingInfo(
-            storeTypeName:="nvarchar(45)",
-            size:=45,
-            dbType:=System.Data.DbType.String),
-        converter:=New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)),
-        jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-            JsonStringReaderWriter.Instance,
-            New ValueConverter(Of IPAddress, String)(
-                Function(v As IPAddress) v.ToString(),
-                Function(v As String) IPAddress.Parse(v)))))
+                    Function(v As String) IPAddress.Parse(v)))),
+        StoreTypePostfix.None}), CoreTypeMapping)
 refTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeEnumerable = entityType.AddProperty(
@@ -13611,44 +15005,53 @@ Dim refTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeIList = entityType.AddProperty(
@@ -13657,44 +15060,53 @@ Dim refTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+refTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+            JsonStringReaderWriter.Instance)),
+    New ListComparer(Of String)(New ValueComparer(Of String)(
         Function(v1 As String, v2 As String) v1 = v2,
         Function(v As String) v.GetHashCode(),
         Function(v As String) v)),
-keyComparer:=New ListComparer(Of String)(New ValueComparer(Of String)(
+New ListComparer(Of String)(New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of String)(New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
-    JsonStringReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        Type.Missing,
+        StoreTypePostfix.None}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of String), List(Of String), String)(
     JsonStringReaderWriter.Instance),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    keyComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(max)",
-        dbType:=System.Data.DbType.String),
-    storeTypePostfix:=StoreTypePostfix.None))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim refTypeList = entityType.AddProperty(
@@ -13703,60 +15115,68 @@ Dim refTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_RefTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-refTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+refTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+                JsonStringReaderWriter.Instance,
+                New ValueConverter(Of IPAddress, String)(
+                    Function(v As IPAddress) v.ToString(),
+                    Function(v As String) IPAddress.Parse(v))))),
+    New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
         Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
         Function(v As IPAddress) v.GetHashCode(),
         Function(v As IPAddress) v)),
-keyComparer:=New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
+New ListComparer(Of IPAddress)(New ValueComparer(Of IPAddress)(
     Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
     Function(v As IPAddress) v.GetHashCode(),
     Function(v As IPAddress) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of IPAddress)(New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
-    New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(45)",
+            size:=45,
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v))))),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
+            Function(v As String) IPAddress.Parse(v)),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of IPAddress)(
+            Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
+            Function(v As IPAddress) v.GetHashCode(),
+            Function(v As IPAddress) v),
+        New ValueComparer(Of String)(
+            Function(v1 As String, v2 As String) v1 = v2,
+            Function(v As String) v.GetHashCode(),
+            Function(v As String) v),
+        Type.Missing,
+        New JsonConvertedValueReaderWriter(Of IPAddress, String)(
+            JsonStringReaderWriter.Instance,
+            New ValueConverter(Of IPAddress, String)(
+                Function(v As IPAddress) v.ToString(),
+                Function(v As String) IPAddress.Parse(v))),
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of IPAddress), List(Of IPAddress), IPAddress)(
     New JsonConvertedValueReaderWriter(Of IPAddress, String)(
         JsonStringReaderWriter.Instance,
         New ValueConverter(Of IPAddress, String)(
             Function(v As IPAddress) v.ToString(),
             Function(v As String) IPAddress.Parse(v)))),
-elementMapping:=SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    keyComparer:=New ValueComparer(Of IPAddress)(
-        Function(v1 As IPAddress, v2 As IPAddress) v1 Is Nothing AndAlso v2 Is Nothing OrElse v1 IsNot Nothing AndAlso v2 IsNot Nothing AndAlso v1.Equals(v2),
-        Function(v As IPAddress) v.GetHashCode(),
-        Function(v As IPAddress) v),
-    providerValueComparer:=New ValueComparer(Of String)(
-        Function(v1 As String, v2 As String) v1 = v2,
-        Function(v As String) v.GetHashCode(),
-        Function(v As String) v),
-    mappingInfo:=New RelationalTypeMappingInfo(
-        storeTypeName:="nvarchar(45)",
-        size:=45,
-        dbType:=System.Data.DbType.String),
-    converter:=New ValueConverter(Of IPAddress, String)(
-        Function(v As IPAddress) v.ToString(),
-        Function(v As String) IPAddress.Parse(v)),
-    jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of IPAddress, String)(
-        JsonStringReaderWriter.Instance,
-        New ValueConverter(Of IPAddress, String)(
-            Function(v As IPAddress) v.ToString(),
-            Function(v As String) IPAddress.Parse(v)))))
+StoreTypePostfix.None}), CoreTypeMapping)
 refTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeArray = entityType.AddProperty(
@@ -13765,40 +15185,51 @@ Dim valueTypeArray = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeArray", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeArray.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+valueTypeArray.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+            JsonDateTimeReaderWriter.Instance)),
+    New ListComparer(Of Date)(New ValueComparer(Of Date)(
         Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
         Function(v As DateTime) v.GetHashCode(),
         Function(v As DateTime) v)),
-keyComparer:=New ListComparer(Of Date)(New ValueComparer(Of Date)(
+New ListComparer(Of Date)(New ValueComparer(Of Date)(
     Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
     Function(v As DateTime) v.GetHashCode(),
     Function(v As DateTime) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Date)(New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
-    JsonDateTimeReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerDateTimeTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        New ValueComparer(Of Date)(
+            Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
+            Function(v As DateTime) v.GetHashCode(),
+            Function(v As DateTime) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of Date(), Date(), Date)(
     JsonDateTimeReaderWriter.Instance),
-elementMapping:=SqlServerDateTimeTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    keyComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v),
-    providerValueComparer:=New ValueComparer(Of Date)(
-        Function(v1 As DateTime, v2 As DateTime) v1.Equals(v2),
-        Function(v As DateTime) v.GetHashCode(),
-        Function(v As DateTime) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeArray.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeEnumerable = entityType.AddProperty(
@@ -13807,40 +15238,51 @@ Dim valueTypeEnumerable = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeEnumerable", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeEnumerable.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeEnumerable.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IEnumerable(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeEnumerable.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeIList = entityType.AddProperty(
@@ -13849,40 +15291,51 @@ Dim valueTypeIList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeIList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeIList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+valueTypeIList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+            JsonByteReaderWriter.Instance)),
+    New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
         Function(v1 As Byte, v2 As Byte) v1 = v2,
         Function(v As Byte) CType(v, Integer),
         Function(v As Byte) v)),
-keyComparer:=New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
+New ListComparer(Of Byte)(New ValueComparer(Of Byte)(
     Function(v1 As Byte, v2 As Byte) v1 = v2,
     Function(v As Byte) CType(v, Integer),
     Function(v As Byte) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Byte)(New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
-    JsonByteReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerByteTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        New ValueComparer(Of Byte)(
+            Function(v1 As Byte, v2 As Byte) v1 = v2,
+            Function(v As Byte) CType(v, Integer),
+            Function(v As Byte) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of IList(Of Byte), List(Of Byte), Byte)(
     JsonByteReaderWriter.Instance),
-elementMapping:=SqlServerByteTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    keyComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v),
-    providerValueComparer:=New ValueComparer(Of Byte)(
-        Function(v1 As Byte, v2 As Byte) v1 = v2,
-        Function(v As Byte) CType(v, Integer),
-        Function(v As Byte) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeIList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim valueTypeList = entityType.AddProperty(
@@ -13891,40 +15344,51 @@ Dim valueTypeList = entityType.AddProperty(
     propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.PrincipalBase).GetField("_ValueTypeList", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
     nullable:=True)
-valueTypeList.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-    comparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+valueTypeList.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerStringTypeMapping.Default, {
+        New RelationalTypeMappingInfo(
+            storeTypeName:="nvarchar(max)",
+            dbType:=System.Data.DbType.String),
+        Type.Missing,
+        New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+            JsonInt16ReaderWriter.Instance)),
+    New ListComparer(Of Short)(New ValueComparer(Of Short)(
         Function(v1 As Short, v2 As Short) v1 = v2,
         Function(v As Short) CType(v, Integer),
         Function(v As Short) v)),
-keyComparer:=New ListComparer(Of Short)(New ValueComparer(Of Short)(
+New ListComparer(Of Short)(New ValueComparer(Of Short)(
     Function(v1 As Short, v2 As Short) v1 = v2,
     Function(v As Short) CType(v, Integer),
     Function(v As Short) v)),
-providerValueComparer:=New ValueComparer(Of String)(
+New ValueComparer(Of String)(
     Function(v1 As String, v2 As String) v1 = v2,
     Function(v As String) v.GetHashCode(),
     Function(v As String) v),
-mappingInfo:=New RelationalTypeMappingInfo(
-    storeTypeName:="nvarchar(max)",
-    dbType:=System.Data.DbType.String),
-converter:=New CollectionToJsonStringConverter(Of Short)(New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
-    JsonInt16ReaderWriter.Instance)),
-storeTypePostfix:=StoreTypePostfix.None,
-jsonValueReaderWriter:=New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
+DirectCast(GetType(RelationalTypeMapping).
+    GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+    Invoke(SqlServerShortTypeMapping.Default, {
+        Type.Missing,
+        Type.Missing,
+        Type.Missing,
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        New ValueComparer(Of Short)(
+            Function(v1 As Short, v2 As Short) v1 = v2,
+            Function(v As Short) CType(v, Integer),
+            Function(v As Short) v),
+        Type.Missing,
+        Type.Missing,
+        Type.Missing}), CoreTypeMapping),
+New JsonCollectionReaderWriter(Of List(Of Short), List(Of Short), Short)(
     JsonInt16ReaderWriter.Instance),
-elementMapping:=SqlServerShortTypeMapping.Default.Clone(
-    comparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    keyComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v),
-    providerValueComparer:=New ValueComparer(Of Short)(
-        Function(v1 As Short, v2 As Short) v1 = v2,
-        Function(v As Short) CType(v, Integer),
-        Function(v As Short) v)))
+StoreTypePostfix.None}), CoreTypeMapping)
 valueTypeList.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
 Dim key = entityType.AddKey(
@@ -14836,10 +16300,10 @@ Namespace TestNamespace
             DataEntityType.CreateAnnotations(data)
             ObjectEntityType.CreateAnnotations([object])
 
-            Dim type = Me.AddTypeMappingConfiguration(
+            Dim typeConfig = Me.AddTypeMappingConfiguration(
                 GetType(String),
                 maxLength:=256)
-            type.AddAnnotation("Relational:IsFixedLength", True)
+            typeConfig.AddAnnotation("Relational:IsFixedLength", True)
 
             Dim functions As New SortedDictionary(Of String, IDbFunction)()
             Dim getCount As New RuntimeDbFunction(
@@ -14862,21 +16326,28 @@ Namespace TestNamespace
                 GetType(Guid?),
                 True,
                 "uniqueidentifier")
-            id.TypeMapping = GuidTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                keyComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                providerValueComparer:=New ValueComparer(Of Guid)(
-                    Function(v1 As Guid, v2 As Guid) v1 = v2,
-                    Function(v As Guid) v.GetHashCode(),
-                    Function(v As Guid) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="uniqueidentifier"))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(GuidTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="uniqueidentifier"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    New ValueComparer(Of Guid)(
+                        Function(v1 As Guid, v2 As Guid) v1 = v2,
+                        Function(v As Guid) v.GetHashCode(),
+                        Function(v As Guid) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("MyAnnotation", {1L})
 
             Dim condition = getCount.AddParameter(
@@ -14884,37 +16355,52 @@ Namespace TestNamespace
                 GetType(String),
                 False,
                 "nchar(256)")
-            condition.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nchar(256)",
-                    size:=256,
-                    dbType:=System.Data.DbType.StringFixedLength))
+            condition.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nchar(256)",
+                        size:=256,
+                        dbType:=System.Data.DbType.StringFixedLength),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
-            getCount.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            getCount.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetCount(System.Guid?,string)") = getCount
 
             Dim getData As New RuntimeDbFunction(
@@ -14950,19 +16436,27 @@ Namespace TestNamespace
                 GetType(Integer),
                 False,
                 "int")
-            id0.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id0.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.GetData(int)") = getData0
 
@@ -14987,37 +16481,52 @@ Namespace TestNamespace
                 GetType(String),
                 False,
                 "nchar(256)")
-            aDate.TypeMapping = SqlServerStringTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="nchar(256)",
-                    size:=256,
-                    dbType:=System.Data.DbType.StringFixedLength))
+            aDate.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerStringTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="nchar(256)",
+                        size:=256,
+                        dbType:=System.Data.DbType.StringFixedLength),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
-            isDateShared.TypeMapping = SqlServerBoolTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                keyComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v),
-                providerValueComparer:=New ValueComparer(Of Boolean)(
-                    Function(v1 As Boolean, v2 As Boolean) v1 = v2,
-                    Function(v As Boolean) v.GetHashCode(),
-                    Function(v As Boolean) v))
+            isDateShared.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerBoolTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    New ValueComparer(Of Boolean)(
+                        Function(v1 As Boolean, v2 As Boolean) v1 = v2,
+                        Function(v As Boolean) v.GetHashCode(),
+                        Function(v As Boolean) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             isDateShared.AddAnnotation("MyGuid", New Guid("00000000-0000-0000-0000-000000000000"))
             functions("EntityFrameworkCore.VisualBasic.Scaffolding.Internal.VisualBasicRuntimeModelCodeGeneratorTest+DbFunctionContext.IsDateShared(string)") = isDateShared
 
@@ -15152,22 +16661,28 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) v.GetHashCode(),
-                    Function(v As Byte()) v),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varbinary(max)"),
-                storeTypePostfix:=StoreTypePostfix.None)
+            blob.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varbinary(max)"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) v.GetHashCode(),
+                        Function(v As Byte()) v),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Return entityType
@@ -15628,19 +17143,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:HiLoSequenceName", "HL")
             id.AddAnnotation("SqlServer:HiLoSequenceSchema", "S")
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo)
@@ -15651,22 +17174,28 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) v.GetHashCode(),
-                    Function(v As Byte()) v),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varbinary(max)"),
-                storeTypePostfix:=StoreTypePostfix.None)
+            blob.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varbinary(max)"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) v.GetHashCode(),
+                        Function(v As Byte()) v),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -15899,19 +17428,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("Relational:DefaultValueSql", "NEXT VALUE FOR [KeySeqSchema].[KeySeq]")
             id.AddAnnotation("SqlServer:SequenceName", "KeySeq")
             id.AddAnnotation("SqlServer:SequenceSchema", "KeySeqSchema")
@@ -15923,22 +17460,28 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) v.GetHashCode(),
-                    Function(v As Byte()) v),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varbinary(max)"),
-                storeTypePostfix:=StoreTypePostfix.None)
+            blob.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varbinary(max)"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) v.GetHashCode(),
+                        Function(v As Byte()) v),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -16145,19 +17688,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim blob = entityType.AddProperty(
@@ -16166,22 +17717,28 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) v.GetHashCode(),
-                    Function(v As Byte()) v),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varbinary(max)"),
-                storeTypePostfix:=StoreTypePostfix.None)
+            blob.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varbinary(max)"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) v.GetHashCode(),
+                        Function(v As Byte()) v),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -16379,19 +17936,27 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             id.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
 
             Dim blob = entityType.AddProperty(
@@ -16400,22 +17965,28 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = SqlServerByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) v.GetHashCode(),
-                    Function(v As Byte()) v),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="varbinary(max)"),
-                storeTypePostfix:=StoreTypePostfix.None)
+            blob.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqlServerByteArrayTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="varbinary(max)"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) v.GetHashCode(),
+                        Function(v As Byte()) v),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    StoreTypePostfix.None}), CoreTypeMapping)
             blob.AddAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None)
 
             Dim key = entityType.AddKey(
@@ -16625,21 +18196,28 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
                 valueGenerated:=ValueGenerated.OnAdd,
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = IntTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                mappingInfo:=New RelationalTypeMappingInfo(
-                    storeTypeName:="INTEGER"))
+            id.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(IntTypeMapping.Default, {
+                    New RelationalTypeMappingInfo(
+                        storeTypeName:="INTEGER"),
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
             Dim blob = entityType.AddProperty(
                 "Blob",
@@ -16647,19 +18225,27 @@ Namespace Microsoft.EntityFrameworkCore.Metadata
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = SqliteByteArrayTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) v.GetHashCode(),
-                    Function(v As Byte()) v),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()))
+            blob.TypeMapping = DirectCast(GetType(RelationalTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(SqliteByteArrayTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) v.GetHashCode(),
+                        Function(v As Byte()) v),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
 
             Dim point = entityType.AddProperty(
                 "Point",
@@ -16823,6 +18409,7 @@ Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Cosmos.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Cosmos.ValueGeneration.Internal
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.Json
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Newtonsoft.Json.Linq
@@ -16841,48 +18428,58 @@ Namespace TestNamespace
                 GetType(Integer),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 sentinel:=0)
-            id.TypeMapping = CosmosTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                keyComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                providerValueComparer:=New ValueComparer(Of Integer)(
-                    Function(v1 As Integer, v2 As Integer) v1 = v2,
-                    Function(v As Integer) v,
-                    Function(v As Integer) v),
-                clrType:=GetType(Integer),
-                jsonValueReaderWriter:=JsonInt32ReaderWriter.Instance)
+            id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(CosmosTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Integer),
+                    Type.Missing,
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    New ValueComparer(Of Integer)(
+                        Function(v1 As Integer, v2 As Integer) v1 = v2,
+                        Function(v As Integer) v,
+                        Function(v As Integer) v),
+                    Type.Missing,
+                    JsonInt32ReaderWriter.Instance}), CoreTypeMapping)
 
             Dim partitionId = entityType.AddProperty(
                 "PartitionId",
                 GetType(Long?),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 providerPropertyType:=GetType(String))
-            partitionId.TypeMapping = CosmosTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                keyComparer:=New ValueComparer(Of Long?)(
-                    Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
-                    Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                converter:=New ValueConverter(Of Long, String)(
-                    Function(v As Long) String.Format(CultureInfo.InvariantCulture, "{0}", CType(v, Object)),
-                    Function(v As String) Long.Parse(v, NumberStyles.Any, CultureInfo.InvariantCulture)),
-                jsonValueReaderWriter:=New JsonConvertedValueReaderWriter(Of Long, String)(
-                    JsonStringReaderWriter.Instance,
+            partitionId.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(CosmosTypeMapping.Default, {
+                    Type.Missing,
+                    Type.Missing,
                     New ValueConverter(Of Long, String)(
                         Function(v As Long) String.Format(CultureInfo.InvariantCulture, "{0}", CType(v, Object)),
-                        Function(v As String) Long.Parse(v, NumberStyles.Any, CultureInfo.InvariantCulture))))
+                        Function(v As String) Long.Parse(v, NumberStyles.Any, CultureInfo.InvariantCulture)),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of Long?)(
+                        Function(v1 As Nullable(Of Long), v2 As Nullable(Of Long)) v1.HasValue AndAlso v2.HasValue AndAlso CType(v1, Long) = CType(v2, Long) OrElse Not(v1.HasValue) AndAlso Not(v2.HasValue),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(v, Long).GetHashCode(), 0),
+                        Function(v As Nullable(Of Long)) If(v.HasValue, CType(CType(v, Long), Nullable(Of Long)), CType(Nothing, Nullable(Of Long)))),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    New JsonConvertedValueReaderWriter(Of Long, String)(
+                        JsonStringReaderWriter.Instance,
+                        New ValueConverter(Of Long, String)(
+                            Function(v As Long) String.Format(CultureInfo.InvariantCulture, "{0}", CType(v, Object)),
+                            Function(v As String) Long.Parse(v, NumberStyles.Any, CultureInfo.InvariantCulture)))}), CoreTypeMapping)
 
             Dim blob = entityType.AddProperty(
                 "Blob",
@@ -16890,21 +18487,26 @@ Namespace TestNamespace
                 propertyInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetProperty("Blob", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 fieldInfo:=GetType(VisualBasicRuntimeModelCodeGeneratorTest.Data).GetField("_Blob", BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.DeclaredOnly),
                 nullable:=True)
-            blob.TypeMapping = CosmosTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) If(v1 Is Nothing, v2 Is Nothing, v2 IsNot Nothing AndAlso v1.Length = v2.Length AndAlso v1 Is v2 OrElse v1.Zip(v2, Function(v10 As Byte, v20 As Byte) v10 = v20).All(Function(v As Boolean) v)),
-                    Function(v As Byte()) v.Aggregate(New HashCode(), Function(h As HashCode, e As Byte) ValueComparer.Add(h, CType(e, Integer)), Function(h As HashCode) h.ToHashCode()),
-                    Function(v As Byte()) v.Select(Function(v0 As Byte) v0).ToArray()),
-                keyComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                providerValueComparer:=New ValueComparer(Of Byte())(
-                    Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
-                    Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
-                    Function(source As Byte()) source.ToArray()),
-                clrType:=GetType(Byte()),
-                jsonValueReaderWriter:=JsonByteArrayReaderWriter.Instance)
+            blob.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(CosmosTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(Byte()),
+                    Type.Missing,
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) If(v1 Is Nothing, v2 Is Nothing, v2 IsNot Nothing AndAlso v1.Length = v2.Length AndAlso v1 Is v2 OrElse v1.Zip(v2, Function(v10 As Byte, v20 As Byte) v10 = v20).All(Function(v As Boolean) v)),
+                        Function(v As Byte()) v.Aggregate(New HashCode(), Function(h As HashCode, e As Byte) ValueComparer.Add(h, CType(e, Integer)), Function(h As HashCode) h.ToHashCode()),
+                        Function(v As Byte()) v.Select(Function(v0 As Byte) v0).ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    New ValueComparer(Of Byte())(
+                        Function(v1 As Byte(), v2 As Byte()) StructuralComparisons.StructuralEqualityComparer.Equals(CType(v1, Object), CType(v2, Object)),
+                        Function(v As Byte()) StructuralComparisons.StructuralEqualityComparer.GetHashCode(CType(v, Object)),
+                        Function(source As Byte()) source.ToArray()),
+                    Type.Missing,
+                    JsonByteArrayReaderWriter.Instance}), CoreTypeMapping)
             blob.AddAnnotation("Cosmos:PropertyName", "JsonBlob")
 
             Dim __id = entityType.AddProperty(
@@ -16912,21 +18514,26 @@ Namespace TestNamespace
                 GetType(String),
                 afterSaveBehavior:=PropertySaveBehavior.Throw,
                 valueGeneratorFactory:=AddressOf New IdValueGeneratorFactory().Create)
-            __id.TypeMapping = CosmosTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            __id.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(CosmosTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
             __id.AddAnnotation("Cosmos:PropertyName", "id")
 
             Dim __jObject = entityType.AddProperty(
@@ -16936,20 +18543,26 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            __jObject.TypeMapping = CosmosTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of JObject)(
-                    Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
-                    Function(v As JObject) v.GetHashCode(),
-                    Function(v As JObject) v),
-                keyComparer:=New ValueComparer(Of JObject)(
-                    Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
-                    Function(v As JObject) v.GetHashCode(),
-                    Function(v As JObject) v),
-                providerValueComparer:=New ValueComparer(Of JObject)(
-                    Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
-                    Function(v As JObject) v.GetHashCode(),
-                    Function(v As JObject) v),
-                clrType:=GetType(JObject))
+            __jObject.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(CosmosTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(JObject),
+                    Type.Missing,
+                    New ValueComparer(Of JObject)(
+                        Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
+                        Function(v As JObject) v.GetHashCode(),
+                        Function(v As JObject) v),
+                    New ValueComparer(Of JObject)(
+                        Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
+                        Function(v As JObject) v.GetHashCode(),
+                        Function(v As JObject) v),
+                    New ValueComparer(Of JObject)(
+                        Function(v1 As JObject, v2 As JObject) Object.Equals(v1, v2),
+                        Function(v As JObject) v.GetHashCode(),
+                        Function(v As JObject) v),
+                    Type.Missing,
+                    Type.Missing}), CoreTypeMapping)
             __jObject.AddAnnotation("Cosmos:PropertyName", "")
 
             Dim _etag = entityType.AddProperty(
@@ -16960,21 +18573,26 @@ Namespace TestNamespace
                 valueGenerated:=ValueGenerated.OnAddOrUpdate,
                 beforeSaveBehavior:=PropertySaveBehavior.Ignore,
                 afterSaveBehavior:=PropertySaveBehavior.Ignore)
-            _etag.TypeMapping = CosmosTypeMapping.Default.Clone(
-                comparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                keyComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                providerValueComparer:=New ValueComparer(Of String)(
-                    Function(v1 As String, v2 As String) v1 = v2,
-                    Function(v As String) v.GetHashCode(),
-                    Function(v As String) v),
-                clrType:=GetType(String),
-                jsonValueReaderWriter:=JsonStringReaderWriter.Instance)
+            _etag.TypeMapping = DirectCast(GetType(CoreTypeMapping).
+                GetMethod("Clone", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).
+                Invoke(CosmosTypeMapping.Default, {
+                    Type.Missing,
+                    GetType(String),
+                    Type.Missing,
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    New ValueComparer(Of String)(
+                        Function(v1 As String, v2 As String) v1 = v2,
+                        Function(v As String) v.GetHashCode(),
+                        Function(v As String) v),
+                    Type.Missing,
+                    JsonStringReaderWriter.Instance}), CoreTypeMapping)
 
             Dim key = entityType.AddKey(
                 {id, partitionId})

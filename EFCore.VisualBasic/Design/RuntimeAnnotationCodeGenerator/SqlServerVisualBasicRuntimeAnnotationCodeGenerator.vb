@@ -114,7 +114,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             MyBase.Generate(index, parameters)
-    End Sub
+        End Sub
 
         ''' <inheritdoc />
         Public Overrides Sub Generate(aKey As IKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)

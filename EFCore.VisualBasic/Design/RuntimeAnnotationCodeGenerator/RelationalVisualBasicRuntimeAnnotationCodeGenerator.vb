@@ -2233,125 +2233,159 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Return True
             End If
 
+            parameters.Namespaces.Add(GetType(Type).Namespace)
+            parameters.Namespaces.Add(GetType(BindingFlags).Namespace)
+
+            Dim cloneMethod = GetCloneMethod(typeMapping.GetType(), {
+                "comparer",
+                "keyComparer",
+                "providerValueComparer",
+                "mappingInfo",
+                "converter",
+                "clrType",
+                "storeTypePostfix",
+                "jsonValueReaderWriter",
+                "elementMapping"
+            })
+
+            parameters.Namespaces.Add(cloneMethod.DeclaringType.Namespace)
+
             mainBuilder.
-                AppendLine(".Clone(").
+                AppendLine($"DirectCast(GetType({code.Reference(cloneMethod.DeclaringType)}).").
+                IncrementIndent().
+                AppendLine($"GetMethod(""Clone"", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).").
+                AppendLine($"Invoke({code.Reference(typeMapping.GetType())}.Default, {{").
                 IncrementIndent()
 
-            mainBuilder.Append("comparer:=")
-            Create(If(valueComparer, relationalTypeMapping.Comparer), parameters, code)
-
-            mainBuilder.
-                AppendLine(","c).
-                Append("keyComparer:=")
-
-            Create(If(keyValueComparer, relationalTypeMapping.KeyComparer), parameters, code)
-
-            mainBuilder.
-                AppendLine(","c).
-                Append("providerValueComparer:=")
-
-            Create(If(providerValueComparer, relationalTypeMapping.ProviderValueComparer), parameters, code)
-
-            Dim storeTypeDifferent = relationalTypeMapping.StoreType <> defaultInstance.StoreType
-
-            Dim sizeDifferent = relationalTypeMapping.Size.HasValue AndAlso
-                                (Not defaultInstance.Size.HasValue OrElse relationalTypeMapping.Size.Value <> defaultInstance.Size.Value)
-
-            Dim precisionDifferent = relationalTypeMapping.Precision.HasValue AndAlso
-                                     (Not defaultInstance.Precision.HasValue OrElse relationalTypeMapping.Precision.Value <> defaultInstance.Precision.Value)
-
-            Dim scaleDifferent = relationalTypeMapping.Scale.HasValue AndAlso
-                                 (Not defaultInstance.Scale.HasValue OrElse relationalTypeMapping.Scale.Value <> defaultInstance.Scale.Value)
-
-            Dim dbTypeDifferent = relationalTypeMapping.DbType.HasValue AndAlso
-                                  (Not defaultInstance.DbType.HasValue OrElse relationalTypeMapping.DbType.Value <> defaultInstance.DbType.Value)
-
-            If storeTypeDifferent OrElse sizeDifferent OrElse precisionDifferent OrElse scaleDifferent OrElse dbTypeDifferent Then
-
-                AddNamespace(GetType(RelationalTypeMappingInfo), parameters.Namespaces)
-                mainBuilder.
-                    AppendLine(","c).
-                    AppendLine("mappingInfo:=New RelationalTypeMappingInfo(").
-                    IncrementIndent()
-
-                Dim firstParameter = True
-                If storeTypeDifferent Then
-                    GenerateArgument(
-                        "storeTypeName", code.Literal(relationalTypeMapping.StoreType), mainBuilder, firstParameter)
+            Dim first = True
+            For Each p In cloneMethod.GetParameters()
+                If first Then
+                    first = False
+                Else
+                    mainBuilder.AppendLine(","c)
                 End If
 
-                If sizeDifferent Then
-                    GenerateArgument(
-                    "size", code.Literal(relationalTypeMapping.Size), mainBuilder, firstParameter)
-                End If
+                Select Case p.Name
+                    Case "comparer"
+                        Create(If(valueComparer, relationalTypeMapping.Comparer), parameters, code)
 
-                If precisionDifferent Then
-                    GenerateArgument(
-                    "precision", code.Literal(relationalTypeMapping.Precision), mainBuilder, firstParameter)
-                End If
+                    Case "keyComparer"
+                        Create(If(keyValueComparer, relationalTypeMapping.KeyComparer), parameters, code)
 
-                If scaleDifferent Then
-                    GenerateArgument(
-                        "scale", code.Literal(relationalTypeMapping.Scale), mainBuilder, firstParameter)
-                End If
+                    Case "providerValueComparer"
+                        Create(If(providerValueComparer, relationalTypeMapping.ProviderValueComparer), parameters, code)
 
-                If dbTypeDifferent Then
-                    GenerateArgument(
-                        "dbType", code.Literal(relationalTypeMapping.DbType.Value, fullName:=True), mainBuilder, firstParameter)
-                End If
+                    Case "mappingInfo"
+                        Dim storeTypeDifferent = relationalTypeMapping.StoreType <> defaultInstance.StoreType
 
-                mainBuilder.
-                    Append(")"c).
-                    DecrementIndent()
-            End If
+                        Dim sizeDifferent = relationalTypeMapping.Size.HasValue AndAlso
+                                            (Not defaultInstance.Size.HasValue OrElse relationalTypeMapping.Size.Value <> defaultInstance.Size.Value)
 
-            If relationalTypeMapping.Converter IsNot Nothing AndAlso
-               relationalTypeMapping.Converter IsNot defaultInstance.Converter Then
-                mainBuilder.
-                    AppendLine(","c).
-                    Append("converter:=")
+                        Dim precisionDifferent = relationalTypeMapping.Precision.HasValue AndAlso
+                                                 (Not defaultInstance.Precision.HasValue OrElse relationalTypeMapping.Precision.Value <> defaultInstance.Precision.Value)
 
-                Create(relationalTypeMapping.Converter, parameters, code)
-            End If
+                        Dim scaleDifferent = relationalTypeMapping.Scale.HasValue AndAlso
+                                             (Not defaultInstance.Scale.HasValue OrElse relationalTypeMapping.Scale.Value <> defaultInstance.Scale.Value)
 
-            Dim typeDifferent = relationalTypeMapping.Converter Is Nothing AndAlso
+                        Dim dbTypeDifferent = relationalTypeMapping.DbType.HasValue AndAlso
+                                              (Not defaultInstance.DbType.HasValue OrElse relationalTypeMapping.DbType.Value <> defaultInstance.DbType.Value)
+
+                        If storeTypeDifferent OrElse sizeDifferent OrElse precisionDifferent OrElse scaleDifferent OrElse dbTypeDifferent Then
+
+                            AddNamespace(GetType(RelationalTypeMappingInfo), parameters.Namespaces)
+                            mainBuilder.
+                                AppendLine("New RelationalTypeMappingInfo(").
+                                IncrementIndent()
+
+                            Dim firstParameter = True
+                            If storeTypeDifferent Then
+                                GenerateArgument(
+                                    "storeTypeName", code.Literal(relationalTypeMapping.StoreType), mainBuilder, firstParameter)
+                            End If
+
+                            If sizeDifferent Then
+                                GenerateArgument(
+                                    "size", code.Literal(relationalTypeMapping.Size), mainBuilder, firstParameter)
+                            End If
+
+                            If precisionDifferent Then
+                                GenerateArgument(
+                                    "precision", code.Literal(relationalTypeMapping.Precision), mainBuilder, firstParameter)
+                            End If
+
+                            If scaleDifferent Then
+                                GenerateArgument(
+                                    "scale", code.Literal(relationalTypeMapping.Scale), mainBuilder, firstParameter)
+                            End If
+
+                            If dbTypeDifferent Then
+                                GenerateArgument(
+                                    "dbType", code.Literal(relationalTypeMapping.DbType.Value, fullName:=True), mainBuilder, firstParameter)
+                            End If
+
+                            mainBuilder.
+                                Append(")"c).
+                                DecrementIndent()
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "converter"
+                        If relationalTypeMapping.Converter IsNot Nothing AndAlso
+                           relationalTypeMapping.Converter IsNot defaultInstance.Converter Then
+
+                            Create(relationalTypeMapping.Converter, parameters, code)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "clrType"
+                        Dim typeDifferent = relationalTypeMapping.Converter Is Nothing AndAlso
                                 relationalTypeMapping.ClrType <> defaultInstance.ClrType
 
-            If typeDifferent Then
-                mainBuilder.
-                    AppendLine(","c).
-                    Append($"clrType:={code.Literal(relationalTypeMapping.ClrType)}")
-            End If
+                        If typeDifferent Then
+                            mainBuilder.
+                                Append(code.Literal(relationalTypeMapping.ClrType))
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
 
-            Dim storeTypePostfixDifferent = relationalTypeMapping.StoreTypePostfix <> defaultInstance.StoreTypePostfix
+                    Case "storeTypePostfix"
+                        Dim storeTypePostfixDifferent = relationalTypeMapping.StoreTypePostfix <> defaultInstance.StoreTypePostfix
 
-            If storeTypePostfixDifferent Then
-                mainBuilder.
-                    AppendLine(","c).
-                    Append($"storeTypePostfix:={code.Literal(DirectCast(relationalTypeMapping.StoreTypePostfix, [Enum]))}")
-            End If
+                        If storeTypePostfixDifferent Then
+                            mainBuilder.
+                                Append(code.Literal(DirectCast(relationalTypeMapping.StoreTypePostfix, [Enum])))
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
 
-            If relationalTypeMapping.JsonValueReaderWriter IsNot Nothing AndAlso
-               relationalTypeMapping.JsonValueReaderWriter IsNot defaultInstance.JsonValueReaderWriter Then
-                mainBuilder.
-                    AppendLine(","c).
-                    Append("jsonValueReaderWriter:=")
+                    Case "jsonValueReaderWriter"
+                        If relationalTypeMapping.JsonValueReaderWriter IsNot Nothing AndAlso
+                           relationalTypeMapping.JsonValueReaderWriter IsNot defaultInstance.JsonValueReaderWriter Then
 
-                CreateJsonValueReaderWriter(relationalTypeMapping.JsonValueReaderWriter, parameters, code)
-            End If
+                            CreateJsonValueReaderWriter(relationalTypeMapping.JsonValueReaderWriter, parameters, code)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
 
-            If relationalTypeMapping.ElementTypeMapping IsNot Nothing AndAlso
-           relationalTypeMapping.ElementTypeMapping IsNot defaultInstance.ElementTypeMapping Then
+                    Case "elementMapping"
+                        If relationalTypeMapping.ElementTypeMapping IsNot Nothing AndAlso
+                           relationalTypeMapping.ElementTypeMapping IsNot defaultInstance.ElementTypeMapping Then
 
-                mainBuilder.
-                    AppendLine(","c).
-                    Append("elementMapping:=")
+                            Create(relationalTypeMapping.ElementTypeMapping, parameters)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
 
-                Create(relationalTypeMapping.ElementTypeMapping, parameters)
-            End If
+                    Case Else
+                        mainBuilder.Append("Type.Missing")
+                End Select
+            Next
 
             mainBuilder.
-                Append(")"c).
+                Append("}), CoreTypeMapping)").
+                DecrementIndent().
                 DecrementIndent()
 
             Return True

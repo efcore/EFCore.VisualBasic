@@ -397,7 +397,7 @@ $"    Dim model As New {className}()
         Private Sub Create(typeConfiguration As ITypeMappingConfiguration,
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            Dim variableName = _code.Identifier("type", parameters.ScopeVariables, capitalize:=False)
+            Dim variableName = _code.Identifier("typeConfig", parameters.ScopeVariables, capitalize:=False)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.Append("Dim ").Append(variableName).Append(" = ").Append(parameters.TargetName).AppendLine(".AddTypeMappingConfiguration(").

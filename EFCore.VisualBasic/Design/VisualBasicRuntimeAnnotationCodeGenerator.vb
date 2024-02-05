@@ -502,67 +502,108 @@ Namespace Design
             Dim defaultInstance = CreateDefaultTypeMapping(typeMapping, parameters)
 
             If defaultInstance Is Nothing Then
+                mainBuilder.Append($"{code.Reference(typeMapping.GetType())}.Default")
                 Return True
             End If
 
+            parameters.Namespaces.Add(GetType(Type).Namespace)
+            parameters.Namespaces.Add(GetType(BindingFlags).Namespace)
+
+            Dim cloneMethod = GetCloneMethod(typeMapping.GetType(), {
+                "comparer",
+                "keyComparer",
+                "providerValueComparer",
+                "converter",
+                "clrType",
+                "jsonValueReaderWriter",
+                "elementMapping"
+            })
+
+            parameters.Namespaces.Add(cloneMethod.DeclaringType.Namespace)
+
             mainBuilder.
-                AppendLine(".Clone(").
+                AppendLine($"DirectCast(GetType({code.Reference(cloneMethod.DeclaringType)}).").
+                IncrementIndent().
+                AppendLine($"GetMethod(""Clone"", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).").
+                AppendLine($"Invoke({code.Reference(typeMapping.GetType())}.Default, {{").
                 IncrementIndent()
 
-            mainBuilder.Append("comparer:=")
-            Create(If(valueComparer, typeMapping.Comparer), parameters, code)
+            Dim first = True
+            For Each p In cloneMethod.GetParameters()
+                If first Then
+                    first = False
+                Else
+                    mainBuilder.AppendLine(","c)
+                End If
+
+                Select Case p.Name
+                    Case "comparer"
+                        Create(If(valueComparer, typeMapping.Comparer), parameters, code)
+
+                    Case "keyComparer"
+                        Create(If(keyValueComparer, typeMapping.KeyComparer), parameters, code)
+
+                    Case "providerValueComparer"
+                        Create(If(providerValueComparer, typeMapping.ProviderValueComparer), parameters, code)
+
+                    Case "converter"
+                        If typeMapping.Converter IsNot Nothing AndAlso
+                           typeMapping.Converter IsNot defaultInstance.Converter Then
+                            Create(typeMapping.Converter, parameters, code)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "clrType"
+                        If typeMapping.Converter Is Nothing AndAlso
+                           typeMapping.ClrType <> defaultInstance.ClrType Then
+
+                            mainBuilder.Append(code.Literal(typeMapping.ClrType))
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "jsonValueReaderWriter"
+                        If typeMapping.JsonValueReaderWriter IsNot Nothing AndAlso
+                           typeMapping.JsonValueReaderWriter IsNot defaultInstance.JsonValueReaderWriter Then
+
+                            CreateJsonValueReaderWriter(typeMapping.JsonValueReaderWriter, parameters, code)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "elementMapping"
+                        If typeMapping.ElementTypeMapping IsNot Nothing AndAlso
+                           typeMapping.ElementTypeMapping IsNot defaultInstance.ElementTypeMapping Then
+
+                            Create(typeMapping.ElementTypeMapping, parameters)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case Else
+                        mainBuilder.Append("Type.Missing")
+                End Select
+            Next
 
             mainBuilder.
-                AppendLine(","c).
-                Append("keyComparer:=")
-            Create(If(keyValueComparer, typeMapping.KeyComparer), parameters, code)
-
-            mainBuilder.
-                AppendLine(","c).
-                Append("providerValueComparer:=")
-            Create(If(providerValueComparer, typeMapping.ProviderValueComparer), parameters, code)
-
-            If typeMapping.Converter IsNot Nothing AndAlso
-               typeMapping.Converter IsNot defaultInstance.Converter Then
-
-                mainBuilder.
-                    AppendLine(","c).
-                    Append("converter:=")
-
-                Create(typeMapping.Converter, parameters, code)
-            End If
-
-            If typeMapping.Converter Is Nothing AndAlso
-               typeMapping.ClrType <> defaultInstance.ClrType Then
-
-                mainBuilder.
-                    AppendLine(","c).
-                    Append($"clrType:={code.Literal(typeMapping.ClrType)}")
-            End If
-
-            If typeMapping.JsonValueReaderWriter IsNot Nothing AndAlso
-               typeMapping.JsonValueReaderWriter IsNot defaultInstance.JsonValueReaderWriter Then
-
-                mainBuilder.
-                    AppendLine(","c).
-                    Append("jsonValueReaderWriter:=")
-
-                CreateJsonValueReaderWriter(typeMapping.JsonValueReaderWriter, parameters, code)
-            End If
-
-            If typeMapping.ElementTypeMapping IsNot Nothing AndAlso
-               typeMapping.ElementTypeMapping IsNot defaultInstance.ElementTypeMapping Then
-
-                mainBuilder.AppendLine(","c).Append("elementMapping:=")
-
-                Create(typeMapping.ElementTypeMapping, parameters)
-            End If
-
-            mainBuilder.
-                Append(")"c).
+                Append("}), CoreTypeMapping)").
+                DecrementIndent().
                 DecrementIndent()
 
             Return True
+        End Function
+
+        Protected Function GetCloneMethod(t As Type, requiredParameters As IEnumerable(Of String)) As MethodInfo
+            Dim methodsFound =
+                From m In t.GetMethods(BindingFlags.Public Or BindingFlags.Instance)
+                Let params = m.GetParameters()
+                Where m.Name = "Clone" AndAlso
+                      requiredParameters.All(Function(rp) params.Any(Function(p) p.Name = rp))
+                Order By params.Length()
+                Select m
+
+            Return methodsFound.First
         End Function
 
         ''' <summary>
@@ -576,8 +617,6 @@ Namespace Design
             parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As CoreTypeMapping
 
             Dim typeMappingType = typeMapping.GetType()
-            Dim mainBuilder = parameters.MainBuilder
-            Dim code = VBCode
             Dim defaultProperty = typeMappingType.GetProperty("Default")
 
             If defaultProperty Is Nothing OrElse
@@ -591,9 +630,6 @@ Namespace Design
             End If
 
             AddNamespace(typeMappingType, parameters.Namespaces)
-            mainBuilder.
-                Append(code.Reference(typeMappingType)).
-                Append(".Default")
 
             Dim defaultInstance = DirectCast(defaultProperty.GetValue(Nothing), CoreTypeMapping)
             Return If(typeMapping Is defaultInstance, Nothing, defaultInstance)

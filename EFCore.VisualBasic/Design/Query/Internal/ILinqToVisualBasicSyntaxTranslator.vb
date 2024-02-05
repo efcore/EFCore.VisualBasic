@@ -1,5 +1,4 @@
 ﻿Imports System.Linq.Expressions
-Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Design.Query.Internal

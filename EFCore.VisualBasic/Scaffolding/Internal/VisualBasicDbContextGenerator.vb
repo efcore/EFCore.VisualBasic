@@ -97,8 +97,11 @@ Namespace Scaffolding.Internal
 
         End If
 
+        Dim useProviderCall = providerCode.GenerateUseProvider(Options.ConnectionString)
+        importsList.AddRange(useProviderCall.GetRequiredUsings())
+
             Me.Write("            optionsBuilder")
-            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(providerCode.GenerateUseProvider(Options.ConnectionString), indent:=4)))
+            Me.Write(Me.ToStringHelper.ToStringWithCulture(code.Fragment(useProviderCall, indent:=4)))
             Me.Write(""&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"        End Sub"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10))
 
     End If

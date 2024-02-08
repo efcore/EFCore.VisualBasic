@@ -118,7 +118,8 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.FieldValueGetter,
                 RelationalAnnotationNames.JsonPropertyName,
                 RelationalAnnotationNames.ContainerColumnName, ' Appears On entity type but requires specific model (i.e. owned types that can map To json, otherwise validation throws)
-                RelationalAnnotationNames.ContainerColumnTypeMapping}
+                RelationalAnnotationNames.ContainerColumnTypeMapping,
+                RelationalAnnotationNames.StoreType}
 #Enable Warning BC40000 ' Type or member is obsolete
 
             ' Add a line here if the code generator is supposed to handle this annotation
@@ -277,7 +278,8 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.FieldValueGetter,
                 RelationalAnnotationNames.ContainerColumnName,
                 RelationalAnnotationNames.ContainerColumnTypeMapping,
-                RelationalAnnotationNames.JsonPropertyName}
+                RelationalAnnotationNames.JsonPropertyName,
+                RelationalAnnotationNames.StoreType}
 #Enable Warning BC40000, BC40008 ' Type or member is obsolete
 
             Dim columnMapping = $".{_nl}{NameOf(RelationalPropertyBuilderExtensions.HasColumnType)}(""default_int_mapping"")"
@@ -370,8 +372,7 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
-                New SqlServerSingletonOptions())
+                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
             Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
                 New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
@@ -475,8 +476,7 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
-                New SqlServerSingletonOptions())
+                TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
 
@@ -523,8 +523,7 @@ Namespace Migrations.Design
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
-               New SqlServerSingletonOptions())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -982,7 +981,11 @@ End Namespace
                     e.ComplexProperty(Function(eo) eo.EntityWithTwoProperties,
                                       Sub(eb As ComplexPropertyBuilder(Of EntityWithTwoProperties))
                                           eb.Property(Function(x) x.AlternateId).HasColumnOrder(1)
-                                          eb.ComplexProperty(Function(x) x.EntityWithStringKey)
+                                          eb.ComplexProperty(Function(x) x.EntityWithStringKey,
+                                                             Sub(eb2 As ComplexPropertyBuilder(Of EntityWithStringKey))
+                                                                 eb2.IsRequired()
+                                                             End Sub)
+                                          eb.IsRequired()
                                       End Sub)
                 End Sub)
 
@@ -1018,6 +1021,8 @@ Namespace Global.MyNamespace
 
                     b.ComplexProperty(Of Dictionary(Of String, Object))("EntityWithTwoProperties", "EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty.EntityWithTwoProperties#EntityWithTwoProperties",
                         Sub(b1)
+                            b1.IsRequired()
+
                             b1.Property(Of Integer)("AlternateId").
                                 HasColumnType("default_int_mapping").
                                 HasColumnOrder(1)
@@ -1027,6 +1032,8 @@ Namespace Global.MyNamespace
 
                             b1.ComplexProperty(Of Dictionary(Of String, Object))("EntityWithStringKey", "EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty.EntityWithTwoProperties#EntityWithTwoProperties.EntityWithStringKey#EntityWithStringKey",
                                 Sub(b2)
+                                    b2.IsRequired()
+
                                     b2.Property(Of String)("Id").
                                         HasColumnType("just_string(max)")
                                 End Sub)
@@ -1227,8 +1234,7 @@ End Namespace
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
-               New SqlServerSingletonOptions())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
@@ -1278,8 +1284,7 @@ MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
 
             Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)(),
-               New SqlServerSingletonOptions())
+               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
             Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 

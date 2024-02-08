@@ -397,7 +397,7 @@ $"    Dim model As New {className}()
         Private Sub Create(typeConfiguration As ITypeMappingConfiguration,
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            Dim variableName = _code.Identifier("type", parameters.ScopeVariables, capitalize:=False)
+            Dim variableName = _code.Identifier("typeConfig", parameters.ScopeVariables, capitalize:=False)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.Append("Dim ").Append(variableName).Append(" = ").Append(parameters.TargetName).AppendLine(".AddTypeMappingConfiguration(").
@@ -565,9 +565,9 @@ $"    Dim model As New {className}()
                         Append(_code.Identifier(complexProperty.Name, capitalize:=True)).
                         Append("ComplexProperty").
                         Append(".Create").
-                        Append("(").
+                        Append("("c).
                         Append(entityTypeVariable).
-                        AppendLine(")")
+                        AppendLine(")"c)
                 Next
 
                 For Each aKey In entityType.GetDeclaredKeys()
@@ -724,45 +724,6 @@ $"    Dim model As New {className}()
                         [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasValueGeneratorFactory)))
             End If
 
-            Dim valueComparerType = TryCast([property](CoreAnnotationNames.ValueComparerType), Type)
-
-            If valueComparerType Is Nothing AndAlso
-                [property](CoreAnnotationNames.ValueComparer) IsNot Nothing Then
-
-                Throw New InvalidOperationException(
-                    DesignStrings.CompiledModelValueComparer(
-                        [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasConversion)))
-            End If
-
-            Dim providerValueComparerType = TryCast([property](CoreAnnotationNames.ProviderValueComparerType), Type)
-
-            If providerValueComparerType Is Nothing AndAlso
-               [property](CoreAnnotationNames.ProviderValueComparer) IsNot Nothing Then
-
-                Throw New InvalidOperationException(
-                    DesignStrings.CompiledModelValueComparer(
-                    [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasConversion)))
-            End If
-
-            Dim valueConverterType = GetValueConverterType([property])
-
-            If valueConverterType Is Nothing AndAlso
-               [property].GetValueConverter() IsNot Nothing Then
-
-                Throw New InvalidOperationException(
-                    DesignStrings.CompiledModelValueConverter(
-                        [property].DeclaringType.ShortName(), [property].Name, NameOf(PropertyBuilder.HasConversion)))
-            End If
-
-            If TypeOf [property] Is IConventionProperty Then
-                Dim conventionProperty = DirectCast([property], IConventionProperty)
-                If conventionProperty.GetTypeMappingConfigurationSource() IsNot Nothing Then
-                    Throw New InvalidOperationException(
-                    DesignStrings.CompiledModelTypeMapping(
-                        [property].DeclaringType.ShortName(), [property].Name, "Customize()", parameters.ClassName))
-                End If
-            End If
-
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
@@ -860,6 +821,7 @@ $"    Dim model As New {className}()
                     Append("().Create")
             End If
 
+            Dim valueConverterType = GetValueConverterType([property])
             If valueConverterType IsNot Nothing Then
                 AddNamespace(valueConverterType, parameters.Namespaces)
 
@@ -870,6 +832,7 @@ $"    Dim model As New {className}()
                             Append("()")
             End If
 
+            Dim valueComparerType = DirectCast([property](CoreAnnotationNames.ValueComparerType), Type)
             If valueComparerType IsNot Nothing Then
                 AddNamespace(valueComparerType, parameters.Namespaces)
 
@@ -880,6 +843,7 @@ $"    Dim model As New {className}()
                     Append("()")
             End If
 
+            Dim providerValueComparerType = DirectCast([property](CoreAnnotationNames.ProviderValueComparerType), Type)
             If providerValueComparerType IsNot Nothing Then
                 AddNamespace(providerValueComparerType, parameters.Namespaces)
 
@@ -890,40 +854,40 @@ $"    Dim model As New {className}()
                     Append("()")
             End If
 
-            Dim jsonValueReaderWriterType = DirectCast([property](CoreAnnotationNames.JsonValueReaderWriterType), Type)
-            If jsonValueReaderWriterType IsNot Nothing Then
-
-                AddNamespace(jsonValueReaderWriterType, parameters.Namespaces)
-
-                Dim instanceProperty = jsonValueReaderWriterType.GetAnyProperty("Instance")
-                If instanceProperty IsNot Nothing AndAlso
-                   instanceProperty.IsStatic() AndAlso
-                   instanceProperty.GetMethod?.IsPublic = True AndAlso
-                   jsonValueReaderWriterType.IsAssignableFrom(instanceProperty.PropertyType) Then
-
-                    mainBuilder.AppendLine(",").
-                        Append("jsonValueReaderWriter:=").
-                        Append(_code.Reference(jsonValueReaderWriterType)).
-                        Append(".Instance")
-
-                Else
-                    mainBuilder.AppendLine(",").
-                        Append("jsonValueReaderWriter:=New ").
-                        Append(_code.Reference(jsonValueReaderWriterType)).
-                        Append("()")
-                End If
-            End If
-
             Dim sentinel = [property].Sentinel
             If sentinel IsNot Nothing Then
-                mainBuilder.AppendLine(","c).
-                Append("sentinel:=").
-                Append(_code.UnknownLiteral(sentinel))
+                mainBuilder.
+                    AppendLine(","c).
+                    Append("sentinel:=").
+                    Append(_code.UnknownLiteral(sentinel))
+            End If
+
+            Dim jsonValueReaderWriterType = CType([property](CoreAnnotationNames.JsonValueReaderWriterType), Type)
+            If jsonValueReaderWriterType IsNot Nothing Then
+                mainBuilder.
+                    AppendLine(","c).
+                    Append("jsonValueReaderWriter:=")
+
+                VisualBasicRuntimeAnnotationCodeGenerator.CreateJsonValueReaderWriter(jsonValueReaderWriterType, parameters, _code)
             End If
 
             mainBuilder.
                 AppendLine(")"c).
                 DecrementIndent()
+
+            mainBuilder.
+                Append(variableName).
+                Append(".TypeMapping = ")
+
+            _annotationCodeGenerator.Create(
+                [property].GetTypeMapping(),
+                [property],
+                parameters.
+                    Cloner.
+                    WithTargetName(variableName).
+                    Clone())
+
+            mainBuilder.AppendLine("")
         End Sub
 
         Private Shared Function GetValueConverterType([property] As IProperty) As Type
@@ -1008,7 +972,7 @@ $"    Dim model As New {className}()
                         Append(".GetProperty(").
                         Append(_code.Literal(propertyInfo.Name)).
                         Append(", ").
-                        Append(If(propertyInfo.GetAccessors().Any(), "BindingFlags.Public", "BindingFlags.NonPublic")).
+                        Append(If(propertyInfo.GetAccessors().Length <> 0, "BindingFlags.Public", "BindingFlags.NonPublic")).
                         Append(If(propertyInfo.IsStatic(), " Or BindingFlags.Static", " Or BindingFlags.Instance")).
                         Append(" Or BindingFlags.DeclaredOnly)")
                 End If
@@ -1100,7 +1064,7 @@ $"    Dim model As New {className}()
 
             AddNamespace([property].ClrType, parameters.Namespaces)
             mainBuilder.
-                AppendLine(",").
+                AppendLine(","c).
                 Append("serviceType:=GetType(" & _code.Reference([property].ClrType) & ")")
 
             mainBuilder.
@@ -1241,11 +1205,11 @@ $"    Dim model As New {className}()
                         Append(".AddComplexProperty(").
                         IncrementIndent().
                         Append(_code.Literal(complexProperty.Name)).
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append(_code.Literal(complexProperty.ClrType)).
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append(_code.Literal(complexType.Name)).
-                        AppendLine(",").
+                        AppendLine(","c).
                         Append(_code.Literal(complexType.ClrType))
 
                     AddNamespace(complexProperty.ClrType, namespaces)
@@ -1263,14 +1227,14 @@ $"    Dim model As New {className}()
 
                     If complexProperty.IsNullable Then
                         mainBuilder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("nullable:=").
                             Append(_code.Literal(True))
                     End If
 
                     If complexProperty.IsCollection Then
                         mainBuilder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("collection:=").
                             Append(_code.Literal(True))
                     End If
@@ -1279,7 +1243,7 @@ $"    Dim model As New {className}()
                     If changeTrackingStrategy <> ChangeTrackingStrategy.Snapshot Then
                         namespaces.Add(GetType(ChangeTrackingStrategy).Namespace)
 
-                        mainBuilder.AppendLine(",").
+                        mainBuilder.AppendLine(","c).
                             Append("changeTrackingStrategy:=").
                             Append(_code.Literal(DirectCast(changeTrackingStrategy, [Enum])))
                     End If
@@ -1287,20 +1251,20 @@ $"    Dim model As New {className}()
                     Dim indexerPropertyInfo = complexType.FindIndexerPropertyInfo()
                     If indexerPropertyInfo IsNot Nothing Then
                         mainBuilder.
-                            AppendLine(",").
+                            AppendLine(","c).
                             Append("indexerPropertyInfo:=RuntimeEntityType.FindIndexerProperty(").
                             Append(_code.Literal(complexType.ClrType)).
-                            Append(")")
+                            Append(")"c)
                     End If
 
                     If complexType.IsPropertyBag Then
-                        mainBuilder.AppendLine(",").
+                        mainBuilder.AppendLine(","c).
                             Append("propertyBag:=").
                             Append(_code.Literal(True))
                     End If
 
                     mainBuilder.
-                        AppendLine(")").
+                        AppendLine(")"c).
                         AppendLine().
                         DecrementIndent()
 
@@ -1320,9 +1284,9 @@ $"    Dim model As New {className}()
                             Append(_code.Identifier(nestedComplexProperty.Name, capitalize:=True)).
                             Append("ComplexProperty").
                             Append(".Create").
-                            Append("(").
+                            Append("("c).
                             Append(complexTypeVariable).
-                            AppendLine(")")
+                            AppendLine(")"c)
                     Next
 
                     CreateAnnotations(
@@ -1673,7 +1637,7 @@ $"    Dim model As New {className}()
                 Append("Dim ").Append(triggerVariable).Append(" = ").Append(parameters.TargetName).AppendLine(".AddTrigger(").
                 IncrementIndent().
                 Append(_code.Literal(trigger.ModelName)).
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(
@@ -1750,20 +1714,7 @@ $"    Dim model As New {className}()
         End Sub
 
         Private Shared Sub AddNamespace(type As Type, namespaces As ISet(Of String))
-            If Not String.IsNullOrEmpty(type.Namespace) Then
-                namespaces.Add(type.[Namespace])
-            End If
-
-            If type.IsGenericType Then
-                For Each argument In type.GenericTypeArguments
-                    AddNamespace(argument, namespaces)
-                Next
-            End If
-
-            Dim sequenceType = type.TryGetSequenceType()
-            If sequenceType IsNot Nothing AndAlso sequenceType <> type Then
-                AddNamespace(sequenceType, namespaces)
-            End If
+            VisualBasicRuntimeAnnotationCodeGenerator.AddNamespace(type, namespaces)
         End Sub
     End Class
 End Namespace

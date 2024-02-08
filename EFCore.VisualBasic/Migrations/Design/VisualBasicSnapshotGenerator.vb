@@ -582,12 +582,18 @@ Namespace Migrations.Design
                     valueConverter.ConvertToProvider(defaultValue))
             End If
 
+            If Not annotations.ContainsKey(RelationalAnnotationNames.ColumnName) AndAlso [property].Name <> [property].GetColumnName() Then
+                annotations(RelationalAnnotationNames.ColumnName) =
+                    New Annotation(
+                        RelationalAnnotationNames.ColumnName,
+                        [property].GetColumnName())
+            End If
+
             GenerateAnnotations(propertyBuilderName, [property], stringBuilder, annotations, inChainedCall:=True)
         End Sub
 
-        Private Function FindValueConverter([property] As IProperty) As ValueConverter
-            Dim t = If([property].FindTypeMapping(), RelationalTypeMappingSource.FindMapping([property]))
-            Return If([property].GetValueConverter(), t?.Converter)
+        Private Shared Function FindValueConverter([property] As IProperty) As ValueConverter
+            Return If([property].GetValueConverter(), [property].GetTypeMapping().Converter)
         End Function
 
         '''  <summary>
@@ -648,7 +654,7 @@ Namespace Migrations.Design
         End Sub
 
         Private Shared Function GenerateNestedBuilderName(builderName As String) As String
-            If builderName.StartsWith("b", StringComparison.Ordinal) Then
+            If builderName.StartsWith("b"c, StringComparison.Ordinal) Then
                 Dim counter = 1
                 If builderName.Length > 1 AndAlso Integer.TryParse(builderName.AsSpan(1), counter) Then
                     counter += 1

@@ -1,10 +1,12 @@
 ﻿Imports System.Reflection
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace Design.AnnotationCodeGeneratorProvider
 
@@ -96,8 +98,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(model, parameters)
         End Sub
 
-        Private Sub Create(model As IRelationalModel,
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(model As IRelationalModel,
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.AppendLine("Private Function CreateRelationalModel() As IRelationalModel")
@@ -627,7 +629,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 mainBuilder.
                     Append($"{storedProcedureVariable}.AddStoredProcedure(").
                     Append(CreateFindSnippet(storedProcedure, metadataVariables)).
-                    AppendLine(")")
+                    AppendLine(")"c)
             Next
 
             CreateAnnotations(
@@ -673,9 +675,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Return $"DirectCast({entityTypeVariable}.{methodName}(), IRuntimeStoredProcedure)"
         End Function
 
-        Private Sub Create(column As IColumnBase,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(column As IColumnBase,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
 
@@ -709,28 +711,28 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(Column As IColumn,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(column As IColumn,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
 
-            Dim columnVariable = code.Identifier(Column.Name & "Column", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(Column, columnVariable)
+            Dim columnVariable = code.Identifier(column.Name & "Column", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(column, columnVariable)
 
             Dim mainBuilder = parameters.MainBuilder
-            Dim columnType = If(TypeOf Column Is JsonColumn, "JsonColumn", "Column")
+            Dim columnType = If(TypeOf column Is JsonColumn, "JsonColumn", "Column")
 
             mainBuilder.
                 Append($"Dim {columnVariable} As New {columnType}(").
-                Append($"{code.Literal(Column.Name)}, {code.Literal(Column.StoreType)}, {parameters.TargetName})")
+                Append($"{code.Literal(column.Name)}, {code.Literal(column.StoreType)}, {parameters.TargetName})")
 
-            GenerateIsNullableInitializer(Column.IsNullable, mainBuilder, code).
+            GenerateIsNullableInitializer(column.IsNullable, mainBuilder, code).
                  AppendLine().
-                 AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(Column.Name)}, {columnVariable})")
+                 AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            Column,
+            column,
             AddressOf Generate,
             parameters.Cloner.
                        WithTargetName(columnVariable).
@@ -746,26 +748,26 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(Column As IViewColumn,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(column As IViewColumn,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
-            Dim columnVariable = code.Identifier(Column.Name & "ViewColumn", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(Column, columnVariable)
+            Dim columnVariable = code.Identifier(column.Name & "ViewColumn", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(column, columnVariable)
             Dim mainBuilder = parameters.MainBuilder
 
-            Dim columnType = If(TypeOf Column Is JsonViewColumn, "JsonViewColumn", "ViewColumn")
+            Dim columnType = If(TypeOf column Is JsonViewColumn, "JsonViewColumn", "ViewColumn")
             mainBuilder.
                 Append($"Dim {columnVariable} As New {columnType}(").
-                Append($"{code.Literal(Column.Name)}, {code.Literal(Column.StoreType)}, {parameters.TargetName})")
+                Append($"{code.Literal(column.Name)}, {code.Literal(column.StoreType)}, {parameters.TargetName})")
 
-            GenerateIsNullableInitializer(Column.IsNullable, mainBuilder, code).
+            GenerateIsNullableInitializer(column.IsNullable, mainBuilder, code).
                 AppendLine().
-                AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(Column.Name)}, {columnVariable})")
+                AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            Column,
+            column,
             AddressOf Generate,
             parameters.Cloner.
                        WithTargetName(columnVariable).
@@ -781,9 +783,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(column As ISqlQueryColumn,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(column As ISqlQueryColumn,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
 
@@ -817,9 +819,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(column As IFunctionColumn,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(column As IFunctionColumn,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim columnVariable = code.Identifier(column.Name & "FunctionColumn", parameters.ScopeVariables, capitalize:=False)
@@ -860,25 +862,25 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(Column As IStoreStoredProcedureResultColumn,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(column As IStoreStoredProcedureResultColumn,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
-            Dim columnVariable = code.Identifier(Column.Name & "FunctionColumn", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(Column, columnVariable)
+            Dim columnVariable = code.Identifier(column.Name & "FunctionColumn", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(column, columnVariable)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.
-                Append($"Dim {columnVariable} As New StoreStoredProcedureResultColumn({code.Literal(Column.Name)}, ").
-                Append($"{code.Literal(Column.StoreType)}, {code.Literal(Column.Position)}, {parameters.TargetName})")
+                Append($"Dim {columnVariable} As New StoreStoredProcedureResultColumn({code.Literal(column.Name)}, ").
+                Append($"{code.Literal(column.StoreType)}, {code.Literal(column.Position)}, {parameters.TargetName})")
 
-            GenerateIsNullableInitializer(Column.IsNullable, mainBuilder, code).
+            GenerateIsNullableInitializer(column.IsNullable, mainBuilder, code).
                 AppendLine().
                 AppendLine($"{parameters.TargetName}.AddResultColumn({columnVariable})")
 
             CreateAnnotations(
-            Column,
+            column,
             AddressOf Generate,
             parameters.Cloner.
                        WithTargetName(columnVariable).
@@ -894,9 +896,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(parameter As IStoreStoredProcedureParameter,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(parameter As IStoreStoredProcedureParameter,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim parameterVariable = code.Identifier(parameter.Name & "Parameter", parameters.ScopeVariables, capitalize:=False)
@@ -930,7 +932,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     IncrementIndent().
                     AppendLine($".IsNullable = {code.Literal(isNullable)}").
                     DecrementIndent().
-                    Append("}")
+                    Append("}"c)
             End If
 
             Return mainBuilder
@@ -945,9 +947,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(uniqueConstraint As IUniqueConstraint,
-                           columns As IEnumerable(Of String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(uniqueConstraint As IUniqueConstraint,
+                                     columns As IEnumerable(Of String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim uniqueConstraintVariable = code.Identifier(uniqueConstraint.Name, parameters.ScopeVariables, capitalize:=False)
@@ -957,12 +959,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append("Dim ").Append(uniqueConstraintVariable).
                 Append(" As New ").
                 Append("UniqueConstraint").
-                Append("(").
+                Append("("c).
                 Append(code.Literal(uniqueConstraint.Name)).
                 Append(", ").
                 Append(parameters.TargetName).
                 Append(", ").
-                Append("{").
+                Append("{"c).
                 AppendJoin(columns).
                 AppendLine("})")
 
@@ -1008,20 +1010,20 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(index As ITableIndex,
-                           columns As IEnumerable(Of String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(index As ITableIndex,
+                                     columns As IEnumerable(Of String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim indexVariable = code.Identifier(index.Name, parameters.ScopeVariables, capitalize:=False)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.
-                Append("Dim ").Append(indexVariable).Append(" As New ").Append("TableIndex").AppendLine("(").
+                Append("Dim ").Append(indexVariable).Append(" As New ").Append("TableIndex").AppendLine("("c).
                 Append(code.Literal(index.Name)).Append(", ").
                 Append(parameters.TargetName).Append(", ").
-                Append("{").AppendJoin(columns).Append("}, ").
-                Append(code.Literal(index.IsUnique)).AppendLine(")")
+                Append("{"c).AppendJoin(columns).Append("}, ").
+                Append(code.Literal(index.IsUnique)).AppendLine(")"c)
 
             CreateAnnotations(
             index,
@@ -1060,9 +1062,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(foreignKey As IForeignKeyConstraint,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(foreignKey As IForeignKeyConstraint,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim principalTableVariable = metadataVariables(foreignKey.PrincipalTable)
@@ -1075,11 +1077,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"Dim {foreignKeyConstraintVariable} As New ForeignKeyConstraint(").
                 IncrementIndent().
                 AppendLine($"{code.Literal(foreignKey.Name)}, {parameters.TargetName}, {principalTableVariable},").
-                Append("{").AppendJoin(foreignKey.Columns.Select(Function(c) metadataVariables(c))).
+                Append("{"c).AppendJoin(foreignKey.Columns.Select(Function(c) metadataVariables(c))).
                 AppendLine("},").
                 Append($"{principalTableVariable}.FindUniqueConstraint({code.Literal(foreignKey.PrincipalUniqueConstraint.Name)}), ").
                 Append(code.Literal(DirectCast(foreignKey.OnDeleteAction, [Enum]))).
-                AppendLine(")").
+                AppendLine(")"c).
                 DecrementIndent()
 
             CreateAnnotations(
@@ -1119,15 +1121,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(tableMapping As ITableMappingBase,
-                           tableMappingsVariable As String,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
+        Private Overloads Sub Create(tableMapping As ITableMappingBase,
+                                     tableMappingsVariable As String,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
         parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
             Dim typeBase = tableMapping.TypeBase
-            Dim typeBaseVariable = metadataVariables(TypeBase)
+            Dim typeBaseVariable = metadataVariables(typeBase)
 
             Dim table = tableMapping.Table
             Dim tableVariable = GetOrCreate(table, metadataVariables, parameters)
@@ -1152,9 +1154,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             For Each columnMapping In tableMapping.ColumnMappings
                 mainBuilder.
                     Append($"RelationalModel.CreateColumnMapping(").
-                    Append($"DirectCast({tableVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ColumnBase(Of ColumnMappingBase)), ").
+                    Append($"DirectCast({metadataVariables(columnMapping.Column)}, ColumnBase(Of ColumnMappingBase)), ").
                     Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                    Append(tableMappingVariable).AppendLine(")")
+                    Append(tableMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1167,15 +1169,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(tableMapping As ITableMapping,
-                           tableMappingsVariable As String,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(tableMapping As ITableMapping,
+                                     tableMappingsVariable As String,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
             Dim typeBase = tableMapping.TypeBase
-            Dim typeBaseVariable = metadataVariables(TypeBase)
+            Dim typeBaseVariable = metadataVariables(typeBase)
 
             Dim table = tableMapping.Table
             Dim tableVariable = GetOrCreate(table, metadataVariables, parameters)
@@ -1200,9 +1202,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             For Each columnMapping In tableMapping.ColumnMappings
                 mainBuilder.
-                    Append($"RelationalModel.CreateColumnMapping({tableVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
+                    Append($"RelationalModel.CreateColumnMapping({metadataVariables(columnMapping.Column)}, ").
                     Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                    Append(tableMappingVariable).AppendLine(")")
+                    Append(tableMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1211,19 +1213,19 @@ Namespace Design.AnnotationCodeGeneratorProvider
         ''' </summary>
         ''' <param name="tableMapping">The table mapping to which the annotations are applied.</param>
         ''' <param name="parameters">Additional parameters used during code generation.</param>
-        Public Overridable Overloads Sub Generate(tableMapping As Microsoft.EntityFrameworkCore.Metadata.ITableMapping, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Public Overridable Overloads Sub Generate(tableMapping As ITableMapping, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(viewMapping As IViewMapping,
-                           viewMappingsVariable As String,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(viewMapping As IViewMapping,
+                                     viewMappingsVariable As String,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
             Dim typeBase = viewMapping.TypeBase
-            Dim typeBaseVariable = metadataVariables(TypeBase)
+            Dim typeBaseVariable = metadataVariables(typeBase)
 
             Dim view = viewMapping.View
             Dim viewVariable = GetOrCreate(view, metadataVariables, parameters)
@@ -1248,9 +1250,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             For Each columnMapping In viewMapping.ColumnMappings
 
                 mainBuilder.
-                Append($"RelationalModel.CreateViewColumnMapping({viewVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
+                Append($"RelationalModel.CreateViewColumnMapping({metadataVariables(columnMapping.Column)}, ").
                 Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                Append(viewMappingVariable).AppendLine(")")
+                Append(viewMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1263,15 +1265,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(sqlQueryMapping As ISqlQueryMapping,
-                           sqlQueryMappingsVariable As String,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(sqlQueryMapping As ISqlQueryMapping,
+                                     sqlQueryMappingsVariable As String,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
             Dim typeBase = sqlQueryMapping.TypeBase
-            Dim typeBaseVariable = metadataVariables(TypeBase)
+            Dim typeBaseVariable = metadataVariables(typeBase)
 
             Dim sqlQuery = sqlQueryMapping.SqlQuery
             Dim sqlQueryVariable = GetOrCreate(sqlQuery, metadataVariables, parameters)
@@ -1299,12 +1301,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                            Clone)
 
             For Each columnMapping In sqlQueryMapping.ColumnMappings
-
                 mainBuilder.
-                    Append($"RelationalModel.CreateSqlQueryColumnMapping({sqlQueryVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
+                    Append($"RelationalModel.CreateSqlQueryColumnMapping({metadataVariables(columnMapping.Column)}, ").
                     Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                     Append(sqlQueryMappingVariable).
-                    AppendLine(")")
+                    AppendLine(")"c)
             Next
         End Sub
 
@@ -1317,15 +1318,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(functionMapping As IFunctionMapping,
-                           functionMappingsVariable As String,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(functionMapping As IFunctionMapping,
+                                     functionMappingsVariable As String,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
             Dim typeBase = functionMapping.TypeBase
-            Dim typeBaseVariable = metadataVariables(TypeBase)
+            Dim typeBaseVariable = metadataVariables(typeBase)
 
             Dim storeFunction = functionMapping.StoreFunction
             Dim functionVariable = GetOrCreate(storeFunction, metadataVariables, parameters)
@@ -1356,9 +1357,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             For Each columnMapping In functionMapping.ColumnMappings
                 mainBuilder.
-                    Append($"RelationalModel.CreateFunctionColumnMapping({functionVariable}.FindColumn({code.Literal(columnMapping.Column.Name)}), ").
+                    Append($"RelationalModel.CreateFunctionColumnMapping({metadataVariables(columnMapping.Column)}, ").
                     Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                    Append(functionMappingVariable).AppendLine(")")
+                    Append(functionMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1371,11 +1372,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(sprocMapping As IStoredProcedureMapping,
-                           sprocMappingsVariable As String,
-                           storeObjectType As StoreObjectType,
-                           metadataVariables As Dictionary(Of IAnnotatable, String),
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(sprocMapping As IStoredProcedureMapping,
+                                     sprocMappingsVariable As String,
+                                     storeObjectType As StoreObjectType,
+                                     metadataVariables As Dictionary(Of IAnnotatable, String),
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
@@ -1428,7 +1429,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     Append($"RelationalModel.CreateStoredProcedureParameterMapping({metadataVariables(parameterMapping.StoreParameter)}, ").
                     Append($"{sprocVariable}.FindParameter({code.Literal(parameterMapping.Parameter.Name)}), ").
                     Append($"{typeBaseVariable}.FindProperty({code.Literal(parameterMapping.Property.Name)}), ").
-                    Append(sprocMappingVariable).AppendLine(")")
+                    Append(sprocMappingVariable).AppendLine(")"c)
             Next
 
             For Each columnMapping In sprocMapping.ResultColumnMappings
@@ -1436,7 +1437,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append($"RelationalModel.CreateStoredProcedureResultColumnMapping({metadataVariables(columnMapping.StoreResultColumn)}, ").
                 Append($"{sprocVariable}.FindResultColumn({code.Literal(columnMapping.ResultColumn.Name)}), ").
                 Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                Append(sprocMappingVariable).AppendLine(")")
+                Append(sprocMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1494,21 +1495,21 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 mainBuilder.
                     AppendLine().
                     DecrementIndent().
-                    AppendLine("}")
+                    AppendLine("}"c)
             Else
-                mainBuilder.AppendLine(")")
+                mainBuilder.AppendLine(")"c)
             End If
 
             Dim table = tableMapping.Table
-            Dim isOptional = table.IsOptional(TypeBase)
+            Dim isOptional = table.IsOptional(typeBase)
 
             mainBuilder.
                 AppendLine($"{tableVariable}.AddTypeMapping({tableMappingVariable}, {code.Literal(isOptional)})").
                 AppendLine($"{tableMappingsVariable}.Add({tableMappingVariable})")
 
-            If TypeOf TypeBase Is IEntityType Then
-                Dim entityType = DirectCast(TypeBase, IEntityType)
-                For Each internalForeignKey In table.GetRowInternalForeignKeys(EntityType)
+            If TypeOf typeBase Is IEntityType Then
+                Dim entityType = DirectCast(typeBase, IEntityType)
+                For Each internalForeignKey In table.GetRowInternalForeignKeys(entityType)
                     mainBuilder.
                         Append(tableVariable).Append($".AddRowInternalForeignKey({entityTypeVariable}, ").
                         AppendLine($"RelationalModel.GetForeignKey(Me,").
@@ -1522,21 +1523,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
         End Sub
 
-        Private Sub Create([function] As IDbFunction,
-                           functionsVariable As String,
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create([function] As IDbFunction,
+                                     functionsVariable As String,
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             If [function].Translation IsNot Nothing Then
                 Throw New InvalidOperationException(RelationalStrings.CompiledModelFunctionTranslation([function].Name))
-            End If
-
-            If TypeOf [function] Is IConventionDbFunction Then
-                Dim conventionFunction = DirectCast([function], IConventionDbFunction)
-
-                If conventionFunction.GetTypeMappingConfigurationSource() IsNot Nothing Then
-                    Throw New InvalidOperationException(RelationalStrings.CompiledModelFunctionTypeMapping(
-                        [function].Name, "Customize()", parameters.ClassName))
-                End If
             End If
 
             AddNamespace([function].ReturnType, parameters.Namespaces)
@@ -1571,9 +1563,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             If [function].MethodInfo IsNot Nothing Then
                 Dim method = [function].MethodInfo
+                AddNamespace(method.DeclaringType, parameters.Namespaces)
+
                 With mainBuilder
                     .AppendLine(","c)
-                    .Append("methodInfo:=").Append(code.Literal(method.DeclaringType)).AppendLine(".GetMethod(").IncrementIndent()
+                    .AppendLine($"methodInfo:={code.Literal(method.DeclaringType)}.GetMethod(").IncrementIndent()
                     .Append(code.Literal(method.Name)).AppendLine(","c)
                     .Append(If(method.IsPublic, "BindingFlags.Public", "BindingFlags.NonPublic"))
                     .Append(If(method.IsStatic, " Or BindingFlags.Static", " Or BindingFlags.Instance"))
@@ -1622,6 +1616,17 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Create(parameter, parameters)
             Next
 
+            If [function].TypeMapping IsNot Nothing Then
+                mainBuilder.Append(functionVariable).Append(".TypeMapping = ")
+                Create(
+                    [function].TypeMapping,
+                    parameters.
+                        Cloner.
+                        WithTargetName(functionVariable).
+                        Clone)
+                mainBuilder.AppendLine()
+            End If
+
             CreateAnnotations([function],
                               AddressOf Generate,
                               parameters)
@@ -1644,17 +1649,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(parameter As IDbFunctionParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
-
-            If TypeOf parameter Is IConventionDbFunctionParameter Then
-                Dim conventionParameter = DirectCast(parameter, IConventionDbFunctionParameter)
-                If conventionParameter.GetTypeMappingConfigurationSource() IsNot Nothing Then
-                    Throw New InvalidOperationException(
-                RelationalStrings.CompiledModelFunctionParameterTypeMapping(
-                    parameter.Function.Name, parameter.Name, "Customize()", parameters.ClassName))
-                End If
-            End If
-
+        Private Overloads Sub Create(parameter As IDbFunctionParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             AddNamespace(parameter.ClrType, parameters.Namespaces)
 
             Dim code = VBCode
@@ -1677,6 +1672,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine(")"c).
                 DecrementIndent()
 
+            mainBuilder.Append(parameterVariable).Append(".TypeMapping = ")
+            Create(
+                parameter.TypeMapping,
+                parameters.
+                    Cloner.
+                    WithTargetName(parameterVariable).
+                    Clone)
+
+            mainBuilder.AppendLine()
+
             CreateAnnotations(parameter,
                               AddressOf Generate,
                               parameters.Cloner.
@@ -1695,7 +1700,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(aSequence As ISequence, sequencesVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(aSequence As ISequence, sequencesVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             Dim code = VBCode
             Dim sequenceVariable = code.Identifier(aSequence.Name, parameters.ScopeVariables, capitalize:=False)
             Dim mainBuilder = parameters.MainBuilder
@@ -1899,9 +1904,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate(complexType, parameters)
         End Sub
 
-        Private Sub Create(fragment As IEntityTypeMappingFragment,
-                           fragmentsVariable As String,
-                           parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(fragment As IEntityTypeMappingFragment,
+                                     fragmentsVariable As String,
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim storeObject = fragment.StoreObject
             Dim code = VBCode
@@ -1952,7 +1957,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(storedProcedure As IStoredProcedure, sprocVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(storedProcedure As IStoredProcedure, sprocVariable As String, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
             AddNamespace(GetType(RuntimeStoredProcedure), parameters.Namespaces)
 
             Dim code = VBCode
@@ -1995,7 +2000,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(parameter As IStoredProcedureParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(parameter As IStoredProcedureParameter, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
@@ -2009,7 +2014,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(code.Literal(parameter.ForRowsAffected)).Append(", ").
                 Append(code.Literal(parameter.PropertyName)).Append(", ").
                 Append(code.Literal(parameter.ForOriginalValue)).
-                AppendLine(")").DecrementIndent()
+                AppendLine(")"c).DecrementIndent()
 
             CreateAnnotations(parameter,
                               AddressOf Generate,
@@ -2027,7 +2032,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Sub Create(resultColumn As IStoredProcedureResultColumn, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create(resultColumn As IStoredProcedureResultColumn, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim code = VBCode
             Dim mainBuilder = parameters.MainBuilder
@@ -2039,7 +2044,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(code.Literal(resultColumn.Name)).Append(", ").
                 Append(code.Literal(resultColumn.ForRowsAffected)).Append(", ").
                 Append(code.Literal(resultColumn.PropertyName)).
-                AppendLine(")").DecrementIndent()
+                AppendLine(")"c).DecrementIndent()
 
             CreateAnnotations(resultColumn,
                               AddressOf Generate,
@@ -2111,9 +2116,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
             MyBase.Generate([Property], parameters)
         End Sub
 
-        Private Sub Create([overrides] As IRelationalPropertyOverrides,
-                        overridesVariable As String,
-                        parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+        Private Overloads Sub Create([overrides] As IRelationalPropertyOverrides,
+                                     overridesVariable As String,
+                                     parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
             Dim storeObject = [overrides].StoreObject
 
@@ -2200,6 +2205,213 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             MyBase.Generate(index, parameters)
         End Sub
+
+        ''' <inheritdoc />
+        Public Overrides Function Create(
+            typeMapping As CoreTypeMapping,
+            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters,
+            Optional valueComparer As ValueComparer = Nothing,
+            Optional keyValueComparer As ValueComparer = Nothing,
+            Optional providerValueComparer As ValueComparer = Nothing) As Boolean
+
+            Dim relationalTypeMapping = TryCast(typeMapping, RelationalTypeMapping)
+            If relationalTypeMapping Is Nothing Then
+                Return MyBase.Create(typeMapping, parameters, valueComparer, keyValueComparer, providerValueComparer)
+            End If
+
+            Dim mainBuilder = parameters.MainBuilder
+            Dim code = VBCode
+
+            If IsSpatial(relationalTypeMapping) Then
+                ' Spatial mappings are Not supported in the compiled model
+                mainBuilder.Append(code.UnknownLiteral(Nothing))
+                Return False
+            End If
+
+            Dim defaultInstance = DirectCast(CreateDefaultTypeMapping(relationalTypeMapping, parameters), RelationalTypeMapping)
+            If defaultInstance Is Nothing Then
+                Return True
+            End If
+
+            parameters.Namespaces.Add(GetType(Type).Namespace)
+            parameters.Namespaces.Add(GetType(BindingFlags).Namespace)
+
+            Dim cloneMethod = GetCloneMethod(typeMapping.GetType(), {
+                "comparer",
+                "keyComparer",
+                "providerValueComparer",
+                "mappingInfo",
+                "converter",
+                "clrType",
+                "storeTypePostfix",
+                "jsonValueReaderWriter",
+                "elementMapping"
+            })
+
+            parameters.Namespaces.Add(cloneMethod.DeclaringType.Namespace)
+
+            mainBuilder.
+                AppendLine($"DirectCast(GetType({code.Reference(cloneMethod.DeclaringType)}).").
+                IncrementIndent().
+                AppendLine($"GetMethod(""Clone"", BindingFlags.Public Or BindingFlags.Instance Or BindingFlags.DeclaredOnly).").
+                AppendLine($"Invoke({code.Reference(typeMapping.GetType())}.Default, {{").
+                IncrementIndent()
+
+            Dim first = True
+            For Each p In cloneMethod.GetParameters()
+                If first Then
+                    first = False
+                Else
+                    mainBuilder.AppendLine(","c)
+                End If
+
+                Select Case p.Name
+                    Case "comparer"
+                        Create(If(valueComparer, relationalTypeMapping.Comparer), parameters, code)
+
+                    Case "keyComparer"
+                        Create(If(keyValueComparer, relationalTypeMapping.KeyComparer), parameters, code)
+
+                    Case "providerValueComparer"
+                        Create(If(providerValueComparer, relationalTypeMapping.ProviderValueComparer), parameters, code)
+
+                    Case "mappingInfo"
+                        Dim storeTypeDifferent = relationalTypeMapping.StoreType <> defaultInstance.StoreType
+
+                        Dim sizeDifferent = relationalTypeMapping.Size.HasValue AndAlso
+                                            (Not defaultInstance.Size.HasValue OrElse relationalTypeMapping.Size.Value <> defaultInstance.Size.Value)
+
+                        Dim precisionDifferent = relationalTypeMapping.Precision.HasValue AndAlso
+                                                 (Not defaultInstance.Precision.HasValue OrElse relationalTypeMapping.Precision.Value <> defaultInstance.Precision.Value)
+
+                        Dim scaleDifferent = relationalTypeMapping.Scale.HasValue AndAlso
+                                             (Not defaultInstance.Scale.HasValue OrElse relationalTypeMapping.Scale.Value <> defaultInstance.Scale.Value)
+
+                        Dim dbTypeDifferent = relationalTypeMapping.DbType.HasValue AndAlso
+                                              (Not defaultInstance.DbType.HasValue OrElse relationalTypeMapping.DbType.Value <> defaultInstance.DbType.Value)
+
+                        If storeTypeDifferent OrElse sizeDifferent OrElse precisionDifferent OrElse scaleDifferent OrElse dbTypeDifferent Then
+
+                            AddNamespace(GetType(RelationalTypeMappingInfo), parameters.Namespaces)
+                            mainBuilder.
+                                AppendLine("New RelationalTypeMappingInfo(").
+                                IncrementIndent()
+
+                            Dim firstParameter = True
+                            If storeTypeDifferent Then
+                                GenerateArgument(
+                                    "storeTypeName", code.Literal(relationalTypeMapping.StoreType), mainBuilder, firstParameter)
+                            End If
+
+                            If sizeDifferent Then
+                                GenerateArgument(
+                                    "size", code.Literal(relationalTypeMapping.Size), mainBuilder, firstParameter)
+                            End If
+
+                            If precisionDifferent Then
+                                GenerateArgument(
+                                    "precision", code.Literal(relationalTypeMapping.Precision), mainBuilder, firstParameter)
+                            End If
+
+                            If scaleDifferent Then
+                                GenerateArgument(
+                                    "scale", code.Literal(relationalTypeMapping.Scale), mainBuilder, firstParameter)
+                            End If
+
+                            If dbTypeDifferent Then
+                                GenerateArgument(
+                                    "dbType", code.Literal(relationalTypeMapping.DbType.Value, fullName:=True), mainBuilder, firstParameter)
+                            End If
+
+                            mainBuilder.
+                                Append(")"c).
+                                DecrementIndent()
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "converter"
+                        If relationalTypeMapping.Converter IsNot Nothing AndAlso
+                           relationalTypeMapping.Converter IsNot defaultInstance.Converter Then
+
+                            Create(relationalTypeMapping.Converter, parameters, code)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "clrType"
+                        Dim typeDifferent = relationalTypeMapping.Converter Is Nothing AndAlso
+                                relationalTypeMapping.ClrType <> defaultInstance.ClrType
+
+                        If typeDifferent Then
+                            mainBuilder.
+                                Append(code.Literal(relationalTypeMapping.ClrType))
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "storeTypePostfix"
+                        Dim storeTypePostfixDifferent = relationalTypeMapping.StoreTypePostfix <> defaultInstance.StoreTypePostfix
+
+                        If storeTypePostfixDifferent Then
+                            mainBuilder.
+                                Append(code.Literal(DirectCast(relationalTypeMapping.StoreTypePostfix, [Enum])))
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "jsonValueReaderWriter"
+                        If relationalTypeMapping.JsonValueReaderWriter IsNot Nothing AndAlso
+                           relationalTypeMapping.JsonValueReaderWriter IsNot defaultInstance.JsonValueReaderWriter Then
+
+                            CreateJsonValueReaderWriter(relationalTypeMapping.JsonValueReaderWriter, parameters, code)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case "elementMapping"
+                        If relationalTypeMapping.ElementTypeMapping IsNot Nothing AndAlso
+                           relationalTypeMapping.ElementTypeMapping IsNot defaultInstance.ElementTypeMapping Then
+
+                            Create(relationalTypeMapping.ElementTypeMapping, parameters)
+                        Else
+                            mainBuilder.Append("Type.Missing")
+                        End If
+
+                    Case Else
+                        mainBuilder.Append("Type.Missing")
+                End Select
+            Next
+
+            mainBuilder.
+                Append("}), CoreTypeMapping)").
+                DecrementIndent().
+                DecrementIndent()
+
+            Return True
+        End Function
+
+        Private Shared Sub GenerateArgument(name As String, value As String, builder As IndentedStringBuilder, ByRef firstArgument As Boolean)
+            If Not firstArgument Then
+                builder.AppendLine(","c)
+            End If
+
+            firstArgument = False
+            builder.Append($"{name}:={value}")
+        End Sub
+
+        Private Shared Function IsSpatial(relationalTypeMapping As RelationalTypeMapping) As Boolean
+            Dim elementTypeMapping = TryCast(relationalTypeMapping.ElementTypeMapping, RelationalTypeMapping)
+
+            Return IsSpatialType(relationalTypeMapping.GetType()) OrElse
+                   (elementTypeMapping IsNot Nothing AndAlso IsSpatialType(elementTypeMapping.GetType()))
+        End Function
+
+        Private Shared Function IsSpatialType(relationalTypeMappingType As Type) As Boolean
+            Return (relationalTypeMappingType.IsGenericType AndAlso
+                    relationalTypeMappingType.GetGenericTypeDefinition() = GetType(RelationalGeometryTypeMapping(Of ,))) OrElse
+                   (relationalTypeMappingType.BaseType <> GetType(Object) AndAlso IsSpatialType(relationalTypeMappingType.BaseType))
+        End Function
 
         Private Shared Sub CreateAnnotations(Of TAnnotatable As IAnnotatable)(
             Annotatable As TAnnotatable,

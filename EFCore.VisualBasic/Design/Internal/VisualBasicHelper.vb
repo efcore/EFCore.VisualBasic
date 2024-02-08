@@ -685,16 +685,16 @@ Namespace Design.Internal
                 Append(Reference(keyType)).
                 Append(", ").
                 Append(Reference(valueType)).
-                Append(")")
+                Append(")"c)
 
             Return HandleEnumerable(
                 builder, vertical, dict.Keys, Sub(key)
                                                   builder.
-                                                      Append("{").
+                                                      Append("{"c).
                                                       Append(UnknownLiteral(key)).
                                                       Append(", ").
                                                       Append(UnknownLiteral(dict(key))).
-                                                      Append("}")
+                                                      Append("}"c)
                                               End Sub)
         End Function
 
@@ -1117,7 +1117,7 @@ Namespace Design.Internal
                 builder.
                     Append("(Of ").
                     Append(String.Join(", ", current.TypeArguments)).
-                    Append(")")
+                    Append(")"c)
             End If
 
             builder.

@@ -1,4 +1,7 @@
-﻿Imports Microsoft.EntityFrameworkCore.Metadata
+﻿Imports System.Runtime.CompilerServices
+Imports Microsoft.EntityFrameworkCore.ChangeTracking
+Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.EntityFrameworkCore.Storage
 
 Namespace Design
     ''' <summary>
@@ -100,5 +103,38 @@ Namespace Design
         ''' <param name="typeConfiguration">The scalar type configuration to which the annotations are applied.</param>
         ''' <param name="parameters">Additional parameters used during code generation.</param>
         Sub Generate(typeConfiguration As ITypeMappingConfiguration, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
+
+        ''' <summary>
+        '''     Generates code to create the given property type mapping.
+        ''' </summary>
+        ''' <param name="typeMapping">The type mapping to create.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        ''' <param name="valueComparer">The value comparer that should be used instead of the one in the type mapping.</param>
+        ''' <param name="keyValueComparer">The key value comparer that should be used instead of the one in the type mapping.</param>
+        ''' <param name="providerValueComparer">The provider value comparer that should be used instead of the one in the type mapping.</param>
+        Function Create(
+            typeMapping As CoreTypeMapping,
+            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters,
+            Optional valueComparer As ValueComparer = Nothing,
+            Optional keyValueComparer As ValueComparer = Nothing,
+            Optional providerValueComparer As ValueComparer = Nothing) As Boolean
     End Interface
+
+    Module IVisualBasicRuntimeAnnotationCodeGeneratorExtensions
+        ''' <summary>
+        '''     Generates code to create the given property type mapping.
+        ''' </summary>
+        ''' <param name="typeMapping">The type mapping to create.</param>
+        ''' <param name="property">The property to which this type mapping will be applied.</param>
+        ''' <param name="parameters">Additional parameters used during code generation.</param>
+        <Extension>
+        Function Create(service As IVisualBasicRuntimeAnnotationCodeGenerator, typeMapping As CoreTypeMapping, [property] As IProperty, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As Boolean
+            Return service.Create(
+                        typeMapping,
+                        parameters,
+                        [property].GetValueComparer(),
+                        [property].GetKeyValueComparer(),
+                        [property].GetProviderValueComparer())
+        End Function
+    End Module
 End Namespace

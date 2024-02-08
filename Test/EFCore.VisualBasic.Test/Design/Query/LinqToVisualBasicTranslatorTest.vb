@@ -115,6 +115,13 @@ Namespace Design.Query
         End Sub
 
         <Fact>
+        Public Sub Binary_Equal_nullable_type_and_nothing()
+            AssertExpression(
+                E.Equal(E.Parameter(GetType(Integer?), "i"), E.Constant(Nothing, GetType(Integer?))),
+                "i Is Nothing")
+        End Sub
+
+        <Fact>
         Public Sub Binary_ReferenceEqual()
             AssertExpression(
                 E.ReferenceEqual(E.Parameter(GetType(Blog), "b1"), E.Parameter(GetType(Blog), "b2")),
@@ -141,6 +148,13 @@ Namespace Design.Query
             AssertExpression(
                 E.NotEqual(E.Parameter(GetType(String), "s1"), E.Parameter(GetType(String), "s2")),
                 "s1 <> s2")
+        End Sub
+
+        <Fact>
+        Public Sub Binary_NotEqual_nullable_type_and_nothing()
+            AssertExpression(
+                E.NotEqual(E.Parameter(GetType(Integer?), "i"), E.Constant(Nothing, GetType(Integer?))),
+                "i IsNot Nothing")
         End Sub
 
         <Fact>
@@ -271,6 +285,24 @@ Namespace Design.Query
                     E.Parameter(GetType(Object), "i"),
                     GetType(String)),
                 "CType(i, String)")
+        End Sub
+
+        <Fact>
+        Public Sub Unary_Convert_char_to_integer()
+            AssertExpression(
+                E.Convert(
+                    E.Parameter(GetType(Char), "c"),
+                    GetType(Integer)),
+                "Strings.AscW(c)")
+        End Sub
+
+        <Fact>
+        Public Sub Unary_Convert_integer_to_char()
+            AssertExpression(
+                E.Convert(
+                    E.Parameter(GetType(Integer), "i"),
+                    GetType(Char)),
+                "Strings.ChrW(i)")
         End Sub
 
         <Fact>

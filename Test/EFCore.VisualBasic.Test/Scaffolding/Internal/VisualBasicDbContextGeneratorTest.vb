@@ -418,7 +418,7 @@ End Namespace
                 Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
                     BuildModelWithColumn("nvarchar(max)", Nothing, "Hot"), New ModelReverseEngineerOptions()),
                 New ModelCodeGenerationOptions(),
-                Sub(code) Assert.Contains($".
+                Sub(code) Assert.Contains(".
                         HasDefaultValue(""Hot"")", code.ContextFile.Code),
                 Sub(model)
                     Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")
@@ -433,7 +433,7 @@ End Namespace
                Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
                    BuildModelWithColumn("nvarchar(max)", "('Hot')", Nothing), New ModelReverseEngineerOptions()),
                New ModelCodeGenerationOptions(),
-               Sub(code) Assert.Contains($".
+               Sub(code) Assert.Contains(".
                         HasDefaultValueSql(""('Hot')"")", code.ContextFile.Code),
                Sub(model)
                    Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")
@@ -448,7 +448,7 @@ End Namespace
                 Function(serviceProvider) serviceProvider.GetService(Of IScaffoldingModelFactory)().Create(
                     BuildModelWithColumn("nvarchar(max)", "('Hot')", "Hot"), New ModelReverseEngineerOptions()),
                 New ModelCodeGenerationOptions(),
-                Sub(code) Assert.Contains($".
+                Sub(code) Assert.Contains(".
                         HasDefaultValue(""Hot"")", code.ContextFile.Code),
                 Sub(model)
                     Dim [property] = model.FindEntityType("TestNamespace.Table").GetProperty("Column")

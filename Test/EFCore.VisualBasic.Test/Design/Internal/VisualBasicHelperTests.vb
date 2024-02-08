@@ -6,7 +6,6 @@ Imports EntityFrameworkCore.VisualBasic.TestUtilities.Xunit
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Microsoft.EntityFrameworkCore.Internal
-Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.TestUtilities
@@ -97,6 +96,12 @@ Namespace Design.Internal
         <InlineData(
             SomeEnum.DefaultValue,
             "VisualBasicHelperTests.SomeEnum.DefaultValue")>
+        <InlineData(
+            ChrW(0),
+            "ChrW(0)")>
+        <InlineData(
+            """"c,
+            """""""""c")>
         Public Sub Literal_works(value As Object, expected As String)
 
             Dim literal = New VisualBasicHelper(TypeMappingSource).UnknownLiteral(value)

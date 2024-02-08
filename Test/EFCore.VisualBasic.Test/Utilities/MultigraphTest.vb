@@ -181,7 +181,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {vertexTwo, vertexOne, vertexThree},
-                graph.TopologicalSort().ToArray())
+                graph.TopologicalSort().AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -205,7 +205,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {vertexOne, vertexThree, vertexTwo},
-                graph.TopologicalSort().ToArray())
+                graph.TopologicalSort().AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -227,7 +227,7 @@ Namespace Utilities
                         Return [from] Is vertexOne AndAlso
                                [to] Is vertexOne AndAlso
                                edges.Intersect({edgeOne}).Count() = 1
-                    End Function).ToArray())
+                    End Function).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -257,7 +257,7 @@ Namespace Utilities
                         Return ([from] Is vertexThree) AndAlso
                                ([to] Is vertexOne) AndAlso
                                (edges.Single() Is edgeThree)
-                    End Function).ToArray())
+                    End Function).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -296,7 +296,7 @@ Namespace Utilities
                     Function([from], [to], edges)
                         Dim edge = edges.Single()
                         Return (edge Is edgeOne) OrElse (edge Is edgeSix)
-                    End Function).ToArray())
+                    End Function).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -391,7 +391,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {vertexOne, vertexTwo, vertexThree, vertexFour},
-                graph.TopologicalSort().ToArray())
+                graph.TopologicalSort().AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -414,7 +414,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {vertexTwo, vertexOne, vertexFour, vertexThree},
-                graph.TopologicalSort().ToArray())
+                graph.TopologicalSort().AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -531,7 +531,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {entityTypeB.Name, entityTypeA.Name, entityTypeC.Name},
-                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).ToArray())
+                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -556,7 +556,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {entityTypeC.Name, entityTypeB.Name, entityTypeA.Name},
-                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).ToArray())
+                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -581,7 +581,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {entityTypeB.Name, entityTypeA.Name, entityTypeC.Name},
-                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).ToArray())
+                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).AsEnumerable())
 
             Assert.Equal(
                 {entityTypeA, entityTypeB, entityTypeC},
@@ -597,7 +597,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {entityTypeB.Name, entityTypeA.Name, entityTypeC.Name},
-                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).ToArray())
+                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -623,7 +623,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {entityTypeA.Name, entityTypeC.Name, entityTypeB.Name},
-                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).ToArray())
+                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -645,7 +645,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {entityTypeC.Name, entityTypeA.Name, entityTypeB.Name},
-                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).ToArray())
+                graph.BatchingTopologicalSort().SelectMany(Function(E) E).Select(Function(E) E.Name).AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -816,7 +816,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {vertexone, vertextwo, vertexthree, vertexfour},
-                graph.BatchingTopologicalSort().Single().ToArray())
+                graph.BatchingTopologicalSort().Single().AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -839,7 +839,7 @@ Namespace Utilities
 
             Assert.Equal(
                 {vertexTwo, vertexOne, vertexFour, vertexThree},
-                graph.BatchingTopologicalSort().Single().ToArray())
+                graph.BatchingTopologicalSort().Single().AsEnumerable())
         End Sub
 
         <ConditionalFact>
@@ -864,8 +864,8 @@ Namespace Utilities
 
             Assert.Collection(
                 batches,
-                Sub(B) Assert.Equal({vertexOne, vertexTwo}, B.ToArray()),
-                Sub(B) Assert.Equal({vertexThree, vertexFour}, B.ToArray()))
+                Sub(B) Assert.Equal({vertexOne, vertexTwo}, B.AsEnumerable()),
+                Sub(B) Assert.Equal({vertexThree, vertexFour}, B.AsEnumerable()))
         End Sub
 
         Private Shared Function CreateModel() As IMutableModel

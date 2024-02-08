@@ -18,7 +18,6 @@ Imports Microsoft.EntityFrameworkCore.Migrations.Design
 Imports Microsoft.EntityFrameworkCore.Migrations.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
 Imports Microsoft.EntityFrameworkCore.SqlServer.Design.Internal
-Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
@@ -407,7 +406,7 @@ Namespace Migrations.Design
                                                                     validAnnotations(annotationName).Value,
                                                                     Nothing))
 
-                    modelBuilder.FinalizeModel(designTime:=True)
+                    modelBuilder.FinalizeModel(designTime:=True, skipValidation:=True)
 
                     Dim sb As New IndentedStringBuilder
 

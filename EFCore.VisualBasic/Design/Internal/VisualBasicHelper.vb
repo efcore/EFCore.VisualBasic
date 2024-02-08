@@ -234,6 +234,7 @@ Namespace Design.Internal
             If value Is Nothing Then Return "Nothing"
 
             Return """" & value.Replace("""", """""").
+                                Replace(ChrW(0), """ & ChrW(0) & """).
                                 Replace(vbCrLf, """ & vbCrLf & """).
                                 Replace(vbCr, """ & vbCr & """).
                                 Replace(vbLf, """ & vbLf & """) & """"
@@ -260,7 +261,18 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As Char) As String Implements IVisualBasicHelper.Literal
-            Return """" & If(value = """", """""", value.ToString()) & """c"
+            Select Case value
+                Case """"c
+                    Return """""""""c"
+                Case ChrW(0)
+                    Return "ChrW(0)"
+                Case ChrW(10)
+                    Return "ChrW(10)"
+                Case ChrW(13)
+                    Return "ChrW(13)"
+                Case Else
+                    Return $"""{value}""c"
+            End Select
         End Function
 
         ''' <summary>

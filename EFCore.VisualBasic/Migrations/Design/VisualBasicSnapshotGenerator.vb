@@ -24,16 +24,19 @@ Namespace Migrations.Design
     Public Class VisualBasicSnapshotGenerator
 
         Private Shared ReadOnly HasAnnotationMethodInfo As MethodInfo =
-            GetType(ModelBuilder).GetRuntimeMethod(NameOf(ModelBuilder.HasAnnotation),
-                                                   {GetType(String), GetType(String)})
+            GetType(ModelBuilder).GetRuntimeMethod(
+                NameOf(ModelBuilder.HasAnnotation),
+                {GetType(String), GetType(String)})
 
         Private Shared ReadOnly HasPropertyAnnotationMethodInfo As MethodInfo =
-            GetType(ComplexPropertyBuilder).GetRuntimeMethod(NameOf(ComplexPropertyBuilder.HasPropertyAnnotation),
-                                                             {GetType(String), GetType(String)})
+            GetType(ComplexPropertyBuilder).GetRuntimeMethod(
+                NameOf(ComplexPropertyBuilder.HasPropertyAnnotation),
+                {GetType(String), GetType(String)})
 
         Private Shared ReadOnly HasTypeAnnotationMethodInfo As MethodInfo =
-            GetType(ComplexPropertyBuilder).GetRuntimeMethod(NameOf(ComplexPropertyBuilder.HasTypeAnnotation),
-                                                             {GetType(String), GetType(String)})
+            GetType(ComplexPropertyBuilder).GetRuntimeMethod(
+                NameOf(ComplexPropertyBuilder.HasTypeAnnotation),
+                {GetType(String), GetType(String)})
 
         ''' <summary>
         '''     Initializes a New instance of the <see cref="VisualBasicSnapshotGenerator" /> class.
@@ -654,7 +657,7 @@ Namespace Migrations.Design
         End Sub
 
         Private Shared Function GenerateNestedBuilderName(builderName As String) As String
-            If builderName.StartsWith("b"c, StringComparison.Ordinal) Then
+            If builderName.StartsWith("b"c) Then
                 Dim counter = 1
                 If builderName.Length > 1 AndAlso Integer.TryParse(builderName.AsSpan(1), counter) Then
                     counter += 1
@@ -949,19 +952,20 @@ Namespace Migrations.Design
                     Append("."c).
                     Append("HasDiscriminator")
 
-                If discriminatorPropertyAnnotation?.Value IsNot Nothing Then
-                    Dim discriminatorProperty = entityType.FindProperty(CStr(discriminatorPropertyAnnotation.Value))
+                Dim discriminatorProperty = entityType.FindDiscriminatorProperty()
+                If discriminatorPropertyAnnotation?.Value IsNot Nothing AndAlso
+                   discriminatorProperty IsNot Nothing Then
 
                     Dim propertyClrType = If(FindValueConverter(discriminatorProperty)?.
-                                                    ProviderClrType.
-                                                    MakeNullable(discriminatorProperty.IsNullable),
-                                                discriminatorProperty.ClrType)
+                                                ProviderClrType.
+                                                MakeNullable(discriminatorProperty.IsNullable),
+                                             discriminatorProperty.ClrType)
 
                     stringBuilder.
                         Append("(Of ").
                         Append(VBCode.Reference(propertyClrType)).
                         Append(")(").
-                        Append(VBCode.Literal(CStr(discriminatorPropertyAnnotation.Value))).
+                        Append(VBCode.Literal(discriminatorProperty.Name)).
                         Append(")"c)
                 Else
                     stringBuilder.
@@ -981,7 +985,6 @@ Namespace Migrations.Design
 
                 If discriminatorValueAnnotation?.Value IsNot Nothing Then
                     Dim value = discriminatorValueAnnotation.Value
-                    Dim discriminatorProperty = entityType.FindDiscriminatorProperty()
 
                     If discriminatorProperty IsNot Nothing Then
                         Dim valueConverter = FindValueConverter(discriminatorProperty)
@@ -1946,9 +1949,10 @@ Namespace Migrations.Design
 
             ' Append remaining raw annotations which did Not get generated as Fluent API calls
             For Each annotation In annotations.Values.OrderBy(Function(a) a.Name)
-                Dim c As New MethodCallCodeFragment(If(hasAnnotationMethodInfo, VisualBasicSnapshotGenerator.HasAnnotationMethodInfo),
-                                                    annotation.Name,
-                                                    annotation.Value)
+                Dim c As New MethodCallCodeFragment(
+                    If(hasAnnotationMethodInfo, VisualBasicSnapshotGenerator.HasAnnotationMethodInfo),
+                    annotation.Name,
+                    annotation.Value)
 
                 chainedCall = If(chainedCall Is Nothing, c, chainedCall.Chain(c))
             Next

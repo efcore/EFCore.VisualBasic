@@ -305,7 +305,6 @@ Namespace Design
 
             If type.IsArray Then
                 AddNamespace(type.GetSequenceType(), namespaces)
-                Exit Sub
             End If
         End Sub
 
@@ -338,7 +337,15 @@ Namespace Design
                     IncrementIndent().
                     Append(codeHelper.Expression(converter.ConvertToProviderExpression, parameters.Namespaces)).
                     AppendLine(","c).
-                    Append(codeHelper.Expression(converter.ConvertFromProviderExpression, parameters.Namespaces)).
+                    Append(codeHelper.Expression(converter.ConvertFromProviderExpression, parameters.Namespaces))
+
+                If converter.ConvertsNulls Then
+                    mainBuilder.
+                        AppendLine(","c).
+                        Append("convertsNulls:=True")
+                End If
+
+                mainBuilder.
                     Append(")"c).
                     DecrementIndent()
             Else
@@ -352,8 +359,7 @@ Namespace Design
                 CreateJsonValueReaderWriter(DirectCast(jsonReaderWriterProperty.GetValue(converter), JsonValueReaderWriter), parameters, codeHelper)
 
                 mainBuilder.
-                    Append(")"c).
-                    DecrementIndent()
+                    Append(")"c)
             End If
         End Sub
 
@@ -397,8 +403,7 @@ Namespace Design
                 Create(DirectCast(elementComparerProperty.GetValue(comparer), ValueComparer), parameters, codeHelper)
 
                 mainBuilder.
-                    Append(")"c).
-                    DecrementIndent()
+                    Append(")"c)
             End If
         End Sub
 
@@ -502,7 +507,6 @@ Namespace Design
             Dim defaultInstance = CreateDefaultTypeMapping(typeMapping, parameters)
 
             If defaultInstance Is Nothing Then
-                mainBuilder.Append($"{code.Reference(typeMapping.GetType())}.Default")
                 Return True
             End If
 
@@ -617,6 +621,7 @@ Namespace Design
             parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As CoreTypeMapping
 
             Dim typeMappingType = typeMapping.GetType()
+            Dim mainBuilder = parameters.MainBuilder
             Dim defaultProperty = typeMappingType.GetProperty("Default")
 
             If defaultProperty Is Nothing OrElse
@@ -632,7 +637,12 @@ Namespace Design
             AddNamespace(typeMappingType, parameters.Namespaces)
 
             Dim defaultInstance = DirectCast(defaultProperty.GetValue(Nothing), CoreTypeMapping)
-            Return If(typeMapping Is defaultInstance, Nothing, defaultInstance)
+            If typeMapping Is defaultInstance Then
+                mainBuilder.Append($"{VBCode.Reference(typeMapping.GetType())}.Default")
+                Return Nothing
+            Else
+                Return defaultInstance
+            End If
         End Function
 
         Protected Shared Function TryGetAndRemove(Of TKey, TValue, TReturn)(source As IDictionary(Of TKey, TValue),

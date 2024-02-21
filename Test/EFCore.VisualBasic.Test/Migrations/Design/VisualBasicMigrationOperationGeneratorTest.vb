@@ -3,7 +3,6 @@ Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Migrations.Operations
-Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.TestUtilities
@@ -200,7 +199,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("FK_Post_Blog_BlogId", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"BlogId"}, o.Columns)
+                 Assert.Equal({"BlogId"}.AsEnumerable(), o.Columns)
                  Assert.Equal("Blog", o.PrincipalTable)
                  Assert.Null(o.PrincipalColumns)
              End Sub)
@@ -226,7 +225,7 @@ mb.Sql(""-- close to me"")"
                 Sub(o)
                     Assert.Equal("FK_Post_Blog_BlogId1_BlogId2", o.Name)
                     Assert.Equal("Post", o.Table)
-                    Assert.Equal({"BlogId1", "BlogId2"}, o.Columns)
+                    Assert.Equal({"BlogId1", "BlogId2"}, o.Columns.AsEnumerable())
                     Assert.Equal("Blog", o.PrincipalTable)
                     Assert.Null(o.PrincipalColumns)
                 End Sub)
@@ -267,10 +266,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("FK_Post_Blog_BlogId", o.Name)
                  Assert.Equal("dbo", o.Schema)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"BlogId"}, o.Columns)
+                 Assert.Equal({"BlogId"}, o.Columns.AsEnumerable())
                  Assert.Equal("my", o.PrincipalSchema)
                  Assert.Equal("Blog", o.PrincipalTable)
-                 Assert.Equal({"Id"}, o.PrincipalColumns)
+                 Assert.Equal({"Id"}, o.PrincipalColumns.AsEnumerable())
                  Assert.Equal(ReferentialAction.Restrict, o.OnUpdate)
                  Assert.Equal(ReferentialAction.Cascade, o.OnDelete)
              End Sub)
@@ -309,10 +308,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("FK_Post_Blog_BlogId1_BlogId2", o.Name)
                  Assert.Equal("dbo", o.Schema)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"BlogId1", "BlogId2"}, o.Columns)
+                 Assert.Equal({"BlogId1", "BlogId2"}, o.Columns.AsEnumerable())
                  Assert.Equal("my", o.PrincipalSchema)
                  Assert.Equal("Blog", o.PrincipalTable)
-                 Assert.Equal({"Id1", "Id2"}, o.PrincipalColumns)
+                 Assert.Equal({"Id1", "Id2"}, o.PrincipalColumns.AsEnumerable())
                  Assert.Equal(ReferentialAction.Restrict, o.OnUpdate)
                  Assert.Equal(ReferentialAction.Cascade, o.OnDelete)
              End Sub)
@@ -338,7 +337,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("PK_Post", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Id"}, o.Columns)
+                 Assert.Equal({"Id"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -365,7 +364,7 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("PK_Post", o.Name)
                  Assert.Equal("dbo", o.Schema)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Id"}, o.Columns)
+                 Assert.Equal({"Id"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -389,7 +388,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("PK_Post", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Id1", "Id2"}, o.Columns)
+                 Assert.Equal({"Id1", "Id2"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -414,7 +413,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("AK_Post_AltId", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"AltId"}, o.Columns)
+                 Assert.Equal({"AltId"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -441,7 +440,7 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("AK_Post_AltId", o.Name)
                  Assert.Equal("dbo", o.Schema)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"AltId"}, o.Columns)
+                 Assert.Equal({"AltId"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -465,7 +464,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("AK_Post_AltId1_AltId2", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"AltId1", "AltId2"}, o.Columns)
+                 Assert.Equal({"AltId1", "AltId2"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -949,7 +948,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("IX_Post_Title", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Title"}, o.Columns)
+                 Assert.Equal({"Title"}, o.Columns.AsEnumerable())
                  Assert.False(o.IsUnique)
                  Assert.Null(o.IsDescending)
                  Assert.Null(o.Filter)
@@ -985,9 +984,9 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("IX_Post_Title", o.Name)
                  Assert.Equal("dbo", o.Schema)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Title", "Name"}, o.Columns)
+                 Assert.Equal({"Title", "Name"}, o.Columns.AsEnumerable())
                  Assert.True(o.IsUnique)
-                 Assert.Equal({True, False}, o.IsDescending)
+                 Assert.Equal({True, False}, o.IsDescending.AsEnumerable())
                  Assert.Equal("[Title] IS NOT NULL", o.Filter)
              End Sub)
         End Sub
@@ -1012,7 +1011,7 @@ mb.Sql(""-- close to me"")"
              Sub(o)
                  Assert.Equal("IX_Post_Title_Subtitle", o.Name)
                  Assert.Equal("Post", o.Table)
-                 Assert.Equal({"Title", "Subtitle"}, o.Columns)
+                 Assert.Equal({"Title", "Subtitle"}, o.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1345,7 +1344,7 @@ mb.Sql(""-- close to me"")"
                  Dim fk = o.ForeignKeys.First()
                  Assert.Equal("FK_Post_Blog_BlogId", fk.Name)
                  Assert.Equal("Post", fk.Table)
-                 Assert.Equal({"BlogId"}, fk.Columns.ToArray())
+                 Assert.Equal({"BlogId"}, fk.Columns.AsEnumerable())
                  Assert.Equal("Blog", fk.PrincipalTable)
              End Sub)
         End Sub
@@ -1404,10 +1403,10 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("Post", fk.Table)
                  Assert.Equal("dbo", fk.Schema)
                  Assert.Equal("FK_Post_Blog_BlogId", fk.Name)
-                 Assert.Equal({"BlogId"}, fk.Columns.ToArray())
+                 Assert.Equal({"BlogId"}, fk.Columns.AsEnumerable())
                  Assert.Equal("Blog", fk.PrincipalTable)
                  Assert.Equal("my", fk.PrincipalSchema)
-                 Assert.Equal({"Id"}, fk.PrincipalColumns)
+                 Assert.Equal({"Id"}, fk.PrincipalColumns.AsEnumerable())
                  Assert.Equal(ReferentialAction.SetNull, fk.OnUpdate)
                  Assert.Equal(ReferentialAction.SetDefault, fk.OnDelete)
              End Sub)
@@ -1461,9 +1460,9 @@ mb.Sql(""-- close to me"")"
 
                  Dim fk = o.ForeignKeys.First()
                  Assert.Equal("Post", fk.Table)
-                 Assert.Equal({"BlogId1", "BlogId2"}, fk.Columns.ToArray())
+                 Assert.Equal({"BlogId1", "BlogId2"}, fk.Columns.AsEnumerable())
                  Assert.Equal("Blog", fk.PrincipalTable)
-                 Assert.Equal({"Id1", "Id2"}, fk.PrincipalColumns)
+                 Assert.Equal({"Id1", "Id2"}, fk.PrincipalColumns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1507,7 +1506,7 @@ mb.Sql(""-- close to me"")"
 
                     Dim fk = o.ForeignKeys.First()
                     Assert.Equal("Post", fk.Table)
-                    Assert.Equal({"BlogId1", "BlogId2"}, fk.Columns.ToArray())
+                    Assert.Equal({"BlogId1", "BlogId2"}, fk.Columns.AsEnumerable())
                     Assert.Equal("Blog", fk.PrincipalTable)
                 End Sub)
         End Sub
@@ -1545,7 +1544,7 @@ mb.Sql(""-- close to me"")"
 
                  Assert.Equal("PK_Post", o.PrimaryKey.Name)
                  Assert.Equal("Post", o.PrimaryKey.Table)
-                 Assert.Equal({"Id"}, o.PrimaryKey.Columns)
+                 Assert.Equal({"Id"}, o.PrimaryKey.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1589,7 +1588,7 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("PK_Post", o.PrimaryKey.Name)
                  Assert.Equal("dbo", o.PrimaryKey.Schema)
                  Assert.Equal("Post", o.PrimaryKey.Table)
-                 Assert.Equal({"Id"}, o.PrimaryKey.Columns)
+                 Assert.Equal({"Id"}, o.PrimaryKey.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1634,7 +1633,7 @@ mb.Sql(""-- close to me"")"
 
                  Assert.Equal("PK_Post", o.PrimaryKey.Name)
                  Assert.Equal("Post", o.PrimaryKey.Table)
-                 Assert.Equal({"Id1", "Id2"}, o.PrimaryKey.Columns)
+                 Assert.Equal({"Id1", "Id2"}, o.PrimaryKey.Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1672,7 +1671,7 @@ mb.Sql(""-- close to me"")"
 
                  Assert.Equal("AK_Post_AltId", o.UniqueConstraints(0).Name)
                  Assert.Equal("Post", o.UniqueConstraints(0).Table)
-                 Assert.Equal({"AltId"}, o.UniqueConstraints(0).Columns)
+                 Assert.Equal({"AltId"}, o.UniqueConstraints(0).Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1717,7 +1716,7 @@ mb.Sql(""-- close to me"")"
                  Assert.Equal("AK_Post_AltId", o.UniqueConstraints(0).Name)
                  Assert.Equal("dbo", o.UniqueConstraints(0).Schema)
                  Assert.Equal("Post", o.UniqueConstraints(0).Table)
-                 Assert.Equal({"AltId"}, o.UniqueConstraints(0).Columns)
+                 Assert.Equal({"AltId"}, o.UniqueConstraints(0).Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -1767,7 +1766,7 @@ mb.Sql(""-- close to me"")"
 
                  Assert.Equal("AK_Post_AltId1_AltId2", o.UniqueConstraints(0).Name)
                  Assert.Equal("Post", o.UniqueConstraints(0).Table)
-                 Assert.Equal({"AltId1", "AltId2"}, o.UniqueConstraints(0).Columns)
+                 Assert.Equal({"AltId1", "AltId2"}, o.UniqueConstraints(0).Columns.AsEnumerable())
              End Sub)
         End Sub
 
@@ -2634,7 +2633,7 @@ mb.Sql(""-- close to me"")"
                     Assert.[Single](o.Columns)
                     Assert.Equal(1, o.Values.GetLength(0))
                     Assert.Equal(1, o.Values.GetLength(1))
-                    Assert.Equal(New String() {}, CType(o.Values(0, 0), String()))
+                    Assert.Equal(New String() {}, CType(o.Values(0, 0), String()).AsEnumerable())
                 End Sub)
         End Sub
 
@@ -2662,7 +2661,7 @@ mb.Sql(""-- close to me"")"
                    Assert.Equal(1, o.Values.GetLength(0))
                    Assert.Equal(3, o.Values.GetLength(1))
                    Assert.Null(o.Values(0, 1))
-                   Assert.Equal(New String() {}, CType(o.Values(0, 2), String()))
+                   Assert.Equal(New String() {}, CType(o.Values(0, 2), String()).AsEnumerable())
                End Sub)
         End Sub
 

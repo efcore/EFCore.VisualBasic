@@ -79,6 +79,8 @@ Namespace Design.Query.Internal
         Private Shared _activatorCreateInstanceMethod As MethodInfo
         Private Shared _typeGetFieldMethod As MethodInfo
         Private Shared _fieldGetValueMethod As MethodInfo
+        Private Shared _AscW As MethodInfo
+        Private Shared _ChrW As MethodInfo
 
         Private ReadOnly _sideEffectDetector As New SideEffectDetectionSyntaxWalker
         Private ReadOnly _g As SyntaxGenerator
@@ -300,26 +302,11 @@ Namespace Design.Query.Internal
 
                 Select Case binary.NodeType
                     Case ExpressionType.Equal
-                        If Not IsReferenceEqualitySemantics(binary.Left, binary.Right) AndAlso
-                           (binary.Method?.Name = "op_Equality" OrElse binary.Left.Type.IsValueType) Then
-                            Result = New GeneratedSyntaxNodes(
-                                        SF.EqualsExpression(left, right))
-                        Else
-                            Result = New GeneratedSyntaxNodes(
-                                        SF.IsExpression(left, right))
-                        End If
-
+                        Result = TranslateEqual(binary, left, right)
                         Return binary
-                    Case ExpressionType.NotEqual
-                        If Not IsReferenceEqualitySemantics(binary.Left, binary.Right) AndAlso
-                           (binary.Method?.Name = "op_Inequality" OrElse binary.Left.Type.IsValueType) Then
-                            Result = New GeneratedSyntaxNodes(
-                                        SF.NotEqualsExpression(left, right))
-                        Else
-                            Result = New GeneratedSyntaxNodes(
-                                        SF.IsNotExpression(left, right))
-                        End If
 
+                    Case ExpressionType.NotEqual
+                        Result = TranslateNotEqual(binary, left, right)
                         Return binary
                 End Select
 
@@ -474,6 +461,50 @@ Namespace Design.Query.Internal
 
                 Return binary
             End Using
+        End Function
+
+        Private Shared Function TranslateEqual(binary As BinaryExpression, left As ExpressionSyntax, right As ExpressionSyntax) As GeneratedSyntaxNodes
+            If IsNullableValueTypeTestedWithNothing(binary) Then
+                Return New GeneratedSyntaxNodes(
+                          SF.IsExpression(left, right))
+            End If
+
+            If Not IsReferenceEqualitySemantics(binary.Left, binary.Right) AndAlso
+               (binary.Method?.Name = "op_Equality" OrElse binary.Left.Type.IsValueType) Then
+
+                Return New GeneratedSyntaxNodes(
+                              SF.EqualsExpression(left, right))
+            End If
+
+            Return New GeneratedSyntaxNodes(
+                          SF.IsExpression(left, right))
+        End Function
+
+        Private Shared Function TranslateNotEqual(binary As BinaryExpression, left As ExpressionSyntax, right As ExpressionSyntax) As GeneratedSyntaxNodes
+            If IsNullableValueTypeTestedWithNothing(binary) Then
+                Return New GeneratedSyntaxNodes(
+                          SF.IsNotExpression(left, right))
+            End If
+
+            If Not IsReferenceEqualitySemantics(binary.Left, binary.Right) AndAlso
+               (binary.Method?.Name = "op_Inequality" OrElse binary.Left.Type.IsValueType) Then
+
+                Return New GeneratedSyntaxNodes(
+                              SF.NotEqualsExpression(left, right))
+            End If
+
+            Return New GeneratedSyntaxNodes(
+                          SF.IsNotExpression(left, right))
+        End Function
+
+        Private Shared Function IsNullableValueTypeTestedWithNothing(binary As BinaryExpression) As Boolean
+            Return (binary.Left.Type.IsNullableValueType AndAlso
+                    binary.Right.NodeType = ExpressionType.Constant AndAlso
+                    DirectCast(binary.Right, ConstantExpression).Value Is Nothing) _
+                   OrElse
+                   (binary.Right.Type.IsNullableValueType AndAlso
+                    binary.Left.NodeType = ExpressionType.Constant AndAlso
+                    DirectCast(binary.Left, ConstantExpression).Value Is Nothing)
         End Function
 
         Private Function VisitAssignment(assignment As BinaryExpression) As Expression
@@ -2172,9 +2203,9 @@ Namespace Design.Query.Internal
                         Case ExpressionType.ArrayLength
                             Result = New GeneratedSyntaxNodes(_g.MemberAccessExpression(operand, "Length"))
                         Case ExpressionType.Convert
-                            Result = New GeneratedSyntaxNodes(_g.ConvertExpression(Translate(unary.Type), operand))
+                            Result = TranslateConvert(unary, operand)
                         Case ExpressionType.ConvertChecked
-                            Result = New GeneratedSyntaxNodes(_g.ConvertExpression(Translate(unary.Type), operand))
+                            Result = TranslateConvert(unary, operand)
                         Case ExpressionType.Throw
                             Result = New GeneratedSyntaxNodes(_g.ThrowExpression(operand))
                         Case ExpressionType.TypeAs
@@ -2214,6 +2245,33 @@ Namespace Design.Query.Internal
             End If
 
             Return New GeneratedSyntaxNodes(SF.TryCastExpression(operand, Translate(unary.Type)))
+        End Function
+
+        Private Function TranslateConvert(unary As UnaryExpression, operand As ExpressionSyntax) As GeneratedSyntaxNodes
+
+            If unary.Type Is GetType(Integer) AndAlso
+               unary.Operand.Type Is GetType(Char) Then
+
+                If _AscW Is Nothing Then
+                    _AscW = GetType(Strings).GetMethod(NameOf(Microsoft.VisualBasic.AscW), {GetType(Char)})
+                End If
+
+                Return Translate(E.Call(_AscW, unary.Operand))
+            End If
+
+            If unary.Type Is GetType(Char) AndAlso
+               unary.Operand.Type Is GetType(Integer) Then
+
+                If _ChrW Is Nothing Then
+                    _ChrW = GetType(Strings).GetMethod(NameOf(Microsoft.VisualBasic.ChrW), {GetType(Integer)})
+                End If
+
+                Return Translate(E.Call(_ChrW, unary.Operand))
+            End If
+
+            Return New GeneratedSyntaxNodes(
+                        SF.CTypeExpression(operand, Translate(unary.Type)).
+                        WithAdditionalAnnotations(Simplification.Simplifier.Annotation))
         End Function
 
         ''' <inheritdoc/>

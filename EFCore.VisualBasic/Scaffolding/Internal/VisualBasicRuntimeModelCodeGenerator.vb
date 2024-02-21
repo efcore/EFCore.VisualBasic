@@ -149,10 +149,11 @@ Namespace Scaffolding.Internal
                         Append("Public Partial Class ").
                         AppendLine(className)
 
-
             Using mainBuilder.Indent()
                 mainBuilder.
                     Append("Inherits ").AppendLine(NameOf(RuntimeModel)).
+                    AppendLine().
+                    AppendLine("Private Shared ReadOnly _useOldBehavior31751 As Boolean").
                     AppendLine().
                     Append("Private Shared ").Append("_Instance As ").AppendLine(className).
                     AppendLine("Public Shared ReadOnly Property Instance As IModel").
@@ -166,11 +167,23 @@ Namespace Scaffolding.Internal
                     AppendLine("End Property").
                     AppendLine().
                     AppendLine("Shared Sub New()").
+                    IncrementIndent().
+                    AppendLine("Dim enabled31751 As Boolean").
+                    AppendLine("_useOldBehavior31751 = System.AppContext.TryGetSwitch(""Microsoft.EntityFrameworkCore.Issue31751"", enabled31751) AndAlso enabled31751").
+                    AppendLine().
                     AppendLines(
-$"    Dim model As New {className}()
+$"Dim model As New {className}()
+If _useOldBehavior31751 Then
     model.Initialize()
-    model.Customize()
-    _Instance = model").
+Else
+    Dim thread = New System.Threading.Thread(Sub() model.Initialize(), 10 * 1024 * 1024)
+    thread.Start()
+    thread.Join()
+End If
+
+model.Customize()
+_Instance = model").
+                    DecrementIndent().
                     AppendLine("End Sub").
                     AppendLine().
                     AppendLine("Partial Private Sub Initialize()").
@@ -855,7 +868,9 @@ $"    Dim model As New {className}()
             End If
 
             Dim sentinel = [property].Sentinel
-            If sentinel IsNot Nothing Then
+            Dim converter = [property].FindTypeMapping()?.Converter
+            If sentinel IsNot Nothing AndAlso
+               converter Is Nothing Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("sentinel:=").
@@ -887,7 +902,15 @@ $"    Dim model As New {className}()
                     WithTargetName(variableName).
                     Clone())
 
-            mainBuilder.AppendLine("")
+            mainBuilder.AppendLine()
+
+            If sentinel IsNot Nothing AndAlso
+               converter IsNot Nothing Then
+                mainBuilder.
+                    Append(variableName).Append(".SetSentinelFromProviderValue(").
+                    Append(_code.UnknownLiteral(If(converter?.ConvertToProvider(sentinel), sentinel))).
+                    AppendLine(")")
+            End If
         End Sub
 
         Private Shared Function GetValueConverterType([property] As IProperty) As Type
@@ -895,6 +918,12 @@ $"    Dim model As New {className}()
 
             If annotation IsNot Nothing Then
                 Return DirectCast(annotation.Value, Type)
+            End If
+
+            If Not Metadata.Internal.[Property].UseOldBehavior32422 Then
+                Return DirectCast([property], [Property]).
+                           GetConversion(throwOnProviderClrTypeConflict:=False, throwOnValueConverterConflict:=False).
+                           ValueConverterType
             End If
 
             Dim principalProperty = [property]
@@ -933,7 +962,7 @@ $"    Dim model As New {className}()
             If i = ForeignKey.LongestFkChainAllowedLength Then
                 Throw New InvalidOperationException(
                     CoreStrings.RelationshipCycle(
-                          [property].DeclaringType.DisplayName(), [property].Name, "ValueConverterType"))
+                        [property].DeclaringType.DisplayName(), [property].Name, "ValueConverterType"))
             Else
                 Return Nothing
             End If

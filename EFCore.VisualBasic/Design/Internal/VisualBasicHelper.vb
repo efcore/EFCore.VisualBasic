@@ -153,7 +153,7 @@ Namespace Design.Internal
             For i = 0 To name.Length - 1
                 If Not IsIdentifierPartCharacter(name(i)) Then
                     If partStart <> i Then
-                        builder.Append(name.Substring(partStart, i - partStart))
+                        builder.Append(name.AsSpan(partStart, i - partStart))
                     End If
 
                     partStart = i + 1
@@ -161,7 +161,7 @@ Namespace Design.Internal
             Next
 
             If partStart <> name.Length Then
-                builder.Append(name.Substring(partStart))
+                builder.Append(name.AsSpan(partStart))
             End If
 
             If builder.Length = 0 Then
@@ -178,7 +178,9 @@ Namespace Design.Internal
             If scope IsNot Nothing Then
                 Dim uniqueIdentifier = baseIdentifier
                 Dim qualifier = 0
-                While scope.Contains(uniqueIdentifier, StringComparer.Create(CultureInfo.InvariantCulture, ignoreCase:=True))
+
+                Dim ordinalIgnoreCaseScope As New HashSet(Of String)(scope, StringComparer.OrdinalIgnoreCase)
+                While ordinalIgnoreCaseScope.Contains(uniqueIdentifier)
                     uniqueIdentifier = baseIdentifier & qualifier.ToString(CultureInfo.InvariantCulture)
                     qualifier += 1
                 End While
@@ -234,6 +236,7 @@ Namespace Design.Internal
             If value Is Nothing Then Return "Nothing"
 
             Return """" & value.Replace("""", """""").
+                                Replace(ChrW(0), """ & ChrW(0) & """).
                                 Replace(vbCrLf, """ & vbCrLf & """).
                                 Replace(vbCr, """ & vbCr & """).
                                 Replace(vbLf, """ & vbLf & """) & """"
@@ -260,7 +263,18 @@ Namespace Design.Internal
         '''     directly from your code. This API may change Or be removed in future releases.
         ''' </summary>
         Public Overridable Function Literal(value As Char) As String Implements IVisualBasicHelper.Literal
-            Return """" & If(value = """", """""", value.ToString()) & """c"
+            Select Case value
+                Case """"c
+                    Return """""""""c"
+                Case ChrW(0)
+                    Return "ChrW(0)"
+                Case ChrW(10)
+                    Return "ChrW(10)"
+                Case ChrW(13)
+                    Return "ChrW(13)"
+                Case Else
+                    Return $"""{value}""c"
+            End Select
         End Function
 
         ''' <summary>

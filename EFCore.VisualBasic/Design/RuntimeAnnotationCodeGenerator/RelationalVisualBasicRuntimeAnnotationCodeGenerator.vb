@@ -38,12 +38,13 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     GenerateSimpleAnnotation(RelationalAnnotationNames.RelationalModel, "CreateRelationalModel()", parameters)
 
                     Dim MethodBuilder As New IndentedStringBuilder()
-                    Create(relationalModel,
-                           parameters.Cloner.
-                                      WithMainBuilder(parameters.MethodBuilder).
-                                      WithMethodBuilder(MethodBuilder).
-                                      WithScopeVariables(New HashSet(Of String)).
-                                      Clone)
+                    Create(
+                        relationalModel,
+                            parameters.Cloner.
+                                        WithMainBuilder(parameters.MethodBuilder).
+                                        WithMethodBuilder(MethodBuilder).
+                                        WithScopeVariables(New HashSet(Of String)).
+                                        Clone)
 
                     Dim methods = MethodBuilder.ToString()
                     If Not String.IsNullOrEmpty(methods) Then
@@ -233,7 +234,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     AppendLine().
                     AppendLine($"Dim {deleteSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
                     Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
-                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.DeleteStoredProcedureMappings)}, {deleteSprocMappingsVariable})")
+                    AppendLine(
+                        $"{VBCode.Literal(RelationalAnnotationNames.DeleteStoredProcedureMappings)}, {deleteSprocMappingsVariable})")
                 For Each mapping In typeBase.GetDeleteStoredProcedureMappings()
                     Create(
                         mapping,
@@ -250,7 +252,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     AppendLine().
                     AppendLine($"Dim {insertSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
                     Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
-                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.InsertStoredProcedureMappings)}, {insertSprocMappingsVariable})")
+                    AppendLine(
+                        $"{VBCode.Literal(RelationalAnnotationNames.InsertStoredProcedureMappings)}, {insertSprocMappingsVariable})")
                 For Each mapping In typeBase.GetInsertStoredProcedureMappings()
                     Create(
                         mapping,
@@ -267,7 +270,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     AppendLine().
                     AppendLine($"Dim {updateSprocMappingsVariable} As New List(Of StoredProcedureMapping)()").
                     Append($"{typeBaseVariable}.SetRuntimeAnnotation(").
-                    AppendLine($"{VBCode.Literal(RelationalAnnotationNames.UpdateStoredProcedureMappings)}, {updateSprocMappingsVariable})")
+                    AppendLine(
+                        $"{VBCode.Literal(RelationalAnnotationNames.UpdateStoredProcedureMappings)}, {updateSprocMappingsVariable})")
                 For Each mapping In typeBase.GetUpdateStoredProcedureMappings()
                     Create(
                         mapping,
@@ -639,7 +643,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             mainBuilder.
             Append($"{parameters.TargetName}.StoredProcedures.Add(").
-            AppendLine($"({code.Literal(storeStoredProcedure.Name)}, {code.Literal(storeStoredProcedure.Schema)}), {storedProcedureVariable})")
+            AppendLine(
+                $"({code.Literal(storeStoredProcedure.Name)}, {code.Literal(storeStoredProcedure.Schema)}), {storedProcedureVariable})")
 
             Return storedProcedureVariable
         End Function
@@ -1039,9 +1044,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"Dim {tableIndexVariable} = RelationalModel.GetIndex(Me,").
                 IncrementIndent().
                 AppendLine($"{code.Literal(mappedIndex.DeclaringEntityType.Name)},").
-                AppendLine($"{If(mappedIndex.Name Is Nothing,
-                                code.Literal(mappedIndex.Properties.Select(Function(p) p.Name).ToArray()),
-                                code.Literal(mappedIndex.Name))})").
+                AppendLine(
+                    $"{If(mappedIndex.Name Is Nothing,
+                        code.Literal(mappedIndex.Properties.Select(Function(p) p.Name).ToArray()),
+                        code.Literal(mappedIndex.Name))})").
                 DecrementIndent()
 
                 mainBuilder.AppendLine($"{indexVariable}.MappedIndexes.Add({tableIndexVariable})")
@@ -1103,13 +1109,15 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     AppendLine($"{code.Literal(mappedForeignKey.PrincipalKey.Properties.Select(Function(p) p.Name).ToArray())})").
                     DecrementIndent()
 
-                mainBuilder.AppendLine($"{foreignKeyConstraintVariable}.MappedForeignKeys.Add({foreignKeyVariable})")
-                mainBuilder.AppendLine($"RelationalModel.GetOrCreateForeignKeyConstraints({foreignKeyVariable}).Add({foreignKeyConstraintVariable})")
+                mainBuilder.
+                    AppendLine($"{foreignKeyConstraintVariable}.MappedForeignKeys.Add({foreignKeyVariable})").
+                    AppendLine(
+                        $"RelationalModel.GetOrCreateForeignKeyConstraints({foreignKeyVariable}).Add({foreignKeyConstraintVariable})")
             Next
 
             mainBuilder.
-            AppendLine($"{metadataVariables(foreignKey.Table)}.ForeignKeyConstraints.Add({foreignKeyConstraintVariable})").
-            AppendLine($"{principalTableVariable}.ReferencingForeignKeyConstraints.Add({foreignKeyConstraintVariable})")
+                AppendLine($"{metadataVariables(foreignKey.Table)}.ForeignKeyConstraints.Add({foreignKeyConstraintVariable})").
+                AppendLine($"{principalTableVariable}.ReferencingForeignKeyConstraints.Add({foreignKeyConstraintVariable})")
         End Sub
 
         ''' <summary>
@@ -1153,7 +1161,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             For Each columnMapping In tableMapping.ColumnMappings
                 mainBuilder.
-                    Append($"RelationalModel.CreateColumnMapping(").
+                    Append("RelationalModel.CreateColumnMapping(").
                     Append($"DirectCast({metadataVariables(columnMapping.Column)}, ColumnBase(Of ColumnMappingBase)), ").
                     Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
                     Append(tableMappingVariable).AppendLine(")"c)
@@ -1512,7 +1520,7 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 For Each internalForeignKey In table.GetRowInternalForeignKeys(entityType)
                     mainBuilder.
                         Append(tableVariable).Append($".AddRowInternalForeignKey({entityTypeVariable}, ").
-                        AppendLine($"RelationalModel.GetForeignKey(Me,").
+                        AppendLine("RelationalModel.GetForeignKey(Me,").
                         IncrementIndent().
                         AppendLine($"{code.Literal(internalForeignKey.DeclaringEntityType.Name)},").
                         AppendLine($"{code.Literal(internalForeignKey.Properties.Select(Function(p) p.Name).ToArray())},").
@@ -2290,7 +2298,17 @@ Namespace Design.AnnotationCodeGeneratorProvider
                         Dim dbTypeDifferent = relationalTypeMapping.DbType.HasValue AndAlso
                                               (Not defaultInstance.DbType.HasValue OrElse relationalTypeMapping.DbType.Value <> defaultInstance.DbType.Value)
 
-                        If storeTypeDifferent OrElse sizeDifferent OrElse precisionDifferent OrElse scaleDifferent OrElse dbTypeDifferent Then
+                        Dim isUnicodeDifferent = relationalTypeMapping.IsUnicode <> defaultInstance.IsUnicode
+
+                        Dim isFixedLengthDifferent = relationalTypeMapping.IsFixedLength <> defaultInstance.IsFixedLength
+
+                        If storeTypeDifferent OrElse
+                           sizeDifferent OrElse
+                           precisionDifferent OrElse
+                           scaleDifferent OrElse
+                           dbTypeDifferent OrElse
+                           isUnicodeDifferent OrElse
+                           isFixedLengthDifferent Then
 
                             AddNamespace(GetType(RelationalTypeMappingInfo), parameters.Namespaces)
                             mainBuilder.
@@ -2306,6 +2324,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
                             If sizeDifferent Then
                                 GenerateArgument(
                                     "size", code.Literal(relationalTypeMapping.Size), mainBuilder, firstParameter)
+                            End If
+
+                            If isUnicodeDifferent Then
+                                GenerateArgument(
+                                    "unicode", code.Literal(relationalTypeMapping.IsUnicode), mainBuilder, firstParameter)
+                            End If
+
+                            If isFixedLengthDifferent Then
+                                GenerateArgument(
+                                    "fixedLength", code.Literal(relationalTypeMapping.IsFixedLength), mainBuilder, firstParameter)
                             End If
 
                             If precisionDifferent Then

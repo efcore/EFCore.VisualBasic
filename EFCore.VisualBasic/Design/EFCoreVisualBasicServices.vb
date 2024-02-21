@@ -11,7 +11,6 @@ Namespace Design
         Implements IDesignTimeServices
 
         Public Sub ConfigureDesignTimeServices(services As IServiceCollection) Implements IDesignTimeServices.ConfigureDesignTimeServices
-
             With services
                 .AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
                 .AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)()
@@ -21,7 +20,6 @@ Namespace Design
                 .AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, VisualBasicRuntimeAnnotationCodeGenerator)
                 .AddSingleton(Of ICompiledModelCodeGenerator, VisualBasicRuntimeModelCodeGenerator)
             End With
-
         End Sub
     End Class
 End Namespace

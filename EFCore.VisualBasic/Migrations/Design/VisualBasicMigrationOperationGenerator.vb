@@ -335,7 +335,6 @@ Namespace Migrations.Design
                         Append("column:=").
                         Append(VBCode.Literal(operation.Columns(0)))
                 Else
-
                     builder.
                         Append("columns:=").
                         Append(VBCode.Literal(operation.Columns))
@@ -2070,5 +2069,4 @@ Namespace Migrations.Design
             Return result
         End Function
     End Class
-
 End Namespace

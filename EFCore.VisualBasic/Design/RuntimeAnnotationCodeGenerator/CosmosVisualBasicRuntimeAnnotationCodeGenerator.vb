@@ -45,6 +45,5 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             MyBase.Generate(entityType, parameters)
         End Sub
-
     End Class
 End Namespace

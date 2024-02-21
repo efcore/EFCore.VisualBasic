@@ -7,5 +7,4 @@ Module EnumerableExtensions
                    Optional separator As String = ", ") As String
         Return String.Join(separator, source)
     End Function
-
 End Module

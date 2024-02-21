@@ -14,5 +14,4 @@ Namespace Models
         'EF Core 5.0 supports many-to-many relationships without explicitly mapping the join table.
         Public Property Instructors As ICollection(Of Instructor)
     End Class
-
 End Namespace

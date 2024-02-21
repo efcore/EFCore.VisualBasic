@@ -7,5 +7,4 @@
 
         Public Property Enrollments As ICollection(Of Enrollment)
     End Class
-
 End Namespace

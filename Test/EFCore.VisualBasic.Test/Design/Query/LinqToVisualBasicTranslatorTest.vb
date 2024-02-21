@@ -5,7 +5,6 @@ Imports EntityFrameworkCore.VisualBasic.Design.Internal
 Imports EntityFrameworkCore.VisualBasic.Design.Query.Internal
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.EntityFrameworkCore.Query
-Imports Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal
 Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.TestUtilities

@@ -52,7 +52,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _openCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _openCount = Value
             End Set
         End Property
@@ -66,7 +66,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _openAsyncCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _openAsyncCount = Value
             End Set
         End Property
@@ -80,7 +80,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _closeCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _closeCount = Value
             End Set
         End Property
@@ -115,7 +115,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _disposeCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _disposeCount = Value
             End Set
         End Property

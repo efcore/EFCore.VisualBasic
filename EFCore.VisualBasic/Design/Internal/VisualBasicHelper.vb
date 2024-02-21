@@ -509,7 +509,7 @@ Namespace Design.Internal
             Return ArrayLitetal(GetType(T), values, vertical)
         End Function
 
-        Private Function ArrayLitetal(Type As Type, values As IEnumerable, Optional vertical As Boolean = False) As String
+        Private Function ArrayLitetal(type As Type, values As IEnumerable, Optional vertical As Boolean = False) As String
             Dim builder As New IndentedStringBuilder
 
             Dim valuesList = values.Cast(Of Object)().ToList()
@@ -517,18 +517,18 @@ Namespace Design.Internal
             If valuesList.Count = 0 Then
                 builder.
                     Append("New ").
-                    Append(Reference(Type)).
+                    Append(Reference(type)).
                     Append("() {}")
             Else
 
                 Dim byteArray As Boolean
                 Dim addingType As Boolean
 
-                If Type = GetType(Byte) Then
+                If type = GetType(Byte) Then
                     builder.Append("New Byte")
                     addingType = True
                     byteArray = True
-                ElseIf Type = GetType(Object) Then
+                ElseIf type = GetType(Object) Then
                     builder.Append("New Object")
                     addingType = True
                 End If

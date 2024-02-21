@@ -1301,10 +1301,10 @@ Namespace Design.Query.Internal
         End Function
 
         ''' <inheritdoc />
-        Protected Overrides Function VisitLabel(Label As LabelExpression) As Expression
+        Protected Overrides Function VisitLabel(label As LabelExpression) As Expression
             Result = New GeneratedSyntaxNodes(
-                        SF.LabelStatement(TranslateLabelTarget(Label.Target).Identifier.Text))
-            Return Label
+                        SF.LabelStatement(TranslateLabelTarget(label.Target).Identifier.Text))
+            Return label
         End Function
 
         ''' <inheritdoc />

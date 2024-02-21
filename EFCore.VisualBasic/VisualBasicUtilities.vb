@@ -293,6 +293,5 @@ Public Module VisualBasicUtilities
             Throw New Exception($"Check.DebugAssert failed: {message}")
         End If
     End Sub
-
 #End Region
 End Module

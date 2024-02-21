@@ -2,12 +2,10 @@
 Imports Sandbox.Models
 
 Namespace Data
-
     Public Class SchoolContext
         Inherits DbContext
 
         Sub New()
-
         End Sub
 
         Public Property Courses As DbSet(Of Course)
@@ -23,7 +21,5 @@ Namespace Data
             mb.Entity(Of Enrollment)().ToTable("Enrollment")
             mb.Entity(Of Student)().ToTable("Student")
         End Sub
-
     End Class
-
 End Namespace

@@ -10,5 +10,4 @@ Namespace Design.AnnotationCodeGeneratorProvider
             services.AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, SqlServerVisualBasicRuntimeAnnotationCodeGenerator)
         End Sub
     End Class
-
 End Namespace

@@ -947,7 +947,7 @@ End Namespace
                 Get
                     Return _privateSetter
                 End Get
-                Private Set(Value As Integer)
+                Private Set
                     _privateSetter = Value
                 End Set
             End Property

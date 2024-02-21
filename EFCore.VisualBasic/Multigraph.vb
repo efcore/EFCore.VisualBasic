@@ -397,6 +397,7 @@ Namespace Utilities
         Private Structure Edge
             ReadOnly Property Payload As TEdge
             ReadOnly Property RequiresBatchingBoundary As Boolean
+
             Sub New(payload As TEdge, requiresBatchingBoundary As Boolean)
                 Me.Payload = payload
                 Me.RequiresBatchingBoundary = requiresBatchingBoundary

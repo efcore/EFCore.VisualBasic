@@ -19,7 +19,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _commitCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _commitCount = Value
             End Set
         End Property
@@ -33,7 +33,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _rollbackCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _rollbackCount = Value
             End Set
         End Property
@@ -47,7 +47,7 @@ Namespace TestUtilities.FakeProvider
             Get
                 Return _disposeCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _disposeCount = Value
             End Set
         End Property

@@ -286,6 +286,32 @@ Namespace Design.Query
                 "CType(i, String)")
         End Sub
 
+        <Theory>
+        <MemberData(NameOf(VB_type_conversion_functions))>
+        Public Sub Unary_Convert_with_VB_type_conversion_functions(expression As E, expected As String)
+            AssertExpression(
+                expression,
+                expected)
+        End Sub
+
+        Private Shared Iterator Function VB_type_conversion_functions() As IEnumerable(Of Object())
+            Yield {DirectCast(Function(o As Object) CBool(o), Expression(Of Func(Of Object, Boolean))).Body, "CBool(o)"}
+            Yield {DirectCast(Function(o As Object) CByte(o), Expression(Of Func(Of Object, Byte))).Body, "CByte(o)"}
+            Yield {DirectCast(Function(o As Object) CChar(o), Expression(Of Func(Of Object, Char))).Body, "CChar(o)"}
+            Yield {DirectCast(Function(o As Object) CDate(o), Expression(Of Func(Of Object, Date))).Body, "CDate(o)"}
+            Yield {DirectCast(Function(o As Object) CDbl(o), Expression(Of Func(Of Object, Double))).Body, "CDbl(o)"}
+            Yield {DirectCast(Function(o As Object) CDec(o), Expression(Of Func(Of Object, Decimal))).Body, "CDec(o)"}
+            Yield {DirectCast(Function(o As Object) CInt(o), Expression(Of Func(Of Object, Integer))).Body, "CInt(o)"}
+            Yield {DirectCast(Function(o As Object) CLng(o), Expression(Of Func(Of Object, Long))).Body, "CLng(o)"}
+            Yield {DirectCast(Function(o As Object) CSByte(o), Expression(Of Func(Of Object, SByte))).Body, "CSByte(o)"}
+            Yield {DirectCast(Function(o As Object) CShort(o), Expression(Of Func(Of Object, Short))).Body, "CShort(o)"}
+            Yield {DirectCast(Function(o As Object) CSng(o), Expression(Of Func(Of Object, Single))).Body, "CSng(o)"}
+            Yield {DirectCast(Function(o As Object) CStr(o), Expression(Of Func(Of Object, String))).Body, "CStr(o)"}
+            Yield {DirectCast(Function(o As Object) CUInt(o), Expression(Of Func(Of Object, UInteger))).Body, "CUInt(o)"}
+            Yield {DirectCast(Function(o As Object) CULng(o), Expression(Of Func(Of Object, ULong))).Body, "CULng(o)"}
+            Yield {DirectCast(Function(o As Object) CUShort(o), Expression(Of Func(Of Object, UShort))).Body, "CUShort(o)"}
+        End Function
+
         <Fact>
         Public Sub Unary_Convert_char_to_integer()
             AssertExpression(

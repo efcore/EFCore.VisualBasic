@@ -2168,11 +2168,13 @@ Namespace Design.Query.Internal
 
         ''' <inheritdoc/>
         Protected Overrides Function VisitUnary(unary As UnaryExpression) As Expression
+
             If unary.Method IsNot Nothing AndAlso
                Not unary.Method.IsHideBySig AndAlso
                Not unary.Method.IsSpecialName AndAlso
                unary.Method.Name <> "op_Implicit" AndAlso
-               unary.Method.Name <> "op_Explicit" Then
+               unary.Method.Name <> "op_Explicit" AndAlso
+               Not isVBTypeConversionFunctions(unary) Then
 
                 Throw New NotImplementedException("Unary node with non-null method")
             End If
@@ -2269,9 +2271,51 @@ Namespace Design.Query.Internal
                 Return Translate(E.Call(_ChrW, unary.Operand))
             End If
 
+            If isVBTypeConversionFunctions(unary) Then
+                Return New GeneratedSyntaxNodes(
+                            SF.PredefinedCastExpression(
+                               VBTypeConversionFunctions(unary.Method.DeclaringType.FullName & "." & unary.Method.Name),
+                               operand).
+                            WithAdditionalAnnotations(Simplification.Simplifier.Annotation))
+            End If
+
             Return New GeneratedSyntaxNodes(
                         SF.CTypeExpression(operand, Translate(unary.Type)).
                         WithAdditionalAnnotations(Simplification.Simplifier.Annotation))
+        End Function
+
+        Private Shared ReadOnly VBTypeConversionFunctions As New Dictionary(Of String, SyntaxToken)(StringComparer.OrdinalIgnoreCase) From {
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToBoolean", SF.Token(SyntaxKind.CBoolKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToByte", SF.Token(SyntaxKind.CByteKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToChar", SF.Token(SyntaxKind.CCharKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToDate", SF.Token(SyntaxKind.CDateKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToDouble", SF.Token(SyntaxKind.CDblKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToDecimal", SF.Token(SyntaxKind.CDecKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToInteger", SF.Token(SyntaxKind.CIntKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToLong", SF.Token(SyntaxKind.CLngKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToObject", SF.Token(SyntaxKind.CObjKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToSByte", SF.Token(SyntaxKind.CSByteKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToShort", SF.Token(SyntaxKind.CShortKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToSingle", SF.Token(SyntaxKind.CSngKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToString", SF.Token(SyntaxKind.CStrKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToUInteger", SF.Token(SyntaxKind.CUIntKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToULong", SF.Token(SyntaxKind.CULngKeyword)},
+            {"Microsoft.VisualBasic.CompilerServices.Conversions.ToUShort", SF.Token(SyntaxKind.CUShortKeyword)}
+        }
+
+        Private Shared Function isVBTypeConversionFunctions(unary As UnaryExpression) As Boolean
+            If unary.Method Is Nothing Then Return False
+
+            If unary.NodeType <> ExpressionType.Convert AndAlso
+               unary.NodeType <> ExpressionType.ConvertChecked Then
+                Return False
+            End If
+
+            If VBTypeConversionFunctions.ContainsKey(unary.Method.DeclaringType.FullName & "." & unary.Method.Name) Then
+                Return True
+            End If
+
+            Return False
         End Function
 
         ''' <inheritdoc/>

@@ -27,7 +27,8 @@
     {
         "System",
         "System.Collections.Generic",
-        "Microsoft.EntityFrameworkCore"
+        "Microsoft.EntityFrameworkCore",
+        "Microsoft.VisualBasic"
     };
 
     var FullyQualifiedContextNamespace = code.FullyQualifiedNamespace(Options.RootNamespace, NamespaceHint);

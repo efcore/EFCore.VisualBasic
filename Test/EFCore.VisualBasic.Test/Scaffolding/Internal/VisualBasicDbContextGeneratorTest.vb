@@ -30,6 +30,7 @@ Namespace Scaffolding.Internal
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -78,6 +79,7 @@ End Namespace
 "Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -126,6 +128,7 @@ End Namespace
 "Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -574,6 +577,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -649,6 +653,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -720,6 +725,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -819,6 +825,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -902,6 +909,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1105,6 +1113,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
     Partial Public Class TestDbContext
         Inherits DbContext
@@ -1200,6 +1209,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports System.Collections.Generic
 Imports CustomTestNamespace
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1247,6 +1257,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1359,6 +1370,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1438,6 +1450,7 @@ $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Metadata
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1523,6 +1536,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext

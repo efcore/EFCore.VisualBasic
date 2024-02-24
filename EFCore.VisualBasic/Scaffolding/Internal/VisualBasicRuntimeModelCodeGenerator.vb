@@ -131,7 +131,8 @@ Namespace Scaffolding.Internal
             Dim mainBuilder = New IndentedStringBuilder()
             Dim namespaces = New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(RuntimeModel).Namespace,
-                GetType(DbContextAttribute).Namespace
+                GetType(DbContextAttribute).Namespace,
+                "Microsoft.VisualBasic"
             }
 
             AddNamespace(contextType, namespaces)
@@ -214,7 +215,8 @@ _Instance = model").
             Dim methodBuilder = New IndentedStringBuilder()
             Dim namespaces = New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(RuntimeModel).Namespace,
-                GetType(DbContextAttribute).Namespace
+                GetType(DbContextAttribute).Namespace,
+                "Microsoft.VisualBasic"
             }
 
             If Not String.IsNullOrEmpty([namespace]) Then
@@ -483,7 +485,8 @@ _Instance = model").
             Dim namespaces As New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(BindingFlags).Namespace,
                 GetType(MethodInfo).Namespace,
-                GetType(RuntimeEntityType).Namespace
+                GetType(RuntimeEntityType).Namespace,
+                "Microsoft.VisualBasic"
             }
 
             If Not String.IsNullOrEmpty([namespace]) Then

@@ -582,6 +582,7 @@ Imports Microsoft.EntityFrameworkCore.ChangeTracking
 Imports Microsoft.EntityFrameworkCore.Metadata.Internal
 Imports Microsoft.EntityFrameworkCore.Migrations
 Imports Microsoft.EntityFrameworkCore.Storage
+Imports Microsoft.VisualBasic
 
 Namespace Global.MyNamespace
     ''' <inheritdoc />
@@ -649,6 +650,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations
+Imports Microsoft.VisualBasic
 
 Namespace Global.MyNamespace
     <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
@@ -777,6 +779,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations
+Imports Microsoft.VisualBasic
 
 Namespace Global.MyNamespace
     <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
@@ -1004,6 +1007,7 @@ Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
 Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations
+Imports Microsoft.VisualBasic
 
 Namespace Global.MyNamespace
     <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>

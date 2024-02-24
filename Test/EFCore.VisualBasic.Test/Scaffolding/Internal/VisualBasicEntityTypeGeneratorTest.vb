@@ -29,6 +29,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Keyless>
@@ -40,6 +41,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -98,6 +100,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Table(""Vistas"")>
@@ -143,6 +146,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Vista
@@ -187,6 +191,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Table(""Vista"", Schema:=""custom"")>
@@ -232,6 +237,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Keyless>
@@ -268,6 +274,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Index(""C"")>
@@ -331,6 +338,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Index(""A"", ""B"", Name:=""AllAscending"")>
@@ -397,6 +405,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Index(""A"", ""B"", Name:=""IndexOnAAndB"", IsUnique:=True)>
@@ -417,6 +426,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -489,6 +499,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -502,6 +513,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -564,6 +576,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <PrimaryKey(""Key"", ""Serial"")>
@@ -581,6 +594,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -647,6 +661,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -687,6 +702,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -724,6 +740,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -751,6 +768,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -823,6 +841,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -872,6 +891,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -928,6 +948,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -989,6 +1010,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     ''' <summary>
@@ -1034,6 +1056,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     ''' <summary>
@@ -1089,6 +1112,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -1134,6 +1158,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Entity
@@ -1179,6 +1204,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1203,6 +1229,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Person
@@ -1265,6 +1292,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1286,6 +1314,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1316,7 +1345,6 @@ Namespace TestNamespace
     End Class
 End Namespace
 "
-
 
             Test(
                 Function(modelBuilder)
@@ -1365,6 +1393,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1386,6 +1415,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1473,6 +1503,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Color
@@ -1494,6 +1525,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Car
@@ -1513,6 +1545,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1600,6 +1633,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -1643,6 +1677,7 @@ End Namespace
             Dim expectedBlogCode =
 "Imports System
 Imports System.Collections.Generic
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Blog
@@ -1654,6 +1689,7 @@ End Namespace
             Dim expectedPostCode =
 "Imports System
 Imports System.Collections.Generic
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1708,6 +1744,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1766,6 +1803,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1823,6 +1861,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -1897,6 +1936,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <Keyless>
@@ -1948,6 +1988,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     <CustomEntityDataAnnotation(""first argument"")>
@@ -1962,6 +2003,7 @@ End Namespace
  $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2025,6 +2067,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class EntityWithPropertyAnnotation
@@ -2039,6 +2082,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2100,6 +2144,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2147,6 +2192,7 @@ End Namespace
             Dim expectedEntityBlog =
 "Imports System
 Imports System.Collections.Generic
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Blog
@@ -2160,6 +2206,7 @@ End Namespace
             Dim expectedEntityPost =
 "Imports System
 Imports System.Collections.Generic
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -2232,6 +2279,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2279,6 +2327,7 @@ End Namespace
             Dim expectedEntityBlog =
 "Imports System
 Imports System.Collections.Generic
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Blog
@@ -2291,6 +2340,7 @@ End Namespace
             Dim expectedEntityPost =
 "Imports System
 Imports System.Collections.Generic
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -2350,6 +2400,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2400,6 +2451,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Blog
@@ -2419,6 +2471,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -2493,6 +2546,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2545,6 +2599,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Blog
@@ -2566,6 +2621,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Post
@@ -2646,6 +2702,7 @@ End Namespace
 $"Imports System
 Imports System.Collections.Generic
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class TestDbContext
@@ -2793,6 +2850,7 @@ Imports System.Collections.Generic
 Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 Imports Microsoft.EntityFrameworkCore
+Imports Microsoft.VisualBasic
 
 Namespace TestNamespace
     Partial Public Class Color

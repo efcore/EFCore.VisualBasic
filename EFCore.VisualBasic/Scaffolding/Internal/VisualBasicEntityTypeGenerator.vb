@@ -40,7 +40,8 @@ Namespace Scaffolding.Internal
 
     Dim importsList = New List(Of String) From {
         "System",
-        "System.Collections.Generic"
+        "System.Collections.Generic",
+        "Microsoft.VisualBasic"
     }
 
     If Options.UseDataAnnotations Then

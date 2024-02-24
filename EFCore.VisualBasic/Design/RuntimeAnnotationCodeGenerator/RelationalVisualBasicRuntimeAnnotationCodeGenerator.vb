@@ -649,9 +649,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 sprocParameters)
 
             mainBuilder.
-            Append($"{parameters.TargetName}.StoredProcedures.Add(").
-            AppendLine(
-                $"({code.Literal(storeStoredProcedure.Name)}, {code.Literal(storeStoredProcedure.Schema)}), {storedProcedureVariable})")
+                Append($"{parameters.TargetName}.StoredProcedures.Add(").
+                AppendLine(
+                    $"({code.Literal(storeStoredProcedure.Name)}, {code.Literal(storeStoredProcedure.Schema)}), {storedProcedureVariable})")
 
             Return storedProcedureVariable
         End Function
@@ -807,8 +807,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-            Append($"Dim {columnVariable} As New SqlQueryColumn(").
-            Append($"{code.Literal(column.Name)}, {code.Literal(column.StoreType)}, {parameters.TargetName})")
+                Append($"Dim {columnVariable} As New SqlQueryColumn(").
+                Append($"{code.Literal(column.Name)}, {code.Literal(column.StoreType)}, {parameters.TargetName})")
 
             GenerateIsNullableInitializer(column.IsNullable, mainBuilder, code).
                 AppendLine().

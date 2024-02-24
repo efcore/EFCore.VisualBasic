@@ -2304,7 +2304,7 @@ Namespace Design.Query.Internal
                         WithAdditionalAnnotations(Simplification.Simplifier.Annotation))
         End Function
 
-        Private Shared ReadOnly VBTypeConversionFunctions As New Dictionary(Of String, SyntaxToken)(StringComparer.OrdinalIgnoreCase) From {
+        Private Shared ReadOnly VBTypeConversionFunctions As New Dictionary(Of String, SyntaxToken)(StringComparer.Ordinal) From {
             {"Microsoft.VisualBasic.CompilerServices.Conversions.ToBoolean", SF.Token(SyntaxKind.CBoolKeyword)},
             {"Microsoft.VisualBasic.CompilerServices.Conversions.ToByte", SF.Token(SyntaxKind.CByteKeyword)},
             {"Microsoft.VisualBasic.CompilerServices.Conversions.ToChar", SF.Token(SyntaxKind.CCharKeyword)},

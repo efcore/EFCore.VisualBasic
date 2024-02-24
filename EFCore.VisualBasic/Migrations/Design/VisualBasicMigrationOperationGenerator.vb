@@ -1347,9 +1347,9 @@ Namespace Migrations.Design
 
                 If operation.Table IsNot Nothing Then
                     builder.
-                    AppendLine(","c).
-                    Append("table:=").
-                    Append(VBCode.Literal(operation.Table))
+                        AppendLine(","c).
+                        Append("table:=").
+                        Append(VBCode.Literal(operation.Table))
                 End If
 
                 builder.Append(")"c)

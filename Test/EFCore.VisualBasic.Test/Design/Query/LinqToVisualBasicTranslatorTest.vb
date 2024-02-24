@@ -231,6 +231,21 @@ Namespace Design.Query
         End Sub
 
         <Theory>
+        <MemberData(NameOf(VB_string_comparaison_operators))>
+        Public Sub Binary_VB_string_comparaison(expression As E, expected As String)
+            AssertExpression(
+                expression,
+                expected)
+        End Sub
+
+        Private Shared Iterator Function VB_string_comparaison_operators() As IEnumerable(Of Object())
+            Yield {DirectCast(Function(s$) "hello" = s, Expression(Of Func(Of String, Boolean))).Body, """hello"" = s"}
+            Yield {DirectCast(Function(s$) s <> "hello", Expression(Of Func(Of String, Boolean))).Body, "s <> ""hello"""}
+            Yield {DirectCast(Function(s$) s <= "hello", Expression(Of Func(Of String, Boolean))).Body, "s <= ""hello"""}
+            Yield {DirectCast(Function(s$) s > "hello", Expression(Of Func(Of String, Boolean))).Body, "s > ""hello"""}
+        End Function
+
+        <Theory>
         <InlineData(ExpressionType.Negate, "-(i)")>
         <InlineData(ExpressionType.NegateChecked, "-(i)")>
         <InlineData(ExpressionType.Not, "Not(i)")>

@@ -238,6 +238,22 @@ Namespace Design.Query.Internal
             Using ChangeContext(ExpressionContext.Expression)
 
                 ' Handle special cases
+
+                If IsVBStringComparisonOperators(binary) Then
+                    Dim opSyntaxKinds = GetSyntaxKindForBinaryOperator(binary)
+
+                    Result = New GeneratedSyntaxNodes(
+                                SF.BinaryExpression(
+                                    opSyntaxKinds.Kind,
+                                    Translate(Of ExpressionSyntax)(
+                                        DirectCast(binary.Left, MethodCallExpression).Arguments(0)),
+                                    SF.Token(opSyntaxKinds.OperatorTokenKind),
+                                    Translate(Of ExpressionSyntax)(
+                                        DirectCast(binary.Left, MethodCallExpression).Arguments(1))))
+
+                    Return binary
+                End If
+
                 Select Case binary.NodeType
                     Case ExpressionType.Assign
                         Return VisitAssignment(binary)
@@ -268,7 +284,6 @@ Namespace Design.Query.Internal
 
                     Case ExpressionType.Coalesce
                         Return VisitCoalesce(binary)
-
                 End Select
 
                 Dim liftedStatementOrigPosition = _liftedState.Statements.Count
@@ -312,155 +327,133 @@ Namespace Design.Query.Internal
 
                 ' TODO: Confirm what to do with the unchecked expression types
 
-                Dim sKind As SyntaxKind
-                Dim operatorTokenKind As SyntaxKind
-                Dim isAnAssignmentStatement = False
+                Dim operatorSyntaxKinds = GetSyntaxKindForBinaryOperator(binary)
 
-                Select Case binary.NodeType
-                    Case ExpressionType.Add
-                        sKind = SyntaxKind.AddExpression
-                        operatorTokenKind = SyntaxKind.PlusToken
-
-                    Case ExpressionType.AddChecked
-                        sKind = SyntaxKind.AddExpression
-                        operatorTokenKind = SyntaxKind.PlusToken
-
-                    Case ExpressionType.Subtract
-                        sKind = SyntaxKind.SubtractExpression
-                        operatorTokenKind = SyntaxKind.MinusToken
-
-                    Case ExpressionType.SubtractChecked
-                        sKind = SyntaxKind.SubtractExpression
-                        operatorTokenKind = SyntaxKind.MinusToken
-
-                    Case ExpressionType.Multiply
-                        sKind = SyntaxKind.MultiplyExpression
-                        operatorTokenKind = SyntaxKind.AsteriskToken
-
-                    Case ExpressionType.MultiplyChecked
-                        sKind = SyntaxKind.MultiplyExpression
-                        operatorTokenKind = SyntaxKind.AsteriskToken
-
-                    Case ExpressionType.Divide
-                        sKind = SyntaxKind.DivideExpression
-                        operatorTokenKind = SyntaxKind.SlashToken
-
-                    Case ExpressionType.Modulo
-                        sKind = SyntaxKind.ModuloExpression
-                        operatorTokenKind = SyntaxKind.ModKeyword
-
-                    Case ExpressionType.Power
-                        sKind = SyntaxKind.ExponentiateExpression
-                        operatorTokenKind = SyntaxKind.CaretToken
-
-                    Case ExpressionType.AddAssign
-                        sKind = SyntaxKind.AddAssignmentStatement
-                        operatorTokenKind = SyntaxKind.PlusEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.AddAssignChecked
-                        sKind = SyntaxKind.AddAssignmentStatement
-                        operatorTokenKind = SyntaxKind.PlusEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.SubtractAssign
-                        sKind = SyntaxKind.SubtractAssignmentStatement
-                        operatorTokenKind = SyntaxKind.MinusEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.SubtractAssignChecked
-                        sKind = SyntaxKind.SubtractAssignmentStatement
-                        operatorTokenKind = SyntaxKind.MinusEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.MultiplyAssign
-                        sKind = SyntaxKind.MultiplyAssignmentStatement
-                        operatorTokenKind = SyntaxKind.AsteriskEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.MultiplyAssignChecked
-                        sKind = SyntaxKind.MultiplyAssignmentStatement
-                        operatorTokenKind = SyntaxKind.AsteriskEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.DivideAssign
-                        sKind = SyntaxKind.DivideAssignmentStatement
-                        operatorTokenKind = SyntaxKind.SlashEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.PowerAssign
-                        sKind = SyntaxKind.ExponentiateAssignmentStatement
-                        operatorTokenKind = SyntaxKind.CaretEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.GreaterThan
-                        sKind = SyntaxKind.GreaterThanExpression
-                        operatorTokenKind = SyntaxKind.GreaterThanToken
-
-                    Case ExpressionType.GreaterThanOrEqual
-                        sKind = SyntaxKind.GreaterThanOrEqualExpression
-                        operatorTokenKind = SyntaxKind.GreaterThanEqualsToken
-
-                    Case ExpressionType.LessThan
-                        sKind = SyntaxKind.LessThanExpression
-                        operatorTokenKind = SyntaxKind.LessThanToken
-
-                    Case ExpressionType.LessThanOrEqual
-                        sKind = SyntaxKind.LessThanOrEqualExpression
-                        operatorTokenKind = SyntaxKind.LessThanEqualsToken
-
-                    Case ExpressionType.AndAlso
-                        sKind = SyntaxKind.AndAlsoExpression
-                        operatorTokenKind = SyntaxKind.AndAlsoKeyword
-
-                    Case ExpressionType.OrElse
-                        sKind = SyntaxKind.OrElseExpression
-                        operatorTokenKind = SyntaxKind.OrElseKeyword
-
-                    Case ExpressionType.And
-                        sKind = SyntaxKind.AndExpression
-                        operatorTokenKind = SyntaxKind.AndKeyword
-
-                    Case ExpressionType.Or
-                        sKind = SyntaxKind.OrExpression
-                        operatorTokenKind = SyntaxKind.OrKeyword
-
-                    Case ExpressionType.ExclusiveOr
-                        sKind = SyntaxKind.ExclusiveOrExpression
-                        operatorTokenKind = SyntaxKind.XorKeyword
-
-                    Case ExpressionType.LeftShift
-                        sKind = SyntaxKind.LeftShiftExpression
-                        operatorTokenKind = SyntaxKind.LessThanLessThanToken
-
-                    Case ExpressionType.RightShift
-                        sKind = SyntaxKind.RightShiftExpression
-                        operatorTokenKind = SyntaxKind.GreaterThanGreaterThanToken
-
-                    Case ExpressionType.LeftShiftAssign
-                        sKind = SyntaxKind.LeftShiftAssignmentStatement
-                        operatorTokenKind = SyntaxKind.LessThanLessThanEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case ExpressionType.RightShiftAssign
-                        sKind = SyntaxKind.RightShiftAssignmentStatement
-                        operatorTokenKind = SyntaxKind.GreaterThanGreaterThanEqualsToken
-                        isAnAssignmentStatement = True
-
-                    Case Else
-                        Throw New ArgumentOutOfRangeException("BinaryExpression with " & binary.NodeType)
-                End Select
-
-                If isAnAssignmentStatement Then
+                If operatorSyntaxKinds.IsAnAssignmentStatement Then
                     Result = New GeneratedSyntaxNodes(
-                                SF.AssignmentStatement(sKind, left, SF.Token(operatorTokenKind), right))
+                                SF.AssignmentStatement(
+                                    operatorSyntaxKinds.Kind,
+                                    left,
+                                    SF.Token(operatorSyntaxKinds.OperatorTokenKind),
+                                    right))
                 Else
                     Result = New GeneratedSyntaxNodes(
-                                SF.BinaryExpression(sKind, left, SF.Token(operatorTokenKind), right))
+                                SF.BinaryExpression(
+                                    operatorSyntaxKinds.Kind,
+                                    left,
+                                    SF.Token(operatorSyntaxKinds.OperatorTokenKind),
+                                    right))
                 End If
 
                 Return binary
             End Using
+        End Function
+
+        Private Shared Function GetSyntaxKindForBinaryOperator(binary As BinaryExpression) _
+            As (Kind As SyntaxKind,
+                OperatorTokenKind As SyntaxKind,
+                IsAnAssignmentStatement As Boolean)
+
+            Select Case binary.NodeType
+                Case ExpressionType.Equal
+                    Return (SyntaxKind.EqualsExpression, SyntaxKind.EqualsToken, False)
+
+                Case ExpressionType.NotEqual
+                    Return (SyntaxKind.NotEqualsExpression, SyntaxKind.LessThanGreaterThanToken, False)
+
+                Case ExpressionType.Add
+                    Return (SyntaxKind.AddExpression, SyntaxKind.PlusToken, False)
+
+                Case ExpressionType.AddChecked
+                    Return (SyntaxKind.AddExpression, SyntaxKind.PlusToken, False)
+
+                Case ExpressionType.Subtract
+                    Return (SyntaxKind.SubtractExpression, SyntaxKind.MinusToken, False)
+
+                Case ExpressionType.SubtractChecked
+                    Return (SyntaxKind.SubtractExpression, SyntaxKind.MinusToken, False)
+
+                Case ExpressionType.Multiply
+                    Return (SyntaxKind.MultiplyExpression, SyntaxKind.AsteriskToken, False)
+
+                Case ExpressionType.MultiplyChecked
+                    Return (SyntaxKind.MultiplyExpression, SyntaxKind.AsteriskToken, False)
+
+                Case ExpressionType.Divide
+                    Return (SyntaxKind.DivideExpression, SyntaxKind.SlashToken, False)
+
+                Case ExpressionType.Modulo
+                    Return (SyntaxKind.ModuloExpression, SyntaxKind.ModKeyword, False)
+
+                Case ExpressionType.Power
+                    Return (SyntaxKind.ExponentiateExpression, SyntaxKind.CaretToken, False)
+
+                Case ExpressionType.AddAssign
+                    Return (SyntaxKind.AddAssignmentStatement, SyntaxKind.PlusEqualsToken, True)
+
+                Case ExpressionType.AddAssignChecked
+                    Return (SyntaxKind.AddAssignmentStatement, SyntaxKind.PlusEqualsToken, True)
+
+                Case ExpressionType.SubtractAssign
+                    Return (SyntaxKind.SubtractAssignmentStatement, SyntaxKind.MinusEqualsToken, True)
+
+                Case ExpressionType.SubtractAssignChecked
+                    Return (SyntaxKind.SubtractAssignmentStatement, SyntaxKind.MinusEqualsToken, True)
+
+                Case ExpressionType.MultiplyAssign
+                    Return (SyntaxKind.MultiplyAssignmentStatement, SyntaxKind.AsteriskEqualsToken, True)
+
+                Case ExpressionType.MultiplyAssignChecked
+                    Return (SyntaxKind.MultiplyAssignmentStatement, SyntaxKind.AsteriskEqualsToken, True)
+
+                Case ExpressionType.DivideAssign
+                    Return (SyntaxKind.DivideAssignmentStatement, SyntaxKind.SlashEqualsToken, True)
+
+                Case ExpressionType.PowerAssign
+                    Return (SyntaxKind.ExponentiateAssignmentStatement, SyntaxKind.CaretEqualsToken, True)
+
+                Case ExpressionType.GreaterThan
+                    Return (SyntaxKind.GreaterThanExpression, SyntaxKind.GreaterThanToken, False)
+
+                Case ExpressionType.GreaterThanOrEqual
+                    Return (SyntaxKind.GreaterThanOrEqualExpression, SyntaxKind.GreaterThanEqualsToken, False)
+
+                Case ExpressionType.LessThan
+                    Return (SyntaxKind.LessThanExpression, SyntaxKind.LessThanToken, False)
+
+                Case ExpressionType.LessThanOrEqual
+                    Return (SyntaxKind.LessThanOrEqualExpression, SyntaxKind.LessThanEqualsToken, False)
+
+                Case ExpressionType.AndAlso
+                    Return (SyntaxKind.AndAlsoExpression, SyntaxKind.AndAlsoKeyword, False)
+
+                Case ExpressionType.OrElse
+                    Return (SyntaxKind.OrElseExpression, SyntaxKind.OrElseKeyword, False)
+
+                Case ExpressionType.And
+                    Return (SyntaxKind.AndExpression, SyntaxKind.AndKeyword, False)
+
+                Case ExpressionType.Or
+                    Return (SyntaxKind.OrExpression, SyntaxKind.OrKeyword, False)
+
+                Case ExpressionType.ExclusiveOr
+                    Return (SyntaxKind.ExclusiveOrExpression, SyntaxKind.XorKeyword, False)
+
+                Case ExpressionType.LeftShift
+                    Return (SyntaxKind.LeftShiftExpression, SyntaxKind.LessThanLessThanToken, False)
+
+                Case ExpressionType.RightShift
+                    Return (SyntaxKind.RightShiftExpression, SyntaxKind.GreaterThanGreaterThanToken, False)
+
+                Case ExpressionType.LeftShiftAssign
+                    Return (SyntaxKind.LeftShiftAssignmentStatement, SyntaxKind.LessThanLessThanEqualsToken, True)
+
+                Case ExpressionType.RightShiftAssign
+                    Return (SyntaxKind.RightShiftAssignmentStatement, SyntaxKind.GreaterThanGreaterThanEqualsToken, True)
+
+                Case Else
+                    Throw New ArgumentOutOfRangeException("BinaryExpression with " & binary.NodeType)
+            End Select
         End Function
 
         Private Shared Function TranslateEqual(binary As BinaryExpression, left As ExpressionSyntax, right As ExpressionSyntax) As GeneratedSyntaxNodes
@@ -578,6 +571,33 @@ Namespace Design.Query.Internal
                         SF.BinaryConditionalExpression(translatedLeft, translatedRight))
 
             Return coalesxeExpr
+        End Function
+
+        Private Shared Function IsVBStringComparisonOperators(binary As BinaryExpression) As Boolean
+            ' VB CODE x = y
+            ' -> Equal(Microsoft.VisualBasic.CompilerServices.Operators.CompareString(x, y, False), 0)
+
+            Dim methodExpr As MethodCallExpression
+
+            Dim HaveAConstantZero = (binary.Left.NodeType = ExpressionType.Constant AndAlso DirectCast(binary.Left, ConstantExpression).Value?.Equals(0)) Xor
+                                    (binary.Right.NodeType = ExpressionType.Constant AndAlso DirectCast(binary.Right, ConstantExpression).Value?.Equals(0))
+
+            If HaveAConstantZero AndAlso
+               (TypeOf binary.Left Is MethodCallExpression Xor
+               TypeOf binary.Right Is MethodCallExpression) Then
+
+                methodExpr = If(TryCast(binary.Left, MethodCallExpression),
+                            TryCast(binary.Right, MethodCallExpression))
+            Else
+                Return False
+            End If
+
+            Return methodExpr.Method.Name = "CompareString" AndAlso
+                   methodExpr.Method.DeclaringType?.Name = "Operators" AndAlso
+                   methodExpr.Method.DeclaringType?.Namespace = "Microsoft.VisualBasic.CompilerServices" AndAlso
+                   methodExpr.Object Is Nothing AndAlso
+                   methodExpr.Arguments.Count = 3 AndAlso
+                   TypeOf methodExpr.Arguments(2) Is ConstantExpression
         End Function
 
         ''' <inheritdoc/>

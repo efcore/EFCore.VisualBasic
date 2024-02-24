@@ -864,8 +864,8 @@ Namespace Utilities
 
             Assert.Collection(
                 batches,
-                Sub(B) Assert.Equal({vertexOne, vertexTwo}, B.AsEnumerable()),
-                Sub(B) Assert.Equal({vertexThree, vertexFour}, B.AsEnumerable()))
+                Sub(b) Assert.Equal({vertexOne, vertexTwo}, b.AsEnumerable()),
+                Sub(b) Assert.Equal({vertexThree, vertexFour}, b.AsEnumerable()))
         End Sub
 
         Private Shared Function CreateModel() As IMutableModel

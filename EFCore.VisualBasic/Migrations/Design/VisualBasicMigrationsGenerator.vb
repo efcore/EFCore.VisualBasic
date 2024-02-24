@@ -89,11 +89,13 @@ Namespace Migrations.Design
             NotNull(downOperations, NameOf(downOperations))
 
             Dim builder = New IndentedStringBuilder()
-            Dim namespaces = New List(Of String) From {"Microsoft.EntityFrameworkCore.Migrations"}
+            Dim namespaces = New List(Of String) From {
+                "Microsoft.EntityFrameworkCore.Migrations",
+                "Microsoft.VisualBasic"}
 
             namespaces.AddRange(GetNamespaces(upOperations.Concat(downOperations)))
             For Each n In namespaces.
-                          OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
+                            OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
 
                 builder.
                     Append("Imports ").
@@ -102,11 +104,11 @@ Namespace Migrations.Design
 
             If Not String.IsNullOrEmpty(migrationNamespace) Then
                 builder.
-                AppendLine().
-                Append("Namespace ").
-                Append("Global.").
-                AppendLine(VBCode.Namespace(migrationNamespace)).
-                IncrementIndent()
+                    AppendLine().
+                    Append("Namespace ").
+                    Append("Global.").
+                    AppendLine(VBCode.Namespace(migrationNamespace)).
+                    IncrementIndent()
             End If
 
             builder.
@@ -187,7 +189,8 @@ Namespace Migrations.Design
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.EntityFrameworkCore.Infrastructure",
                 "Microsoft.EntityFrameworkCore.Metadata",
-                "Microsoft.EntityFrameworkCore.Migrations"
+                "Microsoft.EntityFrameworkCore.Migrations",
+                "Microsoft.VisualBasic"
             }
 
             If Not String.IsNullOrEmpty(contextType.Namespace) Then
@@ -196,7 +199,7 @@ Namespace Migrations.Design
 
             namespaces.AddRange(GetNamespaces(targetModel))
             For Each n In namespaces.
-                          OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
+                            OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
 
                 builder.Append("Imports ").
                     AppendLine(n)
@@ -268,7 +271,8 @@ Namespace Migrations.Design
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.EntityFrameworkCore.Infrastructure",
                 "Microsoft.EntityFrameworkCore.Metadata",
-                "Microsoft.EntityFrameworkCore.Migrations"
+                "Microsoft.EntityFrameworkCore.Migrations",
+                "Microsoft.VisualBasic"
             }
 
             If Not String.IsNullOrEmpty(contextType.Namespace) Then
@@ -277,7 +281,7 @@ Namespace Migrations.Design
 
             namespaces.AddRange(GetNamespaces(model))
             For Each n In namespaces.
-                          OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
+                            OrderBy(Function(x) x, New NamespaceComparer()).Distinct()
 
                 builder.
                     Append("Imports ").
@@ -286,11 +290,11 @@ Namespace Migrations.Design
 
             If Not String.IsNullOrEmpty(modelSnapshotNamespace) Then
                 builder.
-                AppendLine().
-                Append("Namespace ").
-                Append("Global.").
-                AppendLine(VBCode.Namespace(modelSnapshotNamespace)).
-                IncrementIndent()
+                    AppendLine().
+                    Append("Namespace ").
+                    Append("Global.").
+                    AppendLine(VBCode.Namespace(modelSnapshotNamespace)).
+                    IncrementIndent()
             End If
 
             builder.

@@ -153,8 +153,8 @@ Namespace Migrations.Design
             Dim ownership = entityType.FindOwnership()
             Dim ownerNavigation = ownership?.PrincipalToDependent.Name
 
-            Dim GetOwnedName = Function(Type As ITypeBase, simpleName As String, ownershipNavigation As String) As String
-                                   Return Type.Name & "." & ownershipNavigation & "#" & simpleName
+            Dim GetOwnedName = Function(type As ITypeBase, simpleName As String, ownershipNavigation As String) As String
+                                   Return type.Name & "." & ownershipNavigation & "#" & simpleName
                                End Function
 
             Dim entityTypeName = entityType.Name
@@ -1378,7 +1378,6 @@ Namespace Migrations.Design
                                                    stringBuilder As IndentedStringBuilder)
 
             For Each trigger In entityType.GetDeclaredTriggers()
-
                 If trigger.GetTableName() <> table OrElse trigger.GetTableSchema() <> schema Then
                     Continue For
                 End If

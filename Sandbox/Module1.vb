@@ -2,9 +2,7 @@
 Imports Sandbox.Models
 
 Module Module1
-
     Sub Main()
-
         '-------------------------------------
         'Migration
         '-------------------------------------
@@ -41,12 +39,9 @@ Module Module1
             dbContext.SaveChanges()
 
             Console.WriteLine($"Students count : {dbContext.Students.Count}")
-
         End Using
 
         Console.WriteLine("Press any keys to exit")
         Console.ReadKey()
-
     End Sub
-
 End Module

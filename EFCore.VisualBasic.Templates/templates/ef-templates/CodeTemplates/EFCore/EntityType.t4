@@ -31,7 +31,8 @@
     var importsList = new List<string>
     {
         "System",
-        "System.Collections.Generic"
+        "System.Collections.Generic",
+        "Microsoft.VisualBasic"
     };
 
     if (Options.UseDataAnnotations)

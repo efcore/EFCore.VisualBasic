@@ -40,16 +40,15 @@ Friend Module SharedTypeExtensions
     End Function
 
     <Extension()>
-    Function MakeNullable(Type As Type, Optional nullable As Boolean = True) As Type
+    Function MakeNullable(type As Type, Optional nullable As Boolean = True) As Type
 
-        If Type.IsNullableType() = nullable Then
-            Return Type
+        If type.IsNullableType() = nullable Then
+            Return type
         Else
             Return If(nullable,
-                        GetType(Nullable(Of)).MakeGenericType(Type),
-                        Type.UnwrapNullableType())
+                        GetType(Nullable(Of)).MakeGenericType(type),
+                        type.UnwrapNullableType())
         End If
-
     End Function
 
     <Extension()>
@@ -288,7 +287,6 @@ Friend Module SharedTypeExtensions
             currentType = currentType.BaseType
         Loop While currentType IsNot Nothing
     End Function
-
 
     Private ReadOnly _commonTypeDictionary As New Dictionary(Of Type, Object) From
         {{GetType(Integer), Nothing},

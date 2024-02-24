@@ -91,9 +91,10 @@ Namespace Scaffolding.Internal
                 Dim generatedCode = GenerateEntityType(entityType, options.ModelNamespace, namePair.Class)
 
                 Dim entityTypeFileName = namePair.Class & FileExtension
-                scaffoldedFiles.Add(New ScaffoldedFile With {
-                                    .Path = entityTypeFileName,
-                                    .Code = generatedCode})
+                scaffoldedFiles.Add(
+                    New ScaffoldedFile With {
+                        .Path = entityTypeFileName,
+                        .Code = generatedCode})
             Next
 
             Return scaffoldedFiles
@@ -130,7 +131,8 @@ Namespace Scaffolding.Internal
             Dim mainBuilder = New IndentedStringBuilder()
             Dim namespaces = New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(RuntimeModel).Namespace,
-                GetType(DbContextAttribute).Namespace
+                GetType(DbContextAttribute).Namespace,
+                "Microsoft.VisualBasic"
             }
 
             AddNamespace(contextType, namespaces)
@@ -213,7 +215,8 @@ _Instance = model").
             Dim methodBuilder = New IndentedStringBuilder()
             Dim namespaces = New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(RuntimeModel).Namespace,
-                GetType(DbContextAttribute).Namespace
+                GetType(DbContextAttribute).Namespace,
+                "Microsoft.VisualBasic"
             }
 
             If Not String.IsNullOrEmpty([namespace]) Then
@@ -482,7 +485,8 @@ _Instance = model").
             Dim namespaces As New SortedSet(Of String)(New NamespaceComparer()) From {
                 GetType(BindingFlags).Namespace,
                 GetType(MethodInfo).Namespace,
-                GetType(RuntimeEntityType).Namespace
+                GetType(RuntimeEntityType).Namespace,
+                "Microsoft.VisualBasic"
             }
 
             If Not String.IsNullOrEmpty([namespace]) Then
@@ -968,20 +972,20 @@ _Instance = model").
             End If
         End Function
 
-        Private Sub PropertyBaseParameters(Prop As IPropertyBase,
+        Private Sub PropertyBaseParameters(prop As IPropertyBase,
                                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters,
                                            Optional skipType As Boolean = False)
 
             Dim mainBuilder = parameters.MainBuilder
 
             If Not skipType Then
-                AddNamespace(Prop.ClrType, parameters.Namespaces)
+                AddNamespace(prop.ClrType, parameters.Namespaces)
                 mainBuilder.
                     AppendLine(","c).
-                    Append(_code.Literal(Prop.ClrType))
+                    Append(_code.Literal(prop.ClrType))
             End If
 
-            Dim propertyInfo = Prop.PropertyInfo
+            Dim propertyInfo = prop.PropertyInfo
 
             If propertyInfo IsNot Nothing Then
 
@@ -991,7 +995,7 @@ _Instance = model").
                     AppendLine(","c).
                     Append("propertyInfo:=")
 
-                If Prop.IsIndexerProperty() Then
+                If prop.IsIndexerProperty() Then
                     mainBuilder.
                         Append(parameters.TargetName).
                         Append(".FindIndexerPropertyInfo()")
@@ -1007,7 +1011,7 @@ _Instance = model").
                 End If
             End If
 
-            Dim fieldInfo = Prop.FieldInfo
+            Dim fieldInfo = prop.FieldInfo
 
             If fieldInfo IsNot Nothing Then
 
@@ -1025,7 +1029,7 @@ _Instance = model").
                     Append(" Or BindingFlags.DeclaredOnly)")
             End If
 
-            Dim propertyAccessMode = Prop.GetPropertyAccessMode()
+            Dim propertyAccessMode = prop.GetPropertyAccessMode()
 
             If propertyAccessMode <> Model.DefaultPropertyAccessMode Then
                 parameters.Namespaces.Add(GetType(PropertyAccessMode).Namespace)
@@ -1149,11 +1153,11 @@ _Instance = model").
                 AppendLine()
         End Sub
 
-        Private Sub Create(Index As IIndex,
+        Private Sub Create(index As IIndex,
                            propertyVariables As Dictionary(Of IProperty, String),
                            parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
 
-            Dim variableName = _code.Identifier(If(Index.Name, "index"), parameters.ScopeVariables, capitalize:=False)
+            Dim variableName = _code.Identifier(If(index.Name, "index"), parameters.ScopeVariables, capitalize:=False)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.
@@ -1164,16 +1168,16 @@ _Instance = model").
                 AppendLine(".AddIndex(").
                 IncrementIndent()
 
-            FindProperties(parameters.TargetName, Index.Properties, mainBuilder, propertyVariables)
+            FindProperties(parameters.TargetName, index.Properties, mainBuilder, propertyVariables)
 
-            If Index.Name IsNot Nothing Then
+            If index.Name IsNot Nothing Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("name:=").
-                    Append(_code.Literal(Index.Name))
+                    Append(_code.Literal(index.Name))
             End If
 
-            If Index.IsUnique Then
+            If index.IsUnique Then
                 mainBuilder.
                     AppendLine(","c).
                     Append("unique:=").
@@ -1184,7 +1188,7 @@ _Instance = model").
                 AppendLine(")"c).
                 DecrementIndent()
 
-            CreateAnnotations(Index,
+            CreateAnnotations(index,
                               AddressOf _annotationCodeGenerator.Generate,
                               parameters.Cloner.
                                          WithTargetName(variableName).

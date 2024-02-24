@@ -21,7 +21,7 @@ Namespace TestUtilities
             Get
                 Return _createCount
             End Get
-            Private Set(Value As Integer)
+            Private Set
                 _createCount = Value
             End Set
         End Property

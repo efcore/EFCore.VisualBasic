@@ -37,7 +37,8 @@ Namespace Scaffolding.Internal
     Dim importsList = New List(Of String) From {
         "System",
         "System.Collections.Generic",
-        "Microsoft.EntityFrameworkCore"
+        "Microsoft.EntityFrameworkCore",
+        "Microsoft.VisualBasic"
     }
 
     Dim FullyQualifiedContextNamespace = code.FullyQualifiedNamespace(Options.RootNamespace, NamespaceHint)

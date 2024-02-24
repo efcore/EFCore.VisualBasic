@@ -75,7 +75,7 @@ Namespace TestUtilities.FakeProvider
                 Throw New NotImplementedException
             End Get
 
-            Set(Value As Boolean)
+            Set
                 Throw New NotImplementedException
             End Set
         End Property
@@ -84,7 +84,7 @@ Namespace TestUtilities.FakeProvider
                 Throw New NotImplementedException
             End Get
 
-            Set(Value As UpdateRowSource)
+            Set
                 Throw New NotImplementedException
             End Set
         End Property

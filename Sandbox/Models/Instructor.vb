@@ -20,6 +20,7 @@ Namespace Models
         <DisplayFormat(DataFormatString:="{0:yyyy-MM-dd}", ApplyFormatInEditMode:=True)>
         <Display(Name:="Hire Date")>
         Public Property HireDate As Date
+
         <Display(Name:="Full Name")>
         Public ReadOnly Property FullName As String
             Get
@@ -30,6 +31,4 @@ Namespace Models
         'EF Core 5.0 supports many-to-many relationships without explicitly mapping the join table.
         Public Property CourseAssignments As ICollection(Of Course)
     End Class
-
-
 End Namespace

@@ -135,9 +135,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
                     GetOrCreate(dbFunction.StoreFunction, metadataVariables, relationalModelParameters)
                 Next
 
-                CreateAnnotations(model,
-                                  AddressOf Generate,
-                                  relationalModelParameters)
+                CreateAnnotations(
+                    model,
+                    AddressOf Generate,
+                    relationalModelParameters)
 
                 mainBuilder.
                     AppendLine($"Return {relationalModelVariable}.MakeReadOnly()")
@@ -296,38 +297,39 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Function GetOrCreate(Table As ITableBase,
+        Private Function GetOrCreate(table As ITableBase,
                                      metadataVariables As Dictionary(Of IAnnotatable, String),
                                      parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As String
 
             Dim tableVariable As String = Nothing
-            If metadataVariables.TryGetValue(Table, tableVariable) Then
+            If metadataVariables.TryGetValue(table, tableVariable) Then
                 Return tableVariable
             End If
 
             Dim code = VBCode
-            tableVariable = code.Identifier(Table.Name & "TableBase", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(Table, tableVariable)
+            tableVariable = code.Identifier(table.Name & "TableBase", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(table, tableVariable)
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-                Append($"Dim {tableVariable} As New TableBase({code.Literal(Table.Name)}, {code.Literal(Table.Schema)}, ").
+                Append($"Dim {tableVariable} As New TableBase({code.Literal(table.Name)}, {code.Literal(table.Schema)}, ").
                 AppendLine($"{parameters.TargetName})")
 
             Dim tableParameters = parameters.Cloner.
                                              WithTargetName(tableVariable).
                                              Clone
 
-            For Each column In Table.Columns
+            For Each column In table.Columns
                 Create(column, metadataVariables, tableParameters)
             Next
 
-            CreateAnnotations(Table,
-                              AddressOf Generate,
-                              tableParameters)
+            CreateAnnotations(
+                table,
+                AddressOf Generate,
+                tableParameters)
 
             mainBuilder.
-                AppendLine($"{parameters.TargetName}.DefaultTables.Add({code.Literal(Table.Name)}, {tableVariable})")
+                AppendLine($"{parameters.TargetName}.DefaultTables.Add({code.Literal(table.Name)}, {tableVariable})")
 
             Return tableVariable
         End Function
@@ -341,59 +343,60 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Function GetOrCreate(Table As ITable,
+        Private Function GetOrCreate(table As ITable,
                                      metadataVariables As Dictionary(Of IAnnotatable, String),
                                      parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As String
 
             Dim tableVariable As String = Nothing
-            If metadataVariables.TryGetValue(Table, tableVariable) Then
+            If metadataVariables.TryGetValue(table, tableVariable) Then
                 Return tableVariable
             End If
 
             Dim code = VBCode
 
-            tableVariable = code.Identifier(Table.Name & "Table", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(Table, tableVariable)
+            tableVariable = code.Identifier(table.Name & "Table", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(table, tableVariable)
 
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-                Append($"Dim {tableVariable} As New Table({code.Literal(Table.Name)}, {code.Literal(Table.Schema)}, ").
+                Append($"Dim {tableVariable} As New Table({code.Literal(table.Name)}, {code.Literal(table.Schema)}, ").
                 AppendLine($"{parameters.TargetName})")
 
             Dim tableParameters = parameters.Cloner.
                                              WithTargetName(tableVariable).
                                              Clone
 
-            For Each column In Table.Columns
+            For Each column In table.Columns
                 Create(column, metadataVariables, tableParameters)
             Next
 
-            For Each uniqueConstraint In Table.UniqueConstraints
+            For Each uniqueConstraint In table.UniqueConstraints
                 Create(uniqueConstraint, uniqueConstraint.Columns.Select(Function(c) metadataVariables(c)), tableParameters)
             Next
 
-            For Each index In Table.Indexes
+            For Each index In table.Indexes
                 Create(index, index.Columns.Select(Function(c) metadataVariables(c)), tableParameters)
             Next
 
-            For Each trigger In Table.Triggers
+            For Each trigger In table.Triggers
                 Dim entityTypeVariable = metadataVariables(trigger.EntityType)
 
-                Dim triggerName = trigger.GetDatabaseName(StoreObjectIdentifier.Table(Table.Name, Table.Schema))
+                Dim triggerName = trigger.GetDatabaseName(StoreObjectIdentifier.Table(table.Name, table.Schema))
 
                 mainBuilder.
                     Append($"{tableVariable}.Triggers.Add({code.Literal(triggerName)}, ").
                     AppendLine($"{entityTypeVariable}.FindDeclaredTrigger({code.Literal(trigger.ModelName)}))")
             Next
 
-            CreateAnnotations(Table,
-                              AddressOf Generate,
-                              tableParameters)
+            CreateAnnotations(
+                table,
+                AddressOf Generate,
+                tableParameters)
 
             mainBuilder.
                 Append($"{parameters.TargetName}.Tables.Add((").
-                AppendLine($"{code.Literal(Table.Name)}, {code.Literal(Table.Schema)}), {tableVariable})")
+                AppendLine($"{code.Literal(table.Name)}, {code.Literal(table.Schema)}), {tableVariable})")
 
             Return tableVariable
         End Function
@@ -407,40 +410,41 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Function GetOrCreate(View As IView,
+        Private Function GetOrCreate(view As IView,
                                      metadataVariables As Dictionary(Of IAnnotatable, String),
                                      parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As String
 
             Dim viewVariable As String = Nothing
-            If metadataVariables.TryGetValue(View, viewVariable) Then
+            If metadataVariables.TryGetValue(view, viewVariable) Then
                 Return viewVariable
             End If
 
             Dim code = VBCode
 
-            viewVariable = code.Identifier(View.Name & "View", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(View, viewVariable)
+            viewVariable = code.Identifier(view.Name & "View", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(view, viewVariable)
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-                Append($"Dim {viewVariable} As New View({code.Literal(View.Name)}, {code.Literal(View.Schema)}, ").
+                Append($"Dim {viewVariable} As New View({code.Literal(view.Name)}, {code.Literal(view.Schema)}, ").
                 AppendLine($"{parameters.TargetName})")
 
             Dim viewParameters = parameters.Cloner.
                                             WithTargetName(viewVariable).
                                             Clone
 
-            For Each column In View.Columns
+            For Each column In view.Columns
                 Create(column, metadataVariables, viewParameters)
             Next
 
-            CreateAnnotations(View,
-                              AddressOf Generate,
-                              viewParameters)
+            CreateAnnotations(
+                view,
+                AddressOf Generate,
+                viewParameters)
 
             mainBuilder.
                 Append($"{parameters.TargetName}.Views.Add((").
-                AppendLine($"{code.Literal(View.Name)}, {code.Literal(View.Schema)}), {viewVariable})")
+                AppendLine($"{code.Literal(view.Name)}, {code.Literal(view.Schema)}), {viewVariable})")
 
             Return viewVariable
         End Function
@@ -454,38 +458,39 @@ Namespace Design.AnnotationCodeGeneratorProvider
             GenerateSimpleAnnotations(parameters)
         End Sub
 
-        Private Function GetOrCreate(SqlQuery As ISqlQuery,
+        Private Function GetOrCreate(sqlQuery As ISqlQuery,
                                      metadataVariables As Dictionary(Of IAnnotatable, String),
                                      parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters) As String
 
             Dim sqlQueryVariable As String = Nothing
-            If metadataVariables.TryGetValue(SqlQuery, sqlQueryVariable) Then
+            If metadataVariables.TryGetValue(sqlQuery, sqlQueryVariable) Then
                 Return sqlQueryVariable
             End If
 
-            sqlQueryVariable = VBCode.Identifier(SqlQuery.Name & "SqlQuery", parameters.ScopeVariables, capitalize:=False)
-            metadataVariables.Add(SqlQuery, sqlQueryVariable)
+            sqlQueryVariable = VBCode.Identifier(sqlQuery.Name & "SqlQuery", parameters.ScopeVariables, capitalize:=False)
+            metadataVariables.Add(sqlQuery, sqlQueryVariable)
 
             Dim mainBuilder = parameters.MainBuilder
             mainBuilder.
-                Append($"Dim {sqlQueryVariable} As New SqlQuery({VBCode.Literal(SqlQuery.Name)}, {parameters.TargetName}, ").
-                AppendLine($"{VBCode.Literal(SqlQuery.Sql)})")
+                Append($"Dim {sqlQueryVariable} As New SqlQuery({VBCode.Literal(sqlQuery.Name)}, {parameters.TargetName}, ").
+                AppendLine($"{VBCode.Literal(sqlQuery.Sql)})")
 
             Dim sqlQueryParameters = parameters.Cloner.
                                                 WithTargetName(sqlQueryVariable).
                                                 Clone
 
-            For Each column In SqlQuery.Columns
+            For Each column In sqlQuery.Columns
                 Create(column, metadataVariables, sqlQueryParameters)
             Next
 
-            CreateAnnotations(SqlQuery,
-                              AddressOf Generate,
-                              sqlQueryParameters)
+            CreateAnnotations(
+                sqlQuery,
+                AddressOf Generate,
+                sqlQueryParameters)
 
             mainBuilder.
                 Append($"{parameters.TargetName}.Queries.Add(").
-                AppendLine($"{VBCode.Literal(SqlQuery.Name)}, {sqlQueryVariable})")
+                AppendLine($"{VBCode.Literal(sqlQuery.Name)}, {sqlQueryVariable})")
 
             Return sqlQueryVariable
         End Function
@@ -536,20 +541,22 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 metadataVariables.Add(parameter, parameterVariable)
                 mainBuilder.AppendLine($"Dim {parameterVariable} = {functionVariable}.FindParameter({VBCode.Literal(parameter.Name)})")
 
-                CreateAnnotations(parameter,
-                              AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(parameterVariable).
-                                         Clone)
+                CreateAnnotations(
+                    parameter,
+                    AddressOf Generate,
+                    parameters.Cloner.
+                                WithTargetName(parameterVariable).
+                                Clone)
             Next
 
             For Each column In [function].Columns
                 Create(column, metadataVariables, functionParameters)
             Next
 
-            CreateAnnotations([function],
-                              AddressOf Generate,
-                              functionParameters)
+            CreateAnnotations(
+                [function],
+                AddressOf Generate,
+                functionParameters)
 
             mainBuilder.
                 AppendLine($"{parameters.TargetName}.Functions.Add(").
@@ -642,9 +649,9 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 sprocParameters)
 
             mainBuilder.
-            Append($"{parameters.TargetName}.StoredProcedures.Add(").
-            AppendLine(
-                $"({code.Literal(storeStoredProcedure.Name)}, {code.Literal(storeStoredProcedure.Schema)}), {storedProcedureVariable})")
+                Append($"{parameters.TargetName}.StoredProcedures.Add(").
+                AppendLine(
+                    $"({code.Literal(storeStoredProcedure.Name)}, {code.Literal(storeStoredProcedure.Schema)}), {storedProcedureVariable})")
 
             Return storedProcedureVariable
         End Function
@@ -700,11 +707,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            column,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(columnVariable).
-                       Clone)
+                column,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(columnVariable).
+                           Clone)
         End Sub
 
         ''' <summary>
@@ -737,11 +744,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                  AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            column,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(columnVariable).
-                       Clone)
+                column,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(columnVariable).
+                           Clone)
         End Sub
 
         ''' <summary>
@@ -772,11 +779,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            column,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(columnVariable).
-                       Clone)
+                column,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(columnVariable).
+                           Clone)
         End Sub
 
         ''' <summary>
@@ -800,19 +807,19 @@ Namespace Design.AnnotationCodeGeneratorProvider
             Dim mainBuilder = parameters.MainBuilder
 
             mainBuilder.
-            Append($"Dim {columnVariable} As New SqlQueryColumn(").
-            Append($"{code.Literal(column.Name)}, {code.Literal(column.StoreType)}, {parameters.TargetName})")
+                Append($"Dim {columnVariable} As New SqlQueryColumn(").
+                Append($"{code.Literal(column.Name)}, {code.Literal(column.StoreType)}, {parameters.TargetName})")
 
             GenerateIsNullableInitializer(column.IsNullable, mainBuilder, code).
                 AppendLine().
                 AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            column,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(columnVariable).
-                       Clone)
+                column,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(columnVariable).
+                           Clone)
         End Sub
 
         ''' <summary>
@@ -842,11 +849,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"{parameters.TargetName}.Columns.Add({code.Literal(column.Name)}, {columnVariable})")
 
             CreateAnnotations(
-            column,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(columnVariable).
-                       Clone)
+                column,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(columnVariable).
+                           Clone)
         End Sub
 
         ''' <summary>
@@ -885,11 +892,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"{parameters.TargetName}.AddResultColumn({columnVariable})")
 
             CreateAnnotations(
-            column,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(columnVariable).
-                       Clone)
+                column,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(columnVariable).
+                           Clone)
         End Sub
 
         ''' <summary>
@@ -920,11 +927,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine($"{parameters.TargetName}.AddParameter({parameterVariable})")
 
             CreateAnnotations(
-            parameter,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(parameterVariable).
-                       Clone)
+                parameter,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(parameterVariable).
+                           Clone)
         End Sub
 
         Private Shared Function GenerateIsNullableInitializer(isNullable As Boolean,
@@ -981,11 +988,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             CreateAnnotations(
-            uniqueConstraint,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(uniqueConstraintVariable).
-                       Clone)
+                uniqueConstraint,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(uniqueConstraintVariable).
+                           Clone)
 
             For Each mappedForeignKey In uniqueConstraint.MappedKeys
                 Dim keyVariable = code.Identifier(uniqueConstraintVariable & "Uc", parameters.ScopeVariables, capitalize:=False)
@@ -1031,27 +1038,28 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(code.Literal(index.IsUnique)).AppendLine(")"c)
 
             CreateAnnotations(
-            index,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(indexVariable).
-                       Clone)
+                index,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(indexVariable).
+                           Clone)
 
             For Each mappedIndex In index.MappedIndexes
                 Dim tableIndexVariable = code.Identifier(indexVariable & "Ix", parameters.ScopeVariables, capitalize:=False)
 
                 mainBuilder.
-                AppendLine($"Dim {tableIndexVariable} = RelationalModel.GetIndex(Me,").
-                IncrementIndent().
-                AppendLine($"{code.Literal(mappedIndex.DeclaringEntityType.Name)},").
-                AppendLine(
-                    $"{If(mappedIndex.Name Is Nothing,
-                        code.Literal(mappedIndex.Properties.Select(Function(p) p.Name).ToArray()),
-                        code.Literal(mappedIndex.Name))})").
-                DecrementIndent()
+                    AppendLine($"Dim {tableIndexVariable} = RelationalModel.GetIndex(Me,").
+                    IncrementIndent().
+                    AppendLine($"{code.Literal(mappedIndex.DeclaringEntityType.Name)},").
+                    AppendLine(
+                        $"{If(mappedIndex.Name Is Nothing,
+                            code.Literal(mappedIndex.Properties.Select(Function(p) p.Name).ToArray()),
+                            code.Literal(mappedIndex.Name))})").
+                    DecrementIndent()
 
-                mainBuilder.AppendLine($"{indexVariable}.MappedIndexes.Add({tableIndexVariable})")
-                mainBuilder.AppendLine($"RelationalModel.GetOrCreateTableIndexes({tableIndexVariable}).Add({indexVariable})")
+                mainBuilder.
+                    AppendLine($"{indexVariable}.MappedIndexes.Add({tableIndexVariable})").
+                    AppendLine($"RelationalModel.GetOrCreateTableIndexes({tableIndexVariable}).Add({indexVariable})")
             Next
 
             mainBuilder.
@@ -1153,11 +1161,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 parameters)
 
             CreateAnnotations(
-            tableMapping,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(tableMappingVariable).
-                       Clone)
+                tableMapping,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(tableMappingVariable).
+                           Clone)
 
             For Each columnMapping In tableMapping.ColumnMappings
                 mainBuilder.
@@ -1249,18 +1257,17 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 parameters)
 
             CreateAnnotations(
-            viewMapping,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(viewMappingVariable).
-                       Clone)
+                viewMapping,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(viewMappingVariable).
+                           Clone)
 
             For Each columnMapping In viewMapping.ColumnMappings
-
                 mainBuilder.
-                Append($"RelationalModel.CreateViewColumnMapping({metadataVariables(columnMapping.Column)}, ").
-                Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                Append(viewMappingVariable).AppendLine(")"c)
+                    Append($"RelationalModel.CreateViewColumnMapping({metadataVariables(columnMapping.Column)}, ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                    Append(viewMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1357,11 +1364,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             CreateAnnotations(
-            functionMapping,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(functionMappingVariable).
-                       Clone)
+                functionMapping,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(functionMappingVariable).
+                           Clone)
 
             For Each columnMapping In functionMapping.ColumnMappings
                 mainBuilder.
@@ -1426,11 +1433,11 @@ Namespace Design.AnnotationCodeGeneratorProvider
             End If
 
             CreateAnnotations(
-            sprocMapping,
-            AddressOf Generate,
-            parameters.Cloner.
-                       WithTargetName(sprocMappingVariable).
-                       Clone)
+                sprocMapping,
+                AddressOf Generate,
+                parameters.Cloner.
+                           WithTargetName(sprocMappingVariable).
+                           Clone)
 
             For Each parameterMapping In sprocMapping.ParameterMappings
                 mainBuilder.
@@ -1442,10 +1449,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             For Each columnMapping In sprocMapping.ResultColumnMappings
                 mainBuilder.
-                Append($"RelationalModel.CreateStoredProcedureResultColumnMapping({metadataVariables(columnMapping.StoreResultColumn)}, ").
-                Append($"{sprocVariable}.FindResultColumn({code.Literal(columnMapping.ResultColumn.Name)}), ").
-                Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
-                Append(sprocMappingVariable).AppendLine(")"c)
+                    Append($"RelationalModel.CreateStoredProcedureResultColumnMapping({metadataVariables(columnMapping.StoreResultColumn)}, ").
+                    Append($"{sprocVariable}.FindResultColumn({code.Literal(columnMapping.ResultColumn.Name)}), ").
+                    Append($"{typeBaseVariable}.FindProperty({code.Literal(columnMapping.Property.Name)}), ").
+                    Append(sprocMappingVariable).AppendLine(")"c)
             Next
         End Sub
 
@@ -1547,13 +1554,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
             If([function].MethodInfo?.Name, [function].Name), parameters.ScopeVariables, capitalize:=False)
 
             Dim mainBuilder = parameters.MainBuilder
-            With mainBuilder
-                .Append("Dim ").Append(functionVariable).AppendLine(" As New RuntimeDbFunction(").IncrementIndent()
-                .Append(code.Literal([function].ModelName)).AppendLine(","c)
-                .Append(parameters.TargetName).AppendLine(","c)
-                .Append(code.Literal([function].ReturnType)).AppendLine(","c)
-                .Append(code.Literal([function].Name))
-            End With
+            mainBuilder.
+                Append("Dim ").Append(functionVariable).AppendLine(" As New RuntimeDbFunction(").IncrementIndent().
+                Append(code.Literal([function].ModelName)).AppendLine(","c).
+                Append(parameters.TargetName).AppendLine(","c).
+                Append(code.Literal([function].ReturnType)).AppendLine(","c).
+                Append(code.Literal([function].Name))
 
             If [function].Schema IsNot Nothing Then
                 mainBuilder.
@@ -1573,17 +1579,16 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Dim method = [function].MethodInfo
                 AddNamespace(method.DeclaringType, parameters.Namespaces)
 
-                With mainBuilder
-                    .AppendLine(","c)
-                    .AppendLine($"methodInfo:={code.Literal(method.DeclaringType)}.GetMethod(").IncrementIndent()
-                    .Append(code.Literal(method.Name)).AppendLine(","c)
-                    .Append(If(method.IsPublic, "BindingFlags.Public", "BindingFlags.NonPublic"))
-                    .Append(If(method.IsStatic, " Or BindingFlags.Static", " Or BindingFlags.Instance"))
-                    .AppendLine(" Or BindingFlags.DeclaredOnly,")
-                    .AppendLine("Nothing,")
-                    .Append("{"c).Append(String.Join(", ", method.GetParameters().Select(Function(p) code.Literal(p.ParameterType)))).AppendLine("},")
-                    .Append("Nothing)").DecrementIndent()
-                End With
+                mainBuilder.
+                    AppendLine(","c).
+                    AppendLine($"methodInfo:={code.Literal(method.DeclaringType)}.GetMethod(").IncrementIndent().
+                    Append(code.Literal(method.Name)).AppendLine(","c).
+                    Append(If(method.IsPublic, "BindingFlags.Public", "BindingFlags.NonPublic")).
+                    Append(If(method.IsStatic, " Or BindingFlags.Static", " Or BindingFlags.Instance")).
+                    AppendLine(" Or BindingFlags.DeclaredOnly,").
+                    AppendLine("Nothing,").
+                    Append("{"c).Append(String.Join(", ", method.GetParameters().Select(Function(p) code.Literal(p.ParameterType)))).AppendLine("},").
+                    Append("Nothing)").DecrementIndent()
             End If
 
             If [function].IsScalar Then
@@ -1635,9 +1640,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 mainBuilder.AppendLine()
             End If
 
-            CreateAnnotations([function],
-                              AddressOf Generate,
-                              parameters)
+            CreateAnnotations(
+                [function],
+                AddressOf Generate,
+                parameters)
 
             mainBuilder.
                 Append(functionsVariable).
@@ -1690,11 +1696,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
             mainBuilder.AppendLine()
 
-            CreateAnnotations(parameter,
-                              AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(parameterVariable).
-                                         Clone())
+            CreateAnnotations(
+                parameter,
+                AddressOf Generate,
+                parameters.Cloner.
+                            WithTargetName(parameterVariable).
+                            Clone())
 
             mainBuilder.AppendLine()
         End Sub
@@ -1778,11 +1785,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 DecrementIndent().
                 AppendLine()
 
-            CreateAnnotations(aSequence,
-                              AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(sequenceVariable).
-                                         Clone())
+            CreateAnnotations(
+                aSequence,
+                AddressOf Generate,
+                parameters.Cloner.
+                            WithTargetName(sequenceVariable).
+                            Clone())
 
             mainBuilder.
                 Append(sequencesVariable).
@@ -1937,11 +1945,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine(")"c).
                 DecrementIndent()
 
-            CreateAnnotations(fragment,
-                              AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(overrideVariable).
-                                         Clone)
+            CreateAnnotations(
+                fragment,
+                AddressOf Generate,
+                parameters.Cloner.
+                            WithTargetName(overrideVariable).
+                            Clone)
 
             ' Using reflection because VB currently doesn't seem to be able to call a method that has
             ' an 'in' parameter if it's virtual.
@@ -1994,9 +2003,10 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Create(resultColumn, parameters)
             Next
 
-            CreateAnnotations(storedProcedure,
-                              AddressOf Generate,
-                              parameters)
+            CreateAnnotations(
+                storedProcedure,
+                AddressOf Generate,
+                parameters)
         End Sub
 
         ''' <summary>
@@ -2024,11 +2034,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(code.Literal(parameter.ForOriginalValue)).
                 AppendLine(")"c).DecrementIndent()
 
-            CreateAnnotations(parameter,
-                              AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(parameterVariable).
-                                         Clone)
+            CreateAnnotations(
+                parameter,
+                AddressOf Generate,
+                parameters.Cloner.
+                            WithTargetName(parameterVariable).
+                            Clone)
         End Sub
 
         ''' <summary>
@@ -2054,11 +2065,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Append(code.Literal(resultColumn.PropertyName)).
                 AppendLine(")"c).DecrementIndent()
 
-            CreateAnnotations(resultColumn,
-                              AddressOf Generate,
-                                parameters.Cloner.
-                                           WithTargetName(resultColumnVariable).
-                                           Clone)
+            CreateAnnotations(
+                resultColumn,
+                AddressOf Generate,
+                parameters.Cloner.
+                            WithTargetName(resultColumnVariable).
+                            Clone)
         End Sub
 
         ''' <summary>
@@ -2154,11 +2166,12 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 AppendLine(")"c).
                 DecrementIndent()
 
-            CreateAnnotations([overrides],
-                              AddressOf Generate,
-                              parameters.Cloner.
-                                         WithTargetName(overrideVariable).
-                                         Clone())
+            CreateAnnotations(
+                [overrides], AddressOf Generate,
+                parameters.Cloner.
+                            WithTargetName(overrideVariable).
+                            Clone())
+
 
             ' Using reflection because VB currently doesn't seem to be able to call a method that has
             ' an 'in' parameter if it's virtual.
@@ -2194,7 +2207,6 @@ Namespace Design.AnnotationCodeGeneratorProvider
 
         ''' <inheritdoc />
         Public Overrides Sub Generate(foreignKey As IForeignKey, parameters As VisualBasicRuntimeAnnotationCodeGeneratorParameters)
-
             If parameters.IsRuntime Then
                 parameters.Annotations.Remove(RelationalAnnotationNames.ForeignKeyMappings)
             End If
@@ -2450,7 +2462,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Annotatable,
                 parameters.
                     Cloner.
-                    WithAnnotations(Annotatable.GetAnnotations().
+                    WithAnnotations(Annotatable.
+                                        GetAnnotations().
                                         ToDictionary(Function(a) a.Name, Function(a) a.Value)).
                     WithIsRuntime(False).
                     Clone())
@@ -2459,7 +2472,8 @@ Namespace Design.AnnotationCodeGeneratorProvider
                 Annotatable,
                 parameters.
                     Cloner.
-                    WithAnnotations(Annotatable.GetRuntimeAnnotations().
+                    WithAnnotations(Annotatable.
+                                        GetRuntimeAnnotations().
                                         ToDictionary(Function(a) a.Name, Function(a) a.Value)).
                     WithIsRuntime(True).
                     Clone())

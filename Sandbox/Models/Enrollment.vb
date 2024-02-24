@@ -17,5 +17,4 @@
         D
         F
     End Enum
-
 End Namespace

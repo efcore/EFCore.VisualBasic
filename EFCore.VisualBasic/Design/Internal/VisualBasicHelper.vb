@@ -516,9 +516,9 @@ Namespace Design.Internal
 
             If valuesList.Count = 0 Then
                 builder.
-                    Append("New ").
+                    Append("System.Array.Empty(Of ").
                     Append(Reference(type)).
-                    Append("() {}")
+                    Append(")()")
             Else
 
                 Dim byteArray As Boolean

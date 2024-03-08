@@ -506,10 +506,10 @@ Namespace Design.Internal
         '''     doing so can result in application failures when updating to a new Entity Framework Core release.
         ''' </summary>
         Public Overridable Function Literal(Of T)(values As T(), Optional vertical As Boolean = False) As String Implements IVisualBasicHelper.Literal
-            Return ArrayLitetal(GetType(T), values, vertical)
+            Return ArrayLiteral(GetType(T), values, vertical)
         End Function
 
-        Private Function ArrayLitetal(type As Type, values As IEnumerable, Optional vertical As Boolean = False) As String
+        Private Function ArrayLiteral(type As Type, values As IEnumerable, Optional vertical As Boolean = False) As String
             Dim builder As New IndentedStringBuilder
 
             Dim valuesList = values.Cast(Of Object)().ToList()
@@ -853,7 +853,7 @@ Namespace Design.Internal
             End If
 
             If TypeOf value Is Array Then
-                Return ArrayLitetal(LiteralType.GetElementType(), DirectCast(value, Array))
+                Return ArrayLiteral(LiteralType.GetElementType(), DirectCast(value, Array))
             End If
 
             If TypeOf value Is ITuple AndAlso

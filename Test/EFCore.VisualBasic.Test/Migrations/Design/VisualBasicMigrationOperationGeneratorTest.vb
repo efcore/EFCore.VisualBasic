@@ -2624,7 +2624,7 @@ mb.Sql(""-- close to me"")"
 "mb.InsertData(
     table:=""People"",
     column:=""Tags"",
-    value:=New String() {})"
+    value:=System.Array.Empty(Of String))"
 
             Test(operation,
                 expectedCode,
@@ -2651,7 +2651,7 @@ mb.Sql(""-- close to me"")"
 "mb.InsertData(
     table:=""People"",
     columns:={""First Name"", ""Last Name"", ""Geometry""},
-    values:=New Object() {""John"", Nothing, New String() {}})"
+    values:=New Object() {""John"", Nothing, System.Array.Empty(Of String)})"
 
             Test(operation,
                 expectedCode,

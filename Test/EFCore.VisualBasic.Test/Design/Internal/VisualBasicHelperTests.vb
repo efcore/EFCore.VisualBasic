@@ -112,7 +112,7 @@ Namespace Design.Internal
         Public Sub Literal_works_when_empty_ByteArray()
             Literal_works(
                 New Byte() {},
-                "New Byte() {}")
+                "System.Array.Empty(Of Byte)")
         End Sub
 
         <ConditionalFact>
@@ -350,7 +350,7 @@ $"multi-line{nl}string with """,
         <ConditionalFact>
         Public Sub Literal_works_when_empty_StringArray()
             Dim literal = New VisualBasicHelper(TypeMappingSource).Literal(New String() {})
-            Assert.Equal("New String() {}", literal)
+            Assert.Equal("System.Array.Empty(Of String)", literal)
         End Sub
 
         <ConditionalFact>

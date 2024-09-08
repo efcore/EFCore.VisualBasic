@@ -6,7 +6,7 @@ Namespace Scaffolding.Internal
     Public Class ModelCodeGeneratorTestFixture
         Implements IDisposable
 
-        Public ReadOnly Property ProjectDir As TempDirectory = New TempDirectory()
+        Public ReadOnly Property ProjectDir As New TempDirectory()
 
         Public Sub New()
             Dim templatesDir = Path.Combine(ProjectDir, "CodeTemplates", "EFCore")
@@ -21,10 +21,10 @@ Namespace Scaffolding.Internal
                                               "EFCore")
 
             Dim destDbContext = Path.Combine(templatesDir, "DbContext.t4")
-            File.Copy(Path.Combine(VBTemplatesDir, "DbContext.t4"), destDbContext)
+            File.Copy(Path.Combine(VBTemplatesDir, "DbContext.t4"), destDbContext, True)
 
             Dim destEntityType = Path.Combine(templatesDir, "EntityType.t4")
-            File.Copy(Path.Combine(VBTemplatesDir, "EntityType.t4"), destEntityType)
+            File.Copy(Path.Combine(VBTemplatesDir, "EntityType.t4"), destEntityType, True)
         End Sub
 
         Public Sub Dispose() Implements IDisposable.Dispose

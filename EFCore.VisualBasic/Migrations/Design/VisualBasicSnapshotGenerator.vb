@@ -153,16 +153,15 @@ Namespace Migrations.Design
             Dim ownership = entityType.FindOwnership()
             Dim ownerNavigation = ownership?.PrincipalToDependent.Name
 
-            Dim GetOwnedName = Function(type As ITypeBase, simpleName As String, ownershipNavigation As String) As String
-                                   Return type.Name & "." & ownershipNavigation & "#" & simpleName
-                               End Function
-
             Dim entityTypeName = entityType.Name
             If ownerNavigation IsNot Nothing AndAlso
-               entityType.HasSharedClrType AndAlso
-               entityTypeName = GetOwnedName(ownership.PrincipalEntityType, entityType.ClrType.ShortDisplayName(), ownerNavigation) Then
+               entityType.HasSharedClrType Then
 
-                entityTypeName = entityType.ClrType.DisplayName()
+                If entityTypeName = ownership.PrincipalEntityType.GetOwnedName(entityType.ClrType.ShortDisplayName(), ownerNavigation) Then
+                    entityTypeName = entityType.ClrType.DisplayName()
+                ElseIf entityTypeName = ownership.PrincipalEntityType.GetOwnedName(entityType.ShortName(), ownerNavigation) Then
+                    entityTypeName = entityType.ShortName()
+                End If
             End If
 
             Dim entityTypeBuilderName = GenerateNestedBuilderName(builderName)
@@ -495,9 +494,10 @@ Namespace Migrations.Design
             NotNull([property], NameOf([property]))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim clrType = If(FindValueConverter([property])?.ProviderClrType.MakeNullable([property].IsNullable), [property].ClrType)
+            Dim clrType = If(FindValueConverter([property])?.ProviderClrType, [property].ClrType).MakeNullable([property].IsNullable)
 
-            Dim propertyBuilderName = $"{entityTypeBuilderName}.Property(Of {VBCode.Reference(clrType)})({VBCode.Literal([property].Name)})"
+            Dim propertyCall = If([property].IsPrimitiveCollection, "PrimitiveCollection", "Property")
+            Dim propertyBuilderName = $"{entityTypeBuilderName}.{propertyCall}(Of {VBCode.Reference(clrType)})({VBCode.Literal([property].Name)})"
 
             stringBuilder.
                 Append(propertyBuilderName)
@@ -596,7 +596,7 @@ Namespace Migrations.Design
         End Sub
 
         Private Shared Function FindValueConverter([property] As IProperty) As ValueConverter
-            Return If([property].GetValueConverter(), [property].GetTypeMapping().Converter)
+            Return [property].GetTypeMapping().Converter
         End Function
 
         '''  <summary>
@@ -946,62 +946,65 @@ Namespace Migrations.Design
                     If(discriminatorMappingCompleteAnnotation?.Value,
                         discriminatorValueAnnotation?.Value)) IsNot Nothing Then
 
-                stringBuilder.
+                Dim discriminatorProperty = entityType.FindDiscriminatorProperty()
+                If discriminatorProperty IsNot Nothing Then
+
+                    stringBuilder.
                     AppendLine().
                     Append(entityTypeBuilderName).
                     Append("."c).
                     Append("HasDiscriminator")
 
-                Dim discriminatorProperty = entityType.FindDiscriminatorProperty()
-                If discriminatorPropertyAnnotation?.Value IsNot Nothing AndAlso
-                   discriminatorProperty IsNot Nothing Then
+                    If discriminatorProperty.DeclaringType Is entityType AndAlso
+                       discriminatorProperty.Name <> "Discriminator" Then
 
-                    Dim propertyClrType = If(FindValueConverter(discriminatorProperty)?.
+                        Dim propertyClrType = If(FindValueConverter(discriminatorProperty)?.
                                                 ProviderClrType.
                                                 MakeNullable(discriminatorProperty.IsNullable),
                                              discriminatorProperty.ClrType)
 
-                    stringBuilder.
+                        stringBuilder.
                         Append("(Of ").
                         Append(VBCode.Reference(propertyClrType)).
                         Append(")(").
                         Append(VBCode.Literal(discriminatorProperty.Name)).
                         Append(")"c)
-                Else
-                    stringBuilder.
+                    Else
+                        stringBuilder.
                         Append("()")
-                End If
+                    End If
 
-                If discriminatorMappingCompleteAnnotation?.Value IsNot Nothing Then
-                    Dim value = CBool(discriminatorMappingCompleteAnnotation.Value)
+                    If discriminatorMappingCompleteAnnotation?.Value IsNot Nothing Then
+                        Dim value = CBool(discriminatorMappingCompleteAnnotation.Value)
 
-                    stringBuilder.
+                        stringBuilder.
                         Append("."c).
                         Append("IsComplete").
                         Append("("c).
                         Append(VBCode.Literal(value)).
                         Append(")"c)
-                End If
-
-                If discriminatorValueAnnotation?.Value IsNot Nothing Then
-                    Dim value = discriminatorValueAnnotation.Value
-
-                    If discriminatorProperty IsNot Nothing Then
-                        Dim valueConverter = FindValueConverter(discriminatorProperty)
-                        If valueConverter IsNot Nothing Then
-                            value = valueConverter.ConvertToProvider(value)
-                        End If
                     End If
 
-                    stringBuilder.
+                    If discriminatorValueAnnotation?.Value IsNot Nothing Then
+                        Dim value = discriminatorValueAnnotation.Value
+
+                        If discriminatorProperty IsNot Nothing Then
+                            Dim valueConverter = FindValueConverter(discriminatorProperty)
+                            If valueConverter IsNot Nothing Then
+                                value = valueConverter.ConvertToProvider(value)
+                            End If
+                        End If
+
+                        stringBuilder.
                         Append("."c).
                         Append("HasValue").
                         Append("("c).
                         Append(VBCode.UnknownLiteral(value)).
                         Append(")"c)
-                End If
+                    End If
 
-                stringBuilder.AppendLine()
+                    stringBuilder.AppendLine()
+                End If
             End If
 
             GenerateAnnotations(entityTypeBuilderName, entityType, stringBuilder, annotations, inChainedCall:=False)

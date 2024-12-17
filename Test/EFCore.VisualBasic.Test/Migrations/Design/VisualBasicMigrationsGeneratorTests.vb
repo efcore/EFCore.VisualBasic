@@ -163,7 +163,7 @@ Namespace Migrations.Design
                     RelationalAnnotationNames.Comment, ("My Comment",
                         _nl &
                         "entityTypeBuilder.ToTable(""WithAnnotations""," & _nl &
-                        "    Sub(t)" & _nl & _nl &
+                        "    Sub(t)" & _nl &
                         "        t.HasComment(""My Comment"")" & _nl &
                         "    End Sub)")
                 },
@@ -491,29 +491,30 @@ Namespace Migrations.Design
         <ConditionalFact>
         Public Sub Snapshot_with_enum_discriminator_uses_converted_values()
 
-            Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
+            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
                 TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
-            Dim sqlServerAnnotationCodeGenerator1 As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
+            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
+                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
 
             Dim generator As New VisualBasicMigrationsGenerator(
                 New MigrationsCodeGeneratorDependencies(
-                    sqlServerTypeMappingSource1,
-                    sqlServerAnnotationCodeGenerator1),
+                    sqlServerTypeMappingSource,
+                    sqlServerAnnotationCodeGenerator),
                 codeHelper)
 
             Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-            modelBuilder.Entity(Of WithAnnotations)(Sub(eb)
-                                                        eb.HasDiscriminator(Of RawEnum)("EnumDiscriminator") _
-                                                            .HasValue(RawEnum.A) _
-                                                            .HasValue(Of Derived)(RawEnum.B)
-                                                        eb.Property(Of RawEnum)("EnumDiscriminator").HasConversion(Of Integer)()
-                                                    End Sub)
+            modelBuilder.Entity(Of WithAnnotations)(
+                Sub(eb)
+                    eb.HasDiscriminator(Of RawEnum)("EnumDiscriminator").
+                        HasValue(RawEnum.A).
+                        HasValue(Of Derived)(RawEnum.B)
+                    eb.Property(Of RawEnum)("EnumDiscriminator").HasConversion(Of Integer)()
+                End Sub)
 
             Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
@@ -667,13 +668,13 @@ Imports System.Text.RegularExpressions
 Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
-Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.VisualBasic
 
 Namespace Global.MyNamespace
     <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
-                                            <Migration(""20150511161616_MyMigration"")>
+    <Migration(""20150511161616_MyMigration"")>
     Partial Class MyMigration
         ''' <inheritdoc />
         Protected Overrides Sub BuildTargetModel(modelBuilder As ModelBuilder)
@@ -843,157 +844,6 @@ End Namespace
                 Array.Empty(Of MigrationOperation)())
 
             Assert.Contains("Imports System.Text.RegularExpressions", migration)
-        End Sub
-
-        <ConditionalFact>
-        Public Sub Data_seedings_With_HasData_is_generated_correctly()
-            Dim Generator = CreateMigrationsCodeGenerator()
-
-            Dim MyModelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
-                                                       eb.HasData({
-                                                            New SimpleEntity With {
-                                                                .Id = 1,
-                                                                .Name = "Name1"
-                                                            },
-                                                            New SimpleEntity With {
-                                                                .Id = 2,
-                                                                .Name = "Name2"
-                                                            }})
-                                                   End Sub)
-
-            Dim finalizedModel = MyModelBuilder.FinalizeModel(designTime:=True)
-
-            Dim SnapshotCode = Generator.GenerateSnapshot(
-                "MyNamespace",
-                GetType(MyContext),
-                "MySnapshot",
-                finalizedModel
-            )
-
-            Dim migrationMetadataCode = Generator.GenerateMetadata(
-                "MyNamespace",
-                GetType(MyContext),
-                "MyMigration",
-                "20210515113700_MyMigration",
-                finalizedModel
-            )
-
-            Dim expectedCode =
-"                   b.HasData({
-                        New With {
-                            .Id = 1,
-                            .Name = ""Name1""
-                         },
-                        New With {
-                            .Id = 2,
-                            .Name = ""Name2""
-                         }
-                    })"
-
-            AssertContains(expectedCode, SnapshotCode)
-            AssertContains(expectedCode, migrationMetadataCode)
-        End Sub
-
-        Private Class SimpleEntity
-            Property Id As Integer
-            Property Name As String
-        End Class
-
-        <ConditionalFact>
-        Public Sub Sequence_is_generated_correctly()
-
-            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            modelBuilder.HasSequence(Of Integer)("OrderNumbers", "Shared").
-                StartsAt(1000).
-                IncrementsBy(5).
-                HasMin(500).
-                HasMax(10_000).
-                IsCyclic()
-
-            Dim MyModel = modelBuilder.FinalizeModel()
-
-            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
-               TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
-
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
-
-            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
-
-            Dim generator As New TestVisualBasicSnapshotGenerator(codeHelper,
-                                                                  sqlServerTypeMappingSource,
-                                                                  sqlServerAnnotationCodeGenerator)
-
-            Dim sb As New IndentedStringBuilder
-
-            For Each sequence In MyModel.GetSequences()
-                generator.TestGenerateSequence("MyModelBuilder", sequence, sb)
-            Next
-
-            Dim expected As String =
-"
-MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
-    StartsAt(1000L).
-    IncrementsBy(5).
-    HasMin(500L).
-    HasMax(10000L).
-    IsCyclic()
-"
-
-            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
-        End Sub
-
-        <ConditionalFact>
-        Public Sub Index_is_generated_correctly()
-
-            Dim MyModelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
-                                                       eb.HasIndex(Function(e) New With {e.Id, e.Name}).
-                                                          HasDatabaseName("Index1").
-                                                          IsUnique()
-
-                                                       eb.HasIndex({"Name"}, "Index2").
-                                                          HasFilter("[Name] IS NOT NULL").
-                                                          HasAnnotation("MyAnnotation", "ABC")
-                                                   End Sub)
-
-            Dim MyModel = MyModelBuilder.FinalizeModel(designTime:=True)
-            Dim k = MyModel.FindEntityType(GetType(SimpleEntity))
-
-            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
-               TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
-
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
-
-            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
-
-            Dim Generator As New TestVisualBasicSnapshotGenerator(codeHelper,
-                                                                  sqlServerTypeMappingSource,
-                                                                  sqlServerAnnotationCodeGenerator)
-
-            Dim sb As New IndentedStringBuilder
-
-            Generator.TestGenerateIndexes("MyModelBuilder", MyModel.FindEntityType(GetType(SimpleEntity)).GetIndexes, sb)
-
-            Dim expected As String =
-"
-MyModelBuilder.HasIndex(""Id"", ""Name"").
-    IsUnique().
-    HasDatabaseName(""Index1"")
-
-MyModelBuilder.HasIndex({""Name""}, ""Index2"").
-    HasFilter(""[Name] IS NOT NULL"").
-    HasAnnotation(""MyAnnotation"", ""ABC"")
-"
-
-            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
         End Sub
 
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator

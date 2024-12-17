@@ -184,7 +184,7 @@ Namespace Migrations.Design
                 stringBuilder.
                     Append("Sub(").
                     Append(entityTypeBuilderName).
-                    AppendLine(")"c)
+                    Append(")"c)
 
                 Using stringBuilder.Indent()
                     GenerateBaseType(entityTypeBuilderName, entityType.BaseType, stringBuilder)
@@ -298,7 +298,7 @@ Namespace Migrations.Design
                 AppendLine(","c)
 
             Using stringBuilder.Indent()
-                stringBuilder.AppendLine("Sub(b)")
+                stringBuilder.Append("Sub(b)")
 
                 Using stringBuilder.Indent()
                     GenerateRelationships("b", entityType, stringBuilder)
@@ -469,13 +469,7 @@ Namespace Migrations.Design
             NotNull(properties, NameOf(properties))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim first = True
             For Each [property] In properties
-                If first Then
-                    first = False
-                Else
-                    stringBuilder.AppendLine()
-                End If
                 GenerateProperty(entityTypeBuilderName, [property], stringBuilder)
             Next
         End Sub
@@ -500,6 +494,7 @@ Namespace Migrations.Design
             Dim propertyBuilderName = $"{entityTypeBuilderName}.{propertyCall}(Of {VBCode.Reference(clrType)})({VBCode.Literal([property].Name)})"
 
             stringBuilder.
+                AppendLine().
                 Append(propertyBuilderName)
 
             ' Note that GenerateAnnotations below does the corresponding decrement
@@ -640,8 +635,7 @@ Namespace Migrations.Design
                     If complexProperty.IsNullable <> complexProperty.ClrType.IsNullableType() Then
                         stringBuilder.
                             Append(complexTypeBuilderName).
-                            AppendLine(".IsRequired()").
-                            AppendLine()
+                            AppendLine(".IsRequired()")
                     End If
 
                     GenerateProperties(complexTypeBuilderName, ComplexType.GetDeclaredProperties(), stringBuilder)
@@ -1101,19 +1095,18 @@ Namespace Migrations.Design
             End If
 
             If requiresTableBuilder Then
-
                 If explicitName Then
                     stringBuilder.AppendLine(","c)
                 End If
 
                 Using stringBuilder.Indent()
-                    stringBuilder.AppendLine("Sub(t)")
+                    stringBuilder.Append("Sub(t)")
 
                     Using stringBuilder.Indent()
                         If isExcludedFromMigrations Then
                             stringBuilder.
-                                AppendLine("t.ExcludeFromMigrations()").
-                                AppendLine()
+                                AppendLine().
+                                AppendLine("t.ExcludeFromMigrations()")
                         End If
 
                         If comment IsNot Nothing Then
@@ -1156,7 +1149,7 @@ Namespace Migrations.Design
                     AppendLine(","c)
 
                 Using stringBuilder.Indent()
-                    stringBuilder.AppendLine("Sub(t)")
+                    stringBuilder.Append("Sub(t)")
 
                     Using stringBuilder.Indent()
                         GenerateTriggers("t", entityType, Table.Name, Table.Schema, stringBuilder)
@@ -1227,7 +1220,7 @@ Namespace Migrations.Design
                 stringBuilder.AppendLine(","c)
 
                 Using stringBuilder.Indent()
-                    stringBuilder.AppendLine("Sub(v)")
+                    stringBuilder.Append("Sub(v)")
 
                     Using stringBuilder.Indent()
                         GeneratePropertyOverrides("v", entityType, View.Value, stringBuilder)
@@ -1256,7 +1249,7 @@ Namespace Migrations.Design
                     AppendLine(","c)
 
                 Using stringBuilder.Indent()
-                    stringBuilder.AppendLine("Sub(v)")
+                    stringBuilder.Append("Sub(v)")
 
                     Using stringBuilder.Indent()
                         GeneratePropertyOverrides("v", entityType, fragment.StoreObject, stringBuilder)
@@ -1352,18 +1345,22 @@ Namespace Migrations.Design
                                 FilterIgnoredAnnotations(checkConstraint.GetAnnotations()).
                                 ToDictionary(Function(a) a.Name, Function(a) a)
 
-            If hasNonDefaultName Then
-                stringBuilder.
-                    AppendLine("."c).
-                    Append("HasName(").
-                    Append(VBCode.Literal(checkConstraint.Name)).
-                    Append(")"c)
-            End If
+            Using stringBuilder.Indent()
+                If hasNonDefaultName Then
+                    stringBuilder.
+                        AppendLine("."c).
+                        Append("HasName(").
+                        Append(VBCode.Literal(checkConstraint.Name)).
+                        Append(")"c)
+                End If
 
-            If annotations.Count > 0 Then
-                GenerateAnnotations("t", checkConstraint, stringBuilder, annotations, inChainedCall:=True)
-                stringBuilder.IncrementIndent()
-            End If
+                If annotations.Count > 0 Then
+                    GenerateAnnotations("t", checkConstraint, stringBuilder, annotations, inChainedCall:=True)
+                    stringBuilder.IncrementIndent()
+                Else
+                    stringBuilder.AppendLine()
+                End If
+            End Using
         End Sub
 
         ''' <summary>
@@ -1428,8 +1425,8 @@ Namespace Migrations.Design
             Dim nameAnnotation As IAnnotation = Nothing
             If annotations.TryGetAndRemove(RelationalAnnotationNames.Name, nameAnnotation) Then
                 stringBuilder.
-                    AppendLine().
-                    Append(".HasDatabaseName(").
+                    AppendLine("."c).
+                    Append("HasDatabaseName(").
                     Append(VBCode.Literal(CStr(nameAnnotation.Value))).
                     Append(")"c)
             End If
@@ -1521,13 +1518,8 @@ Namespace Migrations.Design
             NotNull(foreignKeys, NameOf(foreignKeys))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim isFirst = True
             For Each foreignKey In foreignKeys
-                If isFirst Then
-                    isFirst = False
-                Else
-                    stringBuilder.AppendLine()
-                End If
+                stringBuilder.AppendLine()
 
                 GenerateForeignKey(entityTypeBuilderName, foreignKey, stringBuilder)
             Next
@@ -1695,7 +1687,7 @@ Namespace Migrations.Design
                 AppendLine(","c)
 
             Using stringBuilder.Indent()
-                stringBuilder.AppendLine("Sub(b)")
+                stringBuilder.Append("Sub(b)")
 
                 Using stringBuilder.Indent()
                     GenerateNavigations("b", entityType.GetDeclaredNavigations().
@@ -1721,13 +1713,8 @@ Namespace Migrations.Design
             NotNull(navigations, NameOf(navigations))
             NotNull(stringBuilder, NameOf(stringBuilder))
 
-            Dim isFirst = True
             For Each navigation In navigations
-                If isFirst Then
-                    isFirst = False
-                Else
-                    stringBuilder.AppendLine()
-                End If
+                stringBuilder.AppendLine()
 
                 GenerateNavigation(entityTypeBuilderName, navigation, stringBuilder)
             Next
@@ -1849,7 +1836,7 @@ Namespace Migrations.Design
                         stringBuilder.AppendLine()
                     End Using
 
-                    stringBuilder.Append(" }")
+                    stringBuilder.Append("}"c)
                 Next
             End Using
 

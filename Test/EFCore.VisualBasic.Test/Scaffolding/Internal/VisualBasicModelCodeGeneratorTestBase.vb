@@ -34,14 +34,16 @@ Namespace Scaffolding.Internal
                                   Instance.
                                   CreateConventionBuilder(addServices:=AddressOf AddModelServices)
 
-            Dim Model = modelBuilder.FinalizeModel(designTime:=True, skipValidation:=True)
+            buildModel(modelBuilder)
+
+            Dim model = modelBuilder.FinalizeModel(designTime:=True, skipValidation:=True)
 
             Dim services = CreateServices()
             AddScaffoldingServices(services)
 
             Dim serviceProvider = services.BuildServiceProvider(validateScopes:=True)
 
-            Test(serviceProvider, Model, options, assertScaffold, assertModel, skipBuild)
+            Test(serviceProvider, model, options, assertScaffold, assertModel, skipBuild)
         End Sub
 
         Protected Sub Test(buildModel As Func(Of IServiceProvider, IModel),

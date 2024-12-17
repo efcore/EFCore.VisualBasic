@@ -1283,11 +1283,11 @@ Namespace TestNamespace
                     entity.ToTable(Sub(tb) tb.IsTemporal(Sub(ttb)
                             ttb.UseHistoryTable(""CustomerHistory"")
                             ttb.
-                            HasPeriodStart(""PeriodStart"").
-                            HasColumnName(""PeriodStart"")
+                                HasPeriodStart(""PeriodStart"").
+                                HasColumnName(""PeriodStart"")
                             ttb.
-                            HasPeriodEnd(""PeriodEnd"").
-                            HasColumnName(""PeriodEnd"")
+                                HasPeriodEnd(""PeriodEnd"").
+                                HasColumnName(""PeriodEnd"")
                         End Sub))
                 End Sub)
 

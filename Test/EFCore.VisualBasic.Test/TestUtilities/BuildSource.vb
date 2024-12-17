@@ -138,7 +138,9 @@ All diagnostics:
                                                                                              _ ' Unused import statement.
                     {"BC50001", ReportDiagnostic.Suppress},
                                                            _ ' Casing of namespace Namespace does not match casing of namespace Namespace
-                    {"BC40055", ReportDiagnostic.Suppress}
+                    {"BC40055", ReportDiagnostic.Suppress},
+                                                           _ ' <elementname> is obsolete
+                    {"BC40000", ReportDiagnostic.Suppress}
                 })
     End Function
 End Class

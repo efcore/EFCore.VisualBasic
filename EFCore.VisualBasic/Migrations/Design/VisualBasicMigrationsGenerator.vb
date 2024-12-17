@@ -31,9 +31,11 @@ Namespace Migrations.Design
             VBCode = NotNull(vbHelper, NameOf(vbHelper))
 
             VisualBasicMigrationOperationGenerator = New VisualBasicMigrationOperationGenerator(vbHelper)
+#Disable Warning BC40008 ' Type or member is obsolete
             VisualBasicSnapshotGenerator = New VisualBasicSnapshotGenerator(dependencies.AnnotationCodeGenerator,
                                                                             dependencies.RelationalTypeMappingSource,
                                                                             vbHelper)
+#Enable Warning BC40008 ' Type or member is obsolete
         End Sub
 
         ''' <summary>
@@ -188,8 +190,8 @@ Namespace Migrations.Design
             Dim namespaces = New List(Of String) From {
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.EntityFrameworkCore.Infrastructure",
-                "Microsoft.EntityFrameworkCore.Metadata",
                 "Microsoft.EntityFrameworkCore.Migrations",
+                "Microsoft.EntityFrameworkCore.Storage.ValueConversion",
                 "Microsoft.VisualBasic"
             }
 
@@ -270,8 +272,7 @@ Namespace Migrations.Design
             Dim namespaces = New List(Of String) From {
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.EntityFrameworkCore.Infrastructure",
-                "Microsoft.EntityFrameworkCore.Metadata",
-                "Microsoft.EntityFrameworkCore.Migrations",
+                "Microsoft.EntityFrameworkCore.Storage.ValueConversion",
                 "Microsoft.VisualBasic"
             }
 

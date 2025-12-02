@@ -350,33 +350,5 @@ Namespace Design
         ''' <param name="importedTypeNamespace">The fully qualified namespace of the imported type</param>
         ''' <returns></returns>
         Function ImportsClause(currentTypeNamespace As String, importedTypeNamespace As String) As String
-
-        ''' <summary>
-        '''     Translates a node representing a statement into source code that would produce it.
-        ''' </summary>
-        ''' <param name="node">The node to be translated.</param>
-        ''' <param name="collectedNamespaces">Any namespaces required by the translated code will be added to this set.</param>
-        ''' <returns>Source code that would produce <paramref name="node" />.</returns>
-        ''' <remarks>
-        '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
-        '''     the same compatibility standards as public APIs. It may be changed Or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution And knowing that
-        '''     doing so can result in application failures when updating to a New Entity Framework Core release.
-        ''' </remarks>
-        Function Statement(node As Expressions.Expression, collectedNamespaces As ISet(Of String)) As String
-
-        ''' <summary>
-        '''     Translates a node representing an expression into source code that would produce it.
-        ''' </summary>
-        ''' <param name="node">The node to be translated.</param>
-        ''' <param name="collectedNamespaces">Any namespaces required by the translated code will be added to this set.</param>
-        ''' <returns>Source code that would produce  <paramref name="node" />.</returns>
-        ''' <remarks>
-        '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
-        '''     the same compatibility standards as public APIs. It may be changed Or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution And knowing that
-        '''     doing so can result in application failures when updating to a New Entity Framework Core release.
-        ''' </remarks>
-        Function Expression(node As Expressions.Expression, collectedNamespaces As ISet(Of String)) As String
     End Interface
 End Namespace

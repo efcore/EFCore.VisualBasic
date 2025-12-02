@@ -15,10 +15,6 @@ Namespace Design
                 .AddSingleton(Of IVisualBasicHelper, VisualBasicHelper)()
                 .AddSingleton(Of IMigrationsCodeGenerator, VisualBasicMigrationsGenerator)()
                 .AddSingleton(Of IModelCodeGenerator, VisualBasicModelGenerator)()
-
-                'Compiled Models
-                .AddSingleton(Of IVisualBasicRuntimeAnnotationCodeGenerator, VisualBasicRuntimeAnnotationCodeGenerator)
-                .AddSingleton(Of ICompiledModelCodeGenerator, VisualBasicRuntimeModelCodeGenerator)
             End With
         End Sub
     End Class

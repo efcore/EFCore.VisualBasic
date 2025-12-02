@@ -75,12 +75,12 @@ Namespace Scaffolding.Internal
             'output DbContext .vb file
             Dim dbContextFileName = options.ContextName & host.Extension
             Dim resultingFiles As New ScaffoldedModel With {
-                .ContextFile = New ScaffoldedFile With {
-                    .Path = If(options.ContextDir IsNot Nothing,
+                .ContextFile = New ScaffoldedFile(
+                    path:=If(options.ContextDir IsNot Nothing,
                                 Path.Combine(options.ContextDir, dbContextFileName),
                                 dbContextFileName),
-                    .Code = generatedCode
-                }
+                    code:=generatedCode
+                )
             }
 
             For Each entityType In model.GetEntityTypes()
@@ -104,13 +104,13 @@ Namespace Scaffolding.Internal
                 generatedCode = ProcessTemplate(entityTypeTemplate)
                 If String.IsNullOrWhiteSpace(generatedCode) Then Continue For
 
-                ' output EntityType poco.vb file
+                ' output EntityType poco .vb file
                 Dim entityTypeFileName = entityType.Name & host.Extension
                 resultingFiles.AdditionalFiles.Add(
-                    New ScaffoldedFile With {
-                        .Path = entityTypeFileName,
-                        .Code = generatedCode
-                    })
+                    New ScaffoldedFile(
+                        path:=entityTypeFileName,
+                        code:=generatedCode
+                    ))
             Next
 
             Return resultingFiles

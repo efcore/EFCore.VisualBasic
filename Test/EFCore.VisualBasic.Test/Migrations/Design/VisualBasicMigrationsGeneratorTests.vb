@@ -1,6 +1,5 @@
 ﻿Imports System.Linq.Expressions
 Imports System.Reflection
-Imports System.Text
 Imports System.Text.RegularExpressions
 Imports EntityFrameworkCore.VisualBasic.Design
 Imports EntityFrameworkCore.VisualBasic.Design.Internal
@@ -22,13 +21,12 @@ Imports Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal
 Imports Microsoft.EntityFrameworkCore.Storage
 Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.EntityFrameworkCore.TestUtilities
-Imports Microsoft.EntityFrameworkCore.ValueGeneration
 Imports Microsoft.Extensions.DependencyInjection
 Imports Xunit
 
 Namespace Migrations.Design
 
-    Public Class VisualBasicMigrationsGeneratorTests
+    Partial Public Class VisualBasicMigrationsGeneratorTests
 
         Private Shared ReadOnly _nl As String = Environment.NewLine
         Private Shared ReadOnly _toTable As String = _nl & "entityTypeBuilder.ToTable(""WithAnnotations"")"
@@ -113,10 +111,12 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.TphMappingStrategy,
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
+                RelationalAnnotationNames.RelationalModelFactory,
                 RelationalAnnotationNames.ModelDependencies,
                 RelationalAnnotationNames.FieldValueGetter,
                 RelationalAnnotationNames.JsonPropertyName,
                 RelationalAnnotationNames.ContainerColumnName, ' Appears On entity type but requires specific model (i.e. owned types that can map To json, otherwise validation throws)
+                RelationalAnnotationNames.ContainerColumnType,
                 RelationalAnnotationNames.ContainerColumnTypeMapping,
                 RelationalAnnotationNames.StoreType}
 #Enable Warning BC40000 ' Type or member is obsolete
@@ -157,18 +157,13 @@ Namespace Migrations.Design
                 },
                 {
                     CoreAnnotationNames.DiscriminatorValue, ("MyDiscriminatorValue",
-                        _toTable & _nl &
-                        _nl &
-                        "entityTypeBuilder.HasDiscriminator" &
-                        "()." &
-                        NameOf(DiscriminatorBuilder.HasValue) &
-                        "(""MyDiscriminatorValue"")")
+                        _toTable)
                 },
                 {
                     RelationalAnnotationNames.Comment, ("My Comment",
                         _nl &
                         "entityTypeBuilder.ToTable(""WithAnnotations""," & _nl &
-                        "    Sub(t)" & _nl & _nl &
+                        "    Sub(t)" & _nl &
                         "        t.HasComment(""My Comment"")" & _nl &
                         "    End Sub)")
                 },
@@ -226,7 +221,9 @@ Namespace Migrations.Design
                 CoreAnnotationNames.DiscriminatorProperty,
                 CoreAnnotationNames.DiscriminatorValue,
                 CoreAnnotationNames.InverseNavigations,
+                CoreAnnotationNames.InverseNavigationsNoAttribute,
                 CoreAnnotationNames.NavigationCandidates,
+                CoreAnnotationNames.NavigationCandidatesNoAttribute,
                 CoreAnnotationNames.AmbiguousNavigations,
                 CoreAnnotationNames.DuplicateServiceProperties,
                 CoreAnnotationNames.AdHocModel,
@@ -273,9 +270,11 @@ Namespace Migrations.Design
                 RelationalAnnotationNames.TphMappingStrategy,
                 RelationalAnnotationNames.TptMappingStrategy,
                 RelationalAnnotationNames.RelationalModel,
+                RelationalAnnotationNames.RelationalModelFactory,
                 RelationalAnnotationNames.ModelDependencies,
                 RelationalAnnotationNames.FieldValueGetter,
                 RelationalAnnotationNames.ContainerColumnName,
+                RelationalAnnotationNames.ContainerColumnType,
                 RelationalAnnotationNames.ContainerColumnTypeMapping,
                 RelationalAnnotationNames.JsonPropertyName,
                 RelationalAnnotationNames.StoreType}
@@ -393,11 +392,30 @@ Namespace Migrations.Design
                               NameOf(CoreAnnotationNames) & "." & NameOf(CoreAnnotationNames.AllNames) & " doesn't contain " & annotationName)
             Next
 
-            For Each field In coreAnnotations.Concat(GetType(RelationalAnnotationNames).
-                                                     GetFields().
-                                                     Where(Function(f) f.Name <> "Prefix"))
+            Dim relationalAnnotations =
+                GetType(RelationalAnnotationNames).
+                    GetFields().
+                    Where(Function(f) f.FieldType = GetType(String) AndAlso f.Name <> "Prefix").ToList()
 
-                Dim annotationName As String = CStr(field.GetValue(Nothing))
+            For Each field In relationalAnnotations
+                Dim annotationName = CStr(field.GetValue(Nothing))
+
+                If field.Name <> NameOf(RelationalAnnotationNames.TpcMappingStrategy) AndAlso
+                   field.Name <> NameOf(RelationalAnnotationNames.TptMappingStrategy) AndAlso
+                   field.Name <> NameOf(RelationalAnnotationNames.TphMappingStrategy) Then
+
+                    Assert.True(
+                        RelationalAnnotationNames.AllNames.Contains(annotationName),
+                        NameOf(RelationalAnnotationNames) &
+                            "." &
+                            NameOf(RelationalAnnotationNames.AllNames) &
+                            " doesn't contain " &
+                            annotationName)
+                End If
+            Next
+
+            For Each field In coreAnnotations.Concat(relationalAnnotations)
+                Dim annotationName = CStr(field.GetValue(Nothing))
 
                 If Not invalidAnnotations.Contains(annotationName) Then
                     Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
@@ -414,7 +432,7 @@ Namespace Migrations.Design
                         ' Generator should not throw--either update above, or add to ignored list in generator
                         test(generator, metadataItem, sb)
                     Catch e As Exception
-                        Assert.False(True, $"Annotation '{annotationName}' was not handled by the code generator: {e.Message}")
+                        Assert.Fail($"Annotation '{annotationName}' was not handled by the code generator: {e.Message}")
                     End Try
 
                     Try
@@ -473,29 +491,30 @@ Namespace Migrations.Design
         <ConditionalFact>
         Public Sub Snapshot_with_enum_discriminator_uses_converted_values()
 
-            Dim sqlServerTypeMappingSource1 As New SqlServerTypeMappingSource(
+            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
                 TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
                 TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
 
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource1)
+            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
 
-            Dim sqlServerAnnotationCodeGenerator1 As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource1))
+            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
+                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
 
             Dim generator As New VisualBasicMigrationsGenerator(
                 New MigrationsCodeGeneratorDependencies(
-                    sqlServerTypeMappingSource1,
-                    sqlServerAnnotationCodeGenerator1),
+                    sqlServerTypeMappingSource,
+                    sqlServerAnnotationCodeGenerator),
                 codeHelper)
 
             Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
             modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-            modelBuilder.Entity(Of WithAnnotations)(Sub(eb)
-                                                        eb.HasDiscriminator(Of RawEnum)("EnumDiscriminator") _
-                                                            .HasValue(RawEnum.A) _
-                                                            .HasValue(Of Derived)(RawEnum.B)
-                                                        eb.Property(Of RawEnum)("EnumDiscriminator").HasConversion(Of Integer)()
-                                                    End Sub)
+            modelBuilder.Entity(Of WithAnnotations)(
+                Sub(eb)
+                    eb.HasDiscriminator(Of RawEnum)("EnumDiscriminator").
+                        HasValue(RawEnum.A).
+                        HasValue(Of Derived)(RawEnum.B)
+                    eb.Property(Of RawEnum)("EnumDiscriminator").HasConversion(Of Integer)()
+                End Sub)
 
             Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
 
@@ -569,7 +588,8 @@ Namespace Migrations.Design
 
             Dim migrationCode = generator.GenerateMigration("MyNamespace",
                                                             "MyMigration",
-                                                            {sqlOp,
+                                                            {
+                                                                sqlOp,
                                                                 alterColumnOp,
                                                                 AddColumnOperation,
                                                                 InsertDataOperation
@@ -623,7 +643,7 @@ End Namespace
 
             Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(configureConventions:=Sub(c) c.RemoveAllConventions())
             modelBuilder.HasAnnotation("Some:EnumValue", RegexOptions.Multiline)
-            modelBuilder.HasAnnotation(RelationalAnnotationNames.DbFunctions, New SortedDictionary(Of String, IDbFunction)())
+            modelBuilder.HasAnnotation(RelationalAnnotationNames.DbFunctions, New Dictionary(Of String, IDbFunction)())
             modelBuilder.Entity("T1", Sub(eb)
                                           eb.Property(Of Integer)("Id")
                                           eb.Property(Of String)("C2").IsRequired()
@@ -648,8 +668,8 @@ Imports System.Text.RegularExpressions
 Imports EntityFrameworkCore.VisualBasic.Migrations.Design
 Imports Microsoft.EntityFrameworkCore
 Imports Microsoft.EntityFrameworkCore.Infrastructure
-Imports Microsoft.EntityFrameworkCore.Metadata
 Imports Microsoft.EntityFrameworkCore.Migrations
+Imports Microsoft.EntityFrameworkCore.Storage.ValueConversion
 Imports Microsoft.VisualBasic
 
 Namespace Global.MyNamespace
@@ -731,354 +751,15 @@ End Namespace
             Public ReadOnly Property Id As Integer
         End Class
 
-        <ConditionalFact>
-        Public Sub Snapshots_compile()
-            Dim generator = CreateMigrationsCodeGenerator()
+        Private Function CompileModelSnapshot(code As String, modelSnapshotTypeName As String) As ModelSnapshot
 
-            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-            modelBuilder.Entity(Of EntityWithConstructorBinding)(
-                    Sub(x)
-                        x.Property(Function(e) e.Id)
-
-                        x.Property(Of Guid)("PropertyWithValueGenerator").HasValueGenerator(Of GuidValueGenerator)()
-                    End Sub)
-            modelBuilder.HasDbFunction(Function() MyDbFunction())
-
-            Dim model1 = modelBuilder.Model
-            model1.Item("Some:EnumValue") = RegexOptions.Multiline
-
-            Dim entityType = model1.AddEntityType("Cheese")
-            Dim property1 = entityType.AddProperty("Pickle", GetType(StringBuilder))
-            property1.SetValueConverter(New ValueConverter(Of StringBuilder, String)(
-                                            Function(v) v.ToString(), Function(v) New StringBuilder(v), New ConverterMappingHints(size:=10)))
-
-            Dim property2 = entityType.AddProperty("Ham", GetType(RawEnum))
-            property2.SetValueConverter(New ValueConverter(Of RawEnum, String)(
-                                            Function(v) v.ToString(),
-                                            Function(v) DirectCast([Enum].Parse(GetType(RawEnum), v), RawEnum),
-                                            New ConverterMappingHints(size:=10)))
-
-            entityType.SetPrimaryKey(property2)
-
-            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
-
-            Dim modelSnapshotCode = generator.GenerateSnapshot(
-                "MyNamespace",
-                GetType(MyContext),
-                "MySnapshot",
-                finalizedModel)
-
-            Assert.Equal(
-"' <auto-generated />
-Imports System
-Imports System.Text.RegularExpressions
-Imports EntityFrameworkCore.VisualBasic.Migrations.Design
-Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Infrastructure
-Imports Microsoft.EntityFrameworkCore.Metadata
-Imports Microsoft.EntityFrameworkCore.Migrations
-Imports Microsoft.VisualBasic
-
-Namespace Global.MyNamespace
-    <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
-    Partial Class MySnapshot
-        Inherits ModelSnapshot
-
-        Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)
-            modelBuilder.HasAnnotation(""Some:EnumValue"", RegexOptions.Multiline)
-
-            modelBuilder.Entity(""Cheese"",
-                Sub(b)
-                    b.Property(Of String)(""Ham"").
-                        HasColumnType(""just_string(10)"")
-
-                    b.Property(Of String)(""Pickle"").
-                        HasColumnType(""just_string(10)"")
-
-                    b.HasKey(""Ham"")
-
-                    b.ToTable(""Cheese"")
-                End Sub)
-
-            modelBuilder.Entity(""EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithConstructorBinding"",
-                Sub(b)
-                    b.Property(Of Integer)(""Id"").
-                        ValueGeneratedOnAdd().
-                        HasColumnType(""default_int_mapping"")
-
-                    b.Property(Of Guid)(""PropertyWithValueGenerator"").
-                        HasColumnType(""default_guid_mapping"")
-
-                    b.HasKey(""Id"")
-
-                    b.ToTable(""EntityWithConstructorBinding"")
-                End Sub)
-        End Sub
-    End Class
-End Namespace
-", modelSnapshotCode, ignoreLineEndingDifferences:=True)
-
-            Dim snapshot = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot")
-            Assert.Equal(2, snapshot.Model.GetEntityTypes().Count())
-        End Sub
-
-        <ConditionalFact>
-        Public Sub Snapshot_with_default_values_are_round_tripped()
-            Dim generator = CreateMigrationsCodeGenerator()
-
-            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-            modelBuilder.Entity(Of EntityWithEveryPrimitive)(
-                Sub(eb)
-                    eb.Property(Function(e) e.Boolean).HasDefaultValue(False)
-                    eb.Property(Function(e) e.Byte).HasDefaultValue(Byte.MinValue)
-                    eb.Property(Function(e) e.ByteArray).HasDefaultValue(New Byte() {0})
-                    eb.Property(Function(e) e.Char).HasDefaultValue("0"c)
-                    eb.Property(Function(e) e.Date).HasDefaultValue(Date.MinValue)
-                    eb.Property(Function(e) e.DateTimeOffset).HasDefaultValue(DateTimeOffset.MinValue)
-                    eb.Property(Function(e) e.Decimal).HasDefaultValue(Decimal.MinValue)
-                    eb.Property(Function(e) e.Double).HasDefaultValue(Double.MinValue) 'double.NegativeInfinity
-                    eb.Property(Function(e) e.Enum).HasDefaultValue(Enum1.Default)
-                    eb.Property(Function(e) e.NullableEnum).HasDefaultValue(Enum1.Default).HasConversion(Of String)()
-                    eb.Property(Function(e) e.Guid).HasDefaultValue(Guid.NewGuid())
-                    eb.Property(Function(e) e.Int16).HasDefaultValue(Short.MaxValue)
-                    eb.Property(Function(e) e.Int32).HasDefaultValue(Integer.MaxValue)
-                    eb.Property(Function(e) e.Int64).HasDefaultValue(Long.MaxValue)
-                    eb.Property(Function(e) e.Single).HasDefaultValue(Single.Epsilon)
-                    eb.Property(Function(e) e.SByte).HasDefaultValue(SByte.MinValue)
-                    eb.Property(Function(e) e.String).HasDefaultValue("""")
-                    eb.Property(Function(e) e.TimeSpan).HasDefaultValue(TimeSpan.MaxValue)
-                    eb.Property(Function(e) e.UInt16).HasDefaultValue(UShort.MinValue)
-                    eb.Property(Function(e) e.UInt32).HasDefaultValue(UInteger.MinValue)
-                    eb.Property(Function(e) e.UInt64).HasDefaultValue(ULong.MinValue)
-                    eb.Property(Function(e) e.NullableBoolean).HasDefaultValue(True)
-                    eb.Property(Function(e) e.NullableByte).HasDefaultValue(Byte.MaxValue)
-                    eb.Property(Function(e) e.NullableChar).HasDefaultValue("'"c)
-                    eb.Property(Function(e) e.NullableDate).HasDefaultValue(Date.MaxValue)
-                    eb.Property(Function(e) e.NullableDateTimeOffset).HasDefaultValue(DateTimeOffset.MaxValue)
-                    eb.Property(Function(e) e.NullableDecimal).HasDefaultValue(Decimal.MaxValue)
-                    eb.Property(Function(e) e.NullableDouble).HasDefaultValue(0.6822871999174)
-                    eb.Property(Function(e) e.NullableEnum).HasDefaultValue(Enum1.One Or Enum1.Two)
-                    eb.Property(Function(e) e.NullableStringEnum).HasDefaultValue(Enum1.One).HasConversion(Of String)()
-                    eb.Property(Function(e) e.NullableGuid).HasDefaultValue(New Guid)
-                    eb.Property(Function(e) e.NullableInt16).HasDefaultValue(Short.MinValue)
-                    eb.Property(Function(e) e.NullableInt32).HasDefaultValue(Integer.MinValue)
-                    eb.Property(Function(e) e.NullableInt64).HasDefaultValue(Long.MinValue)
-                    eb.Property(Function(e) e.NullableSingle).HasDefaultValue(0.3333333F)
-                    eb.Property(Function(e) e.NullableSByte).HasDefaultValue(SByte.MinValue)
-                    eb.Property(Function(e) e.NullableTimeSpan).HasDefaultValue(TimeSpan.MinValue.Add(New TimeSpan))
-                    eb.Property(Function(e) e.NullableUInt16).HasDefaultValue(UShort.MaxValue)
-                    eb.Property(Function(e) e.NullableUInt32).HasDefaultValue(UInteger.MaxValue)
-                    eb.Property(Function(e) e.NullableUInt64).HasDefaultValue(ULong.MaxValue)
-
-                    eb.HasKey(Function(e) e.Boolean)
-                End Sub)
-
-            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
-
-            Dim modelSnapshotCode = generator.GenerateSnapshot(
-                "MyNamespace",
-                GetType(MyContext),
-                "MySnapshot",
-                finalizedModel)
-
-            Dim snapshot = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot")
-            Dim entityType = snapshot.Model.GetEntityTypes().Single()
-
-            Assert.Equal(GetType(EntityWithEveryPrimitive).FullName & " (Dictionary<string, object>)", entityType.DisplayName())
-
-            For Each prop In modelBuilder.Model.GetEntityTypes().Single().GetProperties()
-                Dim expected = prop.GetDefaultValue()
-                Dim actual = entityType.FindProperty(prop.Name).GetDefaultValue()
-
-                If actual IsNot Nothing AndAlso expected IsNot Nothing Then
-                    If expected.GetType().IsEnum Then
-                        If TypeOf actual Is String Then
-                            Dim actualString = actual.ToString()
-                            actual = [Enum].Parse(expected.GetType(), actualString)
-                        Else
-                            actual = [Enum].ToObject(expected.GetType(), actual)
-                        End If
-                    End If
-
-                    If actual.GetType() <> expected.GetType() Then
-                        actual = Convert.ChangeType(actual, expected.GetType())
-                    End If
-                End If
-
-                Assert.Equal(expected, actual)
-            Next
-        End Sub
-
-        Private Class EntityWithEveryPrimitive
-            Public Property [Boolean] As Boolean
-            Public Property [Byte] As Byte
-            Public Property ByteArray As Byte()
-            Public Property [Char] As Char
-            Public Property [Date] As Date
-            Public Property DateTimeOffset As DateTimeOffset
-            Public Property [Decimal] As Decimal
-            Public Property [Double] As Double
-            Public Property [Enum] As Enum1
-            Public Property StringEnum As Enum1
-            Public Property Guid As Guid
-            Public Property Int16 As Short
-            Public Property Int32 As Integer
-            Public Property Int64 As Long
-            Public Property NullableBoolean As Boolean?
-            Public Property NullableByte As Byte?
-            Public Property NullableChar As Char?
-            Public Property NullableDate As Date?
-            Public Property NullableDateTimeOffset As DateTimeOffset?
-            Public Property NullableDecimal As Decimal?
-            Public Property NullableDouble As Double?
-            Public Property NullableEnum As Enum1?
-            Public Property NullableStringEnum As Enum1?
-            Public Property NullableGuid As Guid?
-            Public Property NullableInt16 As Short?
-            Public Property NullableInt32 As Integer?
-            Public Property NullableInt64 As Long?
-            Public Property NullableSByte As SByte?
-            Public Property NullableSingle As Single?
-            Public Property NullableTimeSpan As TimeSpan?
-            Public Property NullableUInt16 As UShort?
-            Public Property NullableUInt32 As UInteger?
-            Public Property NullableUInt64 As ULong?
-            Private _privateSetter As Integer
-            Public Property PrivateSetter As Integer
-                Get
-                    Return _privateSetter
-                End Get
-                Private Set
-                    _privateSetter = Value
-                End Set
-            End Property
-            Public Property [SByte] As SByte
-            Public Property [Single] As Single
-            Public Property [String] As String
-            Public Property TimeSpan As TimeSpan
-            Public Property UInt16 As UShort
-            Public Property UInt32 As UInteger
-            Public Property UInt64 As ULong
-        End Class
-
-        <Flags>
-        Public Enum Enum1
-            [Default] = 0
-            One = 1
-            Two = 2
-        End Enum
-
-        <ConditionalFact>
-        Public Sub Complex_properties_are_genered_in_snapshot()
-
-            Dim generator = CreateMigrationsCodeGenerator()
-
-            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-            modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion)
-
-            modelBuilder.Entity(Of EntityWithOneProperty)(
-                Sub(e)
-                    e.ComplexProperty(Function(eo) eo.EntityWithTwoProperties,
-                                      Sub(eb As ComplexPropertyBuilder(Of EntityWithTwoProperties))
-                                          eb.Property(Function(x) x.AlternateId).HasColumnOrder(1)
-                                          eb.ComplexProperty(Function(x) x.EntityWithStringKey,
-                                                             Sub(eb2 As ComplexPropertyBuilder(Of EntityWithStringKey))
-                                                                 eb2.IsRequired()
-                                                             End Sub)
-                                          eb.IsRequired()
-                                      End Sub)
-                End Sub)
-
-            Dim finalizedModel = modelBuilder.FinalizeModel(designTime:=True)
-
-            Dim modelSnapshotCode = generator.GenerateSnapshot(
-                "MyNamespace",
-                GetType(MyContext),
-                "MySnapshot",
-                finalizedModel)
-
-            Assert.Equal(
-            <![CDATA[' <auto-generated />
-Imports System.Collections.Generic
-Imports EntityFrameworkCore.VisualBasic.Migrations.Design
-Imports Microsoft.EntityFrameworkCore
-Imports Microsoft.EntityFrameworkCore.Infrastructure
-Imports Microsoft.EntityFrameworkCore.Metadata
-Imports Microsoft.EntityFrameworkCore.Migrations
-Imports Microsoft.VisualBasic
-
-Namespace Global.MyNamespace
-    <DbContext(GetType(VisualBasicMigrationsGeneratorTests.MyContext))>
-    Partial Class MySnapshot
-        Inherits ModelSnapshot
-
-        Protected Overrides Sub BuildModel(modelBuilder As ModelBuilder)
-
-            modelBuilder.Entity("EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty",
-                Sub(b)
-                    b.Property(Of Integer)("Id").
-                        ValueGeneratedOnAdd().
-                        HasColumnType("default_int_mapping")
-
-                    b.ComplexProperty(Of Dictionary(Of String, Object))("EntityWithTwoProperties", "EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty.EntityWithTwoProperties#EntityWithTwoProperties",
-                        Sub(b1)
-                            b1.IsRequired()
-
-                            b1.Property(Of Integer)("AlternateId").
-                                HasColumnType("default_int_mapping").
-                                HasColumnOrder(1)
-
-                            b1.Property(Of Integer)("Id").
-                                HasColumnType("default_int_mapping")
-
-                            b1.ComplexProperty(Of Dictionary(Of String, Object))("EntityWithStringKey", "EntityFrameworkCore.VisualBasic.Migrations.Design.VisualBasicMigrationsGeneratorTests+EntityWithOneProperty.EntityWithTwoProperties#EntityWithTwoProperties.EntityWithStringKey#EntityWithStringKey",
-                                Sub(b2)
-                                    b2.IsRequired()
-
-                                    b2.Property(Of String)("Id").
-                                        HasColumnType("just_string(max)")
-                                End Sub)
-                        End Sub)
-
-                    b.HasKey("Id")
-
-                    b.ToTable("EntityWithOneProperty")
-                End Sub)
-        End Sub
-    End Class
-End Namespace
-]]>.Value, modelSnapshotCode, ignoreLineEndingDifferences:=True)
-
-            Dim snapshot = CompileModelSnapshot(modelSnapshotCode, "MyNamespace.MySnapshot")
-        End Sub
-
-        Private Class EntityWithOneProperty
-            Public Property Id As Integer
-            Public Property EntityWithTwoProperties As EntityWithTwoProperties
-        End Class
-
-        Private Class EntityWithTwoProperties
-            Public Property Id As Integer
-            Public Property AlternateId As Integer
-            Public Property EntityWithStringKey As EntityWithStringKey
-        End Class
-
-        Private Class EntityWithStringKey
-            Public Property Id As String
-        End Class
-
-        Private Function CompileModelSnapshot(modelSnapshotCode As String, modelSnapshotTypeName As String) As ModelSnapshot
             Dim build As New BuildSource With {
-                 .Sources = New Dictionary(Of String, String) From {{"MigrationSnapshot.vb", modelSnapshotCode}}
+                 .Sources = New Dictionary(Of String, String) From {{"Snapshot.vb", code}}
             }
 
-            With build.References
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore"))
-                .Add(BuildReference.ByName("Microsoft.EntityFrameworkCore.Relational"))
-                .Add(BuildReference.ByName(GetType(VisualBasicMigrationsGeneratorTests).Assembly.GetName().Name))
-            End With
+            For Each buildReference In GetReferences()
+                build.References.Add(buildReference)
+            Next
 
             Dim assembly = build.BuildInMemory()
 
@@ -1165,157 +846,6 @@ End Namespace
             Assert.Contains("Imports System.Text.RegularExpressions", migration)
         End Sub
 
-        <ConditionalFact>
-        Public Sub Data_seedings_With_HasData_is_generated_correctly()
-            Dim Generator = CreateMigrationsCodeGenerator()
-
-            Dim MyModelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
-                                                       eb.HasData({
-                                                            New SimpleEntity With {
-                                                                .Id = 1,
-                                                                .Name = "Name1"
-                                                            },
-                                                            New SimpleEntity With {
-                                                                .Id = 2,
-                                                                .Name = "Name2"
-                                                            }})
-                                                   End Sub)
-
-            Dim finalizedModel = MyModelBuilder.FinalizeModel(designTime:=True)
-
-            Dim SnapshotCode = Generator.GenerateSnapshot(
-                "MyNamespace",
-                GetType(MyContext),
-                "MySnapshot",
-                finalizedModel
-            )
-
-            Dim migrationMetadataCode = Generator.GenerateMetadata(
-                "MyNamespace",
-                GetType(MyContext),
-                "MyMigration",
-                "20210515113700_MyMigration",
-                finalizedModel
-            )
-
-            Dim expectedCode =
-"                   b.HasData({
-                        New With {
-                            .Id = 1,
-                            .Name = ""Name1""
-                         },
-                        New With {
-                            .Id = 2,
-                            .Name = ""Name2""
-                         }
-                    })"
-
-            AssertContains(expectedCode, SnapshotCode)
-            AssertContains(expectedCode, migrationMetadataCode)
-        End Sub
-
-        Private Class SimpleEntity
-            Property Id As Integer
-            Property Name As String
-        End Class
-
-        <ConditionalFact>
-        Public Sub Sequence_is_generated_correctly()
-
-            Dim modelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            modelBuilder.HasSequence(Of Integer)("OrderNumbers", "Shared").
-                StartsAt(1000).
-                IncrementsBy(5).
-                HasMin(500).
-                HasMax(10_000).
-                IsCyclic()
-
-            Dim MyModel = modelBuilder.FinalizeModel()
-
-            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
-               TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
-
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
-
-            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
-
-            Dim generator As New TestVisualBasicSnapshotGenerator(codeHelper,
-                                                                  sqlServerTypeMappingSource,
-                                                                  sqlServerAnnotationCodeGenerator)
-
-            Dim sb As New IndentedStringBuilder
-
-            For Each sequence In MyModel.GetSequences()
-                generator.TestGenerateSequence("MyModelBuilder", sequence, sb)
-            Next
-
-            Dim expected As String =
-"
-MyModelBuilder.HasSequence(Of Integer)(""OrderNumbers"", ""Shared"").
-    StartsAt(1000L).
-    IncrementsBy(5).
-    HasMin(500L).
-    HasMax(10000L).
-    IsCyclic()
-"
-
-            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
-        End Sub
-
-        <ConditionalFact>
-        Public Sub Index_is_generated_correctly()
-
-            Dim MyModelBuilder = FakeRelationalTestHelpers.Instance.CreateConventionBuilder()
-
-            MyModelBuilder.Entity(Of SimpleEntity)(Sub(eb)
-                                                       eb.HasIndex(Function(e) New With {e.Id, e.Name}).
-                                                          HasDatabaseName("Index1").
-                                                          IsUnique()
-
-                                                       eb.HasIndex({"Name"}, "Index2").
-                                                          HasFilter("[Name] IS NOT NULL").
-                                                          HasAnnotation("MyAnnotation", "ABC")
-                                                   End Sub)
-
-            Dim MyModel = MyModelBuilder.FinalizeModel(designTime:=True)
-            Dim k = MyModel.FindEntityType(GetType(SimpleEntity))
-
-            Dim sqlServerTypeMappingSource As New SqlServerTypeMappingSource(
-               TestServiceFactory.Instance.Create(Of TypeMappingSourceDependencies)(),
-               TestServiceFactory.Instance.Create(Of RelationalTypeMappingSourceDependencies)())
-
-            Dim codeHelper As New VisualBasicHelper(sqlServerTypeMappingSource)
-
-            Dim sqlServerAnnotationCodeGenerator As New SqlServerAnnotationCodeGenerator(
-                New AnnotationCodeGeneratorDependencies(sqlServerTypeMappingSource))
-
-            Dim Generator As New TestVisualBasicSnapshotGenerator(codeHelper,
-                                                                  sqlServerTypeMappingSource,
-                                                                  sqlServerAnnotationCodeGenerator)
-
-            Dim sb As New IndentedStringBuilder
-
-            Generator.TestGenerateIndexes("MyModelBuilder", MyModel.FindEntityType(GetType(SimpleEntity)).GetIndexes, sb)
-
-            Dim expected As String =
-"
-MyModelBuilder.HasIndex(""Id"", ""Name"").
-    IsUnique().
-    HasDatabaseName(""Index1"")
-
-MyModelBuilder.HasIndex({""Name""}, ""Index2"").
-    HasFilter(""[Name] IS NOT NULL"").
-    HasAnnotation(""MyAnnotation"", ""ABC"")
-"
-
-            Assert.Equal(expected, sb.ToString(), ignoreLineEndingDifferences:=True)
-        End Sub
-
         Private Shared Function CreateMigrationsCodeGenerator() As IMigrationsCodeGenerator
 
             Dim testAssembly As Assembly = GetType(VisualBasicMigrationsGeneratorTests).Assembly
@@ -1332,9 +862,7 @@ MyModelBuilder.HasIndex({""Name""}, ""Index2"").
                 GetRequiredService(Of IMigrationsCodeGenerator)()
         End Function
 
-        Private Shared Sub AssertContains(expected As String,
-                                         actual As String)
-
+        Private Shared Sub AssertContains(expected As String, actual As String)
             ' Normalize line endings to Environment.Newline
             expected = expected.Replace(vbCrLf, vbLf).
                                 Replace(vbLf & vbCr, vbLf).

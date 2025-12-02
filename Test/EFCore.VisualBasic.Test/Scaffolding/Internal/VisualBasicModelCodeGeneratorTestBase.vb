@@ -30,20 +30,20 @@ Namespace Scaffolding.Internal
                            assertModel As Action(Of IModel),
                            Optional skipBuild As Boolean = False)
 
-            Dim designServices As New ServiceCollection()
-            AddModelServices(designServices)
+            Dim modelBuilder = SqlServerTestHelpers.
+                                  Instance.
+                                  CreateConventionBuilder(addServices:=AddressOf AddModelServices)
 
-            Dim modelBuilder = SqlServerTestHelpers.Instance.CreateConventionBuilder(customServices:=designServices)
             buildModel(modelBuilder)
 
-            Dim Model = modelBuilder.FinalizeModel(designTime:=True, skipValidation:=True)
+            Dim model = modelBuilder.FinalizeModel(designTime:=True, skipValidation:=True)
 
             Dim services = CreateServices()
             AddScaffoldingServices(services)
 
             Dim serviceProvider = services.BuildServiceProvider(validateScopes:=True)
 
-            Test(serviceProvider, Model, options, assertScaffold, assertModel, skipBuild)
+            Test(serviceProvider, model, options, assertScaffold, assertModel, skipBuild)
         End Sub
 
         Protected Sub Test(buildModel As Func(Of IServiceProvider, IModel),
@@ -146,8 +146,8 @@ Namespace Scaffolding.Internal
         Function CreateServices() As IServiceCollection
             Dim testAssembly = GetType(VisualBasicModelCodeGeneratorTestBase).Assembly
             Dim reporter = New TestOperationReporter(_output)
-            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
-                CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer")
+            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, Array.Empty(Of String)()).
+                                  CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer")
 
             Dim vbServices As New EFCoreVisualBasicServices
             vbServices.ConfigureDesignTimeServices(services)
@@ -155,11 +155,13 @@ Namespace Scaffolding.Internal
             Return services
         End Function
 
-        Protected Overridable Sub AddModelServices(services As IServiceCollection)
-        End Sub
+        Protected Overridable Function AddModelServices(services As IServiceCollection) As IServiceCollection
+            Return services
+        End Function
 
-        Protected Overridable Sub AddScaffoldingServices(services As IServiceCollection)
-        End Sub
+        Protected Overridable Function AddScaffoldingServices(services As IServiceCollection) As IServiceCollection
+            Return services
+        End Function
 
         Protected Shared Sub AssertFileContents(expectedCode As String,
                                                 file As ScaffoldedFile)

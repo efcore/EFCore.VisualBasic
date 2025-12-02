@@ -12,7 +12,6 @@ Imports NetTopologySuite.Geometries
 Imports Xunit
 
 Namespace Migrations.Design
-
     Public Class VisualBasicMigrationOperationGeneratorTest
 
         Private Shared ReadOnly _nl As String = Environment.NewLine
@@ -2617,7 +2616,7 @@ mb.Sql(""-- close to me"")"
             {
                 .Table = "People",
                 .Columns = {"Tags"},
-                .Values = New Object(,) {{New String() {}}}
+                .Values = New Object(,) {{Array.Empty(Of String)()}}
             }
 
             Dim expectedCode =
@@ -2633,7 +2632,7 @@ mb.Sql(""-- close to me"")"
                     Assert.[Single](o.Columns)
                     Assert.Equal(1, o.Values.GetLength(0))
                     Assert.Equal(1, o.Values.GetLength(1))
-                    Assert.Equal(New String() {}, CType(o.Values(0, 0), String()).AsEnumerable())
+                    Assert.Equal(Array.Empty(Of String)(), CType(o.Values(0, 0), String()).AsEnumerable())
                 End Sub)
         End Sub
 
@@ -2644,7 +2643,7 @@ mb.Sql(""-- close to me"")"
             {
                 .Table = "People",
                 .Columns = {"First Name", "Last Name", "Geometry"},
-                .Values = New Object(,) {{"John", Nothing, New String() {}}}
+                .Values = New Object(,) {{"John", Nothing, Array.Empty(Of String)()}}
             }
 
             Dim expectedCode =
@@ -2661,7 +2660,7 @@ mb.Sql(""-- close to me"")"
                    Assert.Equal(1, o.Values.GetLength(0))
                    Assert.Equal(3, o.Values.GetLength(1))
                    Assert.Null(o.Values(0, 1))
-                   Assert.Equal(New String() {}, CType(o.Values(0, 2), String()).AsEnumerable())
+                   Assert.Equal(Array.Empty(Of String)(), CType(o.Values(0, 2), String()).AsEnumerable())
                End Sub)
         End Sub
 
@@ -3451,7 +3450,5 @@ mb.Sql(""-- close to me"")"
 
             assertAction(result)
         End Sub
-
     End Class
-
 End Namespace

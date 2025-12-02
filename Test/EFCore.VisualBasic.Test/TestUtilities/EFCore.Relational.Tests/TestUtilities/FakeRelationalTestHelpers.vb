@@ -15,7 +15,7 @@ Namespace TestUtilities
 
         Public Shared ReadOnly Property Instance As FakeRelationalTestHelpers = New FakeRelationalTestHelpers
 
-        Protected Overridable Function CreateEntityFrameworkDesignServicesBuilder(services As IServiceCollection) As EntityFrameworkDesignServicesBuilder
+        Protected Overrides Function CreateEntityFrameworkDesignServicesBuilder(services As IServiceCollection) As EntityFrameworkDesignServicesBuilder
             Return New EntityFrameworkRelationalDesignServicesBuilder(services)
         End Function
 

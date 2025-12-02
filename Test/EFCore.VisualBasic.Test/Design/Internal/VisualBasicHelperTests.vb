@@ -813,7 +813,7 @@ $"builder.
                                         method3,
                                         New MethodCallCodeFragment(
                                             _testFuncMethodInfo,
-                                            New NestedClosureCodeFragment("tb", {
+                                            New NestedClosureCodeFragment("tbb", {
                                                 method4,
                                                 method5
                                             }))
@@ -827,10 +827,10 @@ $"builder.
     TestFunc(Sub(tb) tb.TestFunc(2)).
     TestFunc(Sub(tb)
         tb.TestFunc(3)
-        tb.TestFunc(Sub(tb)
-            tb.TestFunc(4)
-            tb.TestFunc(5)
-        End Sub)
+        tb.TestFunc(Sub(tbb)
+                tbb.TestFunc(4)
+                tbb.TestFunc(5)
+            End Sub)
     End Sub)", result, ignoreLineEndingDifferences:=True)
         End Sub
 

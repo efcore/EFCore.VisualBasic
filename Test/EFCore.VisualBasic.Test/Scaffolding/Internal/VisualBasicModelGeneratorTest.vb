@@ -51,7 +51,7 @@ Namespace Scaffolding.Internal
             Dim testAssembly As Assembly = GetType(VisualBasicModelGeneratorTest).Assembly
             Dim reporter As New TestOperationReporter
 
-            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, New String() {}).
+            Dim services = New DesignTimeServicesBuilder(testAssembly, testAssembly, reporter, Array.Empty(Of String)()).
                 CreateServiceCollection("Microsoft.EntityFrameworkCore.SqlServer").
                 AddSingleton(Of IAnnotationCodeGenerator, AnnotationCodeGenerator)().
                 AddSingleton(Of IProviderConfigurationCodeGenerator, TestProviderCodeGenerator)()

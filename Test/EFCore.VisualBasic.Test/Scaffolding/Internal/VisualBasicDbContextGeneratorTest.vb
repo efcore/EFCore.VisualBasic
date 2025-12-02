@@ -981,7 +981,7 @@ End Namespace
                 },
                 Sub(code) AssertContains(".
                         IsFixedLength()", code.ContextFile.Code),
-                Sub(model) Assert.Equal(True, model.FindEntityType("TestNamespace.Employee").GetProperty("Name").IsFixedLength())
+                Sub(model) Assert.True(model.FindEntityType("TestNamespace.Employee").GetProperty("Name").IsFixedLength())
                 )
         End Sub
 
@@ -1283,11 +1283,11 @@ Namespace TestNamespace
                     entity.ToTable(Sub(tb) tb.IsTemporal(Sub(ttb)
                             ttb.UseHistoryTable(""CustomerHistory"")
                             ttb.
-                            HasPeriodStart(""PeriodStart"").
-                            HasColumnName(""PeriodStart"")
+                                HasPeriodStart(""PeriodStart"").
+                                HasColumnName(""PeriodStart"")
                             ttb.
-                            HasPeriodEnd(""PeriodEnd"").
-                            HasColumnName(""PeriodEnd"")
+                                HasPeriodEnd(""PeriodEnd"").
+                                HasColumnName(""PeriodEnd"")
                         End Sub))
                 End Sub)
 
@@ -1610,13 +1610,15 @@ End Namespace
                 End Sub)
         End Sub
 
-        Protected Overrides Sub AddModelServices(services As IServiceCollection)
-            services.Replace(ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, TestModelAnnotationProvider)())
-        End Sub
+        Protected Overrides Function AddModelServices(services As IServiceCollection) As IServiceCollection
+            Return services.Replace(
+                ServiceDescriptor.Singleton(Of IRelationalAnnotationProvider, TestModelAnnotationProvider)())
+        End Function
 
-        Protected Overrides Sub AddScaffoldingServices(services As IServiceCollection)
-            services.Replace(ServiceDescriptor.Singleton(Of IAnnotationCodeGenerator, TestModelAnnotationCodeGenerator)())
-        End Sub
+        Protected Overrides Function AddScaffoldingServices(services As IServiceCollection) As IServiceCollection
+            Return services.Replace(
+                ServiceDescriptor.Singleton(Of IAnnotationCodeGenerator, TestModelAnnotationCodeGenerator)())
+        End Function
 
         Private Class TestModelAnnotationProvider
             Inherits SqlServerAnnotationProvider

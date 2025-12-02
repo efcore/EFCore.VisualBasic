@@ -1181,7 +1181,7 @@ Namespace Design.Internal
                 For Each methodCall In frag.MethodCalls
                     builder.
                         Append(frag.Parameter).
-                        AppendLine(Fragment(methodCall, indent))
+                        AppendLine(Fragment(methodCall, indent + 1))
                 Next
             End Using
 

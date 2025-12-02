@@ -5,9 +5,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Security
 Imports System.Text
 Imports EntityFrameworkCore.VisualBasic
-Imports EntityFrameworkCore.VisualBasic.Design.Query.Internal
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.EntityFrameworkCore.Design
 Imports Microsoft.EntityFrameworkCore.Internal
@@ -25,17 +23,11 @@ Namespace Design.Internal
         Implements IVisualBasicHelper
 
         Private ReadOnly _typeMappingSource As ITypeMappingSource
-        Private ReadOnly _translator As LinqToVisualBasicSyntaxTranslator
 
         Sub New(typeMappingSource As ITypeMappingSource)
             NotNull(typeMappingSource, NameOf(typeMappingSource))
 
             _typeMappingSource = typeMappingSource
-
-            Dim workspace = New AdhocWorkspace()
-            Dim syntaxGen = SyntaxGenerator.GetGenerator(workspace, LanguageNames.VisualBasic)
-
-            _translator = New LinqToVisualBasicSyntaxTranslator(syntaxGen)
         End Sub
 
         Private Shared ReadOnly _literalFuncs As New Dictionary(Of Type, Func(Of VisualBasicHelper, Object, String)) From {
@@ -1307,34 +1299,6 @@ Namespace Design.Internal
 
         Private Shared Function ToSourceCode(node As SyntaxNode) As String
             Return node.NormalizeWhitespace().ToFullString()
-        End Function
-
-        ''' <summary>
-        '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
-        '''     the same compatibility standards as public APIs. It may be changed Or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution And knowing that
-        '''     doing so can result in application failures when updating to a New Entity Framework Core release.
-        ''' </summary>
-        Public Overridable Function Statement(node As Expression, collectedNamespaces As ISet(Of String)) As String _
-        Implements IVisualBasicHelper.Statement
-            Dim sb As New StringBuilder
-
-            For Each e In _translator.TranslateStatement(node, collectedNamespaces)
-                sb.AppendLine(ToSourceCode(e))
-            Next
-
-            Return sb.ToString()
-        End Function
-
-        ''' <summary>
-        '''     This Is an internal API that supports the Entity Framework Core infrastructure And Not subject to
-        '''     the same compatibility standards as public APIs. It may be changed Or removed without notice in
-        '''     any release. You should only use it directly in your code with extreme caution And knowing that
-        '''     doing so can result in application failures when updating to a New Entity Framework Core release.
-        ''' </summary>
-        Public Overridable Function Expression(node As Expression, collectedNamespaces As ISet(Of String)) As String _
-        Implements IVisualBasicHelper.Expression
-            Return ToSourceCode(_translator.TranslateExpression(node, collectedNamespaces))
         End Function
 
 #Region "VB Namespace"
